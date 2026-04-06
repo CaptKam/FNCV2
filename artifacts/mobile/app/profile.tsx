@@ -7,6 +7,7 @@ import {
   Pressable,
   Switch,
   Alert,
+  Modal,
 } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -18,6 +19,13 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
+import { useThemePreference, ThemePreference } from '@/context/ThemeContext';
+
+const THEME_OPTIONS: { id: ThemePreference; label: string; icon: string; desc: string }[] = [
+  { id: 'system', label: 'System', icon: 'cellphone-cog', desc: 'Match your device settings' },
+  { id: 'light', label: 'Light', icon: 'white-balance-sunny', desc: 'Always use light mode' },
+  { id: 'dark', label: 'Dark', icon: 'moon-waning-crescent', desc: 'Always use dark mode' },
+];
 
 const DIETARY_OPTIONS = [
   { id: 'vegetarian', label: 'Vegetarian', emoji: '\u{1F966}' },
@@ -70,6 +78,8 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const { preference, setPreference } = useThemePreference();
+  const [showThemeModal, setShowThemeModal] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
   const [metricUnits, setMetricUnits] = useState(true);
@@ -296,8 +306,8 @@ export default function ProfileScreen() {
             <SettingRow
               icon="palette-outline"
               label="Appearance"
-              subtitle="Follow system theme"
-              onPress={() => {}}
+              subtitle={preference === 'system' ? 'Follow system theme' : preference === 'light' ? 'Light mode' : 'Dark mode'}
+              onPress={() => setShowThemeModal(true)}
               colors={colors}
             />
             <SettingRow
@@ -357,6 +367,61 @@ export default function ProfileScreen() {
           Made with love for culinary explorers
         </Text>
       </ScrollView>
+
+      <Modal
+        visible={showThemeModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowThemeModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowThemeModal(false)}>
+          <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
+            <View style={styles.modalHandle} />
+            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
+              Appearance
+            </Text>
+            {THEME_OPTIONS.map((option) => {
+              const isActive = preference === option.id;
+              return (
+                <Pressable
+                  key={option.id}
+                  onPress={() => {
+                    setPreference(option.id);
+                    setShowThemeModal(false);
+                  }}
+                  style={[
+                    styles.themeOption,
+                    {
+                      backgroundColor: isActive ? `${colors.primary}15` : colors.surfaceContainerLow,
+                      borderColor: isActive ? colors.primary : 'transparent',
+                      borderWidth: 1.5,
+                    },
+                  ]}
+                >
+                  <View style={[styles.themeIconWrap, { backgroundColor: isActive ? `${colors.primary}20` : colors.surfaceContainerHigh }]}>
+                    <MaterialCommunityIcons
+                      name={option.icon as any}
+                      size={22}
+                      color={isActive ? colors.primary : colors.outline}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[Typography.titleSmall, { color: isActive ? colors.primary : colors.onSurface }]}>
+                      {option.label}
+                    </Text>
+                    <Text style={[Typography.bodySmall, { color: colors.outline, fontSize: 12 }]}>
+                      {option.desc}
+                    </Text>
+                  </View>
+                  {isActive && (
+                    <MaterialCommunityIcons name="check-circle" size={22} color={colors.primary} />
+                  )}
+                </Pressable>
+              );
+            })}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -464,5 +529,40 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: Radius.full,
     borderWidth: 1.5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: Spacing.page,
+    paddingBottom: 40,
+    paddingTop: Spacing.md,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#999',
+    alignSelf: 'center',
+    marginBottom: Spacing.lg,
+  },
+  themeOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    marginBottom: Spacing.sm,
+    gap: Spacing.md,
+  },
+  themeIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

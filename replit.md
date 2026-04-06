@@ -36,7 +36,8 @@ Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a 
 
 ### State Management
 - BookmarksContext (React Context + AsyncStorage): shared bookmark/favorite state across RecipeCard, Recipe Detail, and Bookmarks screen
-- Provider wraps entire app in `_layout.tsx`
+- ThemeContext (React Context + AsyncStorage): user theme preference (system/light/dark); `useThemeColors` reads from this context; profile page has modal picker for switching
+- Both providers wrap entire app in `_layout.tsx` (ThemeProvider outermost)
 
 ### Data
 - All local mock data: 8 countries, 97 recipes with ingredients, steps, cultural notes
@@ -46,6 +47,7 @@ Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a 
 - `artifacts/mobile/constants/` — colors, typography, spacing, radius, shadows, glass tokens
 - `artifacts/mobile/data/` — countries.ts, recipes.ts
 - `artifacts/mobile/context/BookmarksContext.tsx` — shared bookmarks state with AsyncStorage persistence
+- `artifacts/mobile/context/ThemeContext.tsx` — theme preference (system/light/dark) with AsyncStorage persistence
 - `artifacts/mobile/components/` — GlassView, SectionHeader, RecipeCard, DestinationCard
 - `artifacts/mobile/app/(tabs)/` — 5 tab screens
 - `artifacts/mobile/app/country/[id].tsx` — Country detail
