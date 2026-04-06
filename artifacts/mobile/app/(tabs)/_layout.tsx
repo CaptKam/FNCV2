@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, View, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -63,7 +63,7 @@ export default function TabLayout() {
                 focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
               ]}
             >
-              <Feather name="compass" size={22} color={color} />
+              <MaterialCommunityIcons name="compass-outline" size={24} color={color} />
             </View>
           ),
         }}
@@ -79,7 +79,7 @@ export default function TabLayout() {
                 focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
               ]}
             >
-              <Feather name="search" size={22} color={color} />
+              <MaterialCommunityIcons name="magnify" size={24} color={color} />
             </View>
           ),
         }}
@@ -95,7 +95,7 @@ export default function TabLayout() {
                 focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
               ]}
             >
-              <Feather name="calendar" size={22} color={color} />
+              <MaterialCommunityIcons name="calendar-month-outline" size={24} color={color} />
             </View>
           ),
         }}
@@ -111,7 +111,7 @@ export default function TabLayout() {
                 focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
               ]}
             >
-              <Feather name="shopping-cart" size={22} color={color} />
+              <MaterialCommunityIcons name="cart-outline" size={24} color={color} />
             </View>
           ),
         }}
@@ -127,7 +127,7 @@ export default function TabLayout() {
                 focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
               ]}
             >
-              <Feather name="award" size={22} color={color} />
+              <MaterialCommunityIcons name="chef-hat" size={24} color={color} />
             </View>
           ),
         }}

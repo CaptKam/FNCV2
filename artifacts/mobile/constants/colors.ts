@@ -46,8 +46,8 @@ const colors = {
     input: '#DDC1B4',
   },
   dark: {
-    primary: '#FFB691',
-    primaryBase: '#FFB691',
+    primary: '#9A4100',
+    primaryBase: '#9A4100',
     onPrimary: '#4A1C00',
     primaryContainer: '#6B2A00',
     onPrimaryContainer: '#FFC9AF',
@@ -75,7 +75,7 @@ const colors = {
     overlay: 'rgba(0,0,0,0.7)',
 
     text: '#F0ECE6',
-    tint: '#FFB691',
+    tint: '#9A4100',
     background: '#161412',
     foreground: '#F0ECE6',
     card: '#211F1C',

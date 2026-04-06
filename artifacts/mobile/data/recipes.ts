@@ -2718,4 +2718,27 @@ export const recipes: Recipe[] = [
     ],
     culturalNote: 'This Galician classic is traditionally served on wooden plates at fiestas and fairs. The paprika-stained olive oil pools on the wood, creating an irresistible sauce.',
   },
+  {
+    id: 'it-13',
+    countryId: 'italy',
+    title: 'Affogato',
+    image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=600&h=400&fit=crop',
+    category: 'dessert',
+    prepTime: 5,
+    cookTime: 0,
+    servings: 2,
+    difficulty: 'Easy',
+    ingredients: [
+      { name: 'Vanilla gelato', amount: '4 scoops', category: 'Dairy' },
+      { name: 'Espresso', amount: '2 shots, freshly pulled', category: 'Other' },
+      { name: 'Amaretto (optional)', amount: '1 tbsp', category: 'Other' },
+    ],
+    steps: [
+      { instruction: 'Place two scoops of vanilla gelato into each serving glass.' },
+      { instruction: 'Pull two shots of hot espresso.' },
+      { instruction: 'Pour the espresso directly over the gelato at the table.' },
+      { instruction: 'Add a splash of amaretto if desired. Serve immediately.' },
+    ],
+    culturalNote: 'Affogato means "drowned" in Italian. This elegantly simple dessert perfectly captures the Italian philosophy that the best things need the fewest ingredients.',
+  },
 ];
