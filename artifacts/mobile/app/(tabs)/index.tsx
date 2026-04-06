@@ -56,9 +56,9 @@ export default function DiscoverScreen() {
         {/* Top Bar */}
         <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
           <View style={styles.topBarLeft}>
-            <View style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}>
+            <Pressable onPress={() => router.push('/profile')} style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}>
               <Feather name="user" size={18} color={colors.outline} />
-            </View>
+            </Pressable>
             <Text style={[Typography.title, { color: colors.onSurface, fontStyle: 'italic' }]}>
               Fork & Compass
             </Text>

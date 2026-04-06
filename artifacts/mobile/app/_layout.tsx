@@ -30,6 +30,7 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="profile" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="country/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="recipe/[id]" options={{ headerShown: false }} />
       <Stack.Screen

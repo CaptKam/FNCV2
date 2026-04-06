@@ -35,9 +35,9 @@ export default function CookScreen() {
         contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 16 }}
       >
         <View style={[styles.profileSection, { paddingHorizontal: Spacing.page }]}>
-          <View style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}>
+          <Pressable onPress={() => router.push('/profile')} style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}>
             <Feather name="user" size={28} color={colors.outline} />
-          </View>
+          </Pressable>
           <View style={styles.profileInfo}>
             <Text style={[Typography.labelLarge, { color: colors.outline }]}>KITCHEN REPUTATION</Text>
             <Text style={[Typography.display, { color: colors.onSurface }]}>Home Cook</Text>
