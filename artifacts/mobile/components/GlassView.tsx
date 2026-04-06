@@ -4,7 +4,7 @@ import { BlurView } from 'expo-blur';
 import { useThemeColors } from '@/hooks/useThemeColors';
 
 interface GlassViewProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   intensity?: number;
 }
