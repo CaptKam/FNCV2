@@ -40,8 +40,8 @@ function buildGroceryList(): GroceryItem[] {
           name: ing.name,
           amount: ing.amount,
           category: ing.category,
-          checked: Math.random() > 0.7,
-          aisle: `${Math.floor(Math.random() * 12) + 1}`,
+          checked: false,
+          aisle: `${(items.length % 12) + 1}`,
         });
       }
     });
