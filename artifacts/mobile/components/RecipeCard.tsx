@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { Radius } from '@/constants/radius';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { GlassView } from './GlassView';
 import { Recipe } from '@/data/recipes';
+import { useBookmarks } from '@/context/BookmarksContext';
 
 const CARD_WIDTH = (Dimensions.get('window').width - Spacing.page * 2 - Spacing.md) / 2;
 
@@ -19,7 +20,8 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe }: RecipeCardProps) {
   const colors = useThemeColors();
   const router = useRouter();
-  const [isFav, setIsFav] = useState(false);
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const isFav = isBookmarked(recipe.id);
 
   return (
     <Pressable
@@ -34,7 +36,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           transition={300}
         />
         <Pressable
-          onPress={(e) => { e.stopPropagation(); setIsFav(!isFav); }}
+          onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
           style={styles.heartButton}
           hitSlop={8}
         >

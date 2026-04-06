@@ -21,6 +21,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { BookmarksProvider } from "@/context/BookmarksContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,6 +32,7 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="profile" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="bookmarks" options={{ headerShown: false }} />
       <Stack.Screen name="country/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="recipe/[id]" options={{ headerShown: false }} />
       <Stack.Screen
@@ -72,9 +74,11 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <KeyboardProvider>
-              <RootLayoutNav />
-            </KeyboardProvider>
+            <BookmarksProvider>
+              <KeyboardProvider>
+                <RootLayoutNav />
+              </KeyboardProvider>
+            </BookmarksProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>
       </ErrorBoundary>

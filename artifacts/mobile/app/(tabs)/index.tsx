@@ -64,7 +64,7 @@ export default function DiscoverScreen() {
             </Text>
           </View>
           <View style={styles.topBarRight}>
-            <Pressable hitSlop={12}>
+            <Pressable hitSlop={12} onPress={() => router.push('/bookmarks')}>
               <Feather name="bookmark" size={22} color={colors.onSurface} />
             </Pressable>
             <Pressable hitSlop={12}>

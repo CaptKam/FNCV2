@@ -12,6 +12,8 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { countries } from '@/data/countries';
 import { recipes } from '@/data/recipes';
+import { useBookmarks } from '@/context/BookmarksContext';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,8 +22,10 @@ export default function RecipeDetailScreen() {
   const router = useRouter();
   const [servings, setServings] = useState(0);
 
+  const { isBookmarked, toggleBookmark } = useBookmarks();
   const recipe = recipes.find((r) => r.id === id);
   const country = recipe ? countries.find((c) => c.id === recipe.countryId) : null;
+  const isSaved = recipe ? isBookmarked(recipe.id) : false;
 
   if (!recipe || !country) {
     return (
@@ -64,6 +68,18 @@ export default function RecipeDetailScreen() {
           >
             <GlassView style={styles.backGlass}>
               <Feather name="arrow-left" size={20} color="#FFFFFF" />
+            </GlassView>
+          </Pressable>
+          <Pressable
+            onPress={() => toggleBookmark(recipe.id)}
+            style={[styles.bookmarkButton, { top: insets.top + 8 }]}
+          >
+            <GlassView style={styles.backGlass}>
+              <MaterialCommunityIcons
+                name={isSaved ? 'heart' : 'heart-outline'}
+                size={20}
+                color={isSaved ? colors.primary : '#FFFFFF'}
+              />
             </GlassView>
           </Pressable>
           <View style={styles.heroText}>
@@ -203,6 +219,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   heroContainer: { height: 380, position: 'relative' },
   backButton: { position: 'absolute', left: Spacing.page, zIndex: 10 },
+  bookmarkButton: { position: 'absolute', right: Spacing.page, zIndex: 10 },
   backGlass: {
     width: 44,
     height: 44,

@@ -31,19 +31,28 @@ Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a 
 - 5 tabs: Discover (hero carousel), Search (filter chips), Plan (timeline), Grocery (checkboxes), Cook (reputation profile)
 - Detail screens: Country Detail, Recipe Detail
 - Cook Mode: Full-screen step-by-step with timer, haptics, keep-awake
+- Profile & Settings: dietary preferences, cooking settings, notifications, general
+- Bookmarks: saved recipes with persistence (AsyncStorage), grouped by country
+
+### State Management
+- BookmarksContext (React Context + AsyncStorage): shared bookmark/favorite state across RecipeCard, Recipe Detail, and Bookmarks screen
+- Provider wraps entire app in `_layout.tsx`
 
 ### Data
-- All local mock data: 8 countries, ~20 recipes with ingredients, steps, cultural notes
+- All local mock data: 8 countries, 97 recipes with ingredients, steps, cultural notes
 - No backend required
 
 ### Key Files
 - `artifacts/mobile/constants/` — colors, typography, spacing, radius, shadows, glass tokens
 - `artifacts/mobile/data/` — countries.ts, recipes.ts
+- `artifacts/mobile/context/BookmarksContext.tsx` — shared bookmarks state with AsyncStorage persistence
 - `artifacts/mobile/components/` — GlassView, SectionHeader, RecipeCard, DestinationCard
 - `artifacts/mobile/app/(tabs)/` — 5 tab screens
 - `artifacts/mobile/app/country/[id].tsx` — Country detail
-- `artifacts/mobile/app/recipe/[id].tsx` — Recipe detail
+- `artifacts/mobile/app/recipe/[id].tsx` — Recipe detail (with bookmark button)
 - `artifacts/mobile/app/cook-mode/[id].tsx` — Active cook mode
+- `artifacts/mobile/app/profile.tsx` — Profile & settings screen
+- `artifacts/mobile/app/bookmarks.tsx` — Saved recipes screen
 
 ## Key Commands
 
