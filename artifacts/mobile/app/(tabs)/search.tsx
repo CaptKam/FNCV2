@@ -1,0 +1,214 @@
+import React, { useState, useMemo } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  Dimensions,
+} from 'react-native';
+import { Image } from 'expo-image';
+import { Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemeColors } from '@/hooks/useThemeColors';
+import { Typography } from '@/constants/typography';
+import { Spacing } from '@/constants/spacing';
+import { Radius } from '@/constants/radius';
+import { GlassView } from '@/components/GlassView';
+import { recipes } from '@/data/recipes';
+
+const CARD_WIDTH = (Dimensions.get('window').width - Spacing.page * 2 - Spacing.md) / 2;
+
+const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
+
+export default function SearchScreen() {
+  const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const [query, setQuery] = useState('');
+  const [activeMood, setActiveMood] = useState('All Moods');
+
+  const filteredRecipes = useMemo(() => {
+    let results = recipes;
+
+    if (activeMood !== 'All Moods') {
+      const moodMap: Record<string, (r: typeof recipes[0]) => boolean> = {
+        'Quick & Easy': (r) => r.prepTime + r.cookTime <= 30 && r.difficulty === 'Easy',
+        'Comfort Food': (r) => r.category === 'main' && r.cookTime >= 30,
+        'Date Night': (r) => r.difficulty === 'Hard' || r.cookTime >= 60,
+        'Adventurous': (r) => ['japan', 'thailand', 'morocco', 'india', 'mexico'].includes(r.countryId),
+        'Healthy': (r) => r.ingredients.some((i) => i.category === 'Produce'),
+        'Sweet': (r) => r.category === 'dessert',
+      };
+      const filter = moodMap[activeMood];
+      if (filter) results = results.filter(filter);
+    }
+
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      results = results.filter(
+        (r) =>
+          r.title.toLowerCase().includes(q) ||
+          r.ingredients.some((i) => i.name.toLowerCase().includes(q))
+      );
+    }
+
+    return results;
+  }, [query, activeMood]);
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 16 }}
+      >
+        <View style={{ paddingHorizontal: Spacing.page }}>
+          <Text style={[Typography.displayLarge, { color: colors.onSurface, fontSize: 42 }]}>
+            Search
+          </Text>
+        </View>
+
+        <View style={[styles.searchContainer, { paddingHorizontal: Spacing.page }]}>
+          <View style={[styles.searchInput, { backgroundColor: colors.surfaceContainerLow }]}>
+            <Feather name="search" size={20} color={colors.outline} />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Ingredients, dishes, or moods..."
+              placeholderTextColor={colors.outline}
+              style={[Typography.body, { color: colors.onSurface, flex: 1 }]}
+            />
+          </View>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipContainer}
+        >
+          {MOODS.map((mood) => (
+            <Pressable
+              key={mood}
+              onPress={() => setActiveMood(mood)}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor:
+                    activeMood === mood ? colors.primary : colors.surfaceContainerHigh,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  Typography.titleSmall,
+                  {
+                    color: activeMood === mood ? colors.onPrimary : colors.onSurface,
+                  },
+                ]}
+              >
+                {mood}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        <View style={styles.grid}>
+          {filteredRecipes.map((recipe) => (
+            <Pressable
+              key={recipe.id}
+              onPress={() => router.push(`/recipe/${recipe.id}`)}
+              style={[styles.card, { width: CARD_WIDTH }]}
+            >
+              <Image
+                source={{ uri: recipe.image }}
+                style={styles.cardImage}
+                contentFit="cover"
+                transition={300}
+              />
+              <View style={styles.cardContent}>
+                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 16 }]} numberOfLines={2}>
+                  {recipe.title}
+                </Text>
+                <Text style={[Typography.labelSmall, { color: colors.outline }]}>
+                  {recipe.difficulty} {'\u00B7'} {recipe.prepTime + recipe.cookTime} min
+                </Text>
+                <Pressable
+                  onPress={() => router.push(`/recipe/${recipe.id}`)}
+                  style={styles.addButton}
+                >
+                  <Text style={[Typography.titleSmall, { color: colors.primary }]}>ADD +</Text>
+                </Pressable>
+              </View>
+              <Pressable style={styles.heartBtn} hitSlop={8}>
+                <GlassView style={styles.heartGlass}>
+                  <Feather name="heart" size={14} color="#FFFFFF" />
+                </GlassView>
+              </Pressable>
+            </Pressable>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  searchContainer: { marginTop: Spacing.md, marginBottom: Spacing.md },
+  searchInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 14,
+    borderRadius: Radius.sm,
+  },
+  chipContainer: {
+    paddingHorizontal: Spacing.page,
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  chip: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+    marginRight: Spacing.sm,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.page,
+  },
+  card: {
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
+    marginBottom: Spacing.md,
+    position: 'relative',
+  },
+  cardImage: {
+    width: '100%',
+    height: 200,
+  },
+  cardContent: {
+    padding: Spacing.md,
+    gap: 6,
+  },
+  addButton: {
+    marginTop: 4,
+  },
+  heartBtn: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+  },
+  heartGlass: {
+    width: 30,
+    height: 30,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

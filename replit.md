@@ -16,6 +16,35 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
 
+## Mobile App: Fork & Compass
+
+Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a dinner, feel like you traveled."
+
+### Design System: "The Ethereal Archivist"
+- **Colors**: Terracotta #9A4100 (interactive), Cream #FEF9F3 (surface), dark mode supported
+- **Typography**: Noto Serif (headlines), Inter (body/labels)
+- **Effects**: Liquid Glass (BlurView + specular highlight), floating pill tab bar
+- **Grid**: 8pt spacing system
+- **Components**: GlassView, SectionHeader, RecipeCard, DestinationCard
+
+### Screens
+- 5 tabs: Discover (hero carousel), Search (filter chips), Plan (timeline), Grocery (checkboxes), Cook (reputation profile)
+- Detail screens: Country Detail, Recipe Detail
+- Cook Mode: Full-screen step-by-step with timer, haptics, keep-awake
+
+### Data
+- All local mock data: 8 countries, ~20 recipes with ingredients, steps, cultural notes
+- No backend required
+
+### Key Files
+- `artifacts/mobile/constants/` — colors, typography, spacing, radius, shadows, glass tokens
+- `artifacts/mobile/data/` — countries.ts, recipes.ts
+- `artifacts/mobile/components/` — GlassView, SectionHeader, RecipeCard, DestinationCard
+- `artifacts/mobile/app/(tabs)/` — 5 tab screens
+- `artifacts/mobile/app/country/[id].tsx` — Country detail
+- `artifacts/mobile/app/recipe/[id].tsx` — Recipe detail
+- `artifacts/mobile/app/cook-mode/[id].tsx` — Active cook mode
+
 ## Key Commands
 
 - `pnpm run typecheck` — full typecheck across all packages
