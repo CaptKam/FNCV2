@@ -1,0 +1,450 @@
+# ═══════════════════════════════════════════════════════════════
+# FORK & COMPASS — REPLIT BUILD PROMPT
+# Based on the "Ethereal Archivist" Design System from Stitch
+# ═══════════════════════════════════════════════════════════════
+#
+# Paste SECTION A as your first message in a new Replit project.
+# Then use SECTION B prompts one at a time for each screen.
+# SECTION C has correction prompts for when things look wrong.
+#
+# ═══════════════════════════════════════════════════════════════
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# SECTION A — FOUNDATION PROMPT (paste this first)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build an Expo React Native app called "Fork & Compass" — a premium culinary travel app. Tagline: "Pick a country, cook a dinner, feel like you traveled."
+
+The design language is called "The Ethereal Archivist" — it blends heritage warmth (terracotta, cream, Noto Serif) with 2026 spatial-computing aesthetics (Liquid Glass effects, tonal layering, floating pill navigation). Think: a luxury food magazine trapped inside a glass prism.
+
+## CRITICAL: Create the design system files FIRST before any screens.
+
+---
+
+## TECH STACK
+
+- Expo SDK (managed workflow) + React Native + TypeScript strict
+- Expo Router (file-based routing) with 5-tab bottom navigation
+- react-native-reanimated for all animations (spring physics, no linear easing)
+- expo-image for optimized images
+- expo-haptics for tactile feedback
+- expo-blur (BlurView) for Liquid Glass effects
+- expo-linear-gradient for gradient overlays
+- expo-keep-awake for Cook mode
+- expo-google-fonts: Noto Serif (400, 500, 600, 700) + Inter (400, 500, 600, 700)
+
+---
+
+## DESIGN SYSTEM — "The Ethereal Archivist"
+
+### Design Philosophy
+This is NOT a flat app. It is spatial. Treat the UI as stacked sheets of fine paper and glass. Depth comes from TONAL LAYERING (background color shifts), not drop shadows. The "No-Line Rule" is absolute: never use 1px solid borders to separate sections. Structure is defined through surface color changes and generous whitespace.
+
+### File: constants/colors.ts
+Create a `useThemeColors()` hook. Light and dark mode.
+
+LIGHT MODE:
+```
+primary:               #9A4100  (Terracotta — interactive elements ONLY)
+primaryBase:           #753000  (Deeper terracotta for text accents)
+onPrimary:             #FFFFFF
+primaryContainer:      #9A4100
+onPrimaryContainer:    #FFC9AF
+surface:               #FEF9F3  (Warm cream — the base canvas)
+surfaceContainerLowest:#FFFFFF  (Cards that need to "lift" off cream)
+surfaceContainerLow:   #F8F3ED  (Sectioning layer)
+surfaceContainer:      #F2EDE7  (Interactive layer, card backgrounds)
+surfaceContainerHigh:  #ECE7E2  (Hover/selected states)
+surfaceContainerHighest:#E6E2DC (Floating/hero elements)
+surfaceDim:            #DED9D4
+onSurface:             #1D1B18  (Primary text — NEVER use pure black)
+onSurfaceVariant:      #564339  (Secondary text, metadata)
+outline:               #897267  (Tertiary text, timestamps)
+outlineVariant:        #DDC1B4  (Ghost borders, subtle dividers)
+secondary:             #845238
+secondaryContainer:    #FFBD9D
+onSecondaryContainer:  #7A4A31
+error:                 #BA1A1A
+errorContainer:        #FFDAD6
+success:               #2D6A4F
+warning:               #BA7517
+inverseSurface:        #32302C
+inverseOnSurface:      #F5F0EA
+inversePrimary:        #FFB691
+overlay:               rgba(0,0,0,0.55)
+```
+
+DARK MODE:
+```
+primary:               #FFB691
+primaryBase:           #FFB691
+onPrimary:             #4A1C00
+primaryContainer:      #6B2A00
+onPrimaryContainer:    #FFC9AF
+surface:               #161412  (Warm near-black, NEVER #000000)
+surfaceContainerLowest:#0F0D0B
+surfaceContainerLow:   #1D1B18
+surfaceContainer:      #211F1C
+surfaceContainerHigh:  #2C2926
+surfaceContainerHighest:#373330
+surfaceDim:            #161412
+onSurface:             #F0ECE6
+onSurfaceVariant:      #D4C4B8
+outline:               #9D8C82
+outlineVariant:        #514339
+secondary:             #F9B897
+secondaryContainer:    #683B23
+onSecondaryContainer:  #FFBD9D
+error:                 #FFB4AB
+errorContainer:        #93000A
+success:               #52B788
+warning:               #EF9F27
+inverseSurface:        #F0ECE6
+inverseOnSurface:      #32302C
+inversePrimary:        #9A4100
+overlay:               rgba(0,0,0,0.7)
+```
+
+### File: constants/typography.ts
+Two font families loaded via expo-google-fonts:
+- Noto Serif: editorial warmth, headlines, display text
+- Inter: functional precision, body text, labels, buttons
+
+Export named style objects:
+```
+displayLarge:    Noto Serif 700, 56px, letterSpacing: -2%   (hero statements)
+displayMedium:   Noto Serif 700, 40px, letterSpacing: -1.5% (country names on heroes)
+display:         Noto Serif 700, 28px                       (screen titles)
+headlineLarge:   Noto Serif 700, 32px                       (section headers)
+headline:        Noto Serif 700, 22px                       (card titles)
+title:           Noto Serif 500, 18px                       (recipe names)
+titleMedium:     Inter 600, 17px                            (button text)
+titleSmall:      Inter 600, 14px                            (chip text)
+body:            Inter 400, 17px, lineHeight: 1.6           (instructions)
+bodySmall:       Inter 400, 14px                            (helper text)
+caption:         Inter 500, 12px                            (timestamps)
+labelLarge:      Inter 700, 10px, letterSpacing: +5%, uppercase (section labels like "TONIGHT'S PLAN")
+labelSmall:      Inter 600, 10px, letterSpacing: +3%, uppercase (metadata labels)
+```
+
+The "Caption over Title" editorial pattern: pair a `labelLarge` uppercase line ABOVE a `headline` or `display` — this is the hallmark of the Ethereal Archivist look.
+
+### File: constants/spacing.ts
+8pt grid:
+```
+xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 40, xxxl: 48, page: 24
+```
+
+### File: constants/radius.ts
+```
+xs:   4    (status dots, micro-chips)
+sm:   8    (small inputs, filter chips, badges)
+md:   16   (recipe cards, input fields)
+lg:   24   (large feature cards, modals, bottom sheets)
+xl:   32   (hero cards, destination cards, region cards)
+full: 9999 (avatars, pills, floating nav bar, primary CTAs)
+```
+
+### File: constants/shadows.ts
+Shadows are a LAST RESORT. Use tonal layering first. When you must float:
+```
+ambient:    { shadowOffset: {width:0, height:20}, shadowOpacity: 0.06, shadowRadius: 40, shadowColor: '#1D1B18' }
+subtle:     { shadowOffset: {width:0, height:4},  shadowOpacity: 0.04, shadowRadius: 16, shadowColor: '#1D1B18' }
+hero:       { shadowOffset: {width:0, height:8},  shadowOpacity: 0.20, shadowRadius: 24, shadowColor: '#9A4100' }
+```
+Shadow color is ALWAYS a tinted version of onSurface (#1D1B18), NEVER pure black. Exception: the `hero` shadow uses primary color at low opacity for CTA glow.
+
+### File: constants/glass.ts
+The "Liquid Glass" treatment for floating elements:
+```
+liquidGlass: {
+  background: 'rgba(255, 255, 255, 0.7)',   // semi-transparent surface
+  backdropBlur: 32,                           // heavy blur (use BlurView intensity)
+  specularHighlight: {                        // 1px white top border — mandatory
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.4)'
+  }
+}
+
+liquidGlassDark: {
+  background: 'rgba(29, 27, 24, 0.85)',
+  backdropBlur: 40,
+  specularHighlight: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.15)'
+  }
+}
+```
+The specular highlight goes on the TOP edge ONLY. Adding it to all four sides flattens the glass effect.
+
+---
+
+## FIVE-TAB ARCHITECTURE
+
+### Navigation Bar: Floating Pill
+The tab bar is NOT a standard iOS bottom bar. It is a FLOATING PILL positioned 32px from the bottom of the viewport.
+- Shape: pill (border-radius: 9999)
+- Width: 90% of screen, max-width 400px, centered
+- Treatment: Liquid Glass (heavy blur + specular highlight on top edge)
+- Shadow: ambient shadow token
+- Active tab: terracotta tint background (primary at 10% opacity), primary text color, scale 1.1
+- Inactive tabs: outline color (stone-500), no background
+- Each tab: Material icon + 10px label below (Inter 500)
+
+Tabs:
+```
+Discover  — explore icon (filled when active)
+Search    — search icon
+Plan      — calendar_today icon
+Grocery   — shopping_cart icon
+Cook      — restaurant icon
+```
+
+---
+
+## SCREEN SPECIFICATIONS
+
+### DISCOVER TAB (the showcase screen — make this stunning)
+
+Top Bar: Fixed, semi-transparent with backdrop blur. Left: profile avatar (40px circle) + "Fork & Compass" in Noto Serif italic. Right: bookmark icon + cart icon (with badge count).
+
+Hero Carousel:
+- Full-bleed, 480px tall
+- Gradient: from-black/20 via-transparent to-black/60 overlay
+- Country flag in a liquid-glass pill badge (small, top-left area of text block)
+- Country name in displayMedium (white), very tight tracking
+- "Explore [Country]" terracotta pill CTA button with arrow icon
+- Destination rings at bottom of hero: 64px circles, liquid-glass treatment, ring-2 ring-primary for active
+- Vertical pagination dots on the RIGHT side (not bottom center): active = white tall pill (2×8px), inactive = white/40 circle (2×2px)
+
+Below Hero — "Tonight's Plan" Strip:
+- Liquid glass card, rounded-3xl (24px radius)
+- Small food thumbnail (56px, rounded-2xl), recipe name in headline, "Cook Tonight" link in primary
+- labelLarge "TONIGHT'S PLAN" above the recipe name
+
+Below That — "Curated Regions" Grid:
+- Section header: labelLarge "CURATED REGIONS" above headlineLarge "Curated Regions" — the editorial pattern
+- "View All" link in primary, right-aligned
+- 2-column grid of destination cards
+- Each card: tall (320px), rounded-[32px], full-bleed image, gradient overlay, country label in labelSmall + region name in headline (white, bottom-left)
+- Image zoom on hover/press (scale 1.1, 700ms transition)
+
+Below That — "Trending Bites" Recipe Grid:
+- Same editorial header pattern
+- 2-column grid of recipe cards
+- Each card: surfaceContainer background (NOT white), rounded-[28px]
+  - Food image (192px tall), liquid-glass heart/favorite button floating top-right
+  - Below image: recipe name in headline, time badge in surfaceVariant pill
+  - Two action buttons: "Tonight" (primary-container fill) + "Week" (outlined)
+
+### SEARCH TAB
+- Large "Search" title in displayLarge at top
+- Search input: surfaceContainerLow fill, sm radius, no border, placeholder "Ingredients, dishes, or moods..."
+- Filter chips: horizontal scroll, "All Moods" chip is active (primary fill, white text), others are surfaceContainerHigh fill
+- Results: 2-column grid of food-first cards — large image (tall, rounded-lg), recipe name in headline, metadata in labelSmall, "ADD +" action in primary, heart button with liquid glass
+
+### PLAN TAB
+- Header: "Fork & Compass" wordmark + cart icon
+- Week navigation: floating liquid-glass pill with left/right chevrons, "This Week" in center (headline), labelLarge "CURRENT PLANNING" above
+- Grocery alert banner: primary-container at 10% opacity, basket icon, item count
+- Timeline layout: vertical transit line (2px, primary at 20% opacity) on the left, transit nodes (12px circles, primary fill) marking each day
+- Each day: date in caption, meal cards offset to the right of the timeline
+  - Filled day: liquid-glass card, food image (160px), DINNER badge (white/80 backdrop blur pill), recipe name in headline below image, time + calories in caption
+  - Empty day: dashed border card ("blank ticket"), centered icon + "No meals planned yet" + "Browse Recipes" primary pill CTA
+  - Dinner Party badge: surfaceContainer pill with groups icon + "Dinner Party" label
+- "Ready to Cook" floating CTA bar: liquid-glass pill, fixed above the tab bar, play icon in primary circle + "Ready to Cook" in primary bold
+
+### GROCERY TAB
+- Header: labelLarge "WEEKLY PROVISIONS" + display "My Groceries"
+- Tab pills: "Online" and "In-Store" toggle, active gets surfaceContainerLowest fill
+- "Active Recipe Lists" section: horizontal scroll of recipe summary cards (surfaceContainerHigh fill, icon, recipe name, ingredient count, plan badge)
+- Ingredient list grouped by supermarket category:
+  - Category headers: emoji + headline (e.g. "🥬 Produce")
+  - Each item row: surfaceContainerLow background, circle checkbox (outline when unchecked, success fill + checkmark when checked), ingredient name in body, amount, aisle number in caption
+  - Checked items: strikethrough text, "IN PANTRY" label
+  - No divider lines between items — use spacing (16px gaps)
+- Sticky bottom bar: terracotta gradient, "SUBTOTAL" price left, "ORDER FROM INSTACART" CTA center, arrow button right
+
+### COOK TAB
+- Profile section at top: avatar, labelLarge "KITCHEN REPUTATION", display "Home Cook", level progress bar, XP count
+- Active cooking card: large food image (rounded-xl), liquid-glass overlay at bottom, labelLarge "IN THE KITCHEN", displayMedium recipe name, description in body, step progress in Noto Serif italic ("Step 3 of 8"), "Resume Session" primary pill CTA
+- "Technique Library" section: horizontal scroll of video-style cards with dark overlay, duration badge, technique name in headline, description in bodySmall
+- "Upcoming Class" section: editorial card with labelLarge, headline title, body description, avatar stack, "Join Waitlist" outlined pill button
+- "Pantry Check" section: surfaceContainerLow banner, percentage stat, "Scan Pantry" primary link
+
+---
+
+## DATA — Create mock data for:
+
+8 Countries: Italy, France, Japan, Mexico, Thailand, Morocco, India, Spain
+Each with: id, name, flag emoji, tagline, heroImage URL, cuisineLabel, region
+~12 recipes each (97 total) with: id, countryId, title, image URL, category (appetizer/main/dessert), prepTime, cookTime, servings, difficulty, ingredients[], steps[], culturalNote
+
+Use Unsplash food photo URLs:
+https://images.unsplash.com/photo-[ID]?w=600&h=400&fit=crop
+
+---
+
+## NON-NEGOTIABLE DESIGN RULES
+
+1. NO solid borders between sections. Use background color shifts + whitespace.
+2. NO pure black (#000000) anywhere. Text uses onSurface (#1D1B18).
+3. ALL floating elements use Liquid Glass treatment (blur + specular highlight).
+4. The tab bar is a FLOATING PILL, not a standard bottom bar.
+5. The "Caption over Title" pattern (labelLarge above headline) is used for every section header.
+6. Terracotta primary appears ONLY on interactive elements and accents.
+7. Food photography is the hero — images large, cards generous, chrome minimal.
+8. Noto Serif for headlines/display. Inter for body/labels/buttons. Never swap these roles.
+9. All spacing on 8pt grid. No arbitrary pixel values.
+10. Cards use rounded-xl (32px) or rounded-[28px]. Small elements use sm (8px). Never mix these scales.
+11. Shadow color is tinted onSurface (#1D1B18), NEVER pure black.
+12. Specular highlight (1px white top border) on TOP edge only of glass elements.
+13. Respect Reduce Motion — all animations become instant crossfades.
+14. Minimum touch target: 48pt on all interactive elements.
+15. Dark mode must work. Dark surface is #161412 (warm near-black).
+
+---
+
+## BUILD ORDER
+1. Design system files (colors, typography, spacing, radius, shadows, glass)
+2. Floating pill tab bar shell
+3. Discover tab (the hero screen — make it stunning)
+4. Search tab
+5. Plan tab
+6. Grocery tab
+7. Cook tab
+8. Country Detail screen (from tapping a destination card)
+9. Recipe Detail screen (from tapping a recipe card)
+
+Make the Discover tab beautiful from the first pixel. No placeholder grey boxes. Every screen ships looking finished.
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# SECTION B — FOLLOW-UP PROMPTS (one at a time, after Section A)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## B1: Country Detail Screen
+"""
+Build the Country Detail screen. Opens when user taps a destination card from Discover.
+
+- Hero image 360px, gradient overlay, country name in displayMedium (white), flag pill badge
+- Below hero on surface background:
+  - labelLarge "CULINARY HERITAGE" + headlineLarge "[Country] Cuisine"
+  - 2-3 short paragraphs in body about the cuisine tradition
+  - "Signature Recipes" section with editorial header pattern
+  - Vertical list of recipe rows: 80x80 image (rounded-md), title in headline, cook time + difficulty in caption, chevron right
+  - Min row height 56pt
+- Back button top-left, liquid glass circle
+
+Use design tokens for everything.
+"""
+
+## B2: Recipe Detail Screen
+"""
+Build the Recipe Detail screen. Opens from any recipe card.
+
+- Hero food image 380px, gradient overlay
+- Recipe title in display (white), country flag + name in labelSmall (white)
+- Below hero on surface:
+  - Stats row: prep time, cook time, difficulty, servings — in caption, with small icons
+  - Servings adjuster: minus/plus circles around count, primary color
+  - "Ingredients" with editorial header pattern
+    - Grouped by category (Produce, Protein, Dairy, Pantry) with labelLarge headers
+    - Each ingredient: body for name, bodySmall for amount
+  - "Instructions" with editorial header pattern
+    - Numbered steps, step number in small primary circle (Radius.full)
+    - body text for instructions
+    - Timer icon + duration in caption where applicable
+  - Cultural note section: surfaceContainerLow background, Radius.lg, left border accent 4px primary
+- "Start Cooking" CTA: fixed bottom, full width, primary fill, Radius.full pill, liquid glass backdrop
+
+Use design tokens for everything.
+"""
+
+## B3: Active Cook Mode
+"""
+Build the active Cook Mode as a full-screen modal.
+
+- expo-keep-awake active
+- Dark background (inverseSurface #32302C) for kitchen contrast
+- Top: close button (X, 48pt), recipe title in titleMedium (inverseOnSurface), step counter in caption
+- Progress bar: 3pt, primary fill, outline for remaining
+- Main area: large step instruction in body (inverseOnSurface, 20px for kitchen legibility)
+  - Ingredient pills: secondaryContainer fill, onSecondaryContainer text, Radius.sm
+  - Timer: large circular display when step has duration, primary accent
+- Bottom toolbar: liquid glass DARK variant
+  - Previous/Next buttons, 52pt height
+  - Swipe left/right with haptic feedback
+
+Use design tokens for everything. This screen must be calm, focused, high-contrast for messy kitchen hands.
+"""
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# SECTION C — CORRECTION PROMPTS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## "Tab bar looks like a standard iOS bar"
+"""
+The tab bar must be a FLOATING PILL, not a standard bottom bar. Fix it:
+- Shape: pill (borderRadius 9999)
+- Width: 90% of screen, centered, positioned 32px from bottom
+- Background: Liquid Glass (rgba(255,255,255,0.7) + BlurView 32px blur)
+- 1px white top border at 40% opacity (specular highlight)
+- Ambient shadow: offset {0,20}, opacity 0.06, radius 40, color #1D1B18
+- Active tab: primary color text + primary at 10% opacity background circle + scale 1.1
+- Inactive tabs: stone-500 color, no background
+"""
+
+## "Borders between sections"
+"""
+Remove ALL border lines between sections. The No-Line Rule:
+- Sections separated by background color shifts: surface (#FEF9F3) → surfaceContainerLow (#F8F3ED) → surfaceContainer (#F2EDE7)
+- Use 32-40pt whitespace between major sections
+- If something needs visual separation, change the background tier, don't draw a line
+- The ONLY place a border is acceptable: ghost borders on input fields using outlineVariant at 15% opacity
+"""
+
+## "Missing the editorial header pattern"
+"""
+Every section header must use the "Caption over Title" pattern:
+- Line 1: labelLarge (Inter 700, 10px, uppercase, +5% letter-spacing, primary or outline color)
+- Line 2: headlineLarge or headline (Noto Serif 700, 22-32px)
+Example: "CURATED REGIONS" (small, uppercase) above "Curated Regions" (large, serif)
+This is the signature of the Ethereal Archivist design. Apply it everywhere.
+"""
+
+## "Glass elements don't have the specular highlight"
+"""
+Every Liquid Glass element MUST have a 1px white top border:
+- borderTopWidth: 1
+- borderTopColor: rgba(255,255,255,0.4)
+This simulates light catching the top edge of glass. It is the hallmark of the system.
+Apply to: tab bar, tonight's plan strip, week navigation pill, glass buttons, floating CTAs.
+TOP EDGE ONLY. Never all four sides.
+"""
+
+## "Cards are too flat / no depth"
+"""
+Cards need tonal layering for depth:
+- Place surfaceContainerLowest (#FFFFFF) cards on surfaceContainerLow (#F8F3ED) backgrounds
+- This creates a natural lift without any shadow
+- For floating cards, add ambient shadow: offset {0,20}, opacity 0.06, radius 40
+- Recipe cards use surfaceContainer (#F2EDE7) background, NOT white
+- Destination cards: full-bleed image with gradient overlay, rounded-[32px]
+"""
+
+## "Colors/fonts are wrong"
+"""
+Fix the visual identity:
+- Background: warm cream #FEF9F3 (NOT white)
+- Card backgrounds: #F2EDE7 (surfaceContainer) or #F8F3ED (surfaceContainerLow)
+- Primary text: #1D1B18 (NEVER pure black)
+- Secondary text: #564339
+- Tertiary text: #897267
+- Primary accent: #9A4100 (terracotta) ONLY on interactive elements
+- Headlines: Noto Serif (the serif font)
+- Body/labels: Inter (the sans-serif)
+- All colors from useThemeColors() hook, zero hardcoded values
+"""

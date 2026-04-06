@@ -1,0 +1,51 @@
+# FORK & COMPASS: MASTER BLUEPRINT (v1.1)
+*Pick a country, cook a dinner, feel like you traveled.*
+**Confidential · April 2026**
+
+## 1. Product Vision
+Fork & Compass is a premium culinary travel iOS app. It targets serious home cooks who want cultural travel experiences through food. The app provides a complete end-to-end cooking experience from discovery to the table.
+
+## 2. Design Philosophy
+Every pixel is governed by three frameworks: Jobsian functional aesthetics, Apple’s HIG, and luxury editorial sensibility.
+
+### 2.4 — 2026 Spatial Design & Liquid Glass
+Embraces "Liquid Glass"—a translucent, dynamic material system. Treat the interface in 3D space (Z-depth).
+*   **Z-0 is Content:** Full-bleed photography and mesh gradients.
+*   **Z-1 is Glass:** Navigation and modal sheets using OS blur materials.
+*   **Dynamic Response:** Materials adapt to content (e.g., shrinking tab bar).
+*   **Specular Highlights:** 1px semi-transparent white top-border on glass edges.
+
+## 3. Design System
+### 3.1 — Semantic Color & Material Architecture
+| Token | Light Mode | Dark Mode | Usage |
+| :--- | :--- | :--- | :--- |
+| **Surface.Base** | #FEF9F3 | #121212 | Minimal usage. |
+| **Surface.Glass** | UltraThinMaterialLight | UltraThinMaterialDark | Tab bars, headers, cards. |
+| **Brand.Primary** | #9A4100 | #C85A17 | Active states, CTAs. |
+| **Text.Hero** | #1A1A1A | #FFFFFF | Primary titles. |
+| **Text.Editorial** | #4A4A4A | #E0E0E0 | Descriptions, context. |
+
+### 3.2 — Typography
+*   **Headlines:** Noto Serif 700 Bold
+*   **Body:** Inter 400 Regular
+*   **Emphasis:** Inter 500 Medium
+*   **Editorial:** Noto Serif 500 Medium
+
+### 3.3 — Spacing, Radius, and Edges
+*   **radius-sm:** 8pt (badges)
+*   **radius-md:** 16pt (glass cards)
+*   **radius-lg:** 24pt (modal sheets)
+*   **radius-pill:** 9999pt (tab bar, buttons)
+
+## 4. Navigation Architecture
+Five-tab architecture using a dynamic "Liquid Tab" that floats above content:
+1. **Discover:** Inspiration & exploration.
+2. **Search:** Targeted recipe finding.
+3. **Plan:** Weekly prep & parties.
+4. **Grocery:** Assemble ingredients.
+5. **Cook:** Flawless meal execution.
+
+## 9. Execution Roadmap
+1. **Structural Debt & The 2026 Polish:** Refactor to semantic tokens and official radii.
+2. **Multi-Course Timeline Coordinator:** Solo cook mode engine.
+3. **Apple Developer Program:** HIG accessibility audits and TestFlight.
