@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
@@ -39,8 +39,8 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           hitSlop={8}
         >
           <GlassView style={styles.heartGlass}>
-            <Feather
-              name={isFav ? 'heart' : 'heart'}
+            <MaterialCommunityIcons
+              name={isFav ? 'heart' : 'heart-outline'}
               size={16}
               color={isFav ? colors.primary : '#FFFFFF'}
             />
