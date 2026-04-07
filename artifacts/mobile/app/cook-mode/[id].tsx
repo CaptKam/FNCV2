@@ -168,7 +168,7 @@ export default function CookModeScreen() {
         <Text style={[Typography.body, styles.instruction, { color: colors.inverseOnSurface }]}>
           {highlightCulinaryVerbs(step.instruction).map((seg, si) =>
             seg.isVerb ? (
-              <Text key={si} style={{ fontWeight: '700', color: colors.primary }}>{seg.text}</Text>
+              <Text key={si} style={{ fontWeight: '700', color: colors.inversePrimary }}>{seg.text}</Text>
             ) : (
               <Text key={si}>{seg.text}</Text>
             )
