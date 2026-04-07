@@ -21,6 +21,7 @@ export default function CookModeScreen() {
 
   const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useThemeColors();
+  const isDark = colors.isDark;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const app = useApp();
@@ -107,10 +108,70 @@ export default function CookModeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, [session, app]);
 
+  const t = isDark
+    ? {
+        bg: '#1C1A17',
+        headerBg: 'rgba(28,26,23,0.7)',
+        headerBorder: 'rgba(255,255,255,0.1)',
+        headerIcon: '#F2EDE7',
+        headerTitle: 'rgba(245,240,234,0.85)',
+        instructionColor: '#F2EDE7',
+        detailColor: 'rgba(245,240,234,0.4)',
+        pillBg: 'rgba(51,48,44,0.5)',
+        pillBorder: 'rgba(255,255,255,0.05)',
+        pillLabelColor: 'rgba(245,240,234,0.35)',
+        pillValueColor: '#C5702A',
+        ingredientCardBg: 'rgba(51,48,44,0.5)',
+        ingredientCardBorder: 'rgba(255,255,255,0.05)',
+        ingredientCardLabel: 'rgba(245,240,234,0.5)',
+        timerRingIdle: 'rgba(255,255,255,0.08)',
+        timerDigits: '#F2EDE7',
+        timerLabel: 'rgba(245,240,234,0.35)',
+        durationIcon: 'rgba(245,240,234,0.4)',
+        durationText: 'rgba(245,240,234,0.4)',
+        prevIcon: 'rgba(245,240,234,0.6)',
+        prevText: 'rgba(245,240,234,0.5)',
+        navDivider: 'rgba(255,255,255,0.1)',
+        donenessBg: 'rgba(154,65,0,0.08)',
+        donenessBorder: 'rgba(154,65,0,0.15)',
+        donenessIconBg: 'rgba(154,65,0,0.15)',
+        donenessTitle: '#F2EDE7',
+        donenessText: 'rgba(245,240,234,0.7)',
+      }
+    : {
+        bg: '#FEF9F3',
+        headerBg: 'rgba(255,255,255,0.6)',
+        headerBorder: 'rgba(0,0,0,0.05)',
+        headerIcon: '#9A4100',
+        headerTitle: '#9A4100',
+        instructionColor: '#1C1917',
+        detailColor: '#57534e',
+        pillBg: 'rgba(255,255,255,0.8)',
+        pillBorder: 'rgba(154,65,0,0.1)',
+        pillLabelColor: 'rgba(154,65,0,0.8)',
+        pillValueColor: '#1C1917',
+        ingredientCardBg: 'rgba(255,255,255,0.6)',
+        ingredientCardBorder: 'rgba(154,65,0,0.1)',
+        ingredientCardLabel: 'rgba(154,65,0,0.8)',
+        timerRingIdle: 'rgba(154,65,0,0.15)',
+        timerDigits: '#1C1917',
+        timerLabel: '#78716c',
+        durationIcon: '#78716c',
+        durationText: '#78716c',
+        prevIcon: '#78716c',
+        prevText: '#78716c',
+        navDivider: 'rgba(154,65,0,0.1)',
+        donenessBg: 'rgba(154,65,0,0.05)',
+        donenessBorder: 'rgba(154,65,0,0.1)',
+        donenessIconBg: 'rgba(154,65,0,0.1)',
+        donenessTitle: '#1C1917',
+        donenessText: '#57534e',
+      };
+
   if (!recipe) {
     return (
-      <View style={[styles.container, { backgroundColor: '#1C1A17' }]}>
-        <Text style={[Typography.body, { color: '#F2EDE7', textAlign: 'center', marginTop: 100 }]}>
+      <View style={[styles.container, { backgroundColor: t.bg }]}>
+        <Text style={[Typography.body, { color: t.instructionColor, textAlign: 'center', marginTop: 100 }]}>
           Recipe not found
         </Text>
       </View>
@@ -141,8 +202,8 @@ export default function CookModeScreen() {
       : '';
 
   return (
-    <View style={[styles.container, { backgroundColor: '#1C1A17' }]}>
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+    <View style={[styles.container, { backgroundColor: t.bg }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: t.headerBg, borderBottomColor: t.headerBorder }]}>
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
@@ -150,9 +211,9 @@ export default function CookModeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Close cook mode"
         >
-          <MaterialCommunityIcons name="close" size={22} color="#F2EDE7" />
+          <MaterialCommunityIcons name="close" size={22} color={t.headerIcon} />
         </Pressable>
-        <Text style={styles.headerTitle}>
+        <Text style={[styles.headerTitle, { color: t.headerTitle }]}>
           Step {currentStep + 1} of {recipe.steps.length}
         </Text>
         <Pressable
@@ -167,7 +228,7 @@ export default function CookModeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Timer"
         >
-          <MaterialCommunityIcons name="timer-outline" size={22} color="#F2EDE7" />
+          <MaterialCommunityIcons name="timer-outline" size={22} color={t.headerIcon} />
         </Pressable>
       </View>
 
@@ -176,35 +237,59 @@ export default function CookModeScreen() {
         contentContainerStyle={[styles.scrollInner, { paddingBottom: insets.bottom + 120 }]}
         showsVerticalScrollIndicator={false}
       >
-        {matchedIngredients.length > 0 && (
-          <View style={styles.pillCluster}>
-            {matchedIngredients.map((ing, idx) => (
-              <View key={idx} style={styles.ingredientPill}>
-                <Text style={styles.pillLabel}>Ingredient</Text>
-                <Text style={styles.pillValue}>{convertAmount(ing.amount, app.useMetric)} {ing.name}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
         <View style={styles.heroSection}>
-          <Text style={styles.heroInstruction}>
-            {heroText.toUpperCase()}
-          </Text>
-          {detailText.length > 0 && (
-            <Text style={styles.heroDetail}>
-              {detailText}
+          {isDark ? (
+            <>
+              <Text style={[styles.heroInstructionDark, { color: t.instructionColor }]}>
+                {heroText.toUpperCase()}
+              </Text>
+              {detailText.length > 0 && (
+                <Text style={[styles.heroDetailDark, { color: t.detailColor }]}>
+                  {detailText}
+                </Text>
+              )}
+            </>
+          ) : (
+            <Text style={[styles.heroInstructionLight, { color: t.instructionColor }]}>
+              {instructionText}
             </Text>
           )}
         </View>
 
+        {matchedIngredients.length > 0 && (
+          isDark ? (
+            <View style={styles.pillCluster}>
+              {matchedIngredients.map((ing, idx) => (
+                <View key={idx} style={[styles.ingredientPillDark, { backgroundColor: t.pillBg, borderTopColor: t.pillBorder }]}>
+                  <Text style={[styles.pillLabelDark, { color: t.pillLabelColor }]}>Ingredient</Text>
+                  <Text style={[styles.pillValueDark, { color: t.pillValueColor }]}>{convertAmount(ing.amount, app.useMetric)} {ing.name}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={[styles.ingredientCard, { backgroundColor: t.ingredientCardBg, borderColor: t.ingredientCardBorder }]}>
+              <View style={styles.ingredientCardHeader}>
+                <MaterialCommunityIcons name="silverware-fork-knife" size={20} color={colors.primary} />
+                <Text style={[styles.ingredientCardTitle, { color: t.ingredientCardLabel }]}>Ingredients for this step</Text>
+              </View>
+              <View style={styles.ingredientPillsRow}>
+                {matchedIngredients.map((ing, idx) => (
+                  <View key={idx} style={[styles.ingredientPillLight, { backgroundColor: t.pillBg, borderColor: t.pillBorder }]}>
+                    <Text style={[styles.pillValueLight, { color: t.pillValueColor }]}>{convertAmount(ing.amount, app.useMetric)} {ing.name}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )
+        )}
+
         {hasTimer && (
           <View style={styles.timerSection}>
-            <View style={[styles.timerRing, { borderColor: timerProgress > 0 ? colors.primary : 'rgba(255,255,255,0.08)' }]}>
-              <Text style={styles.timerDigits}>
+            <View style={[styles.timerRing, { borderColor: timerProgress > 0 ? colors.primary : t.timerRingIdle }]}>
+              <Text style={[styles.timerDigits, { color: t.timerDigits }]}>
                 {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
               </Text>
-              <Text style={styles.timerLabel}>
+              <Text style={[styles.timerLabel, { color: t.timerLabel }]}>
                 {timerRunning ? 'REMAINING' : timerSeconds > 0 ? 'PAUSED' : 'READY'}
               </Text>
             </View>
@@ -240,16 +325,28 @@ export default function CookModeScreen() {
 
         {step.duration && step.duration > 0 && (
           <View style={styles.stepDurationBadge}>
-            <MaterialCommunityIcons name="clock-outline" size={14} color="rgba(245,240,234,0.4)" />
-            <Text style={styles.stepDurationText}>
+            <MaterialCommunityIcons name="clock-outline" size={14} color={t.durationIcon} />
+            <Text style={[styles.stepDurationText, { color: t.durationText }]}>
               {step.duration} min for this step
             </Text>
+          </View>
+        )}
+
+        {step.tip && (
+          <View style={[styles.donenessCard, { backgroundColor: t.donenessBg, borderColor: t.donenessBorder }]}>
+            <View style={[styles.donenessIconWrap, { backgroundColor: t.donenessIconBg }]}>
+              <MaterialCommunityIcons name="eye" size={20} color={colors.primary} />
+            </View>
+            <View style={styles.donenessContent}>
+              <Text style={[styles.donenessTitle, { color: t.donenessTitle }]}>Doneness Cue</Text>
+              <Text style={[styles.donenessText, { color: t.donenessText }]}>{step.tip}</Text>
+            </View>
           </View>
         )}
       </ScrollView>
 
       <View style={[styles.bottomNav, { paddingBottom: insets.bottom + 16 }]}>
-        <GlassView style={styles.bottomNavInner} intensity={40}>
+        <GlassView style={[styles.bottomNavInner, !isDark && { borderWidth: 1, borderColor: t.navDivider }]} intensity={isDark ? 40 : 32}>
           <Pressable
             onPress={goPrev}
             disabled={currentStep === 0}
@@ -257,11 +354,11 @@ export default function CookModeScreen() {
             accessibilityRole="button"
             accessibilityLabel="Previous step"
           >
-            <MaterialCommunityIcons name="arrow-left" size={20} color="rgba(245,240,234,0.6)" />
-            <Text style={styles.prevBtnText}>Previous</Text>
+            <MaterialCommunityIcons name="arrow-left" size={20} color={t.prevIcon} />
+            <Text style={[styles.prevBtnText, { color: t.prevText }]}>Previous</Text>
           </Pressable>
 
-          <View style={styles.navDivider} />
+          <View style={[styles.navDivider, { backgroundColor: t.navDivider }]} />
 
           <Pressable
             onPress={goNext}
@@ -294,9 +391,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.page,
     paddingBottom: 12,
-    backgroundColor: 'rgba(28,26,23,0.7)',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   headerBtn: {
     width: 44,
@@ -309,7 +404,6 @@ const styles = StyleSheet.create({
     fontFamily: 'NotoSerif_700Bold',
     fontSize: 17,
     fontWeight: '700',
-    color: 'rgba(245,240,234,0.85)',
     letterSpacing: -0.3,
   },
   scrollContent: {
@@ -319,54 +413,88 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.page,
     paddingTop: Spacing.lg,
   },
+  heroSection: {
+    marginBottom: Spacing.xl,
+  },
+  heroInstructionDark: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '800',
+    letterSpacing: -1,
+    textTransform: 'uppercase',
+  },
+  heroDetailDark: {
+    fontFamily: 'NotoSerif_400Regular',
+    fontSize: 18,
+    lineHeight: 26,
+    fontStyle: 'italic',
+    marginTop: 14,
+  },
+  heroInstructionLight: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 22,
+    lineHeight: 32,
+    fontWeight: '600',
+    letterSpacing: -0.3,
+  },
   pillCluster: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
     marginBottom: Spacing.xl,
   },
-  ingredientPill: {
+  ingredientPillDark: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(51,48,44,0.5)',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: Radius.full,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.05)',
   },
-  pillLabel: {
+  pillLabelDark: {
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    color: 'rgba(245,240,234,0.35)',
   },
-  pillValue: {
+  pillValueDark: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#C5702A',
   },
-  heroSection: {
+  ingredientCard: {
+    borderRadius: 16,
+    padding: 20,
     marginBottom: Spacing.xl,
+    borderWidth: 1,
   },
-  heroInstruction: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: '800',
-    letterSpacing: -1,
-    color: '#F2EDE7',
+  ingredientCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 14,
+  },
+  ingredientCardTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
-  heroDetail: {
-    fontFamily: 'NotoSerif_400Regular',
-    fontSize: 18,
-    lineHeight: 26,
-    fontStyle: 'italic',
-    color: 'rgba(245,240,234,0.4)',
-    marginTop: 14,
+  ingredientPillsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  ingredientPillLight: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  pillValueLight: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   timerSection: {
     alignItems: 'center',
@@ -386,13 +514,11 @@ const styles = StyleSheet.create({
     fontSize: 52,
     fontWeight: '800',
     letterSpacing: -2,
-    color: '#F2EDE7',
   },
   timerLabel: {
     fontSize: 9,
     fontWeight: '700',
     letterSpacing: 3,
-    color: 'rgba(245,240,234,0.35)',
     marginTop: 4,
   },
   timerActionBtn: {
@@ -418,8 +544,36 @@ const styles = StyleSheet.create({
   stepDurationText: {
     fontSize: 12,
     fontWeight: '600',
-    color: 'rgba(245,240,234,0.4)',
     letterSpacing: 0.5,
+  },
+  donenessCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 14,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    marginBottom: Spacing.lg,
+  },
+  donenessIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  donenessContent: {
+    flex: 1,
+    gap: 4,
+  },
+  donenessTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  donenessText: {
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: '500',
   },
   bottomNav: {
     paddingHorizontal: Spacing.page,
@@ -446,12 +600,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    color: 'rgba(245,240,234,0.5)',
   },
   navDivider: {
     width: 1,
     height: 28,
-    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   nextBtn: {
     flexDirection: 'row',

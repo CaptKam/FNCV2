@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cook Mode: First Steps</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700;900&amp;family=Inter:wght@300;400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#9A4100",
+                        "on-primary": "#ffffff",
+                        "secondary": "#845238",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#004485",
+                        "on-tertiary": "#ffffff",
+                        "background": "#FEF9F3",
+                        "on-background": "#1F1B16",
+                        "surface": "#FFF8F6",
+                        "on-surface": "#1F1B16",
+                        "surface-container": "#F5EEE8",
+                        "surface-container-high": "#EFE8E2",
+                        "surface-container-highest": "#E9E2DB",
+                        "outline": "#85736B",
+                        "outline-variant": "#D8C2B9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "1.5rem",
+                        "xl": "2rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(154, 65, 0, 0.1);
+        }
+        body {
+            background-color: #FEF9F3;
+            color: #1F1B16;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="font-body selection:bg-primary/20 selection:text-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-white/60 backdrop-blur-2xl border-b border-black/5 shadow-sm">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-primary" data-icon="close">close</span>
+</button>
+<h1 class="font-headline text-lg tracking-tight font-bold text-primary">Step 1 of 12</h1>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-primary" data-icon="timer">timer</span>
+</button>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-2xl mx-auto space-y-8">
+<!-- Step Instruction -->
+<section class="space-y-4">
+<span class="font-label text-xs tracking-widest uppercase text-primary font-bold">Beginner Guidance</span>
+<p class="text-[22px] md:text-[24px] leading-relaxed font-semibold text-stone-900">
+                Heat 2 tablespoons of olive oil in a large skillet over medium-high heat. Carefully place the lamb pieces in the hot oil and sear for 4-5 minutes per side until browned all over.
+            </p>
+</section>
+<!-- Technique Video Card -->
+<div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-xl ring-1 ring-black/5">
+<img class="w-full h-full object-cover" data-alt="close-up of lamb meat pieces searing in a hot stainless steel skillet with shimmering oil and steam rising, dramatic dark kitchen lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuc6ne7ke3JAf-pnoxsyBfLjq1iy4RvO0hQAwI8MFDNPqaVtA_SYneSOSATk0y42qmV8urQ0-mUTyO43o2jKsrB-a_EscrNsYO0JUDV10F0JlH_WPYK90R7arQr3q1pXPcfTAkVxWfRROmkpC9L4UQxEycpiWsavLEekgkA_j9HI_3HbyCqf26w0r40HgJx37tGQS5o5_X4txwbc6rg-B1q_DCr_G7wMfrZX9Wo7uPTTL1COPJPQKN1Zx_yHNgk8EBkXx2X6S0T75x"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 flex items-center gap-2">
+<div class="bg-primary px-3 py-1 rounded-full flex items-center gap-2 shadow-lg">
+<span class="material-symbols-outlined text-white text-sm" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+<span class="text-xs font-bold text-white uppercase tracking-wider">Technique: Searing</span>
+</div>
+</div>
+</div>
+<!-- Ingredients Translucent Card -->
+<div class="liquid-glass rounded-xl p-6 space-y-4 shadow-sm">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="restaurant_menu">restaurant_menu</span>
+<h3 class="font-label text-sm font-bold uppercase tracking-widest text-primary/80">Ingredients for this step</h3>
+</div>
+<div class="flex flex-wrap gap-3">
+<div class="bg-white/80 px-4 py-2 rounded-full border border-primary/10 shadow-sm">
+<span class="text-sm font-semibold text-stone-800">1 lb Lamb Shoulder</span>
+</div>
+<div class="bg-white/80 px-4 py-2 rounded-full border border-primary/10 shadow-sm">
+<span class="text-sm font-semibold text-stone-800">Olive Oil</span>
+</div>
+</div>
+</div>
+<!-- Doneness Cue Card -->
+<div class="bg-primary/5 border border-primary/10 rounded-xl p-6 flex items-start gap-4">
+<div class="bg-primary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="visibility" style="font-variation-settings: 'FILL' 1;">visibility</span>
+</div>
+<div class="space-y-1">
+<h4 class="font-bold text-stone-900 text-base">Doneness Cue</h4>
+<p class="text-stone-700 text-sm leading-relaxed font-medium">Lamb is deeply browned on all sides. Avoid moving the meat too often to ensure a rich crust forms.</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-[calc(100%-4rem)] max-w-md z-50 flex justify-around items-center h-20 mb-8 px-4 bg-white/75 backdrop-blur-[40px] rounded-full shadow-2xl border border-primary/10">
+<button class="flex flex-col items-center justify-center text-stone-500 px-6 py-2 hover:bg-black/5 rounded-full transition-all active:scale-90 duration-150">
+<span class="material-symbols-outlined mb-1" data-icon="arrow_back">arrow_back</span>
+<span class="font-sans text-[10px] font-bold tracking-widest uppercase">Previous</span>
+</button>
+<!-- Active State: Next Step Button -->
+<button class="flex flex-col items-center justify-center bg-primary text-white rounded-full px-8 py-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined mb-1" data-icon="arrow_forward">arrow_forward</span>
+<span class="font-sans text-[10px] font-bold tracking-widest uppercase">Next</span>
+</button>
+</nav>
+</body></html>
