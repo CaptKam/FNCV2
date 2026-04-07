@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, Modal, FlatList } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
@@ -11,9 +11,49 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { countries } from '@/data/countries';
-import { recipes } from '@/data/recipes';
+import { recipes, Step } from '@/data/recipes';
 import { useBookmarks } from '@/context/BookmarksContext';
+import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+// ─── Helpers ───
+
+function getMonday(d: Date): Date {
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const m = new Date(d);
+  m.setDate(diff);
+  m.setHours(0, 0, 0, 0);
+  return m;
+}
+
+function toISO(d: Date): string {
+  return d.toISOString().split('T')[0];
+}
+
+function addDays(dateStr: string, n: number): string {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + n);
+  return toISO(d);
+}
+
+function getDayLabel(dateStr: string): string {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[new Date(dateStr).getDay()];
+}
+
+function formatDateShort(dateStr: string): string {
+  const d = new Date(dateStr);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function getStepInstruction(step: Step, level: string): string {
+  const s = step as any;
+  if (level === 'beginner' && s.instructionFirstSteps) return s.instructionFirstSteps;
+  if (level === 'chef' && s.instructionChefsTable) return s.instructionChefsTable;
+  return step.instruction;
+}
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,11 +61,23 @@ export default function RecipeDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isBookmarked, toggleBookmark } = useBookmarks();
+  const app = useApp();
   const recipe = recipes.find((r) => r.id === id);
   const country = recipe ? countries.find((c) => c.id === recipe.countryId) : null;
   const isSaved = recipe ? isBookmarked(recipe.id) : false;
 
   const [servings, setServings] = useState(recipe?.servings ?? 1);
+  const [showPlanSheet, setShowPlanSheet] = useState(false);
+  const [planCourseType, setPlanCourseType] = useState<'appetizer' | 'main' | 'dessert'>('main');
+
+  // Generate the next 14 days for the "Add to Plan" sheet
+  const planDays = useMemo(() => {
+    const start = toISO(getMonday(new Date()));
+    return Array.from({ length: 14 }, (_, i) => {
+      const date = addDays(start, i);
+      return { date, label: getDayLabel(date), short: formatDateShort(date) };
+    });
+  }, []);
 
   if (!recipe || !country) {
     return (
@@ -46,6 +98,16 @@ export default function RecipeDetailScreen() {
     },
     {} as Record<string, typeof recipe.ingredients>
   );
+
+  const handleStartCooking = () => {
+    app.startCookSession(recipe, currentServings);
+    router.push(`/cook-mode/${recipe.id}`);
+  };
+
+  const handleAddToPlan = (date: string) => {
+    app.addCourseToDay(date, planCourseType, recipe);
+    setShowPlanSheet(false);
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -137,6 +199,17 @@ export default function RecipeDetailScreen() {
             </Pressable>
           </View>
 
+          {/* Add to Plan button */}
+          <Pressable
+            onPress={() => setShowPlanSheet(true)}
+            style={[styles.addToPlanBtn, { borderColor: colors.primary }]}
+            accessibilityRole="button"
+            accessibilityLabel="Add to meal plan"
+          >
+            <MaterialCommunityIcons name="calendar-plus" size={18} color={colors.primary} />
+            <Text style={[Typography.titleSmall, { color: colors.primary }]}>Add to Plan</Text>
+          </Pressable>
+
           <View style={{ marginTop: Spacing.xl }}>
             <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 4 }]}>
               WHAT YOU NEED
@@ -177,7 +250,7 @@ export default function RecipeDetailScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[Typography.body, { color: colors.onSurface }]}>
-                    {step.instruction}
+                    {getStepInstruction(step, app.cookingLevel)}
                   </Text>
                   {step.duration && (
                     <View style={styles.timerRow}>
@@ -211,9 +284,10 @@ export default function RecipeDetailScreen() {
         </View>
       </ScrollView>
 
+      {/* Bottom CTA: Start Cooking */}
       <View style={[styles.cookCTA, { bottom: insets.bottom + 16, paddingHorizontal: Spacing.page }]}>
         <Pressable
-          onPress={() => router.push(`/cook-mode/${recipe.id}`)}
+          onPress={handleStartCooking}
           style={[styles.cookButton, { backgroundColor: colors.primary }]}
           accessibilityRole="button"
           accessibilityLabel={`Start cooking ${recipe.title}`}
@@ -222,6 +296,72 @@ export default function RecipeDetailScreen() {
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
         </Pressable>
       </View>
+
+      {/* Add to Plan bottom sheet */}
+      <Modal
+        visible={showPlanSheet}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowPlanSheet(false)}
+      >
+        <Pressable style={styles.sheetOverlay} onPress={() => setShowPlanSheet(false)}>
+          <Pressable
+            style={[styles.sheetContainer, { backgroundColor: colors.surface }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.sheetHandle} />
+            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
+              Add to Plan
+            </Text>
+
+            {/* Course type selector */}
+            <View style={styles.courseTypeRow}>
+              {(['appetizer', 'main', 'dessert'] as const).map((ct) => {
+                const isActive = planCourseType === ct;
+                return (
+                  <Pressable
+                    key={ct}
+                    onPress={() => setPlanCourseType(ct)}
+                    style={[
+                      styles.courseTypeChip,
+                      { backgroundColor: isActive ? colors.primary : colors.surfaceContainerHigh },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${ct} course`}
+                    accessibilityState={{ selected: isActive }}
+                  >
+                    <Text style={[Typography.titleSmall, { color: isActive ? colors.onPrimary : colors.onSurface }]}>
+                      {ct.charAt(0).toUpperCase() + ct.slice(1)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {/* Day list */}
+            <FlatList
+              data={planDays}
+              keyExtractor={(item) => item.date}
+              showsVerticalScrollIndicator={false}
+              style={{ maxHeight: 320 }}
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() => handleAddToPlan(item.date)}
+                  style={[styles.dayRow, { backgroundColor: colors.surfaceContainerLow }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${item.label}, ${item.short}`}
+                >
+                  <View>
+                    <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
+                    <Text style={[Typography.caption, { color: colors.outline }]}>{item.short}</Text>
+                  </View>
+                  <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+                </Pressable>
+              )}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -265,6 +405,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  addToPlanBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: 12,
+    borderRadius: Radius.full,
+    borderWidth: 1.5,
+    marginTop: Spacing.md,
+  },
   ingredientRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -307,5 +457,44 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: 16,
     borderRadius: Radius.full,
+  },
+  sheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  sheetContainer: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: Spacing.page,
+    paddingBottom: 40,
+    paddingTop: Spacing.sm,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#999',
+    alignSelf: 'center',
+    marginBottom: Spacing.lg,
+  },
+  courseTypeRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  courseTypeChip: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+  },
+  dayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    marginBottom: Spacing.sm,
   },
 });
