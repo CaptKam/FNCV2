@@ -1,0 +1,89 @@
+# FORK & COMPASS
+
+## Master Blueprint V2
+
+**Product Vision · The Ethereal Archivist Design System · Architecture · Rebuild Plan**
+
+*Pick a country, cook a dinner, feel like you traveled.*
+
+Confidential · Version 2.0 · April 2026 · Solo Founder: Kam
+
+voyageapron.com
+
+---
+
+# 1. Product Vision
+
+Fork & Compass is a premium culinary travel app built on a single premise: you can travel the world from your kitchen. Pick a country. Plan a dinner. Shop the ingredients. Cook the meal. Feel like you traveled.
+
+This is not a recipe database. It is a cultural experience engine that happens to involve cooking. Every interaction should feel like opening a luxury food magazine and stepping inside.
+
+Born during COVID, when friends would pick a country and build an entire evening around its cuisine, drinks, and music. That dinner party energy — the planning, the anticipation, the shared experience — is the emotional core.
+
+## Who this is for
+
+Serious home cooks who see cooking as exploration, not obligation. The user who spends Sunday afternoon planning the week's meals, who browses recipes the way others browse travel blogs, and who treats a dinner party as an event worth orchestrating.
+
+## Competitive position
+
+Fork & Compass owns culturally authentic world cuisine for serious home cooks. The moat is cultural depth combined with the travel premise plus backward-planning dinner timeline coordination.
+
+- NYT Cooking: American/European bias, no cultural travel framing
+- SideChef: pivoted to grocery commerce, lost editorial soul
+- HelloFresh: validated international cooking at home, but commoditized
+- Mela / Paprika: utility-first, no cultural depth or social features
+
+---
+
+# 2. Design Philosophy
+
+## 2.1 — The Three Governing Frameworks
+
+Every pixel is governed by Steve Jobs' functional aesthetics, Apple's Human Interface Guidelines (including iOS 26 Liquid Glass), and the editorial sensibility of luxury print magazines.
+
+**Design is how it works.** Beautiful food photography means nothing if the user cannot figure out how to plan their week. A glassmorphic tab bar is worthless if it obscures the content it frames. Every aesthetic choice must serve a functional purpose. If a visual element does not help the user accomplish their goal, it is removed.
+
+## 2.2 — The Subtraction Audit
+
+Every screen, feature, and interaction passes through three tests:
+
+| Test | Question | If it fails |
+|------|----------|-------------|
+| Mission-critical | What is the ONE thing the user needs here? | Remove or deeply subordinate |
+| Grandma test | Could a non-technical user complete this without explanation? | Redesign until no instruction is needed |
+| Day-better test | Does this genuinely make someone's day better? | Cut it, regardless of engineering investment |
+
+## 2.3 — The Four HIG Pillars
+
+| Principle | Fork & Compass application |
+|-----------|---------------------------|
+| Clarity | Recipe cards show prep time, difficulty, and country at a glance. No decoding required. |
+| Deference | Food photography is the hero. Chrome is minimal. Glass effects frame content, never compete. |
+| Depth | Modal sheets slide up for cook mode. Plan layers weekly over daily. Spatial relationships always clear. |
+| Consistency | Tab bar always bottom. Back always top-left. Swipe gestures identical everywhere. |
+
+## 2.4 — The iOS 26 Triad
+
+| Principle | Implementation |
+|-----------|---------------|
+| Hierarchy | Cook mode suppresses all navigation chrome. Plan surfaces next upcoming meal. Discover hides metadata until scroll past hero. |
+| Harmony | Tab bar glass matches device edge curves. Content insets respect Dynamic Island and home indicator. |
+| Consistency | Same interaction model across iPhone SE and 16 Pro Max. No features hidden on smaller screens. |
+
+## 2.5 — Non-Negotiable Principles
+
+1. Design is how it works. If beautiful but confusing, it has failed.
+2. Subtract before you add. Every element must earn its place.
+3. Content is the hero. Food photography and cultural stories, not chrome and UI widgets.
+4. Finish the back of the cabinet. The codebase, API, admin — invisible quality everywhere.
+5. Follow the HIG. Tab bars at bottom. Back at top-left. Standard gestures. No exceptions.
+6. Glass is for navigation, never for content. Liquid Glass frames the experience. Food stays crisp.
+7. Speak like a human. Warm, active, culturally literate. Never robotic. Never blame the user.
+8. Accessibility is architecture. VoiceOver, Dynamic Type, 48pt touch targets, reduced motion, color independence.
+9. Say no to protect the yes. Features are deferred, not deleted. Deferred means not built today.
+
+---
+
+# 3. The Ethereal Archivist Design System
+
+The Creative North Star is "The Ethereal Archivist" — a sophisticated intersection of heritage warmth and spatial computing futurism. Terracotta and cream ground the human element. Liquid Glass brings 2026 depth. The result is an inte...
