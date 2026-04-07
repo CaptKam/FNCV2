@@ -10,6 +10,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
+import { HeaderBar } from '@/components/HeaderBar';
 import { recipes } from '@/data/recipes';
 
 const TECHNIQUES = [
@@ -30,9 +31,10 @@ export default function CookScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 16 }}
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 68 }}
       >
         <View style={[styles.profileSection, { paddingHorizontal: Spacing.page }]}>
           <Pressable onPress={() => router.push('/profile')} style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}>

@@ -8,6 +8,7 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { Shadows } from '@/constants/shadows';
 import { GlassView } from '@/components/GlassView';
+import { HeaderBar } from '@/components/HeaderBar';
 import { recipes } from '@/data/recipes';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -126,9 +127,10 @@ export default function GroceryScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 180, paddingTop: insets.top + 16 }}
+        contentContainerStyle={{ paddingBottom: 180, paddingTop: insets.top + 68 }}
       >
         <View style={styles.titleSection}>
           <Text style={[Typography.labelLarge, { color: colors.outline, textAlign: 'center', marginBottom: Spacing.xs }]}>

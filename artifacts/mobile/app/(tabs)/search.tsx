@@ -17,6 +17,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
+import { HeaderBar } from '@/components/HeaderBar';
 import { recipes } from '@/data/recipes';
 
 const CARD_WIDTH = (Dimensions.get('window').width - Spacing.page * 2 - Spacing.md) / 2;
@@ -60,9 +61,10 @@ export default function SearchScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 16 }}
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 68 }}
       >
         <View style={{ paddingHorizontal: Spacing.page }}>
           <Text style={[Typography.displayLarge, { color: colors.onSurface, fontSize: 42 }]}>

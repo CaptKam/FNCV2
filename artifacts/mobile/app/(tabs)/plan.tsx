@@ -10,6 +10,7 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { Shadows } from '@/constants/shadows';
 import { GlassView } from '@/components/GlassView';
+import { HeaderBar } from '@/components/HeaderBar';
 import { recipes } from '@/data/recipes';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -129,18 +130,11 @@ export default function PlanScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 16 }}
+        contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 68 }}
       >
-        <View style={styles.header}>
-          <Text style={[Typography.title, { color: colors.onSurface, fontStyle: 'italic' }]}>
-            Fork & Compass
-          </Text>
-          <Pressable hitSlop={12} onPress={() => router.push('/(tabs)/grocery')}>
-            <MaterialCommunityIcons name="cart-outline" size={22} color={colors.onSurface} />
-          </Pressable>
-        </View>
 
         <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.sm }}>
           <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
@@ -606,13 +600,6 @@ export default function PlanScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.page,
-    marginBottom: Spacing.lg,
-  },
   weekPill: {
     flexDirection: 'row',
     alignItems: 'center',

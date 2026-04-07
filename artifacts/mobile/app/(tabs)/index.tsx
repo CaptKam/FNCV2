@@ -14,13 +14,13 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { Shadows } from '@/constants/shadows';
 import { GlassView } from '@/components/GlassView';
+import { HeaderBar } from '@/components/HeaderBar';
 import { SectionHeader } from '@/components/SectionHeader';
 import { RecipeCard } from '@/components/RecipeCard';
 import { DestinationCard } from '@/components/DestinationCard';
@@ -32,7 +32,6 @@ const HERO_HEIGHT = 480;
 
 export default function DiscoverScreen() {
   const colors = useThemeColors();
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [activeHero, setActiveHero] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -49,29 +48,11 @@ export default function DiscoverScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar transparent />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
       >
-        {/* Top Bar */}
-        <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-          <View style={styles.topBarLeft}>
-            <Pressable onPress={() => router.push('/profile')} style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <Feather name="user" size={18} color={colors.outline} />
-            </Pressable>
-            <Text style={[Typography.title, { color: colors.onSurface, fontStyle: 'italic' }]}>
-              Fork & Compass
-            </Text>
-          </View>
-          <View style={styles.topBarRight}>
-            <Pressable hitSlop={12} onPress={() => router.push('/bookmarks')}>
-              <Feather name="bookmark" size={22} color={colors.onSurface} />
-            </Pressable>
-            <Pressable hitSlop={12}>
-              <Feather name="shopping-bag" size={22} color={colors.onSurface} />
-            </Pressable>
-          </View>
-        </View>
 
         {/* Hero Carousel */}
         <View style={styles.heroContainer}>
@@ -184,35 +165,6 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.page,
-    paddingBottom: Spacing.sm,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-  },
-  topBarLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  topBarRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   heroContainer: {
     height: HERO_HEIGHT,
