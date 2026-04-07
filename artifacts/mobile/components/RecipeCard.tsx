@@ -49,7 +49,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             <MaterialCommunityIcons
               name={isFav ? 'heart' : 'heart-outline'}
               size={16}
-              color={isFav ? colors.primary : '#FFFFFF'}
+              color={isFav ? colors.primary : colors.textOnImage}
             />
           </GlassView>
         </Pressable>

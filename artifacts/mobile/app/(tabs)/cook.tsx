@@ -12,6 +12,7 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { recipes } from '@/data/recipes';
+import { useApp } from '@/context/AppContext';
 
 const TECHNIQUES = [
   { title: 'Knife Skills', duration: '12 min', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop', desc: 'Master the julienne and chiffonade' },
@@ -24,10 +25,26 @@ export default function CookScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const activeRecipe = recipes[3];
-  const xp = 2450;
-  const level = 8;
-  const progress = 0.65;
+  const app = useApp();
+
+  const { activeCookSession, xp, level } = app;
+  const levelName = app.getCookingLevelName();
+  const todaysMeals = app.getTodaysMeals();
+  const progress = (xp % 300) / 300;
+
+  // Resolve active recipe for the hero card
+  const sessionRecipe = activeCookSession
+    ? recipes.find((r) => r.id === activeCookSession.recipeId)
+    : null;
+
+  const todayMainMeal = todaysMeals.find((m) => true); // first meal
+  const todayRecipe = todayMainMeal
+    ? recipes.find((r) => r.id === todayMainMeal.recipeId)
+    : null;
+
+  // Determine which state to show
+  const hasActiveSession = activeCookSession != null && sessionRecipe != null;
+  const hasTodayPlan = !hasActiveSession && todayRecipe != null;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -36,13 +53,14 @@ export default function CookScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 68 }}
       >
+        {/* Reputation header — wired to AppContext XP */}
         <View style={[styles.profileSection, { paddingHorizontal: Spacing.page }]}>
           <Pressable onPress={() => router.push('/profile')} style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]} accessibilityRole="button" accessibilityLabel="View profile">
             <Feather name="user" size={28} color={colors.outline} />
           </Pressable>
           <View style={styles.profileInfo}>
             <Text style={[Typography.labelLarge, { color: colors.outline }]}>KITCHEN REPUTATION</Text>
-            <Text style={[Typography.display, { color: colors.onSurface }]}>Home Cook</Text>
+            <Text style={[Typography.display, { color: colors.onSurface }]}>{levelName}</Text>
             <View style={styles.levelRow}>
               <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
                 Level {level}
@@ -60,44 +78,125 @@ export default function CookScreen() {
           </View>
         </View>
 
-        <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
-          <Pressable
-            onPress={() => router.push(`/cook-mode/${activeRecipe.id}`)}
-            style={styles.activeCard}
-            accessibilityRole="button"
-            accessibilityLabel={`Continue cooking ${activeRecipe.title}`}
-          >
-            <Image
-              source={{ uri: activeRecipe.image }}
-              style={styles.activeImage}
-              contentFit="cover"
-              transition={300}
-              accessible={false}
-            />
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.7)']}
-              style={styles.activeGradient}
-            />
-            <View style={styles.activeContent}>
-              <GlassView style={styles.activeGlass}>
-                <Text style={[Typography.labelLarge, { color: '#FFFFFF' }]}>IN THE KITCHEN</Text>
-                <Text style={[Typography.displayMedium, { color: '#FFFFFF', fontSize: 24 }]} numberOfLines={1}>
-                  {activeRecipe.title}
-                </Text>
-                <Text style={[Typography.body, { color: 'rgba(255,255,255,0.8)', fontSize: 14 }]} numberOfLines={2}>
-                  {activeRecipe.culturalNote.slice(0, 80)}...
-                </Text>
-                <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', fontSize: 14 }]}>
-                  Step 3 of {activeRecipe.steps.length}
-                </Text>
-                <Pressable style={[styles.resumeBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel="Resume cooking session">
-                  <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Resume Session</Text>
-                </Pressable>
-              </GlassView>
-            </View>
-          </Pressable>
-        </View>
+        {/* State A: Active cooking session */}
+        {hasActiveSession && sessionRecipe && (
+          <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
+            <Pressable
+              onPress={() => router.push(`/cook-mode/${activeCookSession.recipeId}`)}
+              style={styles.activeCard}
+              accessibilityRole="button"
+              accessibilityLabel={`Continue cooking ${sessionRecipe.title}`}
+            >
+              <Image
+                source={{ uri: sessionRecipe.image }}
+                style={styles.activeImage}
+                contentFit="cover"
+                transition={300}
+                accessible={false}
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.7)']}
+                style={styles.activeGradient}
+              />
+              <View style={styles.activeContent}>
+                <GlassView style={styles.activeGlass}>
+                  <Text style={[Typography.labelLarge, { color: colors.textOnImage }]}>IN THE KITCHEN</Text>
+                  <Text style={[Typography.displayMedium, { color: colors.textOnImage, fontSize: 24 }]} numberOfLines={1}>
+                    {sessionRecipe.title}
+                  </Text>
+                  <Text style={[Typography.body, { color: 'rgba(255,255,255,0.8)', fontSize: 14 }]} numberOfLines={2}>
+                    {sessionRecipe.culturalNote.slice(0, 80)}...
+                  </Text>
+                  <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', fontSize: 14 }]}>
+                    Step {activeCookSession.currentStepIndex + 1} of {activeCookSession.totalSteps}
+                  </Text>
+                  <Pressable
+                    onPress={() => router.push(`/cook-mode/${activeCookSession.recipeId}`)}
+                    style={[styles.resumeBtn, { backgroundColor: colors.primary }]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Resume cooking session"
+                  >
+                    <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Resume Session</Text>
+                  </Pressable>
+                </GlassView>
+              </View>
+            </Pressable>
+          </View>
+        )}
 
+        {/* State B: Today has a plan but no active session */}
+        {hasTodayPlan && todayRecipe && (
+          <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
+            <Pressable
+              onPress={() => {
+                app.startCookSession(todayRecipe, todayRecipe.servings);
+                router.push(`/cook-mode/${todayRecipe.id}`);
+              }}
+              style={styles.activeCard}
+              accessibilityRole="button"
+              accessibilityLabel={`Start cooking ${todayRecipe.title}`}
+            >
+              <Image
+                source={{ uri: todayRecipe.image }}
+                style={styles.activeImage}
+                contentFit="cover"
+                transition={300}
+                accessible={false}
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.7)']}
+                style={styles.activeGradient}
+              />
+              <View style={styles.activeContent}>
+                <GlassView style={styles.activeGlass}>
+                  <Text style={[Typography.labelLarge, { color: colors.textOnImage }]}>TONIGHT'S DINNER</Text>
+                  <Text style={[Typography.displayMedium, { color: colors.textOnImage, fontSize: 24 }]} numberOfLines={1}>
+                    {todayRecipe.title}
+                  </Text>
+                  <Text style={[Typography.body, { color: 'rgba(255,255,255,0.8)', fontSize: 14 }]} numberOfLines={2}>
+                    {todayRecipe.culturalNote.slice(0, 80)}...
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      app.startCookSession(todayRecipe, todayRecipe.servings);
+                      router.push(`/cook-mode/${todayRecipe.id}`);
+                    }}
+                    style={[styles.resumeBtn, { backgroundColor: colors.primary }]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Start cooking"
+                  >
+                    <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
+                  </Pressable>
+                </GlassView>
+              </View>
+            </Pressable>
+          </View>
+        )}
+
+        {/* State C: Nothing planned, no session */}
+        {!hasActiveSession && !hasTodayPlan && (
+          <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
+            <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
+              <Feather name="sunrise" size={40} color={colors.outlineVariant} />
+              <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
+                Nothing on the stove
+              </Text>
+              <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center' }]}>
+                Plan a meal to get started, or browse recipes for inspiration.
+              </Text>
+              <Pressable
+                onPress={() => router.push('/(tabs)/plan')}
+                style={[styles.resumeBtn, { backgroundColor: colors.primary }]}
+                accessibilityRole="button"
+                accessibilityLabel="Plan a meal"
+              >
+                <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Plan a Meal</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {/* Technique library — unchanged */}
         <View style={{ marginTop: Spacing.xxl }}>
           <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
             <Text style={[Typography.labelLarge, { color: colors.outline }]}>TECHNIQUE LIBRARY</Text>
@@ -123,12 +222,12 @@ export default function CookScreen() {
                 />
                 <View style={styles.durationBadge}>
                   <GlassView style={styles.durationGlass}>
-                    <Feather name="play" size={10} color="#FFFFFF" />
-                    <Text style={[Typography.labelSmall, { color: '#FFFFFF' }]}>{tech.duration}</Text>
+                    <Feather name="play" size={10} color={colors.textOnImage} />
+                    <Text style={[Typography.labelSmall, { color: colors.textOnImage }]}>{tech.duration}</Text>
                   </GlassView>
                 </View>
                 <View style={styles.techContent}>
-                  <Text style={[Typography.headline, { color: '#FFFFFF', fontSize: 16 }]}>
+                  <Text style={[Typography.headline, { color: colors.textOnImage, fontSize: 16 }]}>
                     {tech.title}
                   </Text>
                   <Text style={[Typography.bodySmall, { color: 'rgba(255,255,255,0.7)' }]}>
@@ -140,6 +239,7 @@ export default function CookScreen() {
           </ScrollView>
         </View>
 
+        {/* Class card — unchanged */}
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xxl }}>
           <View style={[styles.classCard, { backgroundColor: colors.surfaceContainerLow }]}>
             <Text style={[Typography.labelLarge, { color: colors.primary }]}>UPCOMING CLASS</Text>
@@ -157,6 +257,7 @@ export default function CookScreen() {
                     styles.miniAvatar,
                     {
                       backgroundColor: colors.surfaceContainerHigh,
+                      borderColor: colors.surface,
                       marginLeft: i > 1 ? -8 : 0,
                     },
                   ]}
@@ -172,12 +273,15 @@ export default function CookScreen() {
           </View>
         </View>
 
+        {/* Pantry banner — unchanged */}
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
           <View style={[styles.pantryBanner, { backgroundColor: colors.surfaceContainerLow }]}>
             <View style={{ flex: 1 }}>
-              <Text style={[Typography.display, { color: colors.onSurface, fontSize: 32 }]}>73%</Text>
+              <Text style={[Typography.display, { color: colors.onSurface, fontSize: 32 }]}>
+                {app.totalRecipesCooked}
+              </Text>
               <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
-                Pantry stocked for this week
+                Recipes cooked
               </Text>
             </View>
             <Pressable accessibilityRole="button" accessibilityLabel="Scan pantry">
@@ -253,6 +357,17 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     marginTop: Spacing.sm,
   },
+  emptyCard: {
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderRadius: Radius.xl,
+    paddingVertical: Spacing.xxl,
+    paddingHorizontal: Spacing.lg,
+    alignItems: 'center',
+    gap: Spacing.md,
+    height: 320,
+    justifyContent: 'center',
+  },
   techCard: {
     width: 200,
     height: 260,
@@ -299,7 +414,6 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: Radius.full,
     borderWidth: 2,
-    borderColor: '#FEF9F3',
   },
   waitlistBtn: {
     alignSelf: 'flex-start',

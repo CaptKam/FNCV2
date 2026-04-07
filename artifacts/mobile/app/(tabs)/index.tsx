@@ -174,9 +174,9 @@ export default function DiscoverScreen() {
                 <View style={styles.heroContent}>
                   <GlassView style={styles.flagBadge}>
                     <Text style={{ fontSize: 14 }}>{item.flag}</Text>
-                    <Text style={[Typography.caption, { color: '#FFFFFF' }]}>{item.region}</Text>
+                    <Text style={[Typography.caption, { color: colors.textOnImage }]}>{item.region}</Text>
                   </GlassView>
-                  <Text style={[Typography.displayMedium, styles.heroTitle]}>
+                  <Text style={[Typography.displayMedium, styles.heroTitle, { color: colors.textOnImage }]}>
                     {item.name}
                   </Text>
                   <Pressable
@@ -201,7 +201,7 @@ export default function DiscoverScreen() {
                 key={i}
                 style={[
                   styles.dot,
-                  i === activeHero ? styles.dotActive : styles.dotInactive,
+                  i === activeHero ? [styles.dotActive, { backgroundColor: colors.textOnImage }] : styles.dotInactive,
                 ]}
               />
             ))}
@@ -301,7 +301,7 @@ export default function DiscoverScreen() {
             style={[styles.sheetContainer, { backgroundColor: colors.surface }]}
             onPress={(e) => e.stopPropagation()}
           >
-            <View style={styles.sheetHandle} />
+            <View style={[styles.sheetHandle, { backgroundColor: colors.handleBar }]} />
             <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.sm }]}>
               Pick a Day
             </Text>
@@ -353,7 +353,6 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   heroTitle: {
-    color: '#FFFFFF',
   },
   flagBadge: {
     flexDirection: 'row',
@@ -386,7 +385,6 @@ const styles = StyleSheet.create({
   dotActive: {
     width: 4,
     height: 16,
-    backgroundColor: '#FFFFFF',
     borderRadius: Radius.full,
   },
   dotInactive: {
@@ -462,7 +460,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#999',
     alignSelf: 'center',
     marginBottom: Spacing.lg,
   },

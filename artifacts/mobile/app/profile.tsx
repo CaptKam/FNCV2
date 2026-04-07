@@ -385,7 +385,7 @@ export default function ProfileScreen() {
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowThemeModal(false)} accessibilityRole="button" accessibilityLabel="Close appearance settings">
           <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
-            <View style={styles.modalHandle} />
+            <View style={[styles.modalHandle, { backgroundColor: colors.handleBar }]} />
             <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
               Appearance
             </Text>
@@ -558,7 +558,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#999',
     alignSelf: 'center',
     marginBottom: Spacing.lg,
   },

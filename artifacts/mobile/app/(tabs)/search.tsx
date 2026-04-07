@@ -154,7 +154,7 @@ export default function SearchScreen() {
               </View>
               <Pressable style={styles.heartBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Save ${recipe.title} to bookmarks`}>
                 <GlassView style={styles.heartGlass}>
-                  <Feather name="heart" size={14} color="#FFFFFF" />
+                  <Feather name="heart" size={14} color={colors.textOnImage} />
                 </GlassView>
               </Pressable>
             </Pressable>

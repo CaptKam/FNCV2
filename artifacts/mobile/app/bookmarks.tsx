@@ -120,11 +120,11 @@ export default function BookmarksScreen() {
                           <Text style={[Typography.caption, { color: colors.outline }]}>
                             {recipe.prepTime + recipe.cookTime} min
                           </Text>
-                          <View style={styles.dot} />
+                          <View style={[styles.dot, { backgroundColor: colors.handleBar }]} />
                           <Text style={[Typography.caption, { color: colors.outline }]}>
                             {recipe.difficulty}
                           </Text>
-                          <View style={styles.dot} />
+                          <View style={[styles.dot, { backgroundColor: colors.handleBar }]} />
                           <Text style={[Typography.caption, { color: colors.outline }]}>
                             {recipe.category}
                           </Text>
@@ -211,6 +211,5 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: '#999',
   },
 });

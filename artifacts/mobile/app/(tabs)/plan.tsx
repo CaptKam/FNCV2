@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -11,91 +11,163 @@ import { Radius } from '@/constants/radius';
 import { Shadows } from '@/constants/shadows';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
-import { recipes } from '@/data/recipes';
+import { RecipePickerSheet } from '@/components/RecipePickerSheet';
+import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
+import { Recipe } from '@/data/recipes';
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+// ─── Helpers ───
+
 const DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-type MealSlot = { time: string; label: string; recipeId?: string };
-type WeekData = {
-  dates: Record<string, string>;
-  planned: Record<string, string>;
-  meals: Record<string, MealSlot[]>;
-};
+function getMonday(d: Date): Date {
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d);
+  monday.setDate(diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
 
-const DEFAULT_MEALS = (dinner?: string, lunch?: string): MealSlot[] => [
-  { time: '08:00 AM', label: 'Breakfast' },
-  { time: '12:30 PM', label: 'Lunch', ...(lunch ? { recipeId: lunch } : {}) },
-  { time: '07:30 PM', label: 'Dinner', ...(dinner ? { recipeId: dinner } : {}) },
-];
+function toISO(d: Date): string {
+  return d.toISOString().split('T')[0];
+}
 
-const WEEK_DATA: Record<string, WeekData> = {
-  'past': {
-    dates: { Monday: 'Oct 5', Tuesday: 'Oct 6', Wednesday: 'Oct 7', Thursday: 'Oct 8', Friday: 'Oct 9', Saturday: 'Oct 10', Sunday: 'Oct 11' },
-    planned: { Tuesday: 'th-1', Thursday: 'in-2', Saturday: 'ma-1' },
-    meals: {
-      Monday: DEFAULT_MEALS(),
-      Tuesday: DEFAULT_MEALS('th-1'),
-      Wednesday: DEFAULT_MEALS(),
-      Thursday: DEFAULT_MEALS('in-2', 'in-1'),
-      Friday: DEFAULT_MEALS(),
-      Saturday: DEFAULT_MEALS('ma-1'),
-      Sunday: DEFAULT_MEALS(),
-    },
-  },
-  'this-week': {
-    dates: { Monday: 'Oct 12', Tuesday: 'Oct 13', Wednesday: 'Oct 14', Thursday: 'Oct 15', Friday: 'Oct 16', Saturday: 'Oct 17', Sunday: 'Oct 18' },
-    planned: { Monday: 'it-1', Wednesday: 'fr-1', Friday: 'mx-2', Saturday: 'jp-1' },
-    meals: {
-      Monday: DEFAULT_MEALS('it-1', 'it-2'),
-      Tuesday: DEFAULT_MEALS(),
-      Wednesday: DEFAULT_MEALS('fr-1'),
-      Thursday: DEFAULT_MEALS(),
-      Friday: DEFAULT_MEALS('mx-2'),
-      Saturday: DEFAULT_MEALS('jp-1', 'jp-2'),
-      Sunday: DEFAULT_MEALS(),
-    },
-  },
-  'next-week': {
-    dates: { Monday: 'Oct 19', Tuesday: 'Oct 20', Wednesday: 'Oct 21', Thursday: 'Oct 22', Friday: 'Oct 23', Saturday: 'Oct 24', Sunday: 'Oct 25' },
-    planned: { Wednesday: 'es-1', Saturday: 'mx-1' },
-    meals: {
-      Monday: DEFAULT_MEALS(),
-      Tuesday: DEFAULT_MEALS(),
-      Wednesday: DEFAULT_MEALS('es-1'),
-      Thursday: DEFAULT_MEALS(),
-      Friday: DEFAULT_MEALS(),
-      Saturday: DEFAULT_MEALS('mx-1', 'es-2'),
-      Sunday: DEFAULT_MEALS(),
-    },
-  },
-};
+function addDays(dateStr: string, n: number): string {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + n);
+  return toISO(d);
+}
 
-type CourseSlot = { label: string; icon: string; placeholder: string };
+function formatDateLabel(dateStr: string): string {
+  const d = new Date(dateStr);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+type CourseSlot = { label: string; icon: string; placeholder: string; courseType: 'appetizer' | 'dessert' };
 const COURSE_SLOTS: CourseSlot[] = [
-  { label: 'Appetizer', icon: 'food-variant', placeholder: 'Add an Appetizer...' },
-  { label: 'Dessert', icon: 'ice-cream', placeholder: 'Sweet finish...' },
-  { label: 'Drink Pairings', icon: 'glass-wine', placeholder: 'Pair with a drink...' },
+  { label: 'Appetizer', icon: 'food-variant', placeholder: 'Add an Appetizer...', courseType: 'appetizer' },
+  { label: 'Dessert', icon: 'ice-cream', placeholder: 'Sweet finish...', courseType: 'dessert' },
 ];
 
 type WeekOption = 'this-week' | 'next-week' | 'past';
+
+// ─── Meal card for filled slots (shared between views) ───
+
+function MealCard({
+  meal,
+  imageStyle,
+  badgeLabel,
+  headlineFontSize,
+  onPress,
+  onLongPress,
+  colors,
+}: {
+  meal: PlannedMeal;
+  imageStyle: object;
+  badgeLabel: string;
+  headlineFontSize: number;
+  onPress: () => void;
+  onLongPress?: () => void;
+  colors: ReturnType<typeof useThemeColors>;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${meal.recipeName}, ${meal.cookTime} minutes`}
+    >
+      <GlassView style={styles.mealCard}>
+        <Image
+          source={{ uri: meal.recipeImage }}
+          style={imageStyle}
+          contentFit="cover"
+          transition={300}
+          accessible={false}
+        />
+        <View style={styles.recipeBadge}>
+          <GlassView style={styles.recipeBadgeGlass}>
+            <Text style={[Typography.labelSmall, { color: colors.textOnImage, fontWeight: '700' }]}>{badgeLabel}</Text>
+          </GlassView>
+        </View>
+        <View style={styles.mealContent}>
+          <Text style={[Typography.headline, { color: colors.onSurface, fontSize: headlineFontSize }]} numberOfLines={1}>
+            {meal.recipeName}
+          </Text>
+          <View style={styles.mealMeta}>
+            <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
+            <Text style={[Typography.caption, { color: colors.outline }]}>
+              {meal.cookTime}m
+            </Text>
+          </View>
+        </View>
+      </GlassView>
+    </Pressable>
+  );
+}
 
 export default function PlanScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const app = useApp();
 
+  const [weekStartDate, setWeekStartDate] = useState(() => toISO(getMonday(new Date())));
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<WeekOption>('this-week');
   const [isDailyView, setIsDailyView] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [multipleMeals, setMultipleMeals] = useState(false);
 
-  const getRecipe = (id: string) => recipes.find((r) => r.id === id);
+  // Recipe picker state
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [pickerTarget, setPickerTarget] = useState<{ date: string; courseType: 'appetizer' | 'main' | 'dessert' } | null>(null);
 
-  const currentWeek = WEEK_DATA[selectedWeek];
-  const plannedCount = Object.keys(currentWeek.planned).length;
-  const firstPlannedDay = Object.keys(currentWeek.planned)[0];
+  // ─── Week data from AppContext ───
+  const weekDays: ItineraryDay[] = app.getWeek(weekStartDate);
+  const todaysMeals = app.getTodaysMeals();
+  const uncheckedGroceryCount = app.getUncheckedCount();
+
+  const selectedDay = weekDays[selectedDayIndex];
+  const selectedDate = selectedDay?.date ?? '';
+
+  const plannedCount = useMemo(
+    () => weekDays.filter((d) => d.courses.appetizer || d.courses.main || d.courses.dessert).length,
+    [weekDays]
+  );
+
+  // ─── Week navigation ───
+  const shiftWeek = useCallback((delta: number) => {
+    setWeekStartDate((prev) => addDays(prev, delta * 7));
+    if (delta > 0) setSelectedWeek('next-week');
+    else if (delta < 0) setSelectedWeek('past');
+    else setSelectedWeek('this-week');
+  }, []);
+
+  // ─── Recipe picker ───
+  const openPicker = useCallback((date: string, courseType: 'appetizer' | 'main' | 'dessert') => {
+    setPickerTarget({ date, courseType });
+    setPickerVisible(true);
+  }, []);
+
+  const handlePickRecipe = useCallback((recipe: Recipe) => {
+    if (pickerTarget) {
+      app.addCourseToDay(pickerTarget.date, pickerTarget.courseType, recipe);
+    }
+  }, [pickerTarget, app]);
+
+  // ─── Remove course (long press) ───
+  const handleRemoveCourse = useCallback((date: string, courseType: 'appetizer' | 'main' | 'dessert') => {
+    app.removeCourseFromDay(date, courseType);
+  }, [app]);
+
+  // ─── Week label ───
+  const weekLabel = useMemo(() => {
+    const start = formatDateLabel(weekStartDate);
+    const end = formatDateLabel(addDays(weekStartDate, 6));
+    return `${start} – ${end}`;
+  }, [weekStartDate]);
 
   const weekLabels: Record<WeekOption, string> = {
     'this-week': 'This Week',
@@ -103,54 +175,19 @@ export default function PlanScreen() {
     'past': 'Past Journeys',
   };
 
-  const WEEK_ORDER: WeekOption[] = ['past', 'this-week', 'next-week'];
+  // ─── Daily view data ───
+  const dailyMeals = useMemo(() => {
+    if (!selectedDay) return [];
+    const slots: { time: string; label: string; courseType: 'appetizer' | 'main' | 'dessert'; meal?: PlannedMeal }[] = [
+      { time: '12:00 PM', label: 'Appetizer', courseType: 'appetizer', meal: selectedDay.courses.appetizer },
+      { time: '07:30 PM', label: 'Dinner', courseType: 'main', meal: selectedDay.courses.main },
+      { time: '09:00 PM', label: 'Dessert', courseType: 'dessert', meal: selectedDay.courses.dessert },
+    ];
+    return slots;
+  }, [selectedDay]);
 
-  const skipPrev = () => {
-    if (isDailyView) {
-      if (selectedDayIndex > 0) {
-        setSelectedDayIndex(selectedDayIndex - 1);
-      } else {
-        const weekIdx = WEEK_ORDER.indexOf(selectedWeek);
-        if (weekIdx > 0) {
-          setSelectedWeek(WEEK_ORDER[weekIdx - 1]);
-          setSelectedDayIndex(6);
-        }
-      }
-    } else {
-      const weekIdx = WEEK_ORDER.indexOf(selectedWeek);
-      if (weekIdx > 0) setSelectedWeek(WEEK_ORDER[weekIdx - 1]);
-    }
-  };
-
-  const skipNext = () => {
-    if (isDailyView) {
-      if (selectedDayIndex < 6) {
-        setSelectedDayIndex(selectedDayIndex + 1);
-      } else {
-        const weekIdx = WEEK_ORDER.indexOf(selectedWeek);
-        if (weekIdx < WEEK_ORDER.length - 1) {
-          setSelectedWeek(WEEK_ORDER[weekIdx + 1]);
-          setSelectedDayIndex(0);
-        }
-      }
-    } else {
-      const weekIdx = WEEK_ORDER.indexOf(selectedWeek);
-      if (weekIdx < WEEK_ORDER.length - 1) setSelectedWeek(WEEK_ORDER[weekIdx + 1]);
-    }
-  };
-
-  const canGoPrev = isDailyView
-    ? selectedDayIndex > 0 || WEEK_ORDER.indexOf(selectedWeek) > 0
-    : WEEK_ORDER.indexOf(selectedWeek) > 0;
-  const canGoNext = isDailyView
-    ? selectedDayIndex < 6 || WEEK_ORDER.indexOf(selectedWeek) < WEEK_ORDER.length - 1
-    : WEEK_ORDER.indexOf(selectedWeek) < WEEK_ORDER.length - 1;
-
-  const selectedDay = DAYS[selectedDayIndex];
-  const dailyMeals = currentWeek.meals[selectedDay] || DEFAULT_MEALS();
-  const primaryMeal = dailyMeals.find((m) => m.label === 'Dinner') || dailyMeals[dailyMeals.length - 1];
-  const primaryRecipe = primaryMeal?.recipeId ? getRecipe(primaryMeal.recipeId) : null;
-
+  const primaryMeal = selectedDay?.courses.main;
+  // ─── Grocery banner ───
   const renderGroceryBanner = () => (
     <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
       <View style={[styles.groceryBanner, { backgroundColor: `${colors.primary}10` }]}>
@@ -160,7 +197,7 @@ export default function PlanScreen() {
             Grocery List Update
           </Text>
           <Text style={[Typography.caption, { color: colors.outline }]}>
-            {plannedCount * 3 + 2} items missing for your planned meals
+            {uncheckedGroceryCount} items missing for your planned meals
           </Text>
         </View>
         <Pressable
@@ -185,20 +222,11 @@ export default function PlanScreen() {
         contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 68 }}
       >
 
+        {/* Week pill with chevron navigation */}
         <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.sm }}>
           <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
-            <Pressable
-              onPress={skipPrev}
-              disabled={!canGoPrev}
-              style={styles.weekArrow}
-              accessibilityRole="button"
-              accessibilityLabel="Previous week"
-            >
-              <MaterialCommunityIcons
-                name="chevron-left"
-                size={24}
-                color={canGoPrev ? colors.primary : colors.outlineVariant}
-              />
+            <Pressable hitSlop={12} onPress={() => shiftWeek(-1)} accessibilityRole="button" accessibilityLabel="Previous week">
+              <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
             </Pressable>
             <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
               <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 2 }]}>
@@ -206,38 +234,30 @@ export default function PlanScreen() {
               </Text>
               <View style={styles.weekTitleRow}>
                 <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>
-                  {isDailyView ? `${selectedDay}` : weekLabels[selectedWeek]}
+                  {isDailyView ? 'Daily Plan' : weekLabels[selectedWeek]}
                 </Text>
                 <MaterialCommunityIcons name="chevron-down" size={18} color={colors.primary} />
               </View>
               {isDailyView && (
                 <Text style={[Typography.caption, { color: colors.primary, marginTop: 2 }]}>
-                  {currentWeek.dates[selectedDay]} · {weekLabels[selectedWeek]}
+                  {selectedDay?.dayLabel}, {formatDateLabel(selectedDate)}
                 </Text>
               )}
             </Pressable>
-            <Pressable
-              onPress={skipNext}
-              disabled={!canGoNext}
-              style={styles.weekArrow}
-              accessibilityRole="button"
-              accessibilityLabel="Next week"
-            >
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
-                color={canGoNext ? colors.primary : colors.outlineVariant}
-              />
+            <Pressable hitSlop={12} onPress={() => shiftWeek(1)} accessibilityRole="button" accessibilityLabel="Next week">
+              <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
             </Pressable>
           </GlassView>
         </View>
 
+        {/* Day selector strip (daily view) */}
         {isDailyView && (
           <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
             <GlassView style={[styles.daySelectorPill, { ...Shadows.subtle }]}>
               {DAY_LETTERS.map((letter, i) => {
                 const isActive = i === selectedDayIndex;
-                const hasRecipe = !!currentWeek.planned[DAYS[i]];
+                const day = weekDays[i];
+                const hasRecipe = !!(day?.courses.appetizer || day?.courses.main || day?.courses.dessert);
                 return (
                   <Pressable
                     key={i}
@@ -248,7 +268,7 @@ export default function PlanScreen() {
                       !isActive && hasRecipe && { backgroundColor: `${colors.primary}15` },
                     ]}
                     accessibilityRole="button"
-                    accessibilityLabel={`${DAYS[i]}`}
+                    accessibilityLabel={day?.dayLabel ?? ''}
                     accessibilityState={{ selected: isActive }}
                   >
                     <Text style={[
@@ -265,6 +285,7 @@ export default function PlanScreen() {
           </View>
         )}
 
+        {/* Multiple meals toggle */}
         {isDailyView && (
           <View style={[styles.multipleMealsRow, { marginHorizontal: Spacing.page }]}>
             <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1 }]}>
@@ -284,74 +305,58 @@ export default function PlanScreen() {
 
         {!isDailyView && renderGroceryBanner()}
 
+        {/* ═══ DAILY VIEW ═══ */}
         {isDailyView ? (
           multipleMeals ? (
+            /* ── Daily: multiple meals timeline ── */
             <>
               <View style={styles.timeline}>
                 <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
-                {dailyMeals.map((meal, idx) => {
-                  const recipe = meal.recipeId ? getRecipe(meal.recipeId) : null;
+                {dailyMeals.map((slot, idx) => {
+                  const meal = slot.meal;
                   return (
-                    <View key={`${selectedDay}-${idx}`} style={styles.dayRow}>
+                    <View key={`${selectedDate}-${idx}`} style={styles.dayRow}>
                       <View style={styles.dayLeft}>
                         <View
                           style={[
                             styles.timelineNode,
                             {
-                              backgroundColor: recipe ? colors.primary : colors.surfaceContainerHigh,
+                              backgroundColor: meal ? colors.primary : colors.surfaceContainerHigh,
                             },
                           ]}
                         />
                       </View>
                       <View style={styles.dayRight}>
                         <Text style={[Typography.labelLarge, { color: colors.primary, marginBottom: Spacing.sm, letterSpacing: 1.5 }]}>
-                          {meal.time} {'\u2022'} {meal.label}
+                          {slot.time} {'\u2022'} {slot.label}
                         </Text>
-                        {recipe ? (
-                          <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}>
-                            <GlassView style={styles.mealCard}>
-                              <Image
-                                source={{ uri: recipe.image }}
-                                style={styles.mealImage}
-                                contentFit="cover"
-                                transition={300}
-                                accessible={false}
-                              />
-                              <View style={styles.recipeBadge}>
-                                <GlassView style={styles.recipeBadgeGlass}>
-                                  <Text style={[Typography.labelSmall, { color: '#FFFFFF', fontWeight: '700' }]}>RECIPE</Text>
-                                </GlassView>
-                              </View>
-                              <View style={styles.mealContent}>
-                                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 22 }]} numberOfLines={1}>
-                                  {recipe.title}
-                                </Text>
-                                <View style={styles.mealMeta}>
-                                  <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
-                                  <Text style={[Typography.caption, { color: colors.outline }]}>
-                                    {recipe.prepTime + recipe.cookTime}m
-                                  </Text>
-                                </View>
-                              </View>
-                            </GlassView>
-                          </Pressable>
+                        {meal ? (
+                          <MealCard
+                            meal={meal}
+                            imageStyle={styles.mealImage}
+                            badgeLabel="RECIPE"
+                            headlineFontSize={22}
+                            onPress={() => router.push(`/recipe/${meal.recipeId}`)}
+                            onLongPress={() => handleRemoveCourse(selectedDate, slot.courseType)}
+                            colors={colors}
+                          />
                         ) : (
                           <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
                             <View style={styles.emptyCardRow}>
                               <MaterialCommunityIcons
-                                name={meal.label === 'Breakfast' ? 'white-balance-sunny' : 'silverware-variant'}
+                                name={slot.label === 'Appetizer' ? 'food-variant' : 'silverware-variant'}
                                 size={20}
                                 color={colors.outline}
                               />
                               <Text style={[Typography.bodySmall, { color: colors.outline, fontStyle: 'italic' }]}>
-                                {meal.label} unassigned...
+                                {slot.label} unassigned...
                               </Text>
                             </View>
                             <Pressable
-                              onPress={() => router.push('/(tabs)/search')}
+                              onPress={() => openPicker(selectedDate, slot.courseType)}
                               style={styles.addMealBtn}
                               accessibilityRole="button"
-                              accessibilityLabel={`Add ${meal.label}`}
+                              accessibilityLabel={`Add ${slot.label}`}
                             >
                               <MaterialCommunityIcons name="plus-circle-outline" size={16} color={colors.primary} />
                               <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5 }]}>
@@ -368,6 +373,7 @@ export default function PlanScreen() {
               {renderGroceryBanner()}
             </>
           ) : (
+            /* ── Daily: single meal (primary dinner) + course slots ── */
             <>
               <View style={styles.timeline}>
                 <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
@@ -379,43 +385,33 @@ export default function PlanScreen() {
                   <View style={styles.dayRight}>
                     <View style={styles.primaryMealHeader}>
                       <Text style={[Typography.labelLarge, { color: colors.primary, letterSpacing: 1.5 }]}>
-                        {primaryMeal?.time || '07:30 PM'} {'\u2022'} Primary Meal (Dinner)
+                        07:30 PM {'\u2022'} Primary Meal (Dinner)
                       </Text>
-                      <View style={[styles.dinnerPartyBadge, { backgroundColor: `${colors.primary}15` }]}>
+                      <Pressable
+                        onPress={() => app.toggleDinnerParty(selectedDate)}
+                        style={[
+                          styles.dinnerPartyBadge,
+                          { backgroundColor: selectedDay?.hasDinnerParty ? `${colors.primary}30` : `${colors.primary}15` },
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel={selectedDay?.hasDinnerParty ? 'Disable dinner party' : 'Enable dinner party'}
+                      >
                         <MaterialCommunityIcons name="account-group" size={14} color={colors.primary} />
                         <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.3 }]}>
                           Dinner Party
                         </Text>
-                      </View>
-                    </View>
-                    {primaryRecipe ? (
-                      <Pressable onPress={() => router.push(`/recipe/${primaryRecipe.id}`)} accessibilityRole="button" accessibilityLabel={`${primaryRecipe.title}, ${primaryRecipe.prepTime + primaryRecipe.cookTime} minutes`}>
-                        <GlassView style={styles.mealCard}>
-                          <Image
-                            source={{ uri: primaryRecipe.image }}
-                            style={styles.mealImageTall}
-                            contentFit="cover"
-                            transition={300}
-                            accessible={false}
-                          />
-                          <View style={styles.recipeBadge}>
-                            <GlassView style={styles.recipeBadgeGlass}>
-                              <Text style={[Typography.labelSmall, { color: '#FFFFFF', fontWeight: '700' }]}>RECIPE</Text>
-                            </GlassView>
-                          </View>
-                          <View style={styles.mealContent}>
-                            <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 24 }]} numberOfLines={1}>
-                              {primaryRecipe.title}
-                            </Text>
-                            <View style={styles.mealMeta}>
-                              <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
-                              <Text style={[Typography.caption, { color: colors.outline }]}>
-                                {primaryRecipe.prepTime + primaryRecipe.cookTime}m
-                              </Text>
-                            </View>
-                          </View>
-                        </GlassView>
                       </Pressable>
+                    </View>
+                    {primaryMeal ? (
+                      <MealCard
+                        meal={primaryMeal}
+                        imageStyle={styles.mealImageTall}
+                        badgeLabel="RECIPE"
+                        headlineFontSize={24}
+                        onPress={() => router.push(`/recipe/${primaryMeal.recipeId}`)}
+                        onLongPress={() => handleRemoveCourse(selectedDate, 'main')}
+                        colors={colors}
+                      />
                     ) : (
                       <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
                         <MaterialCommunityIcons name="silverware-variant" size={32} color={colors.outlineVariant} />
@@ -423,7 +419,7 @@ export default function PlanScreen() {
                           No meal planned yet
                         </Text>
                         <Pressable
-                          onPress={() => router.push('/(tabs)/search')}
+                          onPress={() => openPicker(selectedDate, 'main')}
                           style={[styles.browseBtn, { backgroundColor: colors.primary }]}
                           accessibilityRole="button"
                           accessibilityLabel="Browse recipes"
@@ -437,81 +433,98 @@ export default function PlanScreen() {
                   </View>
                 </View>
 
-                {COURSE_SLOTS.map((course) => (
-                  <View key={course.label} style={styles.dayRow}>
-                    <View style={styles.dayLeft}>
-                      <View style={[styles.timelineNodeSmall, { backgroundColor: `${colors.primary}40` }]} />
-                    </View>
-                    <View style={styles.dayRight}>
-                      <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm, letterSpacing: 1 }]}>
-                        {course.label.toUpperCase()}
-                      </Text>
-                      <View style={[styles.courseCard, {
-                        borderColor: colors.outlineVariant,
-                        backgroundColor: colors.isDark ? 'rgba(242,237,231,0.05)' : 'rgba(242,237,231,0.3)',
-                      }]}>
-                        <View style={styles.courseCardInner}>
-                          <View style={styles.emptyCardRow}>
-                            <MaterialCommunityIcons
-                              name={course.icon as any}
-                              size={20}
-                              color={`${colors.outline}99`}
-                            />
-                            <Text style={[Typography.bodySmall, { color: `${colors.outline}99`, fontStyle: 'italic' }]}>
-                              {course.placeholder}
-                            </Text>
+                {/* Appetizer / Dessert course slots */}
+                {COURSE_SLOTS.map((course) => {
+                  const courseMeal = selectedDay?.courses[course.courseType];
+                  return (
+                    <View key={course.label} style={styles.dayRow}>
+                      <View style={styles.dayLeft}>
+                        <View style={[styles.timelineNodeSmall, { backgroundColor: `${colors.primary}40` }]} />
+                      </View>
+                      <View style={styles.dayRight}>
+                        <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm, letterSpacing: 1 }]}>
+                          {course.label.toUpperCase()}
+                        </Text>
+                        {courseMeal ? (
+                          <MealCard
+                            meal={courseMeal}
+                            imageStyle={styles.mealImage}
+                            badgeLabel={course.label.toUpperCase()}
+                            headlineFontSize={20}
+                            onPress={() => router.push(`/recipe/${courseMeal.recipeId}`)}
+                            onLongPress={() => handleRemoveCourse(selectedDate, course.courseType)}
+                            colors={colors}
+                          />
+                        ) : (
+                          <View style={[styles.courseCard, {
+                            borderColor: colors.outlineVariant,
+                            backgroundColor: colors.isDark ? 'rgba(242,237,231,0.05)' : 'rgba(242,237,231,0.3)',
+                          }]}>
+                            <View style={styles.courseCardInner}>
+                              <View style={styles.emptyCardRow}>
+                                <MaterialCommunityIcons
+                                  name={course.icon as any}
+                                  size={20}
+                                  color={`${colors.outline}99`}
+                                />
+                                <Text style={[Typography.bodySmall, { color: `${colors.outline}99`, fontStyle: 'italic' }]}>
+                                  {course.placeholder}
+                                </Text>
+                              </View>
+                              <Pressable
+                                onPress={() => openPicker(selectedDate, course.courseType)}
+                                style={[styles.addCircle, {
+                                  backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)',
+                                }]}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Add ${course.label}`}
+                              >
+                                <MaterialCommunityIcons name="plus" size={18} color={colors.primary} />
+                              </Pressable>
+                            </View>
                           </View>
-                          <Pressable
-                            onPress={() => router.push('/(tabs)/search')}
-                            style={[styles.addCircle, {
-                              backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)',
-                            }]}
-                            accessibilityRole="button"
-                            accessibilityLabel={`Add ${course.label}`}
-                          >
-                            <MaterialCommunityIcons name="plus" size={18} color={colors.primary} />
-                          </Pressable>
-                        </View>
+                        )}
                       </View>
                     </View>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
               {renderGroceryBanner()}
             </>
           )
         ) : (
+          /* ═══ WEEKLY VIEW ═══ */
           <View style={styles.timeline}>
             <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
-            {DAYS.map((day) => {
-              const recipeId = currentWeek.planned[day];
-              const recipe = recipeId ? getRecipe(recipeId) : null;
+            {weekDays.map((day) => {
+              const mainMeal = day.courses.main;
 
               return (
-                <View key={day} style={styles.dayRow}>
+                <View key={day.date} style={styles.dayRow}>
                   <View style={styles.dayLeft}>
                     <View
                       style={[
                         styles.timelineNode,
                         {
-                          backgroundColor: recipe ? colors.primary : colors.surfaceContainerHigh,
+                          backgroundColor: mainMeal ? colors.primary : colors.surfaceContainerHigh,
                         },
                       ]}
                     />
                   </View>
                   <View style={styles.dayRight}>
                     <Text style={[Typography.titleSmall, { color: colors.outline, marginBottom: Spacing.sm }]}>
-                      {day}, {currentWeek.dates[day]}
+                      {day.dayLabel}, {formatDateLabel(day.date)}
                     </Text>
-                    {recipe ? (
+                    {mainMeal ? (
                       <Pressable
-                        onPress={() => router.push(`/recipe/${recipe.id}`)}
+                        onPress={() => router.push(`/recipe/${mainMeal.recipeId}`)}
+                        onLongPress={() => handleRemoveCourse(day.date, 'main')}
                         style={[styles.mealCard, { backgroundColor: colors.surfaceContainerLow }]}
                         accessibilityRole="button"
-                        accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}
+                        accessibilityLabel={`${mainMeal.recipeName}, ${mainMeal.cookTime} minutes`}
                       >
                         <Image
-                          source={{ uri: recipe.image }}
+                          source={{ uri: mainMeal.recipeImage }}
                           style={styles.mealImage}
                           contentFit="cover"
                           transition={300}
@@ -519,17 +532,17 @@ export default function PlanScreen() {
                         />
                         <View style={styles.recipeBadge}>
                           <GlassView style={styles.recipeBadgeGlass}>
-                            <Text style={[Typography.labelSmall, { color: '#FFFFFF' }]}>DINNER</Text>
+                            <Text style={[Typography.labelSmall, { color: colors.textOnImage }]}>DINNER</Text>
                           </GlassView>
                         </View>
                         <View style={styles.mealContent}>
                           <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 22 }]} numberOfLines={1}>
-                            {recipe.title}
+                            {mainMeal.recipeName}
                           </Text>
                           <View style={styles.mealMeta}>
                             <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
                             <Text style={[Typography.caption, { color: colors.outline }]}>
-                              {recipe.prepTime + recipe.cookTime}m
+                              {mainMeal.cookTime}m
                             </Text>
                           </View>
                         </View>
@@ -543,7 +556,7 @@ export default function PlanScreen() {
                           No meals planned yet
                         </Text>
                         <Pressable
-                          onPress={() => router.push('/(tabs)/search')}
+                          onPress={() => openPicker(day.date, 'main')}
                           style={[styles.browseBtn, { backgroundColor: colors.primary }]}
                           accessibilityRole="button"
                           accessibilityLabel="Browse recipes"
@@ -562,30 +575,56 @@ export default function PlanScreen() {
         )}
       </ScrollView>
 
-      <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
-        <Pressable onPress={() => {
-          const firstRecipeId = currentWeek.planned[firstPlannedDay];
-          if (firstRecipeId) {
-            router.push(`/cook-mode/${firstRecipeId}`);
-          } else {
-            router.push('/(tabs)/cook');
-          }
-        }} accessibilityRole="button" accessibilityLabel="Ready to cook">
-          <GlassView style={[styles.readyCTAInner, { ...Shadows.ambient }]}>
-            <View style={[styles.playCircle, { backgroundColor: colors.primary }]}>
-              <MaterialCommunityIcons name="play" size={16} color={colors.onPrimary} />
-            </View>
-            <Text style={[Typography.titleSmall, { color: colors.primary, fontWeight: '700' }]}>
-              Ready to Cook
-            </Text>
-            <View style={{ flex: 1 }} />
-            <Text style={[Typography.labelSmall, { color: colors.outline }]}>
-              {isDailyView ? `${selectedDay}'s Prep` : (firstPlannedDay ? `${firstPlannedDay}'s Prep` : "Today's Prep")}
-            </Text>
-          </GlassView>
+      {/* Ready to Cook bar — only visible when today has meals */}
+      {todaysMeals.length > 0 && (
+        <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
+          <Pressable onPress={() => {
+            const mainToday = todaysMeals.find((m) => weekDays.find((d) =>
+              d.date === new Date().toISOString().split('T')[0] && d.courses.main?.recipeId === m.recipeId
+            ));
+            const targetId = mainToday?.recipeId ?? todaysMeals[0]?.recipeId;
+            if (targetId) {
+              router.push(`/cook-mode/${targetId}`);
+            } else {
+              router.push('/(tabs)/cook');
+            }
+          }} accessibilityRole="button" accessibilityLabel="Ready to cook">
+            <GlassView style={[styles.readyCTAInner, { ...Shadows.ambient }]}>
+              <View style={[styles.playCircle, { backgroundColor: colors.primary }]}>
+                <MaterialCommunityIcons name="play" size={16} color={colors.onPrimary} />
+              </View>
+              <Text style={[Typography.titleSmall, { color: colors.primary, fontWeight: '700' }]}>
+                Ready to Cook
+              </Text>
+              <View style={{ flex: 1 }} />
+              <Text style={[Typography.labelSmall, { color: colors.outline }]}>
+                {isDailyView ? `${selectedDay?.dayLabel}'s Prep` : "Today's Prep"}
+              </Text>
+            </GlassView>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Auto-generate FAB */}
+      <View style={[styles.fabContainer, { bottom: todaysMeals.length > 0 ? 160 : 100, right: Spacing.page }]}>
+        <Pressable
+          onPress={() => {
+            const emptyDates = weekDays
+              .filter((d) => !d.courses.main)
+              .map((d) => d.date);
+            if (emptyDates.length > 0) {
+              app.autoGenerateWeek(emptyDates, app.coursePreference);
+            }
+          }}
+          style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
+          accessibilityRole="button"
+          accessibilityLabel="Auto-generate meal plan"
+        >
+          <MaterialCommunityIcons name="auto-fix" size={22} color={colors.onPrimary} />
         </Pressable>
       </View>
 
+      {/* View dropdown modal */}
       <Modal
         visible={showDropdown}
         transparent
@@ -597,7 +636,7 @@ export default function PlanScreen() {
             <Pressable
               style={[styles.dropdownSheet, {
                 backgroundColor: colors.isDark ? 'rgba(30,28,25,0.92)' : 'rgba(255,255,255,0.85)',
-                shadowColor: '#000',
+                shadowColor: colors.shadow,
                 shadowOffset: { width: 0, height: 16 },
                 shadowOpacity: 0.15,
                 shadowRadius: 32,
@@ -611,6 +650,9 @@ export default function PlanScreen() {
                   <Pressable
                     key={option}
                     onPress={() => {
+                      if (option === 'this-week') setWeekStartDate(toISO(getMonday(new Date())));
+                      else if (option === 'next-week') setWeekStartDate(addDays(toISO(getMonday(new Date())), 7));
+                      else setWeekStartDate(addDays(toISO(getMonday(new Date())), -7));
                       setSelectedWeek(option);
                       setIsDailyView(false);
                       setShowDropdown(false);
@@ -679,6 +721,13 @@ export default function PlanScreen() {
           </View>
         </Pressable>
       </Modal>
+
+      {/* Recipe picker bottom sheet */}
+      <RecipePickerSheet
+        visible={pickerVisible}
+        onDismiss={() => setPickerVisible(false)}
+        onSelect={handlePickRecipe}
+      />
     </View>
   );
 }
@@ -692,12 +741,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: 14,
     borderRadius: Radius.full,
-  },
-  weekArrow: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   weekCenter: {
     alignItems: 'center',
@@ -889,6 +932,20 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  fabContainer: {
+    position: 'absolute',
+  },
+  fab: {
+    width: 52,
+    height: 52,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   dropdownOverlay: {
     flex: 1,
