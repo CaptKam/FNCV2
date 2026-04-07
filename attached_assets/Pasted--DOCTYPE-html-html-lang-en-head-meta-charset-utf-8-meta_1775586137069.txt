@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#ffdbcb",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#004485",
+                    "on-tertiary-fixed-variant": "#004689",
+                    "outline-variant": "#ddc1b4",
+                    "on-tertiary-fixed": "#001b3c",
+                    "on-secondary-container": "#7a4a31",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#ffc9af",
+                    "surface-container-high": "#ece7e2",
+                    "on-primary-fixed": "#341100",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed-variant": "#783100",
+                    "error-container": "#ffdad6",
+                    "surface-tint": "#9d4303",
+                    "tertiary-fixed": "#d5e3ff",
+                    "on-background": "#1d1b18",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#ded9d4",
+                    "primary-container": "#9a4100",
+                    "primary": "#753000",
+                    "tertiary-fixed-dim": "#a7c8ff",
+                    "on-secondary-fixed": "#331101",
+                    "inverse-primary": "#ffb691",
+                    "surface-bright": "#fef9f3",
+                    "on-secondary-fixed-variant": "#683b23",
+                    "inverse-surface": "#32302c",
+                    "secondary-fixed-dim": "#f9b897",
+                    "outline": "#897267",
+                    "inverse-on-surface": "#f5f0ea",
+                    "secondary-fixed": "#ffdbcb",
+                    "on-surface-variant": "#564339",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#005caf",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#ffb691",
+                    "on-surface": "#1d1b18",
+                    "secondary-container": "#ffbd9d",
+                    "surface-variant": "#e6e2dc",
+                    "surface-container-low": "#f8f3ed",
+                    "secondary": "#845238",
+                    "on-tertiary-container": "#c0d6ff",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#e6e2dc",
+                    "surface": "#fef9f3",
+                    "background": "#fef9f3",
+                    "surface-container": "#f2ede7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Noto Serif"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(32px);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        body {
+            background-color: #FEF9F3;
+            color: #1A1A1A;
+            font-family: 'Inter', sans-serif;
+        }
+        h1, h2, h3 {
+            font-family: 'Noto Serif', serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopAppBar -->
+<header class="bg-[#FEF9F3] dark:bg-stone-950 flex justify-between items-center w-full px-6 py-4 docked full-width top-0 sticky z-40">
+<div class="flex items-center gap-4">
+<button class="text-[#9A4100] dark:text-[#E67E22] hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-['Noto_Serif'] font-bold tracking-tight text-[#1A1A1A] dark:text-white text-xl">Saved Collections</h1>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden ring-1 ring-outline-variant/30">
+<img alt="Profile picture" class="w-full h-full object-cover" data-alt="portrait of a professional editor in a soft-lit studio setting with warm earthy tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBm1TL2THH5fkcvu7wp-ZKSaGkmJj_D4ZphdePFovCA3tYbJoMNgeSGDI41L-wbtFLIopdxdLO_5qryQMfLGsVPCd7y4Yuyr5wxLn3j_jg9LmTGTIDm-q5Y-hl3IhkQk2UcWQXyRMfrFCZtkauFSCyv95Z1uwZiGJaUG7u4XO5n4W541-Q1ESuXah1nN10uslXwwohwNTXFBp2ewEUYp3kogRPPdABR3mI2t_4aNcbqo54RyFw5WNHC_08PFwnMIwQtf-fK7bLImPEc"/>
+</div>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-6 pt-8 pb-32">
+<!-- Category Filters (Sub-navigation) -->
+<div class="flex gap-3 mb-10 overflow-x-auto pb-2 scrollbar-hide">
+<button class="px-6 py-2 bg-primary rounded-full text-white text-sm font-medium shadow-sm">All</button>
+<button class="px-6 py-2 bg-surface-container text-on-surface-variant rounded-full text-sm font-medium hover:bg-surface-container-high transition-colors">Stories</button>
+<button class="px-6 py-2 bg-surface-container text-on-surface-variant rounded-full text-sm font-medium hover:bg-surface-container-high transition-colors">Regions</button>
+<button class="px-6 py-2 bg-surface-container text-on-surface-variant rounded-full text-sm font-medium hover:bg-surface-container-high transition-colors">Journals</button>
+</div>
+<!-- Recently Saved Section -->
+<section class="mb-12">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-bold text-on-surface tracking-tight">Recently Saved</h2>
+<span class="text-xs font-bold uppercase tracking-widest text-primary">March 2024</span>
+</div>
+<div class="space-y-1">
+<!-- Item 1 -->
+<div class="group flex items-center gap-4 py-4 px-2 hover:bg-surface-container-low rounded-2xl transition-all duration-300 cursor-pointer">
+<div class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="serene morning view of foggy mountains in the distance with warm orange light hitting the peaks" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEVn2bCtnc9hMn-Df66FYdfwRwYBA2cs8xgvOiOXjh-duhVzw3aEI27AgeNsRe2xD0PG_I8Pq4EMlCnRm7Hndp3qmTTxmL8cywgXId83CDCH2NUjaOAobMoIJFnmQqg3o70Au4dZUKa9b-QPJNWyQ-2lCbTWTNuXHqiu8rl6zMkdJcM2l_jI5Cmi1y5nSvUezOLSPX3hN2gQVc53n0MJkQ37fsp_RP6GidNO7yMNMxi5r_eNtKgoVHiyEIw5R9WdIwLrALaCnFzJf6"/>
+</div>
+<div class="flex-grow min-w-0">
+<span class="text-[10px] uppercase font-bold tracking-widest text-primary mb-1 block">Stories</span>
+<h3 class="text-lg font-bold leading-tight text-on-surface truncate group-hover:text-primary transition-colors">The Echoes of Tuscany</h3>
+<p class="text-sm text-on-surface-variant line-clamp-1 mt-1 font-body">An exploration of silent valleys and ancient stone dwellings.</p>
+</div>
+<button class="p-2 text-primary">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<!-- Item 2 -->
+<div class="group flex items-center gap-4 py-4 px-2 hover:bg-surface-container-low rounded-2xl transition-all duration-300 cursor-pointer">
+<div class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="architectural close up of a taj mahal archway with intricate geometric patterns in warm marble" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNxdAVZZbIj8vl4Ypo0qw8zxyjMo2VBfhyb02IOi9FZ3vldPVqUoK5X9O-_0_V_3B6jM9-8dhALgveHT2twtoLtSvLt6yriQVjTlE_Hk06_QsqDT8fVoFz7n2CG0sLZCq4OHCzLLMeY_LWLOTZA2KOHOz14oJ2XnBB00a5oujjkYVv1UCbtxXS76hmvF4H8vkhFS5tIi0OuMqXnmbj_aNCnCC-nqjCAXXWArsRj4Har9F33Z7zxe0kbvtFJldb0q_cdkR3ylfdA8Jd"/>
+</div>
+<div class="flex-grow min-w-0">
+<span class="text-[10px] uppercase font-bold tracking-widest text-primary mb-1 block">Regions</span>
+<h3 class="text-lg font-bold leading-tight text-on-surface truncate group-hover:text-primary transition-colors">Northern India's Hidden Geometry</h3>
+<p class="text-sm text-on-surface-variant line-clamp-1 mt-1 font-body">Mapping the architectural vernacular of the Rajasthan plains.</p>
+</div>
+<button class="p-2 text-primary">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Archive Section -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-bold text-on-surface tracking-tight opacity-60">From the Archives</h2>
+<span class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Older</span>
+</div>
+<div class="space-y-1">
+<!-- Item 3 -->
+<div class="group flex items-center gap-4 py-4 px-2 hover:bg-surface-container-low rounded-2xl transition-all duration-300 cursor-pointer">
+<div class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="dappled sunlight filtering through tall redwood trees onto a lush green forest floor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS8tOd4KAvl5M1bTcGBHHWf9we2dFX-JAHp6MBlq-MYt3HAkM2XhilL3zbliOLJswmQBhOYZMeBXYndTz1h32qGsVabzRUXuj9LhHkQLTBNCBjnn8mGXQ1M-Q3ZmbnIKIaf9_CCO9zKEQJGBkM1MA5584Kw0m9MZkB2xROpLMZ_9ZwckgTNKHlasIKPgNzq5vR9bjr0cAoKYryo50SvoblHB7AD0rjlf4NNQtPbRbpVcFBK32tDx6nlmvMfDKe00tCRji-X7sqkzcL"/>
+</div>
+<div class="flex-grow min-w-0">
+<span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mb-1 block">Nature</span>
+<h3 class="text-lg font-bold leading-tight text-on-surface truncate group-hover:text-primary transition-colors">Pacific Coastal Breathing</h3>
+<p class="text-sm text-on-surface-variant line-clamp-1 mt-1 font-body">Finding rhythm in the giant sequoias of the northern coast.</p>
+</div>
+<button class="p-2 text-primary">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<!-- Item 4 -->
+<div class="group flex items-center gap-4 py-4 px-2 hover:bg-surface-container-low rounded-2xl transition-all duration-300 cursor-pointer">
+<div class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="top view of a rustic table with an open journal, a ceramic cup of coffee, and dried flowers in warm light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsjUShvPWMDDA7lSyfMrgzvAJlhs1r7CNwz43obDlY1fFvjcGeixUAcEx-crcNhSO2Ugu0ehay4fqr70CWSjP4lFIWdG1rNuyUA6YMrMlW0WRRhenzXBVRXgjbVNN73FvxKZmEYpeUylA7qo5SjpEe5j3_vQAKI1Orf5TuFX66XZYpykGR3OgXpC_odBwnKbrzQyjXs0tg80cS1YXQBUhZ2Mnz5yeA049NF8cxEbpaVDpbMI-ZTdxYFErCEYshJBqF7RuDNMerqVia"/>
+</div>
+<div class="flex-grow min-w-0">
+<span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mb-1 block">Stories</span>
+<h3 class="text-lg font-bold leading-tight text-on-surface truncate group-hover:text-primary transition-colors">The Archivist's Desk</h3>
+<p class="text-sm text-on-surface-variant line-clamp-1 mt-1 font-body">A curated collection of tactile memories and stationery.</p>
+</div>
+<button class="p-2 text-primary">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+<!-- Item 5 -->
+<div class="group flex items-center gap-4 py-4 px-2 hover:bg-surface-container-low rounded-2xl transition-all duration-300 cursor-pointer">
+<div class="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="aerial view of a winding desert road through sand dunes at sunset with deep orange and purple shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVSOHfRoBtEHUdofOgMt0ZXWENtotQ6cVrk9dJdJ6Wgo1V5umFsbSo9Rop1E5jZDuEUzJoURmh1YBfKr83wjyNQ5eeLt4oJMSGrAuawUbSkD-mRE2Or-JOOZek9Fct9pQ_vc1dETp9JnPZLOKFWRAcaaZT8T5j9iGg3326G87VzpV5kHgwRsQbk8vYQOcrHdM9md1RUVKLExY3A-FvPcajnob1LRORo4EQo7kdSa2s5nCTiARaSa9PwoCLaCQr49c6CU01FnCxBn9m"/>
+</div>
+<div class="flex-grow min-w-0">
+<span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant mb-1 block">Regions</span>
+<h3 class="text-lg font-bold leading-tight text-on-surface truncate group-hover:text-primary transition-colors">High Desert Nomadism</h3>
+<p class="text-sm text-on-surface-variant line-clamp-1 mt-1 font-body">Tracking the seasonal shifts of the Mojave interior.</p>
+</div>
+<button class="p-2 text-primary">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Spatial Bar) -->
+<nav class="fixed bottom-6 left-0 right-0 z-50 flex justify-around items-center px-4">
+<div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md rounded-full liquid-glass shadow-[0_20px_40px_rgba(29,27,24,0.06)] flex justify-around items-center h-16 px-4">
+<!-- Explore -->
+<a class="flex flex-col items-center justify-center text-[#4A4A4A] dark:text-[#E0E0E0] p-3 hover:text-[#9A4100] transition-colors scale-90 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="explore">explore</span>
+<span class="font-['Inter'] text-[10px] font-medium tracking-wide uppercase">Explore</span>
+</a>
+<!-- Regions -->
+<a class="flex flex-col items-center justify-center text-[#4A4A4A] dark:text-[#E0E0E0] p-3 hover:text-[#9A4100] transition-colors scale-90 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="map">map</span>
+<span class="font-['Inter'] text-[10px] font-medium tracking-wide uppercase">Regions</span>
+</a>
+<!-- Saved (ACTIVE) -->
+<a class="flex flex-col items-center justify-center bg-[#9A4100] text-white rounded-full p-4 shadow-lg -mt-2 transition-all scale-105" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="bookmark" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+<span class="font-['Inter'] text-[10px] font-medium tracking-wide uppercase">Saved</span>
+</a>
+<!-- Stories -->
+<a class="flex flex-col items-center justify-center text-[#4A4A4A] dark:text-[#E0E0E0] p-3 hover:text-[#9A4100] transition-colors scale-90 duration-200 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="auto_stories">auto_stories</span>
+<span class="font-['Inter'] text-[10px] font-medium tracking-wide uppercase">Stories</span>
+</a>
+</div>
+</nav>
+</body></html>
