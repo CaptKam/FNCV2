@@ -227,7 +227,7 @@ export default function PlanScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 68 }}
       >
 
         {/* Week pill with chevron navigation */}
@@ -823,9 +823,9 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   dayCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },

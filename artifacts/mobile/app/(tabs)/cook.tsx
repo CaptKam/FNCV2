@@ -51,7 +51,7 @@ export default function CookScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: insets.top + 68 }}
       >
         {/* Reputation header — wired to AppContext XP */}
         <View style={[styles.profileSection, { paddingHorizontal: Spacing.page }]}>

@@ -491,8 +491,8 @@ const styles = StyleSheet.create({
   heroContainer: { height: 397, position: 'relative' },
   headerBtn: { position: 'absolute', zIndex: 10 },
   headerBtnGlass: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
@@ -549,8 +549,8 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   servingStepBtn: {
-    width: 32,
-    height: 32,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -569,12 +569,6 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     marginBottom: 16,
   },
-  ingredientItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 16,
-    marginBottom: 16,
-  },
   ingredientCheckbox: {
     width: 24,
     height: 24,
@@ -583,6 +577,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
+  },
+  ingredientItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 16,
+    marginBottom: 16,
+    minHeight: 44,
   },
   groceryCTA: {
     marginBottom: 12,

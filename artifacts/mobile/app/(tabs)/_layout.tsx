@@ -9,7 +9,7 @@ import { Radius } from "@/constants/radius";
 import { Shadows } from "@/constants/shadows";
 import { useApp } from "@/context/AppContext";
 
-const TAB_BAR_HEIGHT = 64;
+const TAB_BAR_HEIGHT = 52;
 
 export default function TabLayout() {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
@@ -35,7 +35,7 @@ export default function TabLayout() {
         },
         tabBarStyle: {
           position: "absolute",
-          bottom: Math.max(insets.bottom, 16) + 16,
+          bottom: insets.bottom + 8,
           left: SCREEN_WIDTH * 0.05,
           right: SCREEN_WIDTH * 0.05,
           height: TAB_BAR_HEIGHT,

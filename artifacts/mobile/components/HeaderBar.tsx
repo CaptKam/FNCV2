@@ -92,7 +92,7 @@ export function HeaderBar({ transparent = false }: HeaderBarProps) {
   );
 }
 
-const HEADER_HEIGHT = 56;
+const HEADER_HEIGHT = 48;
 
 const styles = StyleSheet.create({
   container: {
@@ -119,15 +119,15 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   avatar: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconBtn: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
