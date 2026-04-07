@@ -258,10 +258,11 @@ export default function PlanScreen() {
               </Text>
               <View style={styles.weekTitleRow}>
                 <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>
-                  {isDailyView
-                    ? `${selectedDay?.dayLabel ?? ''}${selectedDate === todayISO ? ' · Today' : ''}`
-                    : weekLabels[selectedWeek]}
+                  {isDailyView ? (selectedDay?.dayLabel ?? '') : weekLabels[selectedWeek]}
                 </Text>
+                {isDailyView && selectedDate === todayISO && (
+                  <Text style={[Typography.headline, { color: colors.today, fontSize: 20 }]}> · Today</Text>
+                )}
                 <MaterialCommunityIcons name="chevron-down" size={18} color={colors.primary} />
               </View>
               {isDailyView ? (
@@ -313,7 +314,7 @@ export default function PlanScreen() {
                       styles.dayCircle,
                       isActive && { backgroundColor: colors.primary },
                       !isActive && hasRecipe && { backgroundColor: `${colors.primary}15` },
-                      !isActive && isToday && { borderWidth: 2, borderColor: colors.primary },
+                      !isActive && isToday && { borderWidth: 2, borderColor: colors.today },
                     ]}
                     accessibilityRole="button"
                     accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
@@ -322,7 +323,7 @@ export default function PlanScreen() {
                     <Text style={[
                       Typography.caption,
                       { fontWeight: '600' },
-                      isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary } : { color: colors.outline },
+                      isActive ? { color: colors.onPrimary } : isToday ? { color: colors.today } : { color: colors.outline },
                     ]}>
                       {letter}
                     </Text>
@@ -557,19 +558,19 @@ export default function PlanScreen() {
                         {
                           backgroundColor: mainMeal ? colors.primary : colors.surfaceContainerHigh,
                         },
-                        isToday && !mainMeal && { borderWidth: 2, borderColor: colors.primary, backgroundColor: 'transparent' },
-                        isToday && mainMeal && { borderWidth: 2, borderColor: colors.onPrimary },
+                        isToday && !mainMeal && { borderWidth: 2, borderColor: colors.today, backgroundColor: 'transparent' },
+                        isToday && mainMeal && { borderWidth: 2, borderColor: colors.today },
                       ]}
                     />
                   </View>
                   <View style={styles.dayRight}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.sm, gap: 6 }}>
-                      <Text style={[Typography.titleSmall, { color: isToday ? colors.primary : colors.outline }]}>
+                      <Text style={[Typography.titleSmall, { color: isToday ? colors.today : colors.outline }]}>
                         {day.dayLabel}, {formatDateLabel(day.date)}
                       </Text>
                       {isToday && (
-                        <View style={[styles.todayBadge, { backgroundColor: colors.primary }]}>
-                          <Text style={[Typography.caption, { color: colors.onPrimary, fontSize: 10, fontWeight: '700' }]}>
+                        <View style={[styles.todayBadge, { backgroundColor: colors.today }]}>
+                          <Text style={[Typography.caption, { color: '#FFFFFF', fontSize: 10, fontWeight: '700' }]}>
                             TODAY
                           </Text>
                         </View>
