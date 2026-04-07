@@ -231,7 +231,7 @@ export default function GroceryScreen() {
                     <MaterialCommunityIcons name="close" size={14} color="#FFFFFF" />
                   </Pressable>
                 </View>
-                <View style={[styles.recipeCardContent, { backgroundColor: colors.surfaceContainerHighest }]}>
+                <View style={styles.recipeCardContent}>
                   <Text style={[Typography.titleSmall, { color: colors.onSurface }]} numberOfLines={1}>
                     {recipe.title}
                   </Text>
