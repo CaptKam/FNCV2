@@ -7,7 +7,6 @@ import { GlassView } from "@/components/GlassView";
 import { useThemeColors } from "@/hooks/useThemeColors";
 import { Radius } from "@/constants/radius";
 import { Shadows } from "@/constants/shadows";
-import { useApp } from "@/context/AppContext";
 
 const TAB_BAR_HEIGHT = 64;
 
@@ -15,8 +14,6 @@ export default function TabLayout() {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const app = useApp();
-  const groceryBadgeCount = app.getUncheckedCount();
 
   return (
     <Tabs
@@ -111,8 +108,6 @@ export default function TabLayout() {
         options={{
           title: "Grocery",
           tabBarAccessibilityLabel: "Grocery tab",
-          tabBarBadge: groceryBadgeCount > 0 ? groceryBadgeCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: colors.primary, color: colors.onPrimary, fontSize: 10 },
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
