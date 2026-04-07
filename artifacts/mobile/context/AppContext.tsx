@@ -514,6 +514,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ═══════════════════════════════════════════
 
   const startCookSession = useCallback((recipe: Recipe, servings: number) => {
+    // Complete any existing session first (awards XP)
+    if (activeCookSession) {
+      completeCookSessionInternal();
+    }
     setActiveCookSession({
       id: generateId(),
       recipeId: recipe.id,
@@ -527,7 +531,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       activeTimerDuration: null,
       status: 'active',
     });
-  }, []);
+  }, [activeCookSession, completeCookSessionInternal]);
 
   const completeCookSessionInternal = useCallback(() => {
     const session = activeCookSession;
@@ -552,13 +556,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [activeCookSession]);
 
+  const advanceStepRef = useRef(false);
+
   const advanceStep = useCallback(() => {
     setActiveCookSession((prev) => {
       if (!prev) return null;
       const nextIndex = prev.currentStepIndex + 1;
       const completed = [...prev.completedSteps, String(prev.currentStepIndex)];
       if (nextIndex >= prev.totalSteps) {
-        // Will complete on next render cycle
+        // Mark for completion — handled in useEffect below
+        advanceStepRef.current = true;
         return { ...prev, completedSteps: completed, currentStepIndex: nextIndex };
       }
       return {
@@ -569,15 +576,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         activeTimerDuration: null,
       };
     });
-    // Check if session is done after state update
-    setActiveCookSession((prev) => {
-      if (prev && prev.currentStepIndex >= prev.totalSteps) {
-        completeCookSessionInternal();
-        return null;
-      }
-      return prev;
-    });
-  }, [completeCookSessionInternal]);
+  }, []);
+
+  // Complete session when advanceStep sets the flag
+  useEffect(() => {
+    if (advanceStepRef.current && activeCookSession && activeCookSession.currentStepIndex >= activeCookSession.totalSteps) {
+      advanceStepRef.current = false;
+      completeCookSessionInternal();
+    }
+  }, [activeCookSession, completeCookSessionInternal]);
 
   const previousStep = useCallback(() => {
     setActiveCookSession((prev) => {

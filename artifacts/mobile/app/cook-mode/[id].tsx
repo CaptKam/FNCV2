@@ -11,6 +11,7 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
+import { useApp } from '@/context/AppContext';
 
 export default function CookModeScreen() {
   useKeepAwake();
@@ -19,12 +20,35 @@ export default function CookModeScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
+  const app = useApp();
+
+  const recipe = recipes.find((r) => r.id === id);
+  const session = app.activeCookSession;
+
+  // Initialize session if none exists or if it's for a different recipe
+  useEffect(() => {
+    if (recipe && (!session || session.recipeId !== recipe.id)) {
+      app.startCookSession(recipe, recipe.servings);
+    }
+  }, [recipe?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Local timer state (ticks every second, driven by session's activeTimerStart/Duration)
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
 
-  const recipe = recipes.find((r) => r.id === id);
+  // Sync local timer from session state
+  useEffect(() => {
+    if (session?.activeTimerStart && session?.activeTimerDuration) {
+      const elapsed = Math.floor((Date.now() - new Date(session.activeTimerStart).getTime()) / 1000);
+      const remaining = Math.max(0, session.activeTimerDuration - elapsed);
+      setTimerSeconds(remaining);
+      setTimerRunning(remaining > 0);
+    } else {
+      setTimerRunning(false);
+    }
+  }, [session?.activeTimerStart, session?.activeTimerDuration]);
 
+  // Timer countdown
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (timerRunning && timerSeconds > 0) {
@@ -32,6 +56,7 @@ export default function CookModeScreen() {
         setTimerSeconds((prev) => {
           if (prev <= 1) {
             setTimerRunning(false);
+            app.clearStepTimer();
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             return 0;
           }
@@ -40,40 +65,40 @@ export default function CookModeScreen() {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [timerRunning, timerSeconds]);
+  }, [timerRunning, timerSeconds, app]);
+
+  // Detect session completion (navigated away by completeCookSession)
+  const prevSessionRef = React.useRef(session);
+  useEffect(() => {
+    if (prevSessionRef.current && !session) {
+      // Session was just completed
+      router.back();
+    }
+    prevSessionRef.current = session;
+  }, [session, router]);
 
   const goNext = useCallback(() => {
-    if (!recipe) return;
-    if (currentStep < recipe.steps.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+    if (!recipe || !session) return;
+    if (session.currentStepIndex < recipe.steps.length - 1) {
+      app.advanceStep();
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      const nextStep = recipe.steps[currentStep + 1];
-      if (nextStep.duration) {
-        setTimerSeconds(nextStep.duration * 60);
-        setTimerRunning(false);
-      } else {
-        setTimerSeconds(0);
-        setTimerRunning(false);
+      // Set up timer for next step if it has duration
+      const nextStep = recipe.steps[session.currentStepIndex + 1];
+      if (nextStep?.duration) {
+        app.startStepTimer(nextStep.duration * 60);
       }
+    } else {
+      // Last step — advance triggers completion in AppContext
+      app.advanceStep();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [currentStep, recipe]);
+  }, [session, recipe, app]);
 
   const goPrev = useCallback(() => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      if (recipe) {
-        const prevStep = recipe.steps[currentStep - 1];
-        if (prevStep.duration) {
-          setTimerSeconds(prevStep.duration * 60);
-          setTimerRunning(false);
-        } else {
-          setTimerSeconds(0);
-          setTimerRunning(false);
-        }
-      }
-    }
-  }, [currentStep, recipe]);
+    if (!session || session.currentStepIndex <= 0) return;
+    app.previousStep();
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, [session, app]);
 
   if (!recipe) {
     return (
@@ -85,7 +110,9 @@ export default function CookModeScreen() {
     );
   }
 
-  const step = recipe.steps[currentStep];
+  // Read step from session (fallback to 0 while session initializes)
+  const currentStep = session?.recipeId === recipe.id ? session.currentStepIndex : 0;
+  const step = recipe.steps[Math.min(currentStep, recipe.steps.length - 1)];
   const progress = (currentStep + 1) / recipe.steps.length;
   const minutes = Math.floor(timerSeconds / 60);
   const seconds = timerSeconds % 60;
@@ -138,10 +165,17 @@ export default function CookModeScreen() {
             </View>
             <Pressable
               onPress={() => {
-                if (timerSeconds === 0 && step.duration) {
-                  setTimerSeconds(step.duration * 60);
+                if (!timerRunning && timerSeconds === 0 && step.duration) {
+                  // Start fresh timer
+                  app.startStepTimer(step.duration * 60);
+                } else if (timerRunning) {
+                  // Pause — clear the context timer, keep local display
+                  app.clearStepTimer();
+                  setTimerRunning(false);
+                } else {
+                  // Resume — restart context timer with remaining seconds
+                  app.startStepTimer(timerSeconds);
                 }
-                setTimerRunning(!timerRunning);
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }}
               style={[styles.timerBtn, { backgroundColor: `${colors.primary}20` }]}
@@ -192,16 +226,16 @@ export default function CookModeScreen() {
           </Pressable>
           <Pressable
             onPress={goNext}
-            disabled={currentStep === recipe.steps.length - 1}
             style={[
               styles.navBtn,
-              { opacity: currentStep === recipe.steps.length - 1 ? 0.3 : 1 },
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Next step"
+            accessibilityLabel={currentStep >= recipe.steps.length - 1 ? 'Finish cooking' : 'Next step'}
           >
-            <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>Next</Text>
-            <Feather name="chevron-right" size={24} color={colors.inverseOnSurface} />
+            <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>
+              {currentStep >= recipe.steps.length - 1 ? 'Finish' : 'Next'}
+            </Text>
+            <Feather name={currentStep >= recipe.steps.length - 1 ? 'check' : 'chevron-right'} size={24} color={colors.inverseOnSurface} />
           </Pressable>
         </GlassView>
       </View>

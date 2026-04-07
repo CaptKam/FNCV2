@@ -20,6 +20,7 @@ import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { useThemePreference, ThemePreference } from '@/context/ThemeContext';
+import { useApp } from '@/context/AppContext';
 
 const THEME_OPTIONS: { id: ThemePreference; label: string; icon: string; desc: string }[] = [
   { id: 'system', label: 'System', icon: 'cellphone-cog', desc: 'Match your device settings' },
@@ -81,6 +82,7 @@ export default function ProfileScreen() {
   const router = useRouter();
 
   const { preference, setPreference } = useThemePreference();
+  const app = useApp();
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
@@ -211,6 +213,31 @@ export default function ProfileScreen() {
             Cooking Settings
           </Text>
           <View style={styles.settingsGroup}>
+            <SettingRow
+              icon="chef-hat"
+              label="Cooking Level"
+              subtitle={app.cookingLevel === 'beginner' ? 'Beginner' : app.cookingLevel === 'home_cook' ? 'Home Cook' : 'Chef'}
+              colors={colors}
+              trailing={
+                <Pressable
+                  onPress={() => {
+                    const levels = ['beginner', 'home_cook', 'chef'] as const;
+                    const idx = levels.indexOf(app.cookingLevel);
+                    app.setCookingLevel(levels[(idx + 1) % levels.length]);
+                  }}
+                  style={[
+                    styles.unitToggle,
+                    { backgroundColor: colors.surfaceContainerHigh },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Change cooking level, currently ${app.cookingLevel}`}
+                >
+                  <Text style={[Typography.labelSmall, { color: colors.primary }]}>
+                    {app.cookingLevel === 'beginner' ? 'BEGINNER' : app.cookingLevel === 'home_cook' ? 'HOME COOK' : 'CHEF'}
+                  </Text>
+                </Pressable>
+              }
+            />
             <SettingRow
               icon="scale"
               label="Measurement Units"
