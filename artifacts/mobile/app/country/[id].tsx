@@ -55,15 +55,15 @@ export default function CountryDetailScreen() {
             accessibilityLabel="Go back"
           >
             <GlassView style={styles.backGlass}>
-              <Feather name="arrow-left" size={20} color="#FFFFFF" />
+              <Feather name="arrow-left" size={20} color={colors.textOnImage} />
             </GlassView>
           </Pressable>
           <View style={styles.heroText}>
             <GlassView style={styles.flagPill}>
               <Text style={{ fontSize: 16 }}>{country.flag}</Text>
-              <Text style={[Typography.caption, { color: '#FFFFFF' }]}>{country.region}</Text>
+              <Text style={[Typography.caption, { color: colors.textOnImage }]}>{country.region}</Text>
             </GlassView>
-            <Text style={[Typography.displayMedium, { color: '#FFFFFF' }]}>{country.name}</Text>
+            <Text style={[Typography.displayMedium, { color: colors.textOnImage }]}>{country.name}</Text>
           </View>
         </View>
 

@@ -100,8 +100,8 @@ export default function CookScreen() {
               />
               <View style={styles.activeContent}>
                 <GlassView style={styles.activeGlass}>
-                  <Text style={[Typography.labelLarge, { color: '#FFFFFF' }]}>IN THE KITCHEN</Text>
-                  <Text style={[Typography.displayMedium, { color: '#FFFFFF', fontSize: 24 }]} numberOfLines={1}>
+                  <Text style={[Typography.labelLarge, { color: colors.textOnImage }]}>IN THE KITCHEN</Text>
+                  <Text style={[Typography.displayMedium, { color: colors.textOnImage, fontSize: 24 }]} numberOfLines={1}>
                     {sessionRecipe.title}
                   </Text>
                   <Text style={[Typography.body, { color: 'rgba(255,255,255,0.8)', fontSize: 14 }]} numberOfLines={2}>
@@ -149,8 +149,8 @@ export default function CookScreen() {
               />
               <View style={styles.activeContent}>
                 <GlassView style={styles.activeGlass}>
-                  <Text style={[Typography.labelLarge, { color: '#FFFFFF' }]}>TONIGHT'S DINNER</Text>
-                  <Text style={[Typography.displayMedium, { color: '#FFFFFF', fontSize: 24 }]} numberOfLines={1}>
+                  <Text style={[Typography.labelLarge, { color: colors.textOnImage }]}>TONIGHT'S DINNER</Text>
+                  <Text style={[Typography.displayMedium, { color: colors.textOnImage, fontSize: 24 }]} numberOfLines={1}>
                     {todayRecipe.title}
                   </Text>
                   <Text style={[Typography.body, { color: 'rgba(255,255,255,0.8)', fontSize: 14 }]} numberOfLines={2}>
@@ -222,12 +222,12 @@ export default function CookScreen() {
                 />
                 <View style={styles.durationBadge}>
                   <GlassView style={styles.durationGlass}>
-                    <Feather name="play" size={10} color="#FFFFFF" />
-                    <Text style={[Typography.labelSmall, { color: '#FFFFFF' }]}>{tech.duration}</Text>
+                    <Feather name="play" size={10} color={colors.textOnImage} />
+                    <Text style={[Typography.labelSmall, { color: colors.textOnImage }]}>{tech.duration}</Text>
                   </GlassView>
                 </View>
                 <View style={styles.techContent}>
-                  <Text style={[Typography.headline, { color: '#FFFFFF', fontSize: 16 }]}>
+                  <Text style={[Typography.headline, { color: colors.textOnImage, fontSize: 16 }]}>
                     {tech.title}
                   </Text>
                   <Text style={[Typography.bodySmall, { color: 'rgba(255,255,255,0.7)' }]}>
@@ -257,6 +257,7 @@ export default function CookScreen() {
                     styles.miniAvatar,
                     {
                       backgroundColor: colors.surfaceContainerHigh,
+                      borderColor: colors.surface,
                       marginLeft: i > 1 ? -8 : 0,
                     },
                   ]}
@@ -413,7 +414,6 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: Radius.full,
     borderWidth: 2,
-    borderColor: '#FEF9F3',
   },
   waitlistBtn: {
     alignSelf: 'flex-start',

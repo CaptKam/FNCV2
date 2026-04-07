@@ -88,7 +88,7 @@ function MealCard({
         />
         <View style={styles.recipeBadge}>
           <GlassView style={styles.recipeBadgeGlass}>
-            <Text style={[Typography.labelSmall, { color: '#FFFFFF', fontWeight: '700' }]}>{badgeLabel}</Text>
+            <Text style={[Typography.labelSmall, { color: colors.textOnImage, fontWeight: '700' }]}>{badgeLabel}</Text>
           </GlassView>
         </View>
         <View style={styles.mealContent}>
@@ -532,7 +532,7 @@ export default function PlanScreen() {
                         />
                         <View style={styles.recipeBadge}>
                           <GlassView style={styles.recipeBadgeGlass}>
-                            <Text style={[Typography.labelSmall, { color: '#FFFFFF' }]}>DINNER</Text>
+                            <Text style={[Typography.labelSmall, { color: colors.textOnImage }]}>DINNER</Text>
                           </GlassView>
                         </View>
                         <View style={styles.mealContent}>
@@ -616,7 +616,7 @@ export default function PlanScreen() {
               app.autoGenerateWeek(emptyDates, app.coursePreference);
             }
           }}
-          style={[styles.fab, { backgroundColor: colors.primary }]}
+          style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
           accessibilityRole="button"
           accessibilityLabel="Auto-generate meal plan"
         >
@@ -636,7 +636,7 @@ export default function PlanScreen() {
             <Pressable
               style={[styles.dropdownSheet, {
                 backgroundColor: colors.isDark ? 'rgba(30,28,25,0.92)' : 'rgba(255,255,255,0.85)',
-                shadowColor: '#000',
+                shadowColor: colors.shadow,
                 shadowOffset: { width: 0, height: 16 },
                 shadowOpacity: 0.15,
                 shadowRadius: 32,
@@ -943,7 +943,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 6,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,

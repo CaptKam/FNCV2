@@ -50,7 +50,7 @@ export function RecipePickerSheet({ visible, onDismiss, onSelect }: RecipePicker
             },
           ]}
         >
-          <View style={styles.handle} />
+          <View style={[styles.handle, { backgroundColor: colors.handleBar }]} />
           <View style={styles.header}>
             <Text style={[Typography.headline, { color: colors.onSurface }]}>Pick a Recipe</Text>
             <Pressable
@@ -133,7 +133,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#999',
     alignSelf: 'center',
     marginBottom: Spacing.md,
   },

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-na
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
@@ -19,6 +20,7 @@ export function DestinationCard({ country }: DestinationCardProps) {
   const { width } = useWindowDimensions();
   const CARD_WIDTH = (width - Spacing.page * 2 - Spacing.md) / 2;
   const router = useRouter();
+  const colors = useThemeColors();
   const scale = useSharedValue(1);
 
   const imageStyle = useAnimatedStyle(() => ({
@@ -49,7 +51,7 @@ export function DestinationCard({ country }: DestinationCardProps) {
         <Text style={[Typography.labelSmall, { color: 'rgba(255,255,255,0.8)' }]}>
           {country.flag} {country.region}
         </Text>
-        <Text style={[Typography.headline, { color: '#FFFFFF', fontSize: 18 }]} numberOfLines={1}>
+        <Text style={[Typography.headline, { color: colors.textOnImage, fontSize: 18 }]} numberOfLines={1}>
           {country.name}
         </Text>
       </View>

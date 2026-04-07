@@ -132,7 +132,7 @@ export default function RecipeDetailScreen() {
             accessibilityLabel="Go back"
           >
             <GlassView style={styles.backGlass}>
-              <Feather name="arrow-left" size={20} color="#FFFFFF" />
+              <Feather name="arrow-left" size={20} color={colors.textOnImage} />
             </GlassView>
           </Pressable>
           <Pressable
@@ -145,7 +145,7 @@ export default function RecipeDetailScreen() {
               <MaterialCommunityIcons
                 name={isSaved ? 'heart' : 'heart-outline'}
                 size={20}
-                color={isSaved ? colors.primary : '#FFFFFF'}
+                color={isSaved ? colors.primary : colors.textOnImage}
               />
             </GlassView>
           </Pressable>
@@ -153,7 +153,7 @@ export default function RecipeDetailScreen() {
             <Text style={[Typography.labelSmall, { color: 'rgba(255,255,255,0.8)' }]}>
               {country.flag} {country.name}
             </Text>
-            <Text style={[Typography.display, { color: '#FFFFFF' }]}>{recipe.title}</Text>
+            <Text style={[Typography.display, { color: colors.textOnImage }]}>{recipe.title}</Text>
           </View>
         </View>
 
@@ -309,7 +309,7 @@ export default function RecipeDetailScreen() {
             style={[styles.sheetContainer, { backgroundColor: colors.surface }]}
             onPress={(e) => e.stopPropagation()}
           >
-            <View style={styles.sheetHandle} />
+            <View style={[styles.sheetHandle, { backgroundColor: colors.handleBar }]} />
             <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
               Add to Plan
             </Text>
@@ -474,7 +474,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#999',
     alignSelf: 'center',
     marginBottom: Spacing.lg,
   },

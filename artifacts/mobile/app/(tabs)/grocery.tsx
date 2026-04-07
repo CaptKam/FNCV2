@@ -19,15 +19,14 @@ interface CategoryDef {
   icon: IconName;
   key: GroceryItem['category'];
   label: string;
-  color: string;
 }
 
 const CATEGORY_ORDER: CategoryDef[] = [
-  { icon: 'leaf', key: 'produce', label: 'Produce', color: '#4CAF50' },
-  { icon: 'food-steak', key: 'protein', label: 'Protein', color: '#E57373' },
-  { icon: 'cheese', key: 'dairy', label: 'Dairy', color: '#FFD54F' },
-  { icon: 'shaker-outline', key: 'spice', label: 'Spices', color: '#FF8A65' },
-  { icon: 'package-variant-closed', key: 'pantry', label: 'Pantry', color: '#A1887F' },
+  { icon: 'leaf', key: 'produce', label: 'Produce' },
+  { icon: 'food-steak', key: 'protein', label: 'Protein' },
+  { icon: 'cheese', key: 'dairy', label: 'Dairy' },
+  { icon: 'shaker-outline', key: 'spice', label: 'Spices' },
+  { icon: 'package-variant-closed', key: 'pantry', label: 'Pantry' },
 ];
 
 interface Retailer {
@@ -51,6 +50,14 @@ export default function GroceryScreen() {
   const [activeTab, setActiveTab] = useState<'online' | 'instore'>('online');
   const [selectedRetailer, setSelectedRetailer] = useState(2);
   const [zipCode, setZipCode] = useState('10001');
+
+  const categoryColors: Record<string, string> = {
+    produce: colors.categoryProduce,
+    protein: colors.categoryProtein,
+    dairy: colors.categoryDairy,
+    spice: colors.categorySpice,
+    pantry: colors.categoryPantry,
+  };
 
   const { groceryItems } = app;
   const uncheckedCount = app.getUncheckedCount();
@@ -78,10 +85,10 @@ export default function GroceryScreen() {
         const items = groceryItems
           .filter((item) => item.category === cat.key)
           .sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? 1 : -1));
-        return { ...cat, items };
+        return { ...cat, color: categoryColors[cat.key], items };
       })
       .filter((group) => group.items.length > 0);
-  }, [groceryItems]);
+  }, [groceryItems, colors]);
 
   const handleClearChecked = () => {
     app.clearCheckedItems();
@@ -224,7 +231,7 @@ export default function GroceryScreen() {
                       accessibilityRole="button"
                       accessibilityLabel={`Remove ${recipe.title} from grocery list`}
                     >
-                      <MaterialCommunityIcons name="close" size={14} color="#FFFFFF" />
+                      <MaterialCommunityIcons name="close" size={14} color={colors.textOnImage} />
                     </Pressable>
                   </View>
                   <View style={styles.recipeCardContent}>
@@ -416,7 +423,7 @@ export default function GroceryScreen() {
                   ]}
                 >
                   {item.checked && (
-                    <MaterialCommunityIcons name="check" size={14} color="#FFFFFF" />
+                    <MaterialCommunityIcons name="check" size={14} color={colors.textOnImage} />
                   )}
                 </View>
               </Pressable>
