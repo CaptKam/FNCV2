@@ -10,6 +10,8 @@ import { Shadows } from '@/constants/shadows';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 
+type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+
 interface GroceryItem {
   id: string;
   name: string;
@@ -19,7 +21,18 @@ interface GroceryItem {
   recipeCount: number;
 }
 
-const CATEGORIES: { icon: string; name: string; color: string }[] = [
+interface Category {
+  icon: IconName;
+  name: string;
+  color: string;
+}
+
+interface Retailer {
+  name: string;
+  icon: IconName;
+}
+
+const CATEGORIES: Category[] = [
   { icon: 'leaf', name: 'Produce', color: '#4CAF50' },
   { icon: 'food-steak', name: 'Protein', color: '#E57373' },
   { icon: 'cheese', name: 'Dairy', color: '#FFD54F' },
@@ -28,7 +41,7 @@ const CATEGORIES: { icon: string; name: string; color: string }[] = [
   { icon: 'dots-horizontal', name: 'Other', color: '#90A4AE' },
 ];
 
-const RETAILERS = [
+const RETAILERS: Retailer[] = [
   { name: 'Walmart', icon: 'store' },
   { name: 'Amazon Fresh', icon: 'truck-delivery' },
   { name: 'Instacart', icon: 'cart' },
@@ -248,7 +261,7 @@ export default function GroceryScreen() {
                     ]}
                   >
                     <MaterialCommunityIcons
-                      name={retailer.icon as any}
+                      name={retailer.icon}
                       size={28}
                       color={selectedRetailer === index ? colors.primary : colors.outline}
                     />
@@ -276,7 +289,7 @@ export default function GroceryScreen() {
           <View key={group.name} style={styles.categorySection}>
             <View style={styles.categoryHeader}>
               <View style={[styles.categoryIconCircle, { backgroundColor: `${group.color}20` }]}>
-                <MaterialCommunityIcons name={group.icon as any} size={18} color={group.color} />
+                <MaterialCommunityIcons name={group.icon} size={18} color={group.color} />
               </View>
               <Text style={[Typography.headline, { color: colors.onSurface, flex: 1 }]}>
                 {group.name}
@@ -298,7 +311,7 @@ export default function GroceryScreen() {
                   },
                 ]}
               >
-                <MaterialCommunityIcons name={group.icon as any} size={24} color={colors.outlineVariant} />
+                <MaterialCommunityIcons name={group.icon} size={24} color={colors.outlineVariant} />
                 <Text style={[Typography.bodySmall, { color: colors.outline, marginTop: Spacing.xs }]}>
                   No {group.name.toLowerCase()} items needed
                 </Text>
@@ -317,7 +330,7 @@ export default function GroceryScreen() {
                   ]}
                 >
                   <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
-                    <MaterialCommunityIcons name={group.icon as any} size={16} color={group.color} />
+                    <MaterialCommunityIcons name={group.icon} size={16} color={group.color} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text
@@ -382,7 +395,7 @@ export default function GroceryScreen() {
               style={[styles.orderButton, { backgroundColor: colors.primary }]}
             >
               <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
-                Order from {RETAILERS[selectedRetailer].name}
+                Order from {RETAILERS[selectedRetailer].name}  •  $47.50
               </Text>
               <MaterialCommunityIcons name="arrow-right" size={18} color={colors.onPrimary} />
             </Pressable>
