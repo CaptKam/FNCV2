@@ -80,7 +80,20 @@ export default function GroceryScreen() {
   const [selectedRetailer, setSelectedRetailer] = useState(2);
   const [zipCode, setZipCode] = useState('10001');
   const [activeRecipes, setActiveRecipes] = useState(() => recipes.slice(0, 4));
+  const [servingSizes, setServingSizes] = useState<Record<string, number>>(() => {
+    const initial: Record<string, number> = {};
+    recipes.slice(0, 4).forEach((r) => { initial[r.id] = r.servings; });
+    return initial;
+  });
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+
+  const updateServings = (recipeId: string, delta: number) => {
+    setServingSizes((prev) => {
+      const current = prev[recipeId] ?? 1;
+      const next = Math.max(1, Math.min(20, current + delta));
+      return { ...prev, [recipeId]: next };
+    });
+  };
 
   const groceryItems = useMemo(() => {
     const items = buildGroceryList(activeRecipes);
@@ -194,10 +207,22 @@ export default function GroceryScreen() {
                     style={styles.recipeImage}
                   />
                   <View style={[styles.servingBadge, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
+                    <Pressable
+                      onPress={() => updateServings(recipe.id, -1)}
+                      style={styles.servingBtn}
+                    >
+                      <MaterialCommunityIcons name="minus" size={12} color="#FFFFFF" />
+                    </Pressable>
                     <MaterialCommunityIcons name="account-group-outline" size={12} color="#FFFFFF" />
                     <Text style={[Typography.labelSmall, { color: '#FFFFFF' }]}>
-                      {recipe.servings} servings
+                      {servingSizes[recipe.id] ?? recipe.servings}
                     </Text>
+                    <Pressable
+                      onPress={() => updateServings(recipe.id, 1)}
+                      style={styles.servingBtn}
+                    >
+                      <MaterialCommunityIcons name="plus" size={12} color="#FFFFFF" />
+                    </Pressable>
                   </View>
                   <Pressable
                     onPress={() => removeRecipe(recipe.id)}
@@ -460,9 +485,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: Spacing.sm,
+    paddingHorizontal: 4,
     paddingVertical: 4,
     borderRadius: Radius.full,
+  },
+  servingBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   recipeCloseBtn: {
     position: 'absolute',
