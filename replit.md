@@ -43,12 +43,22 @@ Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a 
 - All local mock data: 8 countries, 97 recipes with ingredients, steps, cultural notes
 - No backend required
 
+### Known Functional Gaps
+- Ingredient amounts are display strings — servings adjuster in Recipe Detail and Grocery doesn't actually scale
+- Grocery list deduplication doesn't sum amounts across recipes
+- Plan tab is fully hardcoded mock data — no real itinerary state
+- No global AppContext for cook sessions, itinerary, or grocery state
+- No CookingPill indicator or tab badge for unchecked grocery items
+- See `artifacts/mobile/MASTER_BLUEPRINT.md` for full audit and roadmap
+
 ### Key Files
+- `artifacts/mobile/MASTER_BLUEPRINT.md` — full design system, architecture, and systems roadmap
+- `artifacts/mobile/FLOW_MAP.md` — detailed screen flows and navigation map
 - `artifacts/mobile/constants/` — colors, typography, spacing, radius, shadows, glass tokens
 - `artifacts/mobile/data/` — countries.ts, recipes.ts
 - `artifacts/mobile/context/BookmarksContext.tsx` — shared bookmarks state with AsyncStorage persistence
 - `artifacts/mobile/context/ThemeContext.tsx` — theme preference (system/light/dark) with AsyncStorage persistence
-- `artifacts/mobile/components/` — GlassView, SectionHeader, RecipeCard, DestinationCard
+- `artifacts/mobile/components/` — GlassView, HeaderBar, SectionHeader, RecipeCard, DestinationCard, ErrorBoundary
 - `artifacts/mobile/app/(tabs)/` — 5 tab screens
 - `artifacts/mobile/app/country/[id].tsx` — Country detail
 - `artifacts/mobile/app/recipe/[id].tsx` — Recipe detail (with bookmark button)
