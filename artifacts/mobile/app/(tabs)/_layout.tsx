@@ -42,6 +42,7 @@ export default function TabLayout() {
           borderRadius: Radius.full,
           backgroundColor: "transparent",
           borderTopWidth: 0,
+          borderTopColor: "transparent",
           elevation: 0,
           maxWidth: 400,
           alignSelf: "center",
