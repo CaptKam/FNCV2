@@ -44,6 +44,10 @@ function formatDateLabel(dateStr: string): string {
   return `${months[d.getMonth()]} ${d.getDate()}`;
 }
 
+function getTodayISO(): string {
+  return toISO(new Date());
+}
+
 type CourseSlot = { label: string; icon: string; placeholder: string; courseType: 'appetizer' | 'dessert' };
 const COURSE_SLOTS: CourseSlot[] = [
   { label: 'Appetizer', icon: 'food-variant', placeholder: 'Add an Appetizer...', courseType: 'appetizer' },
@@ -113,11 +117,15 @@ export default function PlanScreen() {
   const router = useRouter();
   const app = useApp();
 
+  const todayISO = getTodayISO();
   const [weekStartDate, setWeekStartDate] = useState(() => toISO(getMonday(new Date())));
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<WeekOption>('this-week');
   const [isDailyView, setIsDailyView] = useState(false);
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(() => {
+    const dayOfWeek = new Date().getDay();
+    return dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  });
   const [multipleMeals, setMultipleMeals] = useState(false);
 
   // Recipe picker state
@@ -225,7 +233,23 @@ export default function PlanScreen() {
         {/* Week pill with chevron navigation */}
         <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.sm }}>
           <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
-            <Pressable hitSlop={12} onPress={() => shiftWeek(-1)} accessibilityRole="button" accessibilityLabel="Previous week">
+            <Pressable
+              style={styles.weekArrow}
+              onPress={() => {
+                if (isDailyView) {
+                  if (selectedDayIndex > 0) {
+                    setSelectedDayIndex(selectedDayIndex - 1);
+                  } else {
+                    shiftWeek(-1);
+                    setSelectedDayIndex(6);
+                  }
+                } else {
+                  shiftWeek(-1);
+                }
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={isDailyView ? "Previous day" : "Previous week"}
+            >
               <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
             </Pressable>
             <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
@@ -234,17 +258,39 @@ export default function PlanScreen() {
               </Text>
               <View style={styles.weekTitleRow}>
                 <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>
-                  {isDailyView ? 'Daily Plan' : weekLabels[selectedWeek]}
+                  {isDailyView
+                    ? `${selectedDay?.dayLabel ?? ''}${selectedDate === todayISO ? ' · Today' : ''}`
+                    : weekLabels[selectedWeek]}
                 </Text>
                 <MaterialCommunityIcons name="chevron-down" size={18} color={colors.primary} />
               </View>
-              {isDailyView && (
+              {isDailyView ? (
                 <Text style={[Typography.caption, { color: colors.primary, marginTop: 2 }]}>
-                  {selectedDay?.dayLabel}, {formatDateLabel(selectedDate)}
+                  {formatDateLabel(selectedDate)} · {weekLabels[selectedWeek]}
+                </Text>
+              ) : (
+                <Text style={[Typography.caption, { color: colors.outline, marginTop: 2 }]}>
+                  {weekLabel}
                 </Text>
               )}
             </Pressable>
-            <Pressable hitSlop={12} onPress={() => shiftWeek(1)} accessibilityRole="button" accessibilityLabel="Next week">
+            <Pressable
+              style={styles.weekArrow}
+              onPress={() => {
+                if (isDailyView) {
+                  if (selectedDayIndex < 6) {
+                    setSelectedDayIndex(selectedDayIndex + 1);
+                  } else {
+                    shiftWeek(1);
+                    setSelectedDayIndex(0);
+                  }
+                } else {
+                  shiftWeek(1);
+                }
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={isDailyView ? "Next day" : "Next week"}
+            >
               <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
             </Pressable>
           </GlassView>
@@ -258,6 +304,7 @@ export default function PlanScreen() {
                 const isActive = i === selectedDayIndex;
                 const day = weekDays[i];
                 const hasRecipe = !!(day?.courses.appetizer || day?.courses.main || day?.courses.dessert);
+                const isToday = day?.date === todayISO;
                 return (
                   <Pressable
                     key={i}
@@ -266,15 +313,16 @@ export default function PlanScreen() {
                       styles.dayCircle,
                       isActive && { backgroundColor: colors.primary },
                       !isActive && hasRecipe && { backgroundColor: `${colors.primary}15` },
+                      !isActive && isToday && { borderWidth: 2, borderColor: colors.primary },
                     ]}
                     accessibilityRole="button"
-                    accessibilityLabel={day?.dayLabel ?? ''}
+                    accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
                     accessibilityState={{ selected: isActive }}
                   >
                     <Text style={[
                       Typography.caption,
                       { fontWeight: '600' },
-                      isActive ? { color: colors.onPrimary } : { color: colors.outline },
+                      isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary } : { color: colors.outline },
                     ]}>
                       {letter}
                     </Text>
@@ -498,6 +546,7 @@ export default function PlanScreen() {
             <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
             {weekDays.map((day) => {
               const mainMeal = day.courses.main;
+              const isToday = day.date === todayISO;
 
               return (
                 <View key={day.date} style={styles.dayRow}>
@@ -508,13 +557,24 @@ export default function PlanScreen() {
                         {
                           backgroundColor: mainMeal ? colors.primary : colors.surfaceContainerHigh,
                         },
+                        isToday && !mainMeal && { borderWidth: 2, borderColor: colors.primary, backgroundColor: 'transparent' },
+                        isToday && mainMeal && { borderWidth: 2, borderColor: colors.onPrimary },
                       ]}
                     />
                   </View>
                   <View style={styles.dayRight}>
-                    <Text style={[Typography.titleSmall, { color: colors.outline, marginBottom: Spacing.sm }]}>
-                      {day.dayLabel}, {formatDateLabel(day.date)}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.sm, gap: 6 }}>
+                      <Text style={[Typography.titleSmall, { color: isToday ? colors.primary : colors.outline }]}>
+                        {day.dayLabel}, {formatDateLabel(day.date)}
+                      </Text>
+                      {isToday && (
+                        <View style={[styles.todayBadge, { backgroundColor: colors.primary }]}>
+                          <Text style={[Typography.caption, { color: colors.onPrimary, fontSize: 10, fontWeight: '700' }]}>
+                            TODAY
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                     {mainMeal ? (
                       <Pressable
                         onPress={() => router.push(`/recipe/${mainMeal.recipeId}`)}
@@ -758,12 +818,20 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     marginTop: Spacing.sm,
   },
+  weekArrow: {
+    padding: 4,
+  },
   dayCircle: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  todayBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
   },
   multipleMealsRow: {
     flexDirection: 'row',
