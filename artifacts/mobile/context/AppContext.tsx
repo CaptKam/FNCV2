@@ -141,7 +141,11 @@ function getDayLabel(dateStr: string): string {
 }
 
 function todayISO(): string {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function categorizeIngredient(name: string): GroceryItem['category'] {
@@ -178,10 +182,17 @@ function makeEmptyDay(date: string): ItineraryDay {
   };
 }
 
+function localISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr);
   d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
+  return localISO(d);
 }
 
 // ═══════════════════════════════════════════

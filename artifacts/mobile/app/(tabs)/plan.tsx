@@ -29,7 +29,10 @@ function getMonday(d: Date): Date {
 }
 
 function toISO(d: Date): string {
-  return d.toISOString().split('T')[0];
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function addDays(dateStr: string, n: number): string {
@@ -652,7 +655,7 @@ export default function PlanScreen() {
         <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
           <Pressable onPress={() => {
             const mainToday = todaysMeals.find((m) => weekDays.find((d) =>
-              d.date === new Date().toISOString().split('T')[0] && d.courses.main?.recipeId === m.recipeId
+              d.date === getTodayISO() && d.courses.main?.recipeId === m.recipeId
             ));
             const targetId = mainToday?.recipeId ?? todaysMeals[0]?.recipeId;
             if (targetId) {
