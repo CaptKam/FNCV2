@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useMemo } from "react";
 import { Platform, StyleSheet, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassView } from "@/components/GlassView";
@@ -15,7 +15,11 @@ export default function TabLayout() {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
-  const groceryBadgeCount = useApp().getUncheckedCount();
+  const app = useApp();
+  const groceryBadgeCount = useMemo(
+    () => app.groceryItems.filter((i) => !i.checked && !i.excluded).length,
+    [app.groceryItems]
+  );
 
   return (
     <Tabs

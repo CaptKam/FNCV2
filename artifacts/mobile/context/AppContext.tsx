@@ -514,44 +514,63 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ═══════════════════════════════════════════
 
   const completeCookSessionInternal = useCallback(() => {
-    const session = activeCookSession;
-    setActiveCookSession(null);
-    if (session) {
-      setTotalRecipesCooked((prev) => prev + 1);
-      setXp((prevXp) => {
-        const newXp = prevXp + 50;
-        setLevel(Math.floor(newXp / 300) + 1);
-        return newXp;
-      });
-      const allRecipes: Recipe[] = require('@/data/recipes').recipes;
-      const recipe = allRecipes.find((r) => r.id === session.recipeId);
-      if (recipe) {
-        setPassportStamps((prev) => ({
-          ...prev,
-          [recipe.countryId]: (prev[recipe.countryId] ?? 0) + 1,
-        }));
+    // Use functional setState to avoid stale closure over activeCookSession
+    setActiveCookSession((prev) => {
+      if (prev) {
+        setTotalRecipesCooked((c) => c + 1);
+        setXp((prevXp) => {
+          const newXp = prevXp + 50;
+          setLevel(Math.floor(newXp / 300) + 1);
+          return newXp;
+        });
+        const allRecipes: Recipe[] = require('@/data/recipes').recipes;
+        const recipe = allRecipes.find((r) => r.id === prev.recipeId);
+        if (recipe) {
+          setPassportStamps((s) => ({
+            ...s,
+            [recipe.countryId]: (s[recipe.countryId] ?? 0) + 1,
+          }));
+        }
       }
-    }
-  }, [activeCookSession]);
+      return null;
+    });
+  }, []);
 
   const startCookSession = useCallback((recipe: Recipe, servings: number) => {
-    if (activeCookSession) {
-      completeCookSessionInternal();
-    }
-    setActiveCookSession({
-      id: generateId(),
-      recipeId: recipe.id,
-      recipeName: recipe.title,
-      totalSteps: recipe.steps.length,
-      currentStepIndex: 0,
-      completedSteps: [],
-      servings,
-      startedAt: new Date().toISOString(),
-      activeTimerStart: null,
-      activeTimerDuration: null,
-      status: 'active',
+    // If a session exists, complete it first (awards XP) via functional check
+    setActiveCookSession((prev) => {
+      if (prev) {
+        setTotalRecipesCooked((c) => c + 1);
+        setXp((prevXp) => {
+          const newXp = prevXp + 50;
+          setLevel(Math.floor(newXp / 300) + 1);
+          return newXp;
+        });
+        const allRecipes: Recipe[] = require('@/data/recipes').recipes;
+        const oldRecipe = allRecipes.find((r) => r.id === prev.recipeId);
+        if (oldRecipe) {
+          setPassportStamps((s) => ({
+            ...s,
+            [oldRecipe.countryId]: (s[oldRecipe.countryId] ?? 0) + 1,
+          }));
+        }
+      }
+      // Return the new session
+      return {
+        id: generateId(),
+        recipeId: recipe.id,
+        recipeName: recipe.title,
+        totalSteps: recipe.steps.length,
+        currentStepIndex: 0,
+        completedSteps: [],
+        servings,
+        startedAt: new Date().toISOString(),
+        activeTimerStart: null,
+        activeTimerDuration: null,
+        status: 'active' as const,
+      };
     });
-  }, [activeCookSession, completeCookSessionInternal]);
+  }, []);
 
   const advanceStepRef = useRef(false);
 

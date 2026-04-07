@@ -25,11 +25,21 @@ export default function CookModeScreen() {
   const recipe = recipes.find((r) => r.id === id);
   const session = app.activeCookSession;
 
-  // Initialize session if none exists or if it's for a different recipe
+  // Only start a session if none exists for this recipe.
+  // Recipe detail already calls startCookSession before navigating here,
+  // so this is a fallback for deep links or resume scenarios.
+  const sessionInitialized = React.useRef(false);
   useEffect(() => {
-    if (recipe && (!session || session.recipeId !== recipe.id)) {
-      app.startCookSession(recipe, recipe.servings);
-    }
+    if (sessionInitialized.current) return;
+    // Wait one tick for state from recipe detail's startCookSession to propagate
+    const timer = setTimeout(() => {
+      const currentSession = app.activeCookSession;
+      if (recipe && (!currentSession || currentSession.recipeId !== recipe.id)) {
+        app.startCookSession(recipe, recipe.servings);
+      }
+      sessionInitialized.current = true;
+    }, 50);
+    return () => clearTimeout(timer);
   }, [recipe?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Local timer state (ticks every second, driven by session's activeTimerStart/Duration)
@@ -67,11 +77,12 @@ export default function CookModeScreen() {
     return () => clearInterval(interval);
   }, [timerRunning, timerSeconds, app]);
 
-  // Detect session completion (navigated away by completeCookSession)
+  // Detect session completion — navigate back once
   const prevSessionRef = React.useRef(session);
+  const hasNavigatedRef = React.useRef(false);
   useEffect(() => {
-    if (prevSessionRef.current && !session) {
-      // Session was just completed
+    if (prevSessionRef.current && !session && !hasNavigatedRef.current) {
+      hasNavigatedRef.current = true;
       router.back();
     }
     prevSessionRef.current = session;
