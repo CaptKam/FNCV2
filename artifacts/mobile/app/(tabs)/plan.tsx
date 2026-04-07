@@ -187,23 +187,6 @@ export default function PlanScreen() {
   }, [selectedDay]);
 
   const primaryMeal = selectedDay?.courses.main;
-  const WEEK_ORDER: WeekOption[] = ['past', 'this-week', 'next-week'];
-
-  const skipWeek = (direction: -1 | 1) => {
-    const currentIndex = WEEK_ORDER.indexOf(selectedWeek);
-    const nextIndex = currentIndex + direction;
-    if (nextIndex >= 0 && nextIndex < WEEK_ORDER.length) {
-      setSelectedWeek(WEEK_ORDER[nextIndex]);
-    }
-  };
-
-  const canGoPrev = WEEK_ORDER.indexOf(selectedWeek) > 0;
-  const canGoNext = WEEK_ORDER.indexOf(selectedWeek) < WEEK_ORDER.length - 1;
-
-  const selectedDay = DAYS[selectedDayIndex];
-  const dailyMeals = DAILY_MEALS[selectedDay] || [];
-  const primaryMeal = dailyMeals.find((m) => m.label === 'Dinner') || dailyMeals[dailyMeals.length - 1];
-  const primaryRecipe = primaryMeal?.recipeId ? getRecipe(primaryMeal.recipeId) : null;
 
   // ─── Grocery banner ───
   const renderGroceryBanner = () => (
@@ -245,18 +228,6 @@ export default function PlanScreen() {
           <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
             <Pressable hitSlop={12} onPress={() => shiftWeek(-1)} accessibilityRole="button" accessibilityLabel="Previous week">
               <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
-            <Pressable
-              onPress={() => skipWeek(-1)}
-              disabled={!canGoPrev}
-              style={styles.weekArrow}
-              accessibilityRole="button"
-              accessibilityLabel="Previous week"
-            >
-              <MaterialCommunityIcons
-                name="chevron-left"
-                size={24}
-                color={canGoPrev ? colors.primary : colors.outlineVariant}
-              />
             </Pressable>
             <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
               <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 2 }]}>
@@ -264,7 +235,7 @@ export default function PlanScreen() {
               </Text>
               <View style={styles.weekTitleRow}>
                 <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>
-                  {weekLabels[selectedWeek]}
+                  {isDailyView ? 'Daily Plan' : weekLabels[selectedWeek]}
                 </Text>
                 <MaterialCommunityIcons name="chevron-down" size={18} color={colors.primary} />
               </View>
@@ -276,18 +247,6 @@ export default function PlanScreen() {
             </Pressable>
             <Pressable hitSlop={12} onPress={() => shiftWeek(1)} accessibilityRole="button" accessibilityLabel="Next week">
               <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
-            <Pressable
-              onPress={() => skipWeek(1)}
-              disabled={!canGoNext}
-              style={styles.weekArrow}
-              accessibilityRole="button"
-              accessibilityLabel="Next week"
-            >
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={24}
-                color={canGoNext ? colors.primary : colors.outlineVariant}
-              />
             </Pressable>
           </GlassView>
         </View>
@@ -783,12 +742,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: 14,
     borderRadius: Radius.full,
-  },
-  weekArrow: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   weekCenter: {
     alignItems: 'center',
