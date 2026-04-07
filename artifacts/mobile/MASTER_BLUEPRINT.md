@@ -115,7 +115,7 @@ The visual language evokes a well-traveled food journal — warm, tactile, and r
 | Layer | Technology | Version |
 |-------|-----------|---------|
 | Framework | Expo (managed workflow) | SDK 54 |
-| Router | expo-router (file-based) | v4 |
+| Router | expo-router (file-based) | ~6.0.17 |
 | Language | TypeScript | 5.x |
 | State | React Context + AsyncStorage | — |
 | Images | expo-image | — |
