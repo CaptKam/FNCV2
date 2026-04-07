@@ -180,7 +180,7 @@ export default function PlanScreen() {
             </Text>
             <View style={{ flex: 1 }} />
             <Text style={[Typography.labelSmall, { color: colors.outline }]}>
-              {firstPlannedDay}'s Prep
+              {firstPlannedDay ? `${firstPlannedDay}'s Prep` : "Today's Prep"}
             </Text>
           </GlassView>
         </Pressable>
