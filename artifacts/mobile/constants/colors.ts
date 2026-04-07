@@ -56,7 +56,7 @@ const colors = {
   dark: {
     primary: '#9A4100',
     primaryBase: '#9A4100',
-    onPrimary: '#4A1C00',
+    onPrimary: '#FFFFFF',
     primaryContainer: '#6B2A00',
     onPrimaryContainer: '#FFC9AF',
     surface: '#161412',
@@ -96,7 +96,7 @@ const colors = {
     foreground: '#F0ECE6',
     card: '#211F1C',
     cardForeground: '#F0ECE6',
-    primaryForeground: '#4A1C00',
+    primaryForeground: '#FFFFFF',
     secondaryForeground: '#FFBD9D',
     muted: '#211F1C',
     mutedForeground: '#9D8C82',

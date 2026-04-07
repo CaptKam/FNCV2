@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -15,11 +15,14 @@ import { convertAmount } from '@/data/helpers';
 import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useApp } from '@/context/AppContext';
 
+const TIMER_SIZE = 220;
+
 export default function CookModeScreen() {
   useKeepAwake();
 
   const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useThemeColors();
+  const isDark = colors.isDark;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const app = useApp();
@@ -27,13 +30,9 @@ export default function CookModeScreen() {
   const recipe = recipes.find((r) => r.id === id);
   const session = app.activeCookSession;
 
-  // Only start a session if none exists for this recipe.
-  // Recipe detail already calls startCookSession before navigating here,
-  // so this is a fallback for deep links or resume scenarios.
   const sessionInitialized = React.useRef(false);
   useEffect(() => {
     if (sessionInitialized.current) return;
-    // Wait one tick for state from recipe detail's startCookSession to propagate
     const timer = setTimeout(() => {
       const currentSession = app.activeCookSession;
       if (recipe && (!currentSession || currentSession.recipeId !== recipe.id)) {
@@ -42,25 +41,24 @@ export default function CookModeScreen() {
       sessionInitialized.current = true;
     }, 50);
     return () => clearTimeout(timer);
-  }, [recipe?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [recipe?.id]);
 
-  // Local timer state (ticks every second, driven by session's activeTimerStart/Duration)
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [totalDuration, setTotalDuration] = useState(0);
 
-  // Sync local timer from session state
   useEffect(() => {
     if (session?.activeTimerStart && session?.activeTimerDuration) {
       const elapsed = Math.floor((Date.now() - new Date(session.activeTimerStart).getTime()) / 1000);
       const remaining = Math.max(0, session.activeTimerDuration - elapsed);
       setTimerSeconds(remaining);
       setTimerRunning(remaining > 0);
+      setTotalDuration(session.activeTimerDuration);
     } else {
       setTimerRunning(false);
     }
   }, [session?.activeTimerStart, session?.activeTimerDuration]);
 
-  // Timer countdown
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (timerRunning && timerSeconds > 0) {
@@ -79,7 +77,6 @@ export default function CookModeScreen() {
     return () => clearInterval(interval);
   }, [timerRunning, timerSeconds, app]);
 
-  // Detect session completion — navigate back once
   const prevSessionRef = React.useRef(session);
   const hasNavigatedRef = React.useRef(false);
   useEffect(() => {
@@ -95,13 +92,12 @@ export default function CookModeScreen() {
     if (session.currentStepIndex < recipe.steps.length - 1) {
       app.advanceStep();
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      // Set up timer for next step if it has duration
       const nextStep = recipe.steps[session.currentStepIndex + 1];
       if (nextStep?.duration) {
         app.startStepTimer(nextStep.duration * 60);
+        setTotalDuration(nextStep.duration * 60);
       }
     } else {
-      // Last step — advance triggers completion in AppContext
       app.advanceStep();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
@@ -113,148 +109,284 @@ export default function CookModeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, [session, app]);
 
+  const t = isDark
+    ? {
+        bg: '#1C1A17',
+        headerBg: 'rgba(28,26,23,0.7)',
+        headerBorder: 'rgba(255,255,255,0.1)',
+        headerIcon: '#F2EDE7',
+        headerTitle: 'rgba(245,240,234,0.85)',
+        instructionColor: '#F2EDE7',
+        detailColor: 'rgba(245,240,234,0.4)',
+        pillBg: 'rgba(51,48,44,0.5)',
+        pillBorder: 'rgba(255,255,255,0.05)',
+        pillLabelColor: 'rgba(245,240,234,0.35)',
+        pillValueColor: '#C5702A',
+        ingredientCardBg: 'rgba(51,48,44,0.5)',
+        ingredientCardBorder: 'rgba(255,255,255,0.05)',
+        ingredientCardLabel: 'rgba(245,240,234,0.5)',
+        timerRingIdle: 'rgba(255,255,255,0.08)',
+        timerDigits: '#F2EDE7',
+        timerLabel: 'rgba(245,240,234,0.35)',
+        durationIcon: 'rgba(245,240,234,0.4)',
+        durationText: 'rgba(245,240,234,0.4)',
+        prevIcon: 'rgba(245,240,234,0.6)',
+        prevText: 'rgba(245,240,234,0.5)',
+        navDivider: 'rgba(255,255,255,0.1)',
+        donenessBg: 'rgba(154,65,0,0.08)',
+        donenessBorder: 'rgba(154,65,0,0.15)',
+        donenessIconBg: 'rgba(154,65,0,0.15)',
+        donenessTitle: '#F2EDE7',
+        donenessText: 'rgba(245,240,234,0.7)',
+      }
+    : {
+        bg: '#FEF9F3',
+        headerBg: 'rgba(255,255,255,0.6)',
+        headerBorder: 'rgba(0,0,0,0.05)',
+        headerIcon: '#9A4100',
+        headerTitle: '#9A4100',
+        instructionColor: '#1C1917',
+        detailColor: '#57534e',
+        pillBg: 'rgba(255,255,255,0.8)',
+        pillBorder: 'rgba(154,65,0,0.1)',
+        pillLabelColor: 'rgba(154,65,0,0.8)',
+        pillValueColor: '#1C1917',
+        ingredientCardBg: 'rgba(255,255,255,0.6)',
+        ingredientCardBorder: 'rgba(154,65,0,0.1)',
+        ingredientCardLabel: 'rgba(154,65,0,0.8)',
+        timerRingIdle: 'rgba(154,65,0,0.15)',
+        timerDigits: '#1C1917',
+        timerLabel: '#78716c',
+        durationIcon: '#78716c',
+        durationText: '#78716c',
+        prevIcon: '#78716c',
+        prevText: '#78716c',
+        navDivider: 'rgba(154,65,0,0.1)',
+        donenessBg: 'rgba(154,65,0,0.05)',
+        donenessBorder: 'rgba(154,65,0,0.1)',
+        donenessIconBg: 'rgba(154,65,0,0.1)',
+        donenessTitle: '#1C1917',
+        donenessText: '#57534e',
+      };
+
   if (!recipe) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.inverseSurface }]}>
-        <Text style={[Typography.body, { color: colors.inverseOnSurface, textAlign: 'center' }]}>
+      <View style={[styles.container, { backgroundColor: t.bg }]}>
+        <Text style={[Typography.body, { color: t.instructionColor, textAlign: 'center', marginTop: 100 }]}>
           Recipe not found
         </Text>
       </View>
     );
   }
 
-  // Read step from session (fallback to 0 while session initializes)
   const currentStep = session?.recipeId === recipe.id ? session.currentStepIndex : 0;
   const step = recipe.steps[Math.min(currentStep, recipe.steps.length - 1)];
-  const progress = (currentStep + 1) / recipe.steps.length;
+  const isLastStep = currentStep >= recipe.steps.length - 1;
   const minutes = Math.floor(timerSeconds / 60);
   const seconds = timerSeconds % 60;
+  const hasTimer = step.duration && step.duration > 0;
+  const timerProgress = totalDuration > 0 ? timerSeconds / totalDuration : 0;
+
+  const matchedIngredients = recipe.ingredients
+    .filter((ing) => step.instruction.toLowerCase().includes(ing.name.toLowerCase()))
+    .slice(0, 4);
+
+  const instructionText = step.instruction;
+  const firstSentenceEnd = instructionText.indexOf('.');
+  const heroText = firstSentenceEnd > 0 && firstSentenceEnd < 60
+    ? instructionText.substring(0, firstSentenceEnd + 1)
+    : instructionText.split(',')[0];
+  const detailText = firstSentenceEnd > 0 && firstSentenceEnd < 60
+    ? instructionText.substring(firstSentenceEnd + 1).trim()
+    : instructionText.length > heroText.length
+      ? instructionText.substring(heroText.length + 1).trim()
+      : '';
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.inverseSurface }]}>
-      <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
+    <View style={[styles.container, { backgroundColor: t.bg }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: t.headerBg, borderBottomColor: t.headerBorder }]}>
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
-          style={styles.closeBtn}
+          style={styles.headerBtn}
           accessibilityRole="button"
-          accessibilityLabel="Close"
+          accessibilityLabel="Close cook mode"
         >
-          <Feather name="x" size={24} color={colors.inverseOnSurface} />
+          <MaterialCommunityIcons name="close" size={22} color={t.headerIcon} />
         </Pressable>
-        <View style={styles.topBarCenter}>
-          <Text style={[Typography.titleMedium, { color: colors.inverseOnSurface }]} numberOfLines={1}>
-            {recipe.title}
-          </Text>
-          <Text style={[Typography.caption, { color: 'rgba(245,240,234,0.6)' }]}>
-            Step {currentStep + 1} of {recipe.steps.length}
-          </Text>
-        </View>
-        <View style={{ width: 48 }} />
-      </View>
-
-      <View style={styles.progressContainer}>
-        <View style={[styles.progressTrack, { backgroundColor: `${colors.outline}40` }]}>
-          <View
-            style={[
-              styles.progressFill,
-              { backgroundColor: colors.primary, width: `${progress * 100}%` },
-            ]}
-          />
-        </View>
-      </View>
-
-      <View style={styles.mainContent}>
-        <Text style={[Typography.body, styles.instruction, { color: colors.inverseOnSurface }]}>
-          {highlightCulinaryVerbs(step.instruction).map((seg, si) =>
-            seg.isVerb ? (
-              <Text key={si} style={{ fontWeight: '700', color: colors.inversePrimary }}>{seg.text}</Text>
-            ) : (
-              <Text key={si}>{seg.text}</Text>
-            )
-          )}
+        <Text style={[styles.headerTitle, { color: t.headerTitle }]}>
+          Step {currentStep + 1} of {recipe.steps.length}
         </Text>
+        <Pressable
+          onPress={() => {
+            if (hasTimer && !timerRunning && timerSeconds === 0 && step.duration) {
+              app.startStepTimer(step.duration * 60);
+              setTotalDuration(step.duration * 60);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
+          }}
+          style={styles.headerBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Timer"
+        >
+          <MaterialCommunityIcons name="timer-outline" size={22} color={t.headerIcon} />
+        </Pressable>
+      </View>
 
-        {step.duration && step.duration > 0 && (
-          <View style={styles.timerContainer}>
-            <View style={[styles.timerCircle, { borderColor: colors.primary }]}>
-              <Text style={[Typography.displayMedium, { color: colors.primary, fontSize: 36 }]}>
+      <ScrollView
+        style={styles.scrollContent}
+        contentContainerStyle={[styles.scrollInner, { paddingBottom: insets.bottom + 120 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.heroSection}>
+          {isDark ? (
+            <>
+              <Text style={[styles.heroInstructionDark, { color: t.instructionColor }]}>
+                {highlightCulinaryVerbs(heroText.toUpperCase()).map((seg, si) =>
+                  seg.isVerb ? (
+                    <Text key={si} style={{ color: colors.inversePrimary }}>{seg.text}</Text>
+                  ) : (
+                    <Text key={si}>{seg.text}</Text>
+                  )
+                )}
+              </Text>
+              {detailText.length > 0 && (
+                <Text style={[styles.heroDetailDark, { color: t.detailColor }]}>
+                  {detailText}
+                </Text>
+              )}
+            </>
+          ) : (
+            <Text style={[styles.heroInstructionLight, { color: t.instructionColor }]}>
+              {highlightCulinaryVerbs(instructionText).map((seg, si) =>
+                seg.isVerb ? (
+                  <Text key={si} style={{ fontWeight: '700', color: colors.primary }}>{seg.text}</Text>
+                ) : (
+                  <Text key={si}>{seg.text}</Text>
+                )
+              )}
+            </Text>
+          )}
+        </View>
+
+        {matchedIngredients.length > 0 && (
+          isDark ? (
+            <View style={styles.pillCluster}>
+              {matchedIngredients.map((ing, idx) => (
+                <View key={idx} style={[styles.ingredientPillDark, { backgroundColor: t.pillBg, borderTopColor: t.pillBorder }]}>
+                  <Text style={[styles.pillLabelDark, { color: t.pillLabelColor }]}>Ingredient</Text>
+                  <Text style={[styles.pillValueDark, { color: t.pillValueColor }]}>{convertAmount(ing.amount, app.useMetric)} {ing.name}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={[styles.ingredientCard, { backgroundColor: t.ingredientCardBg, borderColor: t.ingredientCardBorder }]}>
+              <View style={styles.ingredientCardHeader}>
+                <MaterialCommunityIcons name="silverware-fork-knife" size={20} color={colors.primary} />
+                <Text style={[styles.ingredientCardTitle, { color: t.ingredientCardLabel }]}>Ingredients for this step</Text>
+              </View>
+              <View style={styles.ingredientPillsRow}>
+                {matchedIngredients.map((ing, idx) => (
+                  <View key={idx} style={[styles.ingredientPillLight, { backgroundColor: t.pillBg, borderColor: t.pillBorder }]}>
+                    <Text style={[styles.pillValueLight, { color: t.pillValueColor }]}>{convertAmount(ing.amount, app.useMetric)} {ing.name}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )
+        )}
+
+        {hasTimer && (
+          <View style={styles.timerSection}>
+            <View style={[styles.timerRing, { borderColor: timerProgress > 0 ? colors.primary : t.timerRingIdle }]}>
+              <Text style={[styles.timerDigits, { color: t.timerDigits }]}>
                 {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
               </Text>
+              <Text style={[styles.timerLabel, { color: t.timerLabel }]}>
+                {timerRunning ? 'REMAINING' : timerSeconds > 0 ? 'PAUSED' : 'READY'}
+              </Text>
             </View>
+
             <Pressable
               onPress={() => {
                 if (!timerRunning && timerSeconds === 0 && step.duration) {
-                  // Start fresh timer
                   app.startStepTimer(step.duration * 60);
+                  setTotalDuration(step.duration * 60);
                 } else if (timerRunning) {
-                  // Pause — clear the context timer, keep local display
                   app.clearStepTimer();
                   setTimerRunning(false);
                 } else {
-                  // Resume — restart context timer with remaining seconds
                   app.startStepTimer(timerSeconds);
                 }
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }}
-              style={[styles.timerBtn, { backgroundColor: `${colors.primary}20` }]}
+              style={[styles.timerActionBtn, { backgroundColor: `${colors.primary}25` }]}
               accessibilityRole="button"
               accessibilityLabel={timerRunning ? 'Pause timer' : timerSeconds > 0 ? 'Resume timer' : 'Start timer'}
             >
-              <Feather
+              <MaterialCommunityIcons
                 name={timerRunning ? 'pause' : 'play'}
-                size={18}
+                size={16}
                 color={colors.primary}
               />
-              <Text style={[Typography.titleSmall, { color: colors.primary }]}>
+              <Text style={[styles.timerActionText, { color: colors.primary }]}>
                 {timerRunning ? 'Pause' : timerSeconds > 0 ? 'Resume' : 'Start Timer'}
               </Text>
             </Pressable>
           </View>
         )}
 
-        {recipe.ingredients
-          .filter((_, i) => step.instruction.toLowerCase().includes(recipe.ingredients[i].name.toLowerCase()))
-          .slice(0, 3)
-          .map((ing, idx) => (
-            <View
-              key={idx}
-              style={[styles.ingredientPill, { backgroundColor: colors.secondaryContainer }]}
-            >
-              <Text style={[Typography.titleSmall, { color: colors.onSecondaryContainer }]}>
-                {ing.name}: {convertAmount(ing.amount, app.useMetric)}
-              </Text>
-            </View>
-          ))}
-      </View>
+        {step.duration && step.duration > 0 && (
+          <View style={styles.stepDurationBadge}>
+            <MaterialCommunityIcons name="clock-outline" size={14} color={t.durationIcon} />
+            <Text style={[styles.stepDurationText, { color: t.durationText }]}>
+              {step.duration} min for this step
+            </Text>
+          </View>
+        )}
 
-      <View style={[styles.bottomToolbar, { paddingBottom: insets.bottom + 16 }]}>
-        <GlassView style={styles.toolbarInner} intensity={40}>
+        {step.tip && (
+          <View style={[styles.donenessCard, { backgroundColor: t.donenessBg, borderColor: t.donenessBorder }]}>
+            <View style={[styles.donenessIconWrap, { backgroundColor: t.donenessIconBg }]}>
+              <MaterialCommunityIcons name="eye" size={20} color={colors.primary} />
+            </View>
+            <View style={styles.donenessContent}>
+              <Text style={[styles.donenessTitle, { color: t.donenessTitle }]}>Doneness Cue</Text>
+              <Text style={[styles.donenessText, { color: t.donenessText }]}>{step.tip}</Text>
+            </View>
+          </View>
+        )}
+      </ScrollView>
+
+      <View style={[styles.bottomNav, { paddingBottom: insets.bottom + 16 }]}>
+        <GlassView style={[styles.bottomNavInner, !isDark && { borderWidth: 1, borderColor: t.navDivider }]} intensity={isDark ? 40 : 32}>
           <Pressable
             onPress={goPrev}
             disabled={currentStep === 0}
-            style={[
-              styles.navBtn,
-              { opacity: currentStep === 0 ? 0.3 : 1 },
-            ]}
+            style={[styles.prevBtn, { opacity: currentStep === 0 ? 0.3 : 1 }]}
             accessibilityRole="button"
             accessibilityLabel="Previous step"
           >
-            <Feather name="chevron-left" size={24} color={colors.inverseOnSurface} />
-            <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>Previous</Text>
+            <MaterialCommunityIcons name="arrow-left" size={20} color={t.prevIcon} />
+            <Text style={[styles.prevBtnText, { color: t.prevText }]}>Previous</Text>
           </Pressable>
+
+          <View style={[styles.navDivider, { backgroundColor: t.navDivider }]} />
+
           <Pressable
             onPress={goNext}
-            style={[
-              styles.navBtn,
-            ]}
+            style={[styles.nextBtn, { backgroundColor: isLastStep ? colors.success : colors.primary }]}
             accessibilityRole="button"
-            accessibilityLabel={currentStep >= recipe.steps.length - 1 ? 'Finish cooking' : 'Next step'}
+            accessibilityLabel={isLastStep ? 'Finish cooking' : 'Next step'}
           >
-            <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>
-              {currentStep >= recipe.steps.length - 1 ? 'Finish' : 'Next'}
+            <Text style={styles.nextBtnText}>
+              {isLastStep ? 'Finish' : 'Next'}
             </Text>
-            <Feather name={currentStep >= recipe.steps.length - 1 ? 'check' : 'chevron-right'} size={24} color={colors.inverseOnSurface} />
+            <MaterialCommunityIcons
+              name={isLastStep ? 'check' : 'arrow-right'}
+              size={20}
+              color="#FFFFFF"
+            />
           </Pressable>
         </GlassView>
       </View>
@@ -263,92 +395,243 @@ export default function CookModeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  topBar: {
+  container: {
+    flex: 1,
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.page,
-    paddingBottom: Spacing.md,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  closeBtn: {
-    width: 48,
-    height: 48,
+  headerBtn: {
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 22,
   },
-  topBarCenter: {
+  headerTitle: {
+    fontFamily: 'NotoSerif_700Bold',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  scrollContent: {
     flex: 1,
-    alignItems: 'center',
-    gap: 2,
   },
-  progressContainer: {
+  scrollInner: {
     paddingHorizontal: Spacing.page,
+    paddingTop: Spacing.lg,
+  },
+  heroSection: {
     marginBottom: Spacing.xl,
   },
-  progressTrack: {
-    height: 3,
-    borderRadius: Radius.full,
-    overflow: 'hidden',
+  heroInstructionDark: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '800',
+    letterSpacing: -1,
+    textTransform: 'uppercase',
   },
-  progressFill: {
-    height: '100%',
-    borderRadius: Radius.full,
+  heroDetailDark: {
+    fontFamily: 'NotoSerif_400Regular',
+    fontSize: 18,
+    lineHeight: 26,
+    fontStyle: 'italic',
+    marginTop: 14,
   },
-  mainContent: {
-    flex: 1,
-    paddingHorizontal: Spacing.page,
-    justifyContent: 'center',
-    gap: Spacing.lg,
-  },
-  instruction: {
-    fontSize: 20,
+  heroInstructionLight: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 22,
     lineHeight: 32,
-    textAlign: 'center',
+    fontWeight: '600',
+    letterSpacing: -0.3,
   },
-  timerContainer: {
-    alignItems: 'center',
-    gap: Spacing.md,
+  pillCluster: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: Spacing.xl,
   },
-  timerCircle: {
-    width: 160,
-    height: 160,
-    borderRadius: Radius.full,
-    borderWidth: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  timerBtn: {
+  ingredientPillDark: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: Radius.full,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  pillLabelDark: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  pillValueDark: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  ingredientCard: {
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: Spacing.xl,
+    borderWidth: 1,
+  },
+  ingredientCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 14,
+  },
+  ingredientCardTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  ingredientPillsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  ingredientPillLight: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  pillValueLight: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  timerSection: {
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+    gap: Spacing.md,
+  },
+  timerRing: {
+    width: TIMER_SIZE,
+    height: TIMER_SIZE,
+    borderRadius: TIMER_SIZE / 2,
+    borderWidth: 2.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timerDigits: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 52,
+    fontWeight: '800',
+    letterSpacing: -2,
+  },
+  timerLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 3,
+    marginTop: 4,
+  },
+  timerActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: Radius.full,
   },
-  ingredientPill: {
-    alignSelf: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
-    borderRadius: Radius.sm,
+  timerActionText: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
-  bottomToolbar: {
+  stepDurationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'center',
+    marginBottom: Spacing.lg,
+  },
+  stepDurationText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  donenessCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 14,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    marginBottom: Spacing.lg,
+  },
+  donenessIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  donenessContent: {
+    flex: 1,
+    gap: 4,
+  },
+  donenessTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  donenessText: {
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  bottomNav: {
     paddingHorizontal: Spacing.page,
   },
-  toolbarInner: {
+  bottomNavInner: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
     borderRadius: Radius.full,
-    height: 52,
-    alignItems: 'center',
+    height: 64,
   },
-  navBtn: {
+  prevBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    minWidth: 48,
+    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     minHeight: 48,
-    justifyContent: 'center',
+  },
+  prevBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  navDivider: {
+    width: 1,
+    height: 28,
+  },
+  nextBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 22,
+    paddingVertical: 10,
+    borderRadius: Radius.full,
+    minHeight: 48,
+  },
+  nextBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: '#FFFFFF',
   },
 });
