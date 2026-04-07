@@ -1,0 +1,596 @@
+# FORK & COMPASS
+
+## Master Blueprint V2
+
+**Product Vision · The Ethereal Archivist Design System · Architecture · Rebuild Plan**
+
+*Pick a country, cook a dinner, feel like you traveled.*
+
+Confidential · Version 2.0 · April 2026 · Solo Founder: Kam
+
+voyageapron.com
+
+---
+
+# 1. Product Vision
+
+Fork & Compass is a premium culinary travel app built on a single premise: you can travel the world from your kitchen. Pick a country. Plan a dinner. Shop the ingredients. Cook the meal. Feel like you traveled.
+
+This is not a recipe database. It is a cultural experience engine that happens to involve cooking. Every interaction should feel like opening a luxury food magazine and stepping inside.
+
+Born during COVID, when friends would pick a country and build an entire evening around its cuisine, drinks, and music. That dinner party energy — the planning, the anticipation, the shared experience — is the emotional core.
+
+## Who this is for
+
+Serious home cooks who see cooking as exploration, not obligation. The user who spends Sunday afternoon planning the week's meals, who browses recipes the way others browse travel blogs, and who treats a dinner party as an event worth orchestrating.
+
+## Competitive position
+
+Fork & Compass owns culturally authentic world cuisine for serious home cooks. The moat is cultural depth combined with the travel premise plus backward-planning dinner timeline coordination.
+
+- NYT Cooking: American/European bias, no cultural travel framing
+- SideChef: pivoted to grocery commerce, lost editorial soul
+- HelloFresh: validated international cooking at home, but commoditized
+- Mela / Paprika: utility-first, no cultural depth or social features
+
+---
+
+# 2. Design Philosophy
+
+## 2.1 — The Three Governing Frameworks
+
+Every pixel is governed by Steve Jobs' functional aesthetics, Apple's Human Interface Guidelines (including iOS 26 Liquid Glass), and the editorial sensibility of luxury print magazines.
+
+**Design is how it works.** Beautiful food photography means nothing if the user cannot figure out how to plan their week. A glassmorphic tab bar is worthless if it obscures the content it frames. Every aesthetic choice must serve a functional purpose. If a visual element does not help the user accomplish their goal, it is removed.
+
+## 2.2 — The Subtraction Audit
+
+Every screen, feature, and interaction passes through three tests:
+
+| Test | Question | If it fails |
+|------|----------|-------------|
+| Mission-critical | What is the ONE thing the user needs here? | Remove or deeply subordinate |
+| Grandma test | Could a non-technical user complete this without explanation? | Redesign until no instruction is needed |
+| Day-better test | Does this genuinely make someone's day better? | Cut it, regardless of engineering investment |
+
+## 2.3 — The Four HIG Pillars
+
+| Principle | Fork & Compass application |
+|-----------|---------------------------|
+| Clarity | Recipe cards show prep time, difficulty, and country at a glance. No decoding required. |
+| Deference | Food photography is the hero. Chrome is minimal. Glass effects frame content, never compete. |
+| Depth | Modal sheets slide up for cook mode. Plan layers weekly over daily. Spatial relationships always clear. |
+| Consistency | Tab bar always bottom. Back always top-left. Swipe gestures identical everywhere. |
+
+## 2.4 — The iOS 26 Triad
+
+| Principle | Implementation |
+|-----------|---------------|
+| Hierarchy | Cook mode suppresses all navigation chrome. Plan surfaces next upcoming meal. Discover hides metadata until scroll past hero. |
+| Harmony | Tab bar glass matches device edge curves. Content insets respect Dynamic Island and home indicator. |
+| Consistency | Same interaction model across iPhone SE and 16 Pro Max. No features hidden on smaller screens. |
+
+## 2.5 — Non-Negotiable Principles
+
+1. Design is how it works. If beautiful but confusing, it has failed.
+2. Subtract before you add. Every element must earn its place.
+3. Content is the hero. Food photography and cultural stories, not chrome and UI widgets.
+4. Finish the back of the cabinet. The codebase, API, admin — invisible quality everywhere.
+5. Follow the HIG. Tab bars at bottom. Back at top-left. Standard gestures. No exceptions.
+6. Glass is for navigation, never for content. Liquid Glass frames the experience. Food stays crisp.
+7. Speak like a human. Warm, active, culturally literate. Never robotic. Never blame the user.
+8. Accessibility is architecture. VoiceOver, Dynamic Type, 48pt touch targets, reduced motion, color independence.
+9. Say no to protect the yes. Features are deferred, not deleted. Deferred means not built today.
+
+---
+
+# 3. The Ethereal Archivist Design System
+
+The Creative North Star is "The Ethereal Archivist" — a sophisticated intersection of heritage warmth and spatial computing futurism. Terracotta and cream ground the human element. Liquid Glass brings 2026 depth. The result is an interface that feels like a physical object caught in digital light.
+
+## 3.1 — Foundational Rules
+
+**The No-Line Rule:** 1px solid borders for sectioning are strictly prohibited. Structure is defined through background color shifts and whitespace. If you feel a border is needed, you haven't used the surface tiers correctly.
+
+**The Layering Principle:** Treat the UI as stacked sheets of fine paper and glass. Depth comes from tonal layering, not drop shadows. Shadows are a last resort.
+
+**The Editorial Pattern:** Every section header uses "Caption over Title" — a tiny uppercase Inter label above a large Noto Serif headline. This is the fingerprint of the Ethereal Archivist.
+
+**Glass is for navigation only:** Liquid Glass effects apply to the tab bar, toolbars, floating CTAs, and sheet headers. Never to content itself. Food photography and recipe text remain crisp.
+
+## 3.2 — Color Palette
+
+All colors through useThemeColors() hook. Hardcoded hex values are treated as bugs.
+
+### Light mode
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| primary | #9A4100 | Interactive elements, CTAs, active states |
+| primaryBase | #753000 | Deeper terracotta for text accents |
+| onPrimary | #FFFFFF | Text on primary surfaces |
+| primaryContainer | #9A4100 | Primary-tinted containers |
+| onPrimaryContainer | #FFC9AF | Text on primary containers |
+| surface | #FEF9F3 | Base canvas (warm cream) |
+| surfaceContainerLowest | #FFFFFF | Cards lifted off cream |
+| surfaceContainerLow | #F8F3ED | Sectioning layer |
+| surfaceContainer | #F2EDE7 | Card backgrounds, interactive layer |
+| surfaceContainerHigh | #ECE7E2 | Hover/selected states |
+| surfaceContainerHighest | #E6E2DC | Floating/hero elements |
+| onSurface | #1D1B18 | Primary text (NEVER pure black) |
+| onSurfaceVariant | #564339 | Secondary text, metadata |
+| outline | #897267 | Tertiary text, timestamps |
+| outlineVariant | #DDC1B4 | Ghost borders, subtle dividers |
+| secondary | #845238 | Secondary interactive |
+| secondaryContainer | #FFBD9D | Soft accent backgrounds |
+| error | #BA1A1A | Destructive actions |
+| success | #2D6A4F | Completed states, timer completions |
+| warning | #BA7517 | Dietary conflict alerts |
+| overlay | rgba(0,0,0,0.55) | Hero gradients, modal scrims |
+
+### Dark mode
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| primary | #FFB691 | Interactive elements (brighter for dark bg) |
+| surface | #161412 | Warm near-black (NEVER #000000) |
+| surfaceContainerLowest | #0F0D0B | Deepest layer |
+| surfaceContainerLow | #1D1B18 | Sectioning |
+| surfaceContainer | #211F1C | Card backgrounds |
+| surfaceContainerHigh | #2C2926 | Hover/selected |
+| surfaceContainerHighest | #373330 | Floating elements |
+| onSurface | #F0ECE6 | Primary text |
+| onSurfaceVariant | #D4C4B8 | Secondary text |
+| outline | #9D8C82 | Tertiary text |
+| outlineVariant | #514339 | Ghost borders |
+| error | #FFB4AB | Error states |
+| success | #52B788 | Completed states |
+| warning | #EF9F27 | Dietary alerts |
+
+### Dark mode rules
+
+- Dark mode is mandatory, not polish. Apple reviewers check it.
+- Never pure black (#000000) as background. Dark surface is #161412.
+- Accent colors shift to higher brightness in dark mode.
+- Glass surfaces reduce opacity slightly (0.65 vs 0.72).
+- Bump font weight up one level on dark backgrounds (Regular → Medium).
+
+## 3.3 — Typography
+
+Two font families: Noto Serif (editorial warmth) + Inter (functional precision). All text through typography token exports. Raw fontFamily strings in components are bugs.
+
+| Token | Font | Size / Line height | Weight | Usage |
+|-------|------|-------------------|--------|-------|
+| displayLarge | Noto Serif | 56pt | 700 | Hero statements, splash |
+| displayMedium | Noto Serif | 40pt | 700 | Country hero overlay names |
+| display | Noto Serif | 28pt / 34lh | 700 | Screen titles, section anchors |
+| headlineLarge | Noto Serif | 32pt / 40lh | 600 | Featured recipe titles |
+| headline | Noto Serif | 22pt / 28lh | 700 | Section headers, card titles |
+| title | Noto Serif | 18pt / 24lh | 500 | Recipe names, region names |
+| titleLarge | Inter | 22pt / 28lh | 600 | Large UI labels |
+| titleMedium | Inter | 17pt / 24lh | 600 | Button text, nav labels |
+| titleSmall | Inter | 16pt / 22lh | 600 | Tab labels, chip text |
+| body | Inter | 17pt / 26lh | 400 | Recipe instructions, descriptions |
+| bodyEmphasis | Inter | 17pt / 26lh | 500 | Ingredient names, day labels |
+| bodySmall | Inter | 14pt / 20lh | 400 | Footnotes, helper text |
+| caption | Inter | 14pt / 20lh | 500 | Section labels, timestamps |
+| small | Inter | 13pt / 18lh | 500 | Badges, chip text, tab bar labels |
+| labelLarge | Inter | 10pt | 700, uppercase, +5% tracking | Editorial section labels (e.g., "CURATED REGIONS") |
+| labelSmall | Inter | 10pt | 600, uppercase, +3% tracking | Metadata labels |
+
+### Typography rules
+
+- All text supports Dynamic Type. Minimum readable: 11pt. Minimum practical: 13pt (small token).
+- Headlines: Noto Serif. Body: Inter. Never swap these roles.
+- Letter spacing tightens at display sizes (-0.5pt), loosens at small sizes (+0.5pt).
+- NotoSerif_500Medium must be loaded (required for title token).
+
+## 3.4 — Spacing Scale
+
+Strict 4pt/8pt grid. All values from SPACING export. Arbitrary numbers are bugs.
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| xs | 4pt | Icon-to-label gaps, inner badge padding |
+| sm | 8pt | Between related items in a group |
+| md | 16pt | Standard card padding, section margins |
+| lg | 24pt | Between cards, page horizontal margins |
+| xl | 32pt | Between major content sections |
+| xxl | 40pt | Between editorial sections (hero to content) |
+| page | 24pt | Standard horizontal page margin |
+
+## 3.5 — Border Radius
+
+Exactly 6 tokens. 19 unique values from V1 consolidated down.
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| xs | 4pt | Micro-chips, status dots |
+| sm | 8pt | Chips, badges, filter pills, small inputs |
+| md | 12pt | Cards, input fields, list items |
+| lg | 16pt | Modals, bottom sheets, cook mode panels |
+| xl | 24pt | Hero cards, destination cards, large feature cards |
+| full | 9999pt | Avatars, pills, floating nav, primary CTAs |
+
+## 3.6 — Elevation and Shadows
+
+Shadows are a last resort. Reach for tonal layering first.
+
+| Level | Offset | Opacity | Radius | Usage |
+|-------|--------|---------|--------|-------|
+| Ambient | {0, 20} | 0.06 | 40 | Glass elements, floating nav |
+| Subtle | {0, 4} | 0.04 | 16 | Cards at rest |
+| Hero | {0, 8} | 0.20 | 24 | Primary CTA glow (uses primary color, not black) |
+
+Shadow color is ALWAYS tinted onSurface (#1D1B18), NEVER pure black. Exception: hero shadow uses primary color at low opacity.
+
+Dark mode: increase all shadow opacity by 50%.
+
+## 3.7 — Liquid Glass Specifications
+
+The hallmark of the Ethereal Archivist. Applied to navigation layer only.
+
+### Light variant
+- Background: rgba(255, 255, 255, 0.7)
+- Backdrop blur: 32px (BlurView intensity 70)
+- Specular highlight: 1px top border, rgba(255,255,255,0.4)
+- TOP EDGE ONLY. All four sides flattens the effect.
+
+### Dark variant
+- Background: rgba(29, 27, 24, 0.85)
+- Backdrop blur: 40px
+- Specular highlight: 1px top border, rgba(255,255,255,0.15)
+
+### Component specifications
+
+| Component | Variant | Blur | Opacity | Border |
+|-----------|---------|------|---------|--------|
+| Floating pill tab bar | Regular | 32px | 0.70 | 1px top, white/40% |
+| Navigation bar | Clear | 24px | 0.65 | None |
+| Floating CTA pill | Regular | 16px | 0.78 | 1px, white/22% |
+| Bottom sheet header | Regular | 20px | 0.72 | 0.5px bottom, white/12% |
+| Cook mode toolbar | Dark | 40px | 0.85 | 1px top, white/15% |
+| Timer overlay | Identity | None | 0.92 solid | None |
+| Tonight strip | Regular | 24px | 0.70 | 1px top, white/40% |
+
+## 3.8 — Motion and Haptics
+
+All animations respect useReducedMotion(). When enabled, every transition becomes instant crossfade. No exceptions.
+
+| Interaction | Duration | Easing | Haptic |
+|-------------|----------|--------|--------|
+| Button press | 150ms | ease-in (scale 0.97) | Light |
+| Primary CTA tap | 200ms | spring (damping: 15) | Medium |
+| Navigate forward | 320ms | ease-out (slide-right) | None |
+| Navigate back | 320ms | ease-in (slide-left) | None |
+| Bottom sheet present | 400ms | cubic-bezier ease-out | Light |
+| Recipe bookmark toggle | 250ms | spring (damping: 12) | Light |
+| Cook mode step swipe | 280ms | spring (damping: 18, stiffness: 120) | Medium |
+| Timer completion | Instant | N/A | Success notification |
+| Skeleton shimmer | 1.5s loop | ease-in-out | None |
+
+Spring-based physics via react-native-reanimated. No linear easing ever on visible UI.
+
+## 3.9 — Touch Targets and Accessibility
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| MIN_TAP_TARGET | 48pt | All interactive elements |
+| PRIMARY_BUTTON_HEIGHT | 52pt | All primary CTA buttons |
+| MIN_ROW_HEIGHT | 56pt | Any tappable list row |
+| TAB_BAR_HEIGHT | 56pt | Tab bar including glass padding |
+| MIN_INTERACTIVE_GAP | 8pt | Between adjacent tappable elements |
+| MAX_FONT_SCALE | 1.5x | Default Dynamic Type multiplier |
+| COOK_MODE_MAX_FONT_SCALE | 2.0x | Cook mode (flour-covered hands) |
+
+---
+
+# 4. App Architecture
+
+## 4.1 — Five-Tab Structure
+
+The tab bar is a FLOATING PILL — not a standard iOS bottom bar. Centered, pill-shaped (radius.full), 90% width, positioned 32px from bottom. Liquid Glass Regular variant with ambient shadow.
+
+| Tab | Icon | Purpose |
+|-----|------|---------|
+| Discover | explore (filled when active) | Browse countries and featured recipes |
+| Search | search | Find specific recipes, filter by mood/diet |
+| Plan | calendar_today | Weekly/daily meal planning |
+| Grocery | shopping_cart | Shopping list and delivery prep |
+| Cook | restaurant | Guided cooking with timeline coordination |
+
+Profile/Settings accessed via avatar icon in header, not tab bar.
+
+## 4.2 — Navigation Rules
+
+- No hamburger menus. Tab bar always visible (exception: full-screen cook mode).
+- No deep modal stacking. Modals for focused tasks only.
+- No hidden gesture-only actions. Every swipe has a visible button equivalent.
+- No tab icons that change meaning by context.
+- Every StatusBar responds to current color scheme.
+
+## 4.3 — Screen Flow
+
+```
+Welcome Gate → Onboarding (Country Picker) → Tab Shell
+
+From Tab Shell:
+  Discover → Country Detail → Recipe Detail → Cook Mode
+  Search → Recipe Detail → Cook Mode
+  Plan → Recipe Detail / Dinner Setup → Cooking Schedule → Cook Mode
+  Grocery → In-Store Mode
+  Cook → Active Session / Cook Mode
+```
+
+---
+
+# 5. Feature Specifications
+
+## 5.1 — Discover Tab
+
+Food photography first. Minimal text. Maximum visual impact. The user's eye captured by gorgeous imagery before reading a single word.
+
+**Hero carousel:** Full-bleed 520px images, one per country, horizontal paginated scroll. Manual swipe only (no auto-rotate). Gradient overlay. Country flag in liquid-glass pill badge. Country name in displayMedium (white). "Explore [Country]" terracotta CTA pill. Vertical pagination dots on right side. Country destination rings (64px) at bottom of hero with liquid glass treatment.
+
+**Tonight's Plan strip:** Liquid glass card below hero. Food thumbnail + "TONIGHT'S PLAN" label + recipe name + "Cook Tonight" link. Bridges Discover to Cook.
+
+**Curated Regions grid:** 2-column destination cards (320px tall, rounded-xl). Full-bleed images with gradient overlay. Country label + region name. Image zoom on hover (scale 1.1, 700ms).
+
+**Trending Bites grid:** 2-column recipe cards (surfaceContainer background, rounded-[28px]). Food image + liquid glass heart button + recipe name + time badge + "Tonight" / "Week" quick-add buttons.
+
+**No cultural quotes. No editorial paragraphs.** Cultural depth lives on the Country Detail screen, not here.
+
+## 5.2 — Search Tab
+
+Functional, clean, fast.
+
+**Search bar:** Full width, 52pt height, surfaceContainerLow fill, no border. Placeholder: "Ingredients, dishes, or moods..."
+
+**Filter chips:** Horizontal scroll. Active chip: primary fill, white text. Inactive: surfaceContainerHigh fill. Mood-based: All Moods, Adventurous, Comfort, Exotic, Quick.
+
+**Results:** 2-column food-first grid. Large images, recipe name in headline, metadata in labelSmall, "ADD +" quick-add action, heart button. Results span both recipes AND countries.
+
+**Recent searches:** Shown when search field is empty.
+
+## 5.3 — Plan Tab (The Core Innovation)
+
+The Sunday planning ritual. This is where browsing becomes committing.
+
+**Calendar strip (top):** 7-day compact overview. Day letter + day number. Today highlighted with secondaryContainer background. Terracotta dot if meal planned, outlineVariant dot if empty. Tapping a day scrolls the timeline below.
+
+**Timeline (scrollable body):** Vertical transit line (2px, primary at 20%) with terracotta node dots per day. Each day shows date + optional dinner party badge.
+
+**Filled day card:** Liquid glass card. Food image (160px) + meal course badge (DINNER/APPETIZER/DESSERT) + recipe name + cook time + calories.
+
+**Multi-course slots:** Daily view shows Appetizer → Main → Dessert as separate tappable slots. Empty slots show dashed-border "blank ticket" with course label + add button.
+
+**Auto-Generate:** Floating action button (56x56, primary fill, sparkle icon, radius.full). User selects which days to cook via calendar strip dots, taps Auto-Generate, system fills ONLY those days. Respects course count from Settings.
+
+**Grocery alert banner:** Shows missing ingredient count with "Review" link to Grocery tab.
+
+**Ready to Cook bar:** Floating liquid glass pill above tab bar. Play icon + "Ready to Cook" + day label.
+
+**Dinner party indicator:** Per-day icon. Muted (onSurfaceVariant) when no party. Terracotta (primary) when party exists.
+
+## 5.4 — Grocery Tab
+
+Auto-populated from planned recipes. The user never manually enters categories.
+
+**Mode toggle:** Online / In-Store pill toggle at top.
+
+**Recipe source cards:** Horizontal scroll showing which recipes generated the list items. Each card: food image + recipe name + plan badge ("DINNER PLAN").
+
+**Category-grouped list:** Produce, Protein, Dairy, Pantry, Spice. Emoji + category name as headers. No divider lines — whitespace between groups.
+
+**Item rows:** surfaceContainerLow background, radius.md. Circle checkbox (outlineVariant when unchecked, success fill + checkmark when checked). Ingredient name + recipe source ("Used in 2 Recipes") + amount + aisle number. Checked items: strikethrough + "IN PANTRY" label.
+
+**Ingredient deduplication:** 2 cloves (French recipe) + 3 cloves (Italian) = 5 cloves garlic on the list.
+
+**Tab badge:** Unchecked item count shown on Grocery tab icon.
+
+**Order footer:** Sticky bottom bar. Terracotta gradient. Item count + subtotal + "ORDER FROM INSTACART" CTA.
+
+## 5.5 — Cook Tab
+
+The flagship dashboard.
+
+**Reputation header:** Avatar + "KITCHEN REPUTATION" label + skill level name (Home Cook) + XP progress bar + level count.
+
+**Active cooking card:** Large food image + "IN THE KITCHEN" label + recipe name + step progress ("Step 3 of 8") + "Resume Session" CTA.
+
+**Technique Library:** Horizontal scroll of video-style technique cards with dark overlay + duration badge.
+
+## 5.6 — Cook Mode (Full-Screen Modal)
+
+The technical crown jewel. The most intuitive guided cooking experience in a mobile app.
+
+**Environment:** Full-screen modal. Dark background (inverseSurface #32302C for kitchen contrast). expo-keep-awake active. Screen never dims.
+
+**Top bar:** Close button (X, 48pt) + recipe name in titleMedium + step counter in caption.
+
+**Progress bar:** 3pt height strip. Primary fill for completed, outlineVariant for remaining.
+
+**Step content:** Large instruction text in body (20px for kitchen legibility, white). Per-step ingredient pills (secondaryContainer fill, radius.sm). Timer display when step has duration.
+
+**Bottom toolbar:** Liquid Glass Dark variant. Previous/Next buttons (52pt height). Swipe left/right with haptic feedback for step navigation.
+
+**Adaptive cooking language:** Three tiers of instruction voice, same ingredients.
+
+| Tier | Icon | Example |
+|------|------|---------|
+| First Steps | 🌱 | Carefully cut the onion into small pieces about the size of your fingernail. |
+| Home Cook | 🍳 | Dice the onion finely. |
+| Chef's Table | 👨‍🍳 | Brunoise the onion. |
+
+**Step timers:** Per-step with Reanimated transitions. Success haptic on completion.
+
+**Servings scaler:** Adjust servings, all quantities recalculate instantly.
+
+**CookingPill:** Floating indicator on tab bar when cook session is active. Shows recipe name + timer. Tapping returns to cook-mode.
+
+## 5.7 — Country Detail Screen
+
+Opens from tapping a destination card on Discover.
+
+Hero image (360px) + gradient overlay + country name + flag badge. Back button in liquid glass circle.
+
+Below hero: "CULINARY HERITAGE" label + "[Country] Cuisine" headline + 2-3 short paragraphs about the cuisine tradition. Then recipe list from that country: vertical rows with 80x80 image + recipe name + cook time + difficulty.
+
+Cultural depth lives here — not on the Discover tab.
+
+## 5.8 — Recipe Detail Screen
+
+Opens from tapping any recipe card.
+
+Hero food image (380px) + gradient overlay + recipe name + country flag. Stats row: prep time, cook time, difficulty, servings. Servings adjuster.
+
+Ingredients grouped by category with labelLarge headers. Instruction steps numbered with primary circles. Timer icons where applicable. Cultural note card (surfaceContainerLow, left border accent in primary).
+
+"Start Cooking" fixed bottom CTA (full width, primary pill, liquid glass backdrop).
+
+---
+
+# 6. Major Systems — Status and Plan
+
+## 6.1 — Meal Planning System — SHIP IN V2
+
+Status: Timeline UI built in Stitch. Missing: calendar strip, auto-generate, multi-course slots.
+Action: Build the functional planning logic. Connect to AppContext itinerary state.
+
+## 6.2 — Grocery System — SHIP IN V2
+
+Status: Stitch UI strong. Missing: Protein + Spice categories, deduplication logic, tab badge.
+Action: Wire checkbox state to AppContext.groceryItems. Add deduplication algorithm.
+
+## 6.3 — Cook Mode (Single Recipe) — SHIP IN V2
+
+Status: V1 had 1,800+ lines of working code. Stitch has dashboard but no actual cook mode screen.
+Action: Rebuild with Ethereal Archivist dark theme. Carry forward V1's timer logic, haptic patterns, step navigation, servings scaler.
+
+## 6.4 — Dinner Party System — DEFERRED
+
+Status: V1 backend exists (dinner_parties + dinner_guests tables, 7 API routes, dinner-setup.tsx). No V2 frontend.
+Action: Keep the dinner party icon as a visual placeholder on Plan days. Build the full system (guest list, SMS invites, RSVP, dietary conflicts, guest progress view) post-MVP.
+
+## 6.5 — Multi-Course Timeline Engine — DEFERRED
+
+Status: V1 has working timelineEngine.ts with backward-scheduling algorithm. 4 Claude Code prompts written and ready.
+Action: Execute the 4 prompts AFTER single-recipe cook mode is solid. This is the competitive moat — it ships in v1.1.
+
+## 6.6 — Delivery Integration — DEFERRED
+
+Status: Stitch built "ORDER FROM INSTACART" button (UI only).
+Action: Keep button as placeholder. Actual Instacart Connect API requires business partnership application. Focus on in-store checklist mode first.
+
+## 6.7 — Authentication & Subscriptions — DEFERRED
+
+Status: AuthContext and SubscriptionContext exist from V1. Supabase auth stubbed. RevenueCat in "gates open" mode.
+Action: Wire up auth when preparing for TestFlight. RevenueCat after validating with free beta users.
+
+## 6.8 — Adaptive Cooking Language — SHIP HOME COOK FIRST
+
+Status: V1 defines three tiers. Home Cook is API default.
+Action: Ship Home Cook tier. Generate First Steps and Chef's Table variants for all 97 recipes as a batch job after cook mode works.
+
+---
+
+# 7. Technical Architecture
+
+## 7.1 — Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Monorepo | pnpm workspaces, TypeScript 5.9 |
+| Mobile | Expo SDK 54 (managed), React Native, Expo Router 6 |
+| API Server | Express 5, port 8080 |
+| Database | PostgreSQL + Drizzle ORM |
+| Auth | Supabase (stubbed) |
+| Subscriptions | RevenueCat (gates open) |
+| SMS | Twilio (stubbed for dinner party invites) |
+| Landing | React + Vite + Tailwind + shadcn/ui |
+| Admin | Next.js + shadcn/ui (planned) |
+
+## 7.2 — Key Libraries
+
+expo-image, expo-haptics, expo-blur, expo-linear-gradient, expo-keep-awake, react-native-reanimated, expo-router, @tanstack/react-query.
+
+## 7.3 — State Management
+
+| Context | Purpose |
+|---------|---------|
+| AppContext | The brain. Cook sessions, dinner plans, grocery state, itinerary, saved recipes, dietary flags, cooking level, appearance mode. Persists to MMKV/AsyncStorage. |
+| AuthContext | Supabase auth. Injects Bearer token into API client. |
+| SubscriptionContext | RevenueCat gate. Currently isPremium = true. |
+
+Storage fallback chain: MMKV (fast, synchronous, production) → AsyncStorage (async, Expo Go dev).
+
+## 7.4 — Data
+
+97 hand-curated recipes across 8 countries (Italy, France, Japan, Mexico, Thailand, Morocco, India, Spain). Sourced from recipe-api.com (paid plan), cached permanently. Embedded as TypeScript constants (520KB). Live API data merged with local fallback via useCountries/useRecipe hooks.
+
+## 7.5 — Contract-First API
+
+Endpoints defined once in lib/api-spec/openapi.yaml. Orval codegen produces both api-client-react (TanStack Query hooks) and api-zod (validation schemas). All frontends and backend consume the same types.
+
+## 7.6 — Database Schema
+
+| Table | Purpose |
+|-------|---------|
+| countries | Regional destinations |
+| recipes | Core content (JSONB for ingredients and steps) |
+| recipe_details | Extended data: nutrition, equipment |
+| app_users | Profiles, cooking level, dietary preferences |
+| dinner_parties | Party metadata, date, menu, host |
+| dinner_guests | Guest list, RSVP status, dietary restrictions |
+| cooking_history | User cooked which recipe, feedback |
+
+Currently empty — app runs on embedded constants. Define with Drizzle when connecting real data.
+
+---
+
+# 8. Accessibility and App Store Compliance
+
+| Requirement | Standard | Status |
+|-------------|----------|--------|
+| VoiceOver | Every interactive element has descriptive accessibilityLabel | Audit fix prompt written |
+| Dynamic Type | All text scales with user preference | Implemented via typography tokens |
+| Touch targets | Minimum 48pt all interactive elements | Enforced via MIN_TAP_TARGET constant |
+| Color contrast | 4.5:1 normal, 3:1 large (WCAG AA) | Terracotta on cream needs verification |
+| Reduce Motion | Crossfade transitions when OS setting enabled | Implemented via useReducedMotion() |
+| Dark Mode | Full support via semantic tokens | Implemented — needs hardcoded ref cleanup |
+| Color independence | Never color as only indicator of meaning | Needs audit |
+
+---
+
+# 9. Execution Roadmap
+
+Applying the Top 10 List Protocol — list ten, cross out seven, execute three.
+
+## Priority 1: V2 Visual Reskin
+
+Apply the Ethereal Archivist design system to all existing screens. Update design tokens. Apply floating pill nav, liquid glass treatment, editorial header pattern, tonal layering. Do not change AppContext, hooks, navigation logic, or data layer.
+
+## Priority 2: Cook Mode Rebuild
+
+Rebuild the full-screen cook mode modal with the Ethereal Archivist dark theme. Carry forward V1's working logic for timers, haptics, step navigation, servings scaler, adaptive language. This is the product's soul.
+
+## Priority 3: Complete the Core Loop
+
+Build the missing screens: Country Detail, Recipe Detail. Add the calendar strip and auto-generate to Plan. Wire grocery deduplication. The complete pipeline: Discover → tap → detail → plan → shop → cook.
+
+## On the Horizon
+
+- Multi-course timeline engine (execute 4 Claude Code prompts)
+- Dinner party system frontend
+- Apple Developer Program enrollment + TestFlight
+- Supabase auth integration
+- Instacart/Kroger delivery API
+- Admin dashboard (Ethereal Archivist branding)
+- App icon redesign for Liquid Glass era
+- Performance: split constants/data.ts, lazy-load expo-av, embed fonts
+
+---
+
+*Fork & Compass · Pick a country, cook a dinner, feel like you traveled.*
+
+*voyageapron.com · Confidential*
