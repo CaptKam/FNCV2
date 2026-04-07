@@ -12,6 +12,7 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { countries } from '@/data/countries';
 import { recipes, Step } from '@/data/recipes';
+import { convertAmount } from '@/data/helpers';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -228,7 +229,7 @@ export default function RecipeDetailScreen() {
                     <Text style={[Typography.body, { color: colors.onSurface, flex: 1 }]}>
                       {ing.name}
                     </Text>
-                    <Text style={[Typography.bodySmall, { color: colors.outline }]}>{ing.amount}</Text>
+                    <Text style={[Typography.bodySmall, { color: colors.outline }]}>{convertAmount(ing.amount, app.useMetric)}</Text>
                   </View>
                 ))}
               </View>

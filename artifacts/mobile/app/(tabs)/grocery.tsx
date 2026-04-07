@@ -12,6 +12,7 @@ import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { useApp, GroceryItem } from '@/context/AppContext';
 import { recipes as allRecipes } from '@/data/recipes';
+import { convertAmount } from '@/data/helpers';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -382,7 +383,7 @@ export default function GroceryScreen() {
                   },
                 ]}
                 accessibilityRole="checkbox"
-                accessibilityLabel={`${item.name}, ${item.amount}`}
+                accessibilityLabel={`${item.name}, ${convertAmount(item.amount, app.useMetric)}`}
                 accessibilityState={{ checked: item.checked }}
               >
                 <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
@@ -402,7 +403,7 @@ export default function GroceryScreen() {
                   </Text>
                   <View style={styles.itemMetaRow}>
                     <Text style={[Typography.caption, { color: colors.outline }]}>
-                      {item.amount}
+                      {convertAmount(item.amount, app.useMetric)}
                     </Text>
                     {item.recipeNames.length > 1 && (
                       <View style={[styles.recipeCountBadge, { backgroundColor: `${colors.primary}15` }]}>

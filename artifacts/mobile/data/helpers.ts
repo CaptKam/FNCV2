@@ -100,3 +100,83 @@ export function getInstructionForLevel(
   }
   return step.instruction;
 }
+
+// ═══════════════════════════════════════════
+// Unit conversion
+// ═══════════════════════════════════════════
+
+interface ConversionRule {
+  regex: RegExp;
+  toImperial: (val: number) => { amount: number; unit: string };
+  toMetric: (val: number) => { amount: number; unit: string };
+}
+
+const CONVERSIONS: ConversionRule[] = [
+  {
+    regex: /^([\d./]+)\s*g\b/i,
+    toImperial: (g) => ({ amount: Math.round(g * 0.03527 * 10) / 10, unit: 'oz' }),
+    toMetric: (g) => ({ amount: g, unit: 'g' }),
+  },
+  {
+    regex: /^([\d./]+)\s*kg\b/i,
+    toImperial: (kg) => ({ amount: Math.round(kg * 2.205 * 10) / 10, unit: 'lb' }),
+    toMetric: (kg) => ({ amount: kg, unit: 'kg' }),
+  },
+  {
+    regex: /^([\d./]+)\s*ml\b/i,
+    toImperial: (ml) => ({ amount: Math.round(ml * 0.03381 * 10) / 10, unit: 'fl oz' }),
+    toMetric: (ml) => ({ amount: ml, unit: 'ml' }),
+  },
+  {
+    regex: /^([\d./]+)\s*l\b/i,
+    toImperial: (l) => ({ amount: Math.round(l * 4.227 * 10) / 10, unit: 'cups' }),
+    toMetric: (l) => ({ amount: l, unit: 'L' }),
+  },
+  {
+    regex: /^([\d./]+)\s*cups?\b/i,
+    toImperial: (c) => ({ amount: c, unit: c === 1 ? 'cup' : 'cups' }),
+    toMetric: (c) => ({ amount: Math.round(c * 236.6), unit: 'ml' }),
+  },
+  {
+    regex: /^([\d./]+)\s*oz\b/i,
+    toImperial: (oz) => ({ amount: oz, unit: 'oz' }),
+    toMetric: (oz) => ({ amount: Math.round(oz * 28.35), unit: 'g' }),
+  },
+  {
+    regex: /^([\d./]+)\s*lbs?\b/i,
+    toImperial: (lb) => ({ amount: lb, unit: lb === 1 ? 'lb' : 'lbs' }),
+    toMetric: (lb) => ({ amount: Math.round(lb * 453.6), unit: 'g' }),
+  },
+];
+
+function parseFraction(s: string): number {
+  if (s.includes('/')) {
+    const parts = s.split('/');
+    return parseInt(parts[0], 10) / parseInt(parts[1], 10);
+  }
+  return parseFloat(s);
+}
+
+/**
+ * Convert an ingredient amount string between metric and imperial.
+ * Returns the original string if no conversion rule matches.
+ */
+export function convertAmount(amount: string, toMetric: boolean): string {
+  for (const rule of CONVERSIONS) {
+    const match = amount.match(rule.regex);
+    if (match) {
+      const val = parseFraction(match[1]);
+      if (isNaN(val)) continue;
+      const suffix = amount.slice(match[0].length);
+      if (toMetric) {
+        const { amount: converted, unit } = rule.toMetric(val);
+        return `${converted}${unit}${suffix}`;
+      } else {
+        const { amount: converted, unit } = rule.toImperial(val);
+        return `${converted} ${unit}${suffix}`;
+      }
+    }
+  }
+  // No convertible unit found — return as-is (e.g. "2 tbsp", "1 large")
+  return amount;
+}
