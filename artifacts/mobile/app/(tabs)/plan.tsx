@@ -187,24 +187,6 @@ export default function PlanScreen() {
   }, [selectedDay]);
 
   const primaryMeal = selectedDay?.courses.main;
-  const WEEK_ORDER: WeekOption[] = ['past', 'this-week', 'next-week'];
-
-  const skipWeek = (direction: -1 | 1) => {
-    const currentIndex = WEEK_ORDER.indexOf(selectedWeek);
-    const nextIndex = currentIndex + direction;
-    if (nextIndex >= 0 && nextIndex < WEEK_ORDER.length) {
-      setSelectedWeek(WEEK_ORDER[nextIndex]);
-    }
-  };
-
-  const canGoPrev = WEEK_ORDER.indexOf(selectedWeek) > 0;
-  const canGoNext = WEEK_ORDER.indexOf(selectedWeek) < WEEK_ORDER.length - 1;
-
-  const selectedDay = DAYS[selectedDayIndex];
-  const dailyMeals = DAILY_MEALS[selectedDay] || [];
-  const primaryMeal = dailyMeals.find((m) => m.label === 'Dinner') || dailyMeals[dailyMeals.length - 1];
-  const primaryRecipe = primaryMeal?.recipeId ? getRecipe(primaryMeal.recipeId) : null;
-
   // ─── Grocery banner ───
   const renderGroceryBanner = () => (
     <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
