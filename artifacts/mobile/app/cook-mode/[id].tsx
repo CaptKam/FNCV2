@@ -138,6 +138,7 @@ export default function CookModeScreen() {
         donenessIconBg: 'rgba(154,65,0,0.15)',
         donenessTitle: '#F2EDE7',
         donenessText: 'rgba(245,240,234,0.7)',
+        verbHighlight: '#FFB691',
       }
     : {
         bg: '#FEF9F3',
@@ -167,6 +168,7 @@ export default function CookModeScreen() {
         donenessIconBg: 'rgba(154,65,0,0.1)',
         donenessTitle: '#1C1917',
         donenessText: '#57534e',
+        verbHighlight: '#9A4100',
       };
 
   if (!recipe) {
@@ -244,7 +246,7 @@ export default function CookModeScreen() {
               <Text style={[styles.heroInstructionDark, { color: t.instructionColor }]}>
                 {highlightCulinaryVerbs(heroText.toUpperCase()).map((seg, si) =>
                   seg.isVerb ? (
-                    <Text key={si} style={{ color: colors.inversePrimary }}>{seg.text}</Text>
+                    <Text key={si} style={{ color: t.verbHighlight }}>{seg.text}</Text>
                   ) : (
                     <Text key={si}>{seg.text}</Text>
                   )
@@ -260,7 +262,7 @@ export default function CookModeScreen() {
             <Text style={[styles.heroInstructionLight, { color: t.instructionColor }]}>
               {highlightCulinaryVerbs(instructionText).map((seg, si) =>
                 seg.isVerb ? (
-                  <Text key={si} style={{ fontWeight: '700', color: colors.primary }}>{seg.text}</Text>
+                  <Text key={si} style={{ fontWeight: '700', color: t.verbHighlight }}>{seg.text}</Text>
                 ) : (
                   <Text key={si}>{seg.text}</Text>
                 )
