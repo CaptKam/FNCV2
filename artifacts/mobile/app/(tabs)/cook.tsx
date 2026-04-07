@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -10,8 +10,8 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
-import { HeaderBar } from '@/components/HeaderBar';
 import { recipes } from '@/data/recipes';
+import { countries } from '@/data/countries';
 import { useApp } from '@/context/AppContext';
 
 const TECHNIQUES = [
@@ -21,8 +21,15 @@ const TECHNIQUES = [
   { title: 'Wok Technique', duration: '10 min', image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&h=300&fit=crop', desc: 'High-heat stir-fry mastery' },
 ];
 
+const KITCHEN_CHECKS = [
+  { label: 'Ingredients Prepped', icon: 'basket-outline' as const },
+  { label: 'Equipment Ready', icon: 'pot-steam' as const },
+  { label: 'Workspace Clean', icon: 'broom' as const },
+];
+
 export default function CookScreen() {
   const colors = useThemeColors();
+  const isDark = colors.isDark;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const app = useApp();
@@ -32,175 +39,243 @@ export default function CookScreen() {
   const todaysMeals = app.getTodaysMeals();
   const progress = (xp % 300) / 300;
 
-  // Resolve active recipe for the hero card
   const sessionRecipe = activeCookSession
     ? recipes.find((r) => r.id === activeCookSession.recipeId)
     : null;
 
-  const todayMainMeal = todaysMeals.find((m) => true); // first meal
+  const todayMainMeal = todaysMeals.find(() => true);
   const todayRecipe = todayMainMeal
     ? recipes.find((r) => r.id === todayMainMeal.recipeId)
     : null;
 
-  // Determine which state to show
   const hasActiveSession = activeCookSession != null && sessionRecipe != null;
   const hasTodayPlan = !hasActiveSession && todayRecipe != null;
 
+  const heroRecipe = hasActiveSession ? sessionRecipe : hasTodayPlan ? todayRecipe : null;
+  const heroCountry = heroRecipe ? countries.find((c) => c.id === heroRecipe.countryId) : null;
+
+  const [checks, setChecks] = React.useState<boolean[]>(KITCHEN_CHECKS.map(() => false));
+
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100, paddingTop: insets.top + 68 }}
+        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top }}
       >
-        {/* Reputation header — wired to AppContext XP */}
-        <View style={[styles.profileSection, { paddingHorizontal: Spacing.page }]}>
-          <Pressable onPress={() => router.push('/profile')} style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]} accessibilityRole="button" accessibilityLabel="View profile">
-            <Feather name="user" size={28} color={colors.outline} />
+        <View style={styles.topBar}>
+          <View style={styles.topBarLeft}>
+            <MaterialCommunityIcons name="silverware-fork-knife" size={22} color={colors.primary} />
+            <Text style={[Typography.headline, { color: colors.primary, letterSpacing: -0.3 }]}>Kitchen Lab</Text>
+          </View>
+          <Pressable
+            onPress={() => router.push('/profile')}
+            style={[styles.profileAvatar, { backgroundColor: colors.surfaceContainerHigh }]}
+            accessibilityRole="button"
+            accessibilityLabel="View profile"
+          >
+            <MaterialCommunityIcons name="account" size={22} color={colors.outline} />
           </Pressable>
-          <View style={styles.profileInfo}>
-            <Text style={[Typography.labelLarge, { color: colors.outline }]}>KITCHEN REPUTATION</Text>
-            <Text style={[Typography.display, { color: colors.onSurface }]}>{levelName}</Text>
-            <View style={styles.levelRow}>
-              <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
-                Level {level}
+        </View>
+
+        {heroRecipe ? (
+          <View style={styles.heroSection}>
+            <View style={styles.heroImageWrap}>
+              <Image
+                source={{ uri: heroRecipe.image }}
+                style={styles.heroImage}
+                contentFit="cover"
+                transition={300}
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.55)']}
+                style={StyleSheet.absoluteFill}
+              />
+            </View>
+
+            <View style={styles.heroCard}>
+              <GlassView style={styles.heroCardInner}>
+                <Text style={[Typography.labelLarge, { color: colors.primary, fontStyle: 'italic' }]}>
+                  {hasActiveSession ? 'Now Cooking' : 'Tonight\'s Dinner'}
+                </Text>
+                <Text style={[Typography.display, { color: colors.onSurface, marginBottom: Spacing.sm }]}>
+                  {heroRecipe.title}
+                </Text>
+
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <MaterialCommunityIcons name="clock-outline" size={18} color={colors.primary} />
+                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
+                      {heroRecipe.prepTime + heroRecipe.cookTime}m
+                    </Text>
+                  </View>
+                  <View style={[styles.statDivider, { backgroundColor: colors.outlineVariant }]} />
+                  <View style={styles.statItem}>
+                    <MaterialCommunityIcons name="account-group-outline" size={18} color={colors.primary} />
+                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
+                      {heroRecipe.servings} Servings
+                    </Text>
+                  </View>
+                  <View style={[styles.statDivider, { backgroundColor: colors.outlineVariant }]} />
+                  <View style={styles.statItem}>
+                    <MaterialCommunityIcons name="star-outline" size={18} color={colors.primary} />
+                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
+                      {heroRecipe.difficulty}
+                    </Text>
+                  </View>
+                </View>
+              </GlassView>
+            </View>
+          </View>
+        ) : (
+          <View style={[styles.emptyHero, { marginHorizontal: Spacing.page }]}>
+            <View style={[styles.emptyHeroInner, { borderColor: colors.outlineVariant }]}>
+              <MaterialCommunityIcons name="weather-sunset" size={44} color={colors.outlineVariant} />
+              <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
+                Nothing on the stove
               </Text>
-              <View style={[styles.progressBar, { backgroundColor: colors.surfaceContainerHigh }]}>
+              <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', lineHeight: 22 }]}>
+                Plan a meal to get started, or browse recipes for inspiration.
+              </Text>
+            </View>
+          </View>
+        )}
+
+        <View style={styles.bentoRow}>
+          {heroRecipe && heroCountry && (
+            <View style={[styles.dinnerPartyCard, { backgroundColor: colors.surfaceContainerLow }]}>
+              <View style={styles.dinnerPartyHeader}>
+                <View>
+                  <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: 2 }]}>Dinner Party</Text>
+                  <Text style={[Typography.titleSmall, { color: colors.primary, letterSpacing: 0.3 }]}>
+                    A {heroCountry.name} Night
+                  </Text>
+                </View>
+                <View style={[styles.cardIconBg, { backgroundColor: `${colors.primary}18` }]}>
+                  <MaterialCommunityIcons name="party-popper" size={22} color={colors.primary} />
+                </View>
+              </View>
+              <View style={[styles.guestRow, { backgroundColor: colors.surface, borderTopColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)' }]}>
+                <View style={styles.guestAvatars}>
+                  {[1, 2, 3].map((i) => (
+                    <View
+                      key={i}
+                      style={[styles.guestDot, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.surface, marginLeft: i === 1 ? 0 : -Spacing.sm }]}
+                    />
+                  ))}
+                  <View style={[styles.guestDot, styles.guestPending, { backgroundColor: colors.surfaceContainerHighest, borderColor: colors.surface, marginLeft: -Spacing.sm }]}>
+                    <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant, letterSpacing: 0 }]}>?</Text>
+                  </View>
+                </View>
+                <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, fontSize: 13 }]}>
+                  4 Guests <Text style={{ opacity: 0.6, fontSize: 11 }}>(3 Confirmed)</Text>
+                </Text>
+              </View>
+            </View>
+          )}
+
+          <View style={[styles.kitchenCheckCard, { backgroundColor: colors.surfaceContainerHighest }]}>
+            <View style={styles.checkHeader}>
+              <MaterialCommunityIcons name="clipboard-check-outline" size={20} color={colors.primary} />
+              <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>Kitchen Check</Text>
+            </View>
+            {KITCHEN_CHECKS.map((item, idx) => (
+              <Pressable
+                key={item.label}
+                onPress={() => {
+                  const next = [...checks];
+                  next[idx] = !next[idx];
+                  setChecks(next);
+                }}
+                style={styles.checkItem}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: checks[idx] }}
+                accessibilityLabel={item.label}
+              >
                 <View
                   style={[
-                    styles.progressFill,
-                    { backgroundColor: colors.primary, width: `${progress * 100}%` },
+                    styles.checkBox,
+                    checks[idx]
+                      ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                      : { borderColor: `${colors.primary}50` },
                   ]}
-                />
-              </View>
-              <Text style={[Typography.caption, { color: colors.primary }]}>{xp} XP</Text>
+                >
+                  {checks[idx] && (
+                    <MaterialCommunityIcons name="check" size={14} color={colors.onPrimary} />
+                  )}
+                </View>
+                <Text
+                  style={[
+                    Typography.bodySmall,
+                    { color: checks[idx] ? colors.onSurface : colors.onSurfaceVariant },
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {heroRecipe && (
+          <View style={styles.ctaSection}>
+            <Pressable
+              onPress={() => {
+                if (hasActiveSession) {
+                  router.push(`/cook-mode/${activeCookSession!.recipeId}`);
+                } else if (hasTodayPlan && todayRecipe) {
+                  app.startCookSession(todayRecipe, todayRecipe.servings);
+                  router.push(`/cook-mode/${todayRecipe.id}`);
+                }
+              }}
+              style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel={hasActiveSession ? 'Resume cooking' : 'Begin cooking'}
+            >
+              <Text style={[Typography.titleMedium, { color: colors.onPrimary, fontSize: 17, letterSpacing: -0.3 }]}>
+                {hasActiveSession ? 'Resume the Journey' : 'Begin the Journey'}
+              </Text>
+              <MaterialCommunityIcons name="arrow-right" size={22} color={colors.onPrimary} />
+            </Pressable>
+            <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant, opacity: 0.6 }]}>
+              {hasActiveSession
+                ? `Step ${activeCookSession!.currentStepIndex + 1} of ${activeCookSession!.totalSteps}`
+                : 'Ready to initiate kitchen lab sequence'}
+            </Text>
+          </View>
+        )}
+
+        {!heroRecipe && (
+          <View style={[styles.ctaSection, { marginTop: Spacing.md }]}>
+            <Pressable
+              onPress={() => router.push('/(tabs)/plan')}
+              style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel="Plan a meal"
+            >
+              <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Plan a Meal</Text>
+              <MaterialCommunityIcons name="arrow-right" size={22} color={colors.onPrimary} />
+            </Pressable>
+          </View>
+        )}
+
+        <View style={styles.levelSection}>
+          <View style={styles.levelHeader}>
+            <Text style={[Typography.labelLarge, { color: colors.outline }]}>Kitchen Reputation</Text>
+            <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{xp} XP</Text>
+          </View>
+          <Text style={[Typography.headline, { color: colors.onSurface }]}>{levelName}</Text>
+          <View style={styles.levelBarRow}>
+            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>Lvl {level}</Text>
+            <View style={[styles.progressBar, { backgroundColor: colors.surfaceContainerHigh }]}>
+              <View style={[styles.progressFill, { backgroundColor: colors.primary, width: `${progress * 100}%` }]} />
             </View>
           </View>
         </View>
 
-        {/* State A: Active cooking session */}
-        {hasActiveSession && sessionRecipe && (
-          <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
-            <Pressable
-              onPress={() => router.push(`/cook-mode/${activeCookSession.recipeId}`)}
-              style={styles.activeCard}
-              accessibilityRole="button"
-              accessibilityLabel={`Continue cooking ${sessionRecipe.title}`}
-            >
-              <Image
-                source={{ uri: sessionRecipe.image }}
-                style={styles.activeImage}
-                contentFit="cover"
-                transition={300}
-                accessible={false}
-              />
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.7)']}
-                style={styles.activeGradient}
-              />
-              <View style={styles.activeContent}>
-                <GlassView style={styles.activeGlass}>
-                  <Text style={[Typography.labelLarge, { color: colors.textOnImage }]}>IN THE KITCHEN</Text>
-                  <Text style={[Typography.displayMedium, { color: colors.textOnImage, fontSize: 24 }]} numberOfLines={1}>
-                    {sessionRecipe.title}
-                  </Text>
-                  <Text style={[Typography.body, { color: 'rgba(255,255,255,0.8)', fontSize: 14 }]} numberOfLines={2}>
-                    {sessionRecipe.culturalNote.slice(0, 80)}...
-                  </Text>
-                  <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', fontSize: 14 }]}>
-                    Step {activeCookSession.currentStepIndex + 1} of {activeCookSession.totalSteps}
-                  </Text>
-                  <Pressable
-                    onPress={() => router.push(`/cook-mode/${activeCookSession.recipeId}`)}
-                    style={[styles.resumeBtn, { backgroundColor: colors.primary }]}
-                    accessibilityRole="button"
-                    accessibilityLabel="Resume cooking session"
-                  >
-                    <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Resume Session</Text>
-                  </Pressable>
-                </GlassView>
-              </View>
-            </Pressable>
-          </View>
-        )}
-
-        {/* State B: Today has a plan but no active session */}
-        {hasTodayPlan && todayRecipe && (
-          <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
-            <Pressable
-              onPress={() => {
-                app.startCookSession(todayRecipe, todayRecipe.servings);
-                router.push(`/cook-mode/${todayRecipe.id}`);
-              }}
-              style={styles.activeCard}
-              accessibilityRole="button"
-              accessibilityLabel={`Start cooking ${todayRecipe.title}`}
-            >
-              <Image
-                source={{ uri: todayRecipe.image }}
-                style={styles.activeImage}
-                contentFit="cover"
-                transition={300}
-                accessible={false}
-              />
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.7)']}
-                style={styles.activeGradient}
-              />
-              <View style={styles.activeContent}>
-                <GlassView style={styles.activeGlass}>
-                  <Text style={[Typography.labelLarge, { color: colors.textOnImage }]}>TONIGHT'S DINNER</Text>
-                  <Text style={[Typography.displayMedium, { color: colors.textOnImage, fontSize: 24 }]} numberOfLines={1}>
-                    {todayRecipe.title}
-                  </Text>
-                  <Text style={[Typography.body, { color: 'rgba(255,255,255,0.8)', fontSize: 14 }]} numberOfLines={2}>
-                    {todayRecipe.culturalNote.slice(0, 80)}...
-                  </Text>
-                  <Pressable
-                    onPress={() => {
-                      app.startCookSession(todayRecipe, todayRecipe.servings);
-                      router.push(`/cook-mode/${todayRecipe.id}`);
-                    }}
-                    style={[styles.resumeBtn, { backgroundColor: colors.primary }]}
-                    accessibilityRole="button"
-                    accessibilityLabel="Start cooking"
-                  >
-                    <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
-                  </Pressable>
-                </GlassView>
-              </View>
-            </Pressable>
-          </View>
-        )}
-
-        {/* State C: Nothing planned, no session */}
-        {!hasActiveSession && !hasTodayPlan && (
-          <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
-            <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
-              <Feather name="sunrise" size={40} color={colors.outlineVariant} />
-              <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
-                Nothing on the stove
-              </Text>
-              <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center' }]}>
-                Plan a meal to get started, or browse recipes for inspiration.
-              </Text>
-              <Pressable
-                onPress={() => router.push('/(tabs)/plan')}
-                style={[styles.resumeBtn, { backgroundColor: colors.primary }]}
-                accessibilityRole="button"
-                accessibilityLabel="Plan a meal"
-              >
-                <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Plan a Meal</Text>
-              </Pressable>
-            </View>
-          </View>
-        )}
-
-        {/* Technique library — unchanged */}
-        <View style={{ marginTop: Spacing.xxl }}>
+        <View style={styles.techSection}>
           <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
             <Text style={[Typography.labelLarge, { color: colors.outline }]}>TECHNIQUE LIBRARY</Text>
-            <Text style={[Typography.headlineLarge, { color: colors.onSurface }]}>Technique Library</Text>
+            <Text style={[Typography.headline, { color: colors.onSurface }]}>Sharpen Your Craft</Text>
           </View>
           <ScrollView
             horizontal
@@ -211,18 +286,17 @@ export default function CookScreen() {
               <Pressable key={tech.title} style={styles.techCard} accessibilityRole="button" accessibilityLabel={`${tech.title}, ${tech.duration}`}>
                 <Image
                   source={{ uri: tech.image }}
-                  style={styles.techImage}
+                  style={StyleSheet.absoluteFill}
                   contentFit="cover"
                   transition={300}
-                  accessible={false}
                 />
                 <LinearGradient
                   colors={['transparent', 'rgba(0,0,0,0.75)']}
                   style={StyleSheet.absoluteFill}
                 />
-                <View style={styles.durationBadge}>
-                  <GlassView style={styles.durationGlass}>
-                    <Feather name="play" size={10} color={colors.textOnImage} />
+                <View style={styles.techBadge}>
+                  <GlassView style={styles.techBadgeInner}>
+                    <MaterialCommunityIcons name="play" size={10} color={colors.textOnImage} />
                     <Text style={[Typography.labelSmall, { color: colors.textOnImage }]}>{tech.duration}</Text>
                   </GlassView>
                 </View>
@@ -230,7 +304,7 @@ export default function CookScreen() {
                   <Text style={[Typography.headline, { color: colors.textOnImage, fontSize: 16 }]}>
                     {tech.title}
                   </Text>
-                  <Text style={[Typography.bodySmall, { color: 'rgba(255,255,255,0.7)' }]}>
+                  <Text style={[Typography.bodySmall, { color: 'rgba(255,255,255,0.7)', fontSize: 12 }]}>
                     {tech.desc}
                   </Text>
                 </View>
@@ -239,53 +313,22 @@ export default function CookScreen() {
           </ScrollView>
         </View>
 
-        {/* Class card — unchanged */}
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xxl }}>
-          <View style={[styles.classCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Text style={[Typography.labelLarge, { color: colors.primary }]}>UPCOMING CLASS</Text>
-            <Text style={[Typography.headline, { color: colors.onSurface }]}>
-              Mastering Japanese Dashi
-            </Text>
-            <Text style={[Typography.body, { color: colors.onSurfaceVariant, fontSize: 14 }]}>
-              Learn the foundation of Japanese cooking with a live masterclass on dashi stock preparation.
-            </Text>
-            <View style={styles.avatarStack}>
-              {[1, 2, 3].map((i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.miniAvatar,
-                    {
-                      backgroundColor: colors.surfaceContainerHigh,
-                      borderColor: colors.surface,
-                      marginLeft: i > 1 ? -8 : 0,
-                    },
-                  ]}
-                />
-              ))}
-              <Text style={[Typography.caption, { color: colors.outline, marginLeft: 8 }]}>
-                +24 joined
-              </Text>
-            </View>
-            <Pressable style={[styles.waitlistBtn, { borderColor: colors.primary }]} accessibilityRole="button" accessibilityLabel="Join waitlist for Mastering Japanese Dashi">
-              <Text style={[Typography.titleSmall, { color: colors.primary }]}>Join Waitlist</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Pantry banner — unchanged */}
-        <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
-          <View style={[styles.pantryBanner, { backgroundColor: colors.surfaceContainerLow }]}>
+          <View style={[styles.statsCard, { backgroundColor: colors.surfaceContainerLow }]}>
             <View style={{ flex: 1 }}>
               <Text style={[Typography.display, { color: colors.onSurface, fontSize: 32 }]}>
                 {app.totalRecipesCooked}
               </Text>
-              <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
+              <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, fontSize: 13 }]}>
                 Recipes cooked
               </Text>
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel="Scan pantry">
-              <Text style={[Typography.titleSmall, { color: colors.primary }]}>Scan Pantry</Text>
+            <Pressable
+              onPress={() => router.push('/bookmarks')}
+              accessibilityRole="button"
+              accessibilityLabel="View saved recipes"
+            >
+              <Text style={[Typography.titleSmall, { color: colors.primary }]}>View Saved</Text>
             </Pressable>
           </View>
         </View>
@@ -296,24 +339,169 @@ export default function CookScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  profileSection: {
+  topBar: {
     flexDirection: 'row',
-    gap: Spacing.md,
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.page,
+    paddingVertical: Spacing.md,
   },
-  avatar: {
-    width: 64,
-    height: 64,
+  topBarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  profileAvatar: {
+    width: 40,
+    height: 40,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profileInfo: { flex: 1, gap: 4 },
-  levelRow: {
+  heroSection: {
+    marginHorizontal: Spacing.page,
+    marginBottom: Spacing.xl,
+  },
+  heroImageWrap: {
+    height: 220,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroCard: {
+    marginTop: -40,
+    marginHorizontal: Spacing.md,
+  },
+  heroCardInner: {
+    padding: Spacing.lg,
+    borderRadius: Radius.lg,
+    gap: Spacing.xs,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  statDivider: {
+    width: 1,
+    height: Spacing.xl,
+    opacity: 0.3,
+  },
+  emptyHero: {
+    marginBottom: Spacing.xl,
+  },
+  emptyHeroInner: {
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderRadius: Radius.xl,
+    paddingVertical: Spacing.xxxl + Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  bentoRow: {
+    paddingHorizontal: Spacing.page,
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  dinnerPartyCard: {
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  dinnerPartyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  cardIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guestRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    borderTopWidth: 1,
+  },
+  guestAvatars: {
+    flexDirection: 'row',
+  },
+  guestDot: {
+    width: Spacing.xl,
+    height: Spacing.xl,
+    borderRadius: Radius.full,
+    borderWidth: 2,
+  },
+  guestPending: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  kitchenCheckCard: {
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+  },
+  checkHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    marginTop: 4,
+  },
+  checkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  checkBox: {
+    width: Spacing.lg,
+    height: Spacing.lg,
+    borderRadius: Spacing.sm,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ctaSection: {
+    alignItems: 'center',
+    paddingHorizontal: Spacing.page,
+    marginBottom: Spacing.xl,
+    gap: Spacing.sm,
+  },
+  ctaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.xl + Spacing.xs,
+    paddingVertical: Spacing.md + 2,
+    borderRadius: Radius.full,
+  },
+  levelSection: {
+    paddingHorizontal: Spacing.page,
+    marginBottom: Spacing.xxl,
+    gap: Spacing.xs,
+  },
+  levelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  levelBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
   },
   progressBar: {
     flex: 1,
@@ -325,48 +513,8 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: Radius.full,
   },
-  activeCard: {
-    borderRadius: Radius.xl,
-    overflow: 'hidden',
-    height: 320,
-  },
-  activeImage: {
-    ...StyleSheet.absoluteFillObject,
-    width: '100%',
-    height: '100%',
-  },
-  activeGradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  activeContent: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-  activeGlass: {
-    padding: Spacing.lg,
-    gap: 6,
-    borderBottomLeftRadius: Radius.xl,
-    borderBottomRightRadius: Radius.xl,
-  },
-  resumeBtn: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 12,
-    borderRadius: Radius.full,
-    marginTop: Spacing.sm,
-  },
-  emptyCard: {
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderRadius: Radius.xl,
-    paddingVertical: Spacing.xxl,
-    paddingHorizontal: Spacing.lg,
-    alignItems: 'center',
-    gap: Spacing.md,
-    height: 320,
-    justifyContent: 'center',
+  techSection: {
+    marginBottom: Spacing.xl,
   },
   techCard: {
     width: 200,
@@ -374,22 +522,17 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     overflow: 'hidden',
   },
-  techImage: {
-    ...StyleSheet.absoluteFillObject,
-    width: '100%',
-    height: '100%',
-  },
-  durationBadge: {
+  techBadge: {
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
   },
-  durationGlass: {
+  techBadgeInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
   },
   techContent: {
@@ -397,33 +540,9 @@ const styles = StyleSheet.create({
     bottom: Spacing.md,
     left: Spacing.md,
     right: Spacing.md,
-    gap: 4,
+    gap: Spacing.xs,
   },
-  classCard: {
-    padding: Spacing.lg,
-    borderRadius: Radius.lg,
-    gap: Spacing.sm,
-  },
-  avatarStack: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  miniAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: Radius.full,
-    borderWidth: 2,
-  },
-  waitlistBtn: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 10,
-    borderRadius: Radius.full,
-    borderWidth: 1.5,
-    marginTop: 4,
-  },
-  pantryBanner: {
+  statsCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: Spacing.lg,

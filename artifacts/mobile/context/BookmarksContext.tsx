@@ -18,10 +18,11 @@ const BookmarksContext = createContext<BookmarksContextValue>({
 });
 
 export function BookmarksProvider({ children }: { children: React.ReactNode }) {
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  const DEFAULT_BOOKMARKS = ['it-1', 'fr-1', 'mx-1', 'jp-1', 'in-1'];
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(DEFAULT_BOOKMARKS);
 
   useEffect(() => {
-    Storage.get<string[]>(STORAGE_KEY, []).then(setBookmarkedIds);
+    Storage.get<string[]>(STORAGE_KEY, DEFAULT_BOOKMARKS).then(setBookmarkedIds);
   }, []);
 
   const persist = useCallback((ids: string[]) => {
