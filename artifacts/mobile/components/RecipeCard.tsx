@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -11,13 +11,13 @@ import { GlassView } from './GlassView';
 import { Recipe } from '@/data/recipes';
 import { useBookmarks } from '@/context/BookmarksContext';
 
-const CARD_WIDTH = (Dimensions.get('window').width - Spacing.page * 2 - Spacing.md) / 2;
-
 interface RecipeCardProps {
   recipe: Recipe;
 }
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
+  const { width } = useWindowDimensions();
+  const CARD_WIDTH = (width - Spacing.page * 2 - Spacing.md) / 2;
   const colors = useThemeColors();
   const router = useRouter();
   const { isBookmarked, toggleBookmark } = useBookmarks();

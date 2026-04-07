@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -12,8 +12,6 @@ import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { useBookmarks } from '@/context/BookmarksContext';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function BookmarksScreen() {
   const colors = useThemeColors();

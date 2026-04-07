@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TextInput,
   Pressable,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
@@ -20,11 +20,11 @@ import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { recipes } from '@/data/recipes';
 
-const CARD_WIDTH = (Dimensions.get('window').width - Spacing.page * 2 - Spacing.md) / 2;
-
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
 
 export default function SearchScreen() {
+  const { width } = useWindowDimensions();
+  const CARD_WIDTH = (width - Spacing.page * 2 - Spacing.md) / 2;
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();

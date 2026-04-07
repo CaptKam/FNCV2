@@ -5,10 +5,10 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
-  Dimensions,
   FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  useWindowDimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,10 +27,10 @@ import { DestinationCard } from '@/components/DestinationCard';
 import { countries } from '@/data/countries';
 import { recipes } from '@/data/recipes';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HERO_HEIGHT = 480;
 
 export default function DiscoverScreen() {
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
   const colors = useThemeColors();
   const router = useRouter();
   const [activeHero, setActiveHero] = useState(0);
