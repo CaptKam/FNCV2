@@ -138,7 +138,7 @@ export default function GroceryScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 180, paddingTop: insets.top + 68 }}
+        contentContainerStyle={{ paddingBottom: 180, paddingTop: insets.top + 76 }}
       >
         <View style={styles.titleSection}>
           <Text style={[Typography.labelLarge, { color: colors.outline, textAlign: 'center', marginBottom: Spacing.xs }]}>

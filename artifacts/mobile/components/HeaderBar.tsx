@@ -20,7 +20,7 @@ export function HeaderBar({ transparent = false }: HeaderBarProps) {
   const router = useRouter();
 
   const content = (
-    <View style={[styles.inner, { paddingTop: insets.top + 4 }]}>
+    <View style={[styles.inner, { paddingTop: insets.top + 8 }]}>
       <View style={styles.left}>
         <Pressable
           onPress={() => router.push('/profile')}
