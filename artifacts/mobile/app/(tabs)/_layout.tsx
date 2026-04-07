@@ -30,7 +30,7 @@ export default function TabLayout() {
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontFamily: "Inter_500Medium",
-          fontSize: 10,
+          fontSize: 12,
           marginTop: 2,
         },
         tabBarStyle: {

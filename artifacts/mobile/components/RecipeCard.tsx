@@ -55,7 +55,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         </Pressable>
       </View>
       <View style={styles.content}>
-        <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 16 }]} numberOfLines={2}>
+        <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={2}>
           {recipe.title}
         </Text>
         <View style={[styles.timeBadge, { backgroundColor: colors.surfaceContainerHigh }]}>

@@ -137,7 +137,7 @@ export default function SearchScreen() {
                 accessibilityLabel={recipe.title}
               />
               <View style={styles.cardContent}>
-                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 16 }]} numberOfLines={2}>
+                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={2}>
                   {recipe.title}
                 </Text>
                 <Text style={[Typography.labelSmall, { color: colors.outline }]}>
