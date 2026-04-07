@@ -119,6 +119,8 @@ export default function PlanScreen() {
         <Pressable
           onPress={() => router.push('/(tabs)/grocery')}
           style={[styles.reviewBtn, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)' }]}
+          accessibilityRole="button"
+          accessibilityLabel="Review grocery list"
         >
           <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700' }]}>
             Review
@@ -138,10 +140,10 @@ export default function PlanScreen() {
 
         <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.sm }}>
           <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
-            <Pressable hitSlop={12}>
+            <Pressable hitSlop={12} accessibilityRole="button" accessibilityLabel="Previous week">
               <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
             </Pressable>
-            <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter}>
+            <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
               <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 2 }]}>
                 CURRENT PLANNING
               </Text>
@@ -157,7 +159,7 @@ export default function PlanScreen() {
                 </Text>
               )}
             </Pressable>
-            <Pressable hitSlop={12}>
+            <Pressable hitSlop={12} accessibilityRole="button" accessibilityLabel="Next week">
               <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
             </Pressable>
           </GlassView>
@@ -178,6 +180,9 @@ export default function PlanScreen() {
                       isActive && { backgroundColor: colors.primary },
                       !isActive && hasRecipe && { backgroundColor: `${colors.primary}15` },
                     ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${DAYS[i]}`}
+                    accessibilityState={{ selected: isActive }}
                   >
                     <Text style={[
                       Typography.caption,
@@ -198,7 +203,7 @@ export default function PlanScreen() {
             <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1 }]}>
               MULTIPLE MEALS
             </Text>
-            <Pressable onPress={() => setMultipleMeals(!multipleMeals)}>
+            <Pressable onPress={() => setMultipleMeals(!multipleMeals)} accessibilityRole="switch" accessibilityLabel="Multiple meals" accessibilityState={{ checked: multipleMeals }}>
               <MaterialCommunityIcons
                 name={multipleMeals ? 'toggle-switch' : 'toggle-switch-off-outline'}
                 size={36}
@@ -236,13 +241,14 @@ export default function PlanScreen() {
                           {meal.time} {'\u2022'} {meal.label}
                         </Text>
                         {recipe ? (
-                          <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)}>
+                          <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}>
                             <GlassView style={styles.mealCard}>
                               <Image
                                 source={{ uri: recipe.image }}
                                 style={styles.mealImage}
                                 contentFit="cover"
                                 transition={300}
+                                accessible={false}
                               />
                               <View style={styles.recipeBadge}>
                                 <GlassView style={styles.recipeBadgeGlass}>
@@ -277,6 +283,8 @@ export default function PlanScreen() {
                             <Pressable
                               onPress={() => router.push('/(tabs)/search')}
                               style={styles.addMealBtn}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Add ${meal.label}`}
                             >
                               <MaterialCommunityIcons name="plus-circle-outline" size={16} color={colors.primary} />
                               <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5 }]}>
@@ -314,13 +322,14 @@ export default function PlanScreen() {
                       </View>
                     </View>
                     {primaryRecipe ? (
-                      <Pressable onPress={() => router.push(`/recipe/${primaryRecipe.id}`)}>
+                      <Pressable onPress={() => router.push(`/recipe/${primaryRecipe.id}`)} accessibilityRole="button" accessibilityLabel={`${primaryRecipe.title}, ${primaryRecipe.prepTime + primaryRecipe.cookTime} minutes`}>
                         <GlassView style={styles.mealCard}>
                           <Image
                             source={{ uri: primaryRecipe.image }}
                             style={styles.mealImageTall}
                             contentFit="cover"
                             transition={300}
+                            accessible={false}
                           />
                           <View style={styles.recipeBadge}>
                             <GlassView style={styles.recipeBadgeGlass}>
@@ -349,6 +358,8 @@ export default function PlanScreen() {
                         <Pressable
                           onPress={() => router.push('/(tabs)/search')}
                           style={[styles.browseBtn, { backgroundColor: colors.primary }]}
+                          accessibilityRole="button"
+                          accessibilityLabel="Browse recipes"
                         >
                           <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
                             Browse Recipes
@@ -388,6 +399,8 @@ export default function PlanScreen() {
                             style={[styles.addCircle, {
                               backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)',
                             }]}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Add ${course.label}`}
                           >
                             <MaterialCommunityIcons name="plus" size={18} color={colors.primary} />
                           </Pressable>
@@ -427,12 +440,15 @@ export default function PlanScreen() {
                       <Pressable
                         onPress={() => router.push(`/recipe/${recipe.id}`)}
                         style={[styles.mealCard, { backgroundColor: colors.surfaceContainerLow }]}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}
                       >
                         <Image
                           source={{ uri: recipe.image }}
                           style={styles.mealImage}
                           contentFit="cover"
                           transition={300}
+                          accessible={false}
                         />
                         <View style={styles.recipeBadge}>
                           <GlassView style={styles.recipeBadgeGlass}>
@@ -462,6 +478,8 @@ export default function PlanScreen() {
                         <Pressable
                           onPress={() => router.push('/(tabs)/search')}
                           style={[styles.browseBtn, { backgroundColor: colors.primary }]}
+                          accessibilityRole="button"
+                          accessibilityLabel="Browse recipes"
                         >
                           <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
                             Browse Recipes
@@ -485,7 +503,7 @@ export default function PlanScreen() {
           } else {
             router.push('/(tabs)/cook');
           }
-        }}>
+        }} accessibilityRole="button" accessibilityLabel="Ready to cook">
           <GlassView style={[styles.readyCTAInner, { ...Shadows.ambient }]}>
             <View style={[styles.playCircle, { backgroundColor: colors.primary }]}>
               <MaterialCommunityIcons name="play" size={16} color={colors.onPrimary} />
@@ -507,7 +525,7 @@ export default function PlanScreen() {
         animationType="fade"
         onRequestClose={() => setShowDropdown(false)}
       >
-        <Pressable style={styles.dropdownOverlay} onPress={() => setShowDropdown(false)}>
+        <Pressable style={styles.dropdownOverlay} onPress={() => setShowDropdown(false)} accessibilityRole="button" accessibilityLabel="Close menu">
           <View style={{ paddingTop: insets.top + 100, paddingHorizontal: Spacing.page, alignItems: 'center' }}>
             <Pressable
               style={[styles.dropdownSheet, {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,8 +11,6 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function CookModeScreen() {
   useKeepAwake();
@@ -99,6 +97,8 @@ export default function CookModeScreen() {
           onPress={() => router.back()}
           hitSlop={12}
           style={styles.closeBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Close"
         >
           <Feather name="x" size={24} color={colors.inverseOnSurface} />
         </Pressable>
@@ -145,6 +145,8 @@ export default function CookModeScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }}
               style={[styles.timerBtn, { backgroundColor: `${colors.primary}20` }]}
+              accessibilityRole="button"
+              accessibilityLabel={timerRunning ? 'Pause timer' : timerSeconds > 0 ? 'Resume timer' : 'Start timer'}
             >
               <Feather
                 name={timerRunning ? 'pause' : 'play'}
@@ -182,6 +184,8 @@ export default function CookModeScreen() {
               styles.navBtn,
               { opacity: currentStep === 0 ? 0.3 : 1 },
             ]}
+            accessibilityRole="button"
+            accessibilityLabel="Previous step"
           >
             <Feather name="chevron-left" size={24} color={colors.inverseOnSurface} />
             <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>Previous</Text>
@@ -193,6 +197,8 @@ export default function CookModeScreen() {
               styles.navBtn,
               { opacity: currentStep === recipe.steps.length - 1 ? 0.3 : 1 },
             ]}
+            accessibilityRole="button"
+            accessibilityLabel="Next step"
           >
             <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>Next</Text>
             <Feather name="chevron-right" size={24} color={colors.inverseOnSurface} />

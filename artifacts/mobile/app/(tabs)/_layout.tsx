@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { Platform, StyleSheet, View, Dimensions } from "react-native";
+import { Platform, StyleSheet, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassView } from "@/components/GlassView";
 import { useThemeColors } from "@/hooks/useThemeColors";
@@ -9,9 +9,9 @@ import { Radius } from "@/constants/radius";
 import { Shadows } from "@/constants/shadows";
 
 const TAB_BAR_HEIGHT = 64;
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function TabLayout() {
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
 
@@ -56,6 +56,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Discover",
+          tabBarAccessibilityLabel: "Discover tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
@@ -72,6 +73,7 @@ export default function TabLayout() {
         name="search"
         options={{
           title: "Search",
+          tabBarAccessibilityLabel: "Search tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
@@ -88,6 +90,7 @@ export default function TabLayout() {
         name="plan"
         options={{
           title: "Plan",
+          tabBarAccessibilityLabel: "Plan tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
@@ -104,6 +107,7 @@ export default function TabLayout() {
         name="grocery"
         options={{
           title: "Grocery",
+          tabBarAccessibilityLabel: "Grocery tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
@@ -120,6 +124,7 @@ export default function TabLayout() {
         name="cook"
         options={{
           title: "Cook",
+          tabBarAccessibilityLabel: "Cook tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[

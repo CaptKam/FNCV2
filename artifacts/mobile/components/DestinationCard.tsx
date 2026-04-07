@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -9,8 +9,6 @@ import { Radius } from '@/constants/radius';
 import { Country } from '@/data/countries';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
-const CARD_WIDTH = (Dimensions.get('window').width - Spacing.page * 2 - Spacing.md) / 2;
-
 interface DestinationCardProps {
   country: Country;
 }
@@ -18,6 +16,8 @@ interface DestinationCardProps {
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 export function DestinationCard({ country }: DestinationCardProps) {
+  const { width } = useWindowDimensions();
+  const CARD_WIDTH = (width - Spacing.page * 2 - Spacing.md) / 2;
   const router = useRouter();
   const scale = useSharedValue(1);
 
@@ -31,12 +31,15 @@ export function DestinationCard({ country }: DestinationCardProps) {
       onPressOut={() => { scale.value = withTiming(1, { duration: 300 }); }}
       onPress={() => router.push(`/country/${country.id}`)}
       style={[styles.card, { width: CARD_WIDTH }]}
+      accessibilityRole="button"
+      accessibilityLabel={`Explore ${country.region}, ${country.name}`}
     >
       <AnimatedImage
         source={{ uri: country.heroImage }}
         style={[styles.image, imageStyle]}
         contentFit="cover"
         transition={300}
+        accessible={false}
       />
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.65)']}

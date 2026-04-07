@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -12,8 +12,6 @@ import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { useBookmarks } from '@/context/BookmarksContext';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function BookmarksScreen() {
   const colors = useThemeColors();
@@ -39,7 +37,7 @@ export default function BookmarksScreen() {
         contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top }}
       >
         <View style={[styles.header, { paddingHorizontal: Spacing.page }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back">
             <Feather name="arrow-left" size={24} color={colors.onSurface} />
           </Pressable>
           <Text style={[Typography.title, { color: colors.onSurface }]}>Saved Recipes</Text>
@@ -65,6 +63,8 @@ export default function BookmarksScreen() {
             <Pressable
               onPress={() => router.back()}
               style={[styles.exploreBtn, { backgroundColor: colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel="Explore recipes"
             >
               <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Explore Recipes</Text>
             </Pressable>
@@ -98,12 +98,15 @@ export default function BookmarksScreen() {
                           marginHorizontal: Spacing.page,
                         },
                       ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
                     >
                       <Image
                         source={{ uri: recipe.image }}
                         style={styles.recipeThumb}
                         contentFit="cover"
                         transition={200}
+                        accessibilityLabel={recipe.title}
                       />
                       <View style={styles.recipeInfo}>
                         <Text
@@ -133,6 +136,8 @@ export default function BookmarksScreen() {
                           toggleBookmark(recipe.id);
                         }}
                         hitSlop={8}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Remove ${recipe.title} from bookmarks`}
                       >
                         <MaterialCommunityIcons name="heart" size={22} color={colors.primary} />
                       </Pressable>

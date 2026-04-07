@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -11,13 +11,13 @@ import { GlassView } from './GlassView';
 import { Recipe } from '@/data/recipes';
 import { useBookmarks } from '@/context/BookmarksContext';
 
-const CARD_WIDTH = (Dimensions.get('window').width - Spacing.page * 2 - Spacing.md) / 2;
-
 interface RecipeCardProps {
   recipe: Recipe;
 }
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
+  const { width } = useWindowDimensions();
+  const CARD_WIDTH = (width - Spacing.page * 2 - Spacing.md) / 2;
   const colors = useThemeColors();
   const router = useRouter();
   const { isBookmarked, toggleBookmark } = useBookmarks();
@@ -27,6 +27,8 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     <Pressable
       onPress={() => router.push(`/recipe/${recipe.id}`)}
       style={[styles.card, { backgroundColor: colors.surfaceContainer, width: CARD_WIDTH }]}
+      accessibilityRole="button"
+      accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
     >
       <View style={styles.imageContainer}>
         <Image
@@ -34,11 +36,14 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           style={styles.image}
           contentFit="cover"
           transition={300}
+          accessibilityLabel={recipe.title}
         />
         <Pressable
           onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
           style={styles.heartButton}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={isFav ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
         >
           <GlassView style={styles.heartGlass}>
             <MaterialCommunityIcons

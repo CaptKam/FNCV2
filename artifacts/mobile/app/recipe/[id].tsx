@@ -20,12 +20,12 @@ export default function RecipeDetailScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [servings, setServings] = useState(0);
-
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const recipe = recipes.find((r) => r.id === id);
   const country = recipe ? countries.find((c) => c.id === recipe.countryId) : null;
   const isSaved = recipe ? isBookmarked(recipe.id) : false;
+
+  const [servings, setServings] = useState(recipe?.servings ?? 1);
 
   if (!recipe || !country) {
     return (
@@ -37,7 +37,7 @@ export default function RecipeDetailScreen() {
     );
   }
 
-  const currentServings = servings || recipe.servings;
+  const currentServings = servings;
   const ingredientGroups = recipe.ingredients.reduce(
     (acc, ing) => {
       if (!acc[ing.category]) acc[ing.category] = [];
@@ -56,6 +56,7 @@ export default function RecipeDetailScreen() {
             style={StyleSheet.absoluteFill}
             contentFit="cover"
             transition={300}
+            accessible={false}
           />
           <LinearGradient
             colors={['rgba(0,0,0,0.2)', 'transparent', 'rgba(0,0,0,0.65)']}
@@ -65,6 +66,8 @@ export default function RecipeDetailScreen() {
           <Pressable
             onPress={() => router.back()}
             style={[styles.backButton, { top: insets.top + 8 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <GlassView style={styles.backGlass}>
               <Feather name="arrow-left" size={20} color="#FFFFFF" />
@@ -73,6 +76,8 @@ export default function RecipeDetailScreen() {
           <Pressable
             onPress={() => toggleBookmark(recipe.id)}
             style={[styles.bookmarkButton, { top: insets.top + 8 }]}
+            accessibilityRole="button"
+            accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
           >
             <GlassView style={styles.backGlass}>
               <MaterialCommunityIcons
@@ -112,8 +117,10 @@ export default function RecipeDetailScreen() {
 
           <View style={styles.servingsAdjuster}>
             <Pressable
-              onPress={() => setServings(Math.max(1, currentServings - 1))}
-              style={[styles.servingBtn, { borderColor: colors.primary }]}
+              onPress={() => { if (currentServings > 1) setServings(currentServings - 1); }}
+              style={[styles.servingBtn, { borderColor: colors.primary, opacity: currentServings <= 1 ? 0.3 : 1 }]}
+              accessibilityRole="button"
+              accessibilityLabel="Decrease servings"
             >
               <Feather name="minus" size={18} color={colors.primary} />
             </Pressable>
@@ -123,6 +130,8 @@ export default function RecipeDetailScreen() {
             <Pressable
               onPress={() => setServings(currentServings + 1)}
               style={[styles.servingBtn, { borderColor: colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel="Increase servings"
             >
               <Feather name="plus" size={18} color={colors.primary} />
             </Pressable>
@@ -206,6 +215,8 @@ export default function RecipeDetailScreen() {
         <Pressable
           onPress={() => router.push(`/cook-mode/${recipe.id}`)}
           style={[styles.cookButton, { backgroundColor: colors.primary }]}
+          accessibilityRole="button"
+          accessibilityLabel={`Start cooking ${recipe.title}`}
         >
           <Feather name="play" size={20} color={colors.onPrimary} />
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
