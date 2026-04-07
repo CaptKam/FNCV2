@@ -13,6 +13,15 @@ import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const MOCK_DATES: Record<string, string> = {
+  Monday: 'Oct 12',
+  Tuesday: 'Oct 13',
+  Wednesday: 'Oct 14',
+  Thursday: 'Oct 15',
+  Friday: 'Oct 16',
+  Saturday: 'Oct 17',
+  Sunday: 'Oct 18',
+};
 const PLANNED_DAYS: Record<string, string> = {
   Monday: 'it-1',
   Wednesday: 'fr-1',
@@ -45,16 +54,18 @@ export default function PlanScreen() {
         </View>
 
         <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
-          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 4 }]}>
-            CURRENT PLANNING
-          </Text>
           <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
             <Pressable hitSlop={12}>
               <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
             </Pressable>
             <View style={styles.weekCenter}>
-              <Text style={[Typography.headline, { color: colors.onSurface }]}>This Week</Text>
-              <MaterialCommunityIcons name="chevron-down" size={20} color={colors.primary} />
+              <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 2 }]}>
+                CURRENT PLANNING
+              </Text>
+              <View style={styles.weekTitleRow}>
+                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>This Week</Text>
+                <MaterialCommunityIcons name="chevron-down" size={18} color={colors.primary} />
+              </View>
             </View>
             <Pressable hitSlop={12}>
               <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
@@ -64,9 +75,7 @@ export default function PlanScreen() {
 
         <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
           <View style={[styles.groceryBanner, { backgroundColor: `${colors.primary}10` }]}>
-            <View style={[styles.groceryIconWrap, { backgroundColor: `${colors.primary}18` }]}>
-              <MaterialCommunityIcons name="basket" size={20} color={colors.primary} />
-            </View>
+            <MaterialCommunityIcons name="basket" size={22} color={colors.primary} />
             <View style={styles.groceryTextWrap}>
               <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>
                 Grocery List Update
@@ -77,9 +86,9 @@ export default function PlanScreen() {
             </View>
             <Pressable
               onPress={() => router.push('/(tabs)/grocery')}
-              style={[styles.reviewBtn, { backgroundColor: colors.primary }]}
+              style={[styles.reviewBtn, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)' }]}
             >
-              <Text style={[Typography.labelSmall, { color: colors.onPrimary, letterSpacing: 0.2 }]}>
+              <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700' }]}>
                 Review
               </Text>
             </Pressable>
@@ -104,11 +113,11 @@ export default function PlanScreen() {
                       },
                     ]}
                   />
-                  <Text style={[Typography.caption, { color: colors.outline, width: 30 }]}>
-                    {day.slice(0, 3)}
-                  </Text>
                 </View>
                 <View style={styles.dayRight}>
+                  <Text style={[Typography.titleSmall, { color: colors.outline, marginBottom: Spacing.sm }]}>
+                    {day}, {MOCK_DATES[day]}
+                  </Text>
                   {recipe ? (
                     <Pressable
                       onPress={() => router.push(`/recipe/${recipe.id}`)}
@@ -126,12 +135,15 @@ export default function PlanScreen() {
                         </GlassView>
                       </View>
                       <View style={styles.mealContent}>
-                        <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 17 }]} numberOfLines={1}>
+                        <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 22 }]} numberOfLines={1}>
                           {recipe.title}
                         </Text>
-                        <Text style={[Typography.caption, { color: colors.outline }]}>
-                          {recipe.prepTime + recipe.cookTime} min
-                        </Text>
+                        <View style={styles.mealMeta}>
+                          <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
+                          <Text style={[Typography.caption, { color: colors.outline }]}>
+                            {recipe.prepTime + recipe.cookTime}m
+                          </Text>
+                        </View>
                       </View>
                     </Pressable>
                   ) : (
@@ -141,7 +153,7 @@ export default function PlanScreen() {
                         { borderColor: colors.outlineVariant },
                       ]}
                     >
-                      <MaterialCommunityIcons name="plus-circle-outline" size={24} color={colors.outline} />
+                      <MaterialCommunityIcons name="silverware-variant" size={32} color={colors.outlineVariant} />
                       <Text style={[Typography.bodySmall, { color: colors.outline }]}>
                         No meals planned yet
                       </Text>
@@ -207,6 +219,9 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   weekCenter: {
+    alignItems: 'center',
+  },
+  weekTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -217,14 +232,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: 14,
     borderRadius: Radius.md,
-    gap: Spacing.sm,
-  },
-  groceryIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 12,
   },
   groceryTextWrap: {
     flex: 1,
@@ -248,13 +256,13 @@ const styles = StyleSheet.create({
   },
   dayRow: {
     flexDirection: 'row',
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
     minHeight: 80,
   },
   dayLeft: {
     alignItems: 'center',
-    width: 50,
-    gap: 6,
+    width: 24,
+    paddingTop: 4,
   },
   timelineNode: {
     width: 12,
@@ -264,7 +272,7 @@ const styles = StyleSheet.create({
   },
   dayRight: {
     flex: 1,
-    marginLeft: Spacing.sm,
+    marginLeft: Spacing.lg,
   },
   mealCard: {
     borderRadius: Radius.lg,
@@ -276,8 +284,8 @@ const styles = StyleSheet.create({
   },
   dinnerBadge: {
     position: 'absolute',
-    top: Spacing.sm,
-    left: Spacing.sm,
+    top: Spacing.md,
+    right: Spacing.md,
   },
   dinnerBadgeGlass: {
     paddingHorizontal: 10,
@@ -286,21 +294,27 @@ const styles = StyleSheet.create({
   },
   mealContent: {
     padding: Spacing.md,
+    gap: 6,
+  },
+  mealMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
   },
   emptyCard: {
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
-    padding: Spacing.lg,
+    paddingVertical: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
     alignItems: 'center',
     gap: Spacing.sm,
   },
   browseBtn: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 10,
     borderRadius: Radius.full,
-    marginTop: 4,
+    marginTop: Spacing.sm,
   },
   readyCTA: {
     position: 'absolute',
