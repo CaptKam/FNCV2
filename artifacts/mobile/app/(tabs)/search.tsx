@@ -64,7 +64,7 @@ export default function SearchScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: insets.top + 68 }}
       >
         <View style={{ paddingHorizontal: Spacing.page }}>
           <Text style={[Typography.displayLarge, { color: colors.onSurface, fontSize: 42 }]}>
