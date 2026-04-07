@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { useApp, GroceryItem } from '@/context/AppContext';
 import { recipes as allRecipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
+import { computeScaledAmount } from '@/utils/groceryScaling';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -52,6 +53,13 @@ export default function GroceryScreen() {
   const [selectedRetailer, setSelectedRetailer] = useState(2);
   const [zipCode, setZipCode] = useState('10001');
 
+  // Per-recipe serving overrides (local display state)
+  const [servingsOverrides, setServingsOverrides] = useState<Record<string, number>>({});
+
+  const setRecipeServings = useCallback((recipeId: string, servings: number) => {
+    setServingsOverrides((prev) => ({ ...prev, [recipeId]: Math.max(1, servings) }));
+  }, []);
+
   const categoryColors: Record<string, string> = {
     produce: colors.categoryProduce,
     protein: colors.categoryProtein,
@@ -78,6 +86,46 @@ export default function GroceryScreen() {
       .map((name) => allRecipes.find((r) => r.title === name))
       .filter((r): r is (typeof allRecipes)[0] => r != null);
   }, [recipeSourceNames]);
+
+  // Build a map of recipe title → { baseServings, targetServings } for scaling
+  const recipeServingsMap = useMemo(() => {
+    const map: Record<string, { base: number; target: number }> = {};
+    recipeCards.forEach((r) => {
+      map[r.title] = {
+        base: r.servings,
+        target: servingsOverrides[r.id] ?? r.servings,
+      };
+    });
+    return map;
+  }, [recipeCards, servingsOverrides]);
+
+  // Compute scaled amount for a grocery item (may come from multiple recipes)
+  const getScaledAmount = useCallback(
+    (item: GroceryItem): string => {
+      // If the item has a single recipe source, scale directly
+      if (item.recipeNames.length === 1) {
+        const info = recipeServingsMap[item.recipeNames[0]];
+        if (info) {
+          const scaled = computeScaledAmount(item.amount, info.base, info.target);
+          return convertAmount(scaled, app.useMetric);
+        }
+      }
+      // For multi-recipe items, the amount is already concatenated ("400g, 200g")
+      // Scale each segment if possible
+      if (item.recipeNames.length > 1 && item.amount.includes(', ')) {
+        const segments = item.amount.split(', ');
+        const scaledSegments = segments.map((seg, idx) => {
+          const recipeName = item.recipeNames[idx];
+          const info = recipeName ? recipeServingsMap[recipeName] : undefined;
+          if (info) return computeScaledAmount(seg, info.base, info.target);
+          return seg;
+        });
+        return convertAmount(scaledSegments.join(', '), app.useMetric);
+      }
+      return convertAmount(item.amount, app.useMetric);
+    },
+    [recipeServingsMap, app.useMetric]
+  );
 
   // Group items by category in specified order, sorted: unchecked first
   const groupedItems = useMemo(() => {
@@ -204,7 +252,7 @@ export default function GroceryScreen() {
           </Pressable>
         </View>
 
-        {/* Recipe source strip */}
+        {/* Recipe source strip with serving stepper */}
         {recipeCards.length > 0 && (
           <View style={{ marginBottom: Spacing.lg }}>
             <Text style={[Typography.headline, { color: colors.onSurface, paddingHorizontal: Spacing.page, marginBottom: Spacing.md }]}>
@@ -215,45 +263,70 @@ export default function GroceryScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.recipeCarousel}
             >
-              {recipeCards.map((recipe) => (
-                <GlassView
-                  key={recipe.id}
-                  style={[styles.recipeCard, { borderRadius: Radius.lg }]}
-                >
-                  <View style={styles.recipeImageWrap}>
-                    <Image
-                      source={{ uri: recipe.image }}
-                      style={styles.recipeImage}
-                      accessible={false}
-                    />
-                    <Pressable
-                      onPress={() => app.removeGroceryItemsByRecipe(recipe.title)}
-                      style={[styles.recipeCloseBtn, { backgroundColor: 'rgba(0,0,0,0.45)' }]}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Remove ${recipe.title} from grocery list`}
-                    >
-                      <MaterialCommunityIcons name="close" size={14} color={colors.textOnImage} />
-                    </Pressable>
-                  </View>
-                  <View style={styles.recipeCardContent}>
-                    <Text style={[Typography.titleSmall, { color: colors.onSurface }]} numberOfLines={1}>
-                      {recipe.title}
-                    </Text>
-                    <Text style={[Typography.caption, { color: colors.outline }]}>
-                      {recipe.ingredients.length} ingredients
-                    </Text>
-                    <Pressable
-                      onPress={() => router.push(`/recipe/${recipe.id}`)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`View recipe ${recipe.title}`}
-                    >
-                      <Text style={[Typography.caption, { color: colors.primary, marginTop: 2 }]}>
-                        View Recipe
+              {recipeCards.map((recipe) => {
+                const currentServings = servingsOverrides[recipe.id] ?? recipe.servings;
+                return (
+                  <GlassView
+                    key={recipe.id}
+                    style={[styles.recipeCard, { borderRadius: Radius.lg }]}
+                  >
+                    <View style={styles.recipeImageWrap}>
+                      <Image
+                        source={{ uri: recipe.image }}
+                        style={styles.recipeImage}
+                        accessible={false}
+                      />
+                      <Pressable
+                        onPress={() => app.removeGroceryItemsByRecipe(recipe.title)}
+                        style={[styles.recipeCloseBtn, { backgroundColor: 'rgba(0,0,0,0.45)' }]}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Remove ${recipe.title} from grocery list`}
+                      >
+                        <MaterialCommunityIcons name="close" size={14} color={colors.textOnImage} />
+                      </Pressable>
+                    </View>
+                    <View style={styles.recipeCardContent}>
+                      <Text style={[Typography.titleSmall, { color: colors.onSurface }]} numberOfLines={1}>
+                        {recipe.title}
                       </Text>
-                    </Pressable>
-                  </View>
-                </GlassView>
-              ))}
+                      {/* Serving stepper */}
+                      <View style={styles.servingStepper}>
+                        <Pressable
+                          onPress={() => setRecipeServings(recipe.id, currentServings - 1)}
+                          style={[styles.stepperBtn, { backgroundColor: colors.surfaceContainerHigh, opacity: currentServings <= 1 ? 0.3 : 1 }]}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Decrease servings for ${recipe.title}`}
+                        >
+                          <MaterialCommunityIcons name="minus" size={14} color={colors.primary} />
+                        </Pressable>
+                        <View style={styles.stepperCount}>
+                          <MaterialCommunityIcons name="account-outline" size={12} color={colors.outline} />
+                          <Text style={[Typography.caption, { color: colors.onSurface }]}>
+                            {currentServings}
+                          </Text>
+                        </View>
+                        <Pressable
+                          onPress={() => setRecipeServings(recipe.id, currentServings + 1)}
+                          style={[styles.stepperBtn, { backgroundColor: colors.surfaceContainerHigh }]}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Increase servings for ${recipe.title}`}
+                        >
+                          <MaterialCommunityIcons name="plus" size={14} color={colors.primary} />
+                        </Pressable>
+                      </View>
+                      <Pressable
+                        onPress={() => router.push(`/recipe/${recipe.id}`)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`View recipe ${recipe.title}`}
+                      >
+                        <Text style={[Typography.caption, { color: colors.primary, marginTop: 2 }]}>
+                          View Recipe
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </GlassView>
+                );
+              })}
             </ScrollView>
           </View>
         )}
@@ -356,7 +429,7 @@ export default function GroceryScreen() {
           </View>
         )}
 
-        {/* Categorized grocery items */}
+        {/* Categorized grocery items with scaled amounts */}
         {groupedItems.map((group) => (
           <View key={group.key} style={styles.categorySection}>
             <View style={styles.categoryHeader}>
@@ -371,64 +444,67 @@ export default function GroceryScreen() {
               </Text>
             </View>
 
-            {group.items.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => app.toggleGroceryItem(item.id)}
-                style={[
-                  styles.itemRow,
-                  {
-                    backgroundColor: colors.surfaceContainerLow,
-                    marginHorizontal: Spacing.page,
-                  },
-                ]}
-                accessibilityRole="checkbox"
-                accessibilityLabel={`${item.name}, ${convertAmount(item.amount, app.useMetric)}`}
-                accessibilityState={{ checked: item.checked }}
-              >
-                <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
-                  <MaterialCommunityIcons name={group.icon} size={16} color={group.color} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
+            {group.items.map((item) => {
+              const scaledAmount = getScaledAmount(item);
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => app.toggleGroceryItem(item.id)}
+                  style={[
+                    styles.itemRow,
+                    {
+                      backgroundColor: colors.surfaceContainerLow,
+                      marginHorizontal: Spacing.page,
+                    },
+                  ]}
+                  accessibilityRole="checkbox"
+                  accessibilityLabel={`${item.name}, ${scaledAmount}`}
+                  accessibilityState={{ checked: item.checked }}
+                >
+                  <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
+                    <MaterialCommunityIcons name={group.icon} size={16} color={group.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[
+                        Typography.body,
+                        {
+                          color: item.checked ? colors.outline : colors.onSurface,
+                          textDecorationLine: item.checked ? 'line-through' : 'none',
+                        },
+                      ]}
+                    >
+                      {item.name}
+                    </Text>
+                    <View style={styles.itemMetaRow}>
+                      <Text style={[Typography.caption, { color: colors.outline }]}>
+                        {scaledAmount}
+                      </Text>
+                      {item.recipeNames.length > 1 && (
+                        <View style={[styles.recipeCountBadge, { backgroundColor: `${colors.primary}15` }]}>
+                          <Text style={[Typography.labelSmall, { color: colors.primary }]}>
+                            Used in {item.recipeNames.length} Recipes
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                  <View
                     style={[
-                      Typography.body,
+                      styles.checkbox,
                       {
-                        color: item.checked ? colors.outline : colors.onSurface,
-                        textDecorationLine: item.checked ? 'line-through' : 'none',
+                        backgroundColor: item.checked ? colors.success : 'transparent',
+                        borderColor: item.checked ? colors.success : colors.outlineVariant,
                       },
                     ]}
                   >
-                    {item.name}
-                  </Text>
-                  <View style={styles.itemMetaRow}>
-                    <Text style={[Typography.caption, { color: colors.outline }]}>
-                      {convertAmount(item.amount, app.useMetric)}
-                    </Text>
-                    {item.recipeNames.length > 1 && (
-                      <View style={[styles.recipeCountBadge, { backgroundColor: `${colors.primary}15` }]}>
-                        <Text style={[Typography.labelSmall, { color: colors.primary }]}>
-                          Used in {item.recipeNames.length} Recipes
-                        </Text>
-                      </View>
+                    {item.checked && (
+                      <MaterialCommunityIcons name="check" size={14} color={colors.textOnImage} />
                     )}
                   </View>
-                </View>
-                <View
-                  style={[
-                    styles.checkbox,
-                    {
-                      backgroundColor: item.checked ? colors.success : 'transparent',
-                      borderColor: item.checked ? colors.success : colors.outlineVariant,
-                    },
-                  ]}
-                >
-                  {item.checked && (
-                    <MaterialCommunityIcons name="check" size={14} color={colors.textOnImage} />
-                  )}
-                </View>
-              </Pressable>
-            ))}
+                </Pressable>
+              );
+            })}
           </View>
         ))}
       </ScrollView>
@@ -516,6 +592,23 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  servingStepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  stepperBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
   zipInputContainer: {
     flexDirection: 'row',
