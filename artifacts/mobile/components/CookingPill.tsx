@@ -22,8 +22,7 @@ export function CookingPill() {
   if (!activeCookSession || pathname.startsWith('/cook-mode')) return null;
 
   // Position above the floating tab bar: tab bottom + tab height + gap
-  const tabBarBottom = Math.max(insets.bottom, 16) + 16;
-  const pillBottom = tabBarBottom + TAB_BAR_HEIGHT + 12;
+  const pillBottom = insets.bottom + TAB_BAR_HEIGHT + 12;
 
   const stepProgress = `Step ${activeCookSession.currentStepIndex + 1}/${activeCookSession.totalSteps}`;
 
