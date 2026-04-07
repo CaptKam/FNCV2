@@ -17,6 +17,7 @@ import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { HeaderBar } from '@/components/HeaderBar';
 
 // ─── Helpers ───
 
@@ -113,6 +114,31 @@ export default function RecipeDetailScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar
+        transparent
+        showBack
+        rightAction={
+          <Pressable
+            onPress={() => toggleBookmark(recipe.id)}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+          >
+            <MaterialCommunityIcons
+              name={isSaved ? 'heart' : 'heart-outline'}
+              size={20}
+              color={isSaved ? '#FF6B6B' : '#FFFFFF'}
+            />
+          </Pressable>
+        }
+      />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={styles.heroContainer}>
           <Image
@@ -127,30 +153,6 @@ export default function RecipeDetailScreen() {
             locations={[0, 0.3, 1]}
             style={StyleSheet.absoluteFill}
           />
-          <Pressable
-            onPress={() => router.back()}
-            style={[styles.backButton, { top: insets.top + 8 }]}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <GlassView style={styles.backGlass}>
-              <Feather name="arrow-left" size={20} color={colors.textOnImage} />
-            </GlassView>
-          </Pressable>
-          <Pressable
-            onPress={() => toggleBookmark(recipe.id)}
-            style={[styles.bookmarkButton, { top: insets.top + 8 }]}
-            accessibilityRole="button"
-            accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-          >
-            <GlassView style={styles.backGlass}>
-              <MaterialCommunityIcons
-                name={isSaved ? 'heart' : 'heart-outline'}
-                size={20}
-                color={isSaved ? colors.primary : colors.textOnImage}
-              />
-            </GlassView>
-          </Pressable>
           <View style={styles.heroText}>
             <Text style={[Typography.labelSmall, { color: 'rgba(255,255,255,0.8)' }]}>
               {country.flag} {country.name}
@@ -377,15 +379,6 @@ export default function RecipeDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   heroContainer: { height: 380, position: 'relative' },
-  backButton: { position: 'absolute', left: Spacing.page, zIndex: 10 },
-  bookmarkButton: { position: 'absolute', right: Spacing.page, zIndex: 10 },
-  backGlass: {
-    width: 44,
-    height: 44,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   heroText: {
     position: 'absolute',
     bottom: Spacing.xl,

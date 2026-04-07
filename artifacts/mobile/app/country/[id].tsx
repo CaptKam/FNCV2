@@ -10,6 +10,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
+import { HeaderBar } from '@/components/HeaderBar';
 import { countries } from '@/data/countries';
 import { recipes } from '@/data/recipes';
 
@@ -34,6 +35,7 @@ export default function CountryDetailScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar transparent showBack />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={styles.heroContainer}>
           <Image
@@ -48,16 +50,6 @@ export default function CountryDetailScreen() {
             locations={[0, 0.4, 1]}
             style={StyleSheet.absoluteFill}
           />
-          <Pressable
-            onPress={() => router.back()}
-            style={[styles.backButton, { top: insets.top + 8 }]}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <GlassView style={styles.backGlass}>
-              <Feather name="arrow-left" size={20} color={colors.textOnImage} />
-            </GlassView>
-          </Pressable>
           <View style={styles.heroText}>
             <GlassView style={styles.flagPill}>
               <Text style={{ fontSize: 16 }}>{country.flag}</Text>
@@ -122,18 +114,6 @@ const styles = StyleSheet.create({
   heroContainer: {
     height: 360,
     position: 'relative',
-  },
-  backButton: {
-    position: 'absolute',
-    left: Spacing.page,
-    zIndex: 10,
-  },
-  backGlass: {
-    width: 44,
-    height: 44,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   heroText: {
     position: 'absolute',

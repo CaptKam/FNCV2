@@ -12,37 +12,58 @@ import { Shadows } from '@/constants/shadows';
 
 interface HeaderBarProps {
   transparent?: boolean;
+  showBack?: boolean;
+  rightAction?: React.ReactNode;
 }
 
-export function HeaderBar({ transparent = false }: HeaderBarProps) {
+export function HeaderBar({ transparent = false, showBack = false, rightAction }: HeaderBarProps) {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const titleColor = transparent ? '#FFFFFF' : colors.onSurface;
+  const iconColor = transparent ? '#FFFFFF' : colors.primary;
+  const glassBg = transparent ? 'rgba(255,255,255,0.2)' : colors.surfaceContainerHigh;
+
   const content = (
     <View style={[styles.inner, { paddingTop: insets.top + 8 }]}>
       <View style={styles.left}>
-        <Pressable
-          onPress={() => router.push('/profile')}
-          style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}
-          accessibilityRole="button"
-          accessibilityLabel="Profile"
-        >
-          <MaterialCommunityIcons name="account-outline" size={20} color={colors.outline} />
-        </Pressable>
-        <Text style={[Typography.title, { color: colors.onSurface, fontStyle: 'italic' }]}>
+        {showBack ? (
+          <Pressable
+            onPress={() => router.back()}
+            style={[styles.avatar, { backgroundColor: glassBg }]}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            hitSlop={12}
+          >
+            <MaterialCommunityIcons name="arrow-left" size={20} color={transparent ? '#FFFFFF' : colors.onSurface} />
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={() => router.push('/profile')}
+            style={[styles.avatar, { backgroundColor: glassBg }]}
+            accessibilityRole="button"
+            accessibilityLabel="Profile"
+          >
+            <MaterialCommunityIcons name="account-outline" size={20} color={transparent ? '#FFFFFF' : colors.outline} />
+          </Pressable>
+        )}
+        <Text style={[Typography.title, { color: titleColor, fontStyle: 'italic' }]}>
           Fork & Compass
         </Text>
       </View>
-      <Pressable
-        hitSlop={12}
-        onPress={() => router.push('/bookmarks')}
-        style={[styles.iconBtn, { backgroundColor: transparent ? 'rgba(255,255,255,0.2)' : 'transparent' }]}
-        accessibilityRole="button"
-        accessibilityLabel="Bookmarks"
-      >
-        <MaterialCommunityIcons name="bookmark-outline" size={22} color={colors.primary} />
-      </Pressable>
+      <View style={styles.rightActions}>
+        {rightAction}
+        <Pressable
+          hitSlop={12}
+          onPress={() => router.push('/bookmarks')}
+          style={[styles.iconBtn, { backgroundColor: transparent ? 'rgba(255,255,255,0.2)' : 'transparent' }]}
+          accessibilityRole="button"
+          accessibilityLabel="Bookmarks"
+        >
+          <MaterialCommunityIcons name="bookmark-outline" size={22} color={iconColor} />
+        </Pressable>
+      </View>
     </View>
   );
 
@@ -124,6 +145,11 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  rightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   iconBtn: {
     width: 40,
