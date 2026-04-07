@@ -16,7 +16,9 @@ Fork & Compass transforms home kitchens into portals to the world. Each session 
 
 ---
 
-## 2. Design Philosophy: "The Ethereal Archivist"
+## 2. Design Philosophy: "The Ethereal Archivist" — IMPLEMENTED
+
+> Status: **IMPLEMENTED.** All principles below are realized in the current codebase. Design system is locked.
 
 The visual language evokes a well-traveled food journal — warm, tactile, and refined. Every surface feels like parchment held up to light; every interaction has weight and intention.
 
@@ -39,9 +41,11 @@ The visual language evokes a well-traveled food journal — warm, tactile, and r
 
 ---
 
-## 3. The Ethereal Archivist Design System
+## 3. The Ethereal Archivist Design System — IMPLEMENTED
 
-### 3.1 Color Tokens
+> Status: **IMPLEMENTED.** All tokens, components, and patterns below are built and in use across all screens. The design system files are in `constants/` and `components/`. No design reskin work remains.
+
+### 3.1 Color Tokens (`constants/colors.ts`)
 
 | Token | Light Mode | Dark Mode |
 |-------|-----------|-----------|
@@ -59,7 +63,7 @@ The visual language evokes a well-traveled food journal — warm, tactile, and r
 | `success` | `#2D6A4F` | `#52B788` |
 | `error` | `#BA1A1A` | `#FFB4AB` |
 
-### 3.2 Typography
+### 3.2 Typography (`constants/typography.ts`)
 
 | Style | Font | Weight | Usage |
 |-------|------|--------|-------|
@@ -70,7 +74,7 @@ The visual language evokes a well-traveled food journal — warm, tactile, and r
 | `label` / `labelLarge` / `labelSmall` | Inter | 500 | Chip labels, category headers |
 | `caption` | Inter | 400 | Metadata, timestamps |
 
-### 3.3 Liquid Glass Effect (GlassView)
+### 3.3 Liquid Glass Effect (`constants/glass.ts` + `components/GlassView.tsx`)
 
 - `BlurView` (expo-blur) with `intensity: 32` (light) / `40` (dark), tint `light`/`dark`
 - Background overlay: `rgba(255,255,255,0.7)` (light) / `rgba(29,27,24,0.85)` (dark)
@@ -78,14 +82,14 @@ The visual language evokes a well-traveled food journal — warm, tactile, and r
 - Applied via shared `GlassView` component — never build glass effects inline
 - Used for: tab bar background, header bar, floating cards, badges, overlays
 
-### 3.4 Layout & Spacing
+### 3.4 Layout & Spacing (`constants/spacing.ts`, `constants/radius.ts`, `constants/shadows.ts`)
 
 - 8pt grid: `Spacing.xs=4, sm=8, md=16, lg=24, xl=32, xxl=48`
 - Page horizontal padding: `Spacing.page` (20)
 - Border radii: `Radius.sm=8, md=12, lg=16, xl=24, full=9999`
 - Shadows: `Shadows.subtle` (cards), `Shadows.ambient` (floating elements)
 
-### 3.5 Tab Bar
+### 3.5 Tab Bar (`app/(tabs)/_layout.tsx`)
 
 - Floating pill: absolute positioned, `bottom: insets.bottom + 16`
 - GlassView background with `borderRadius: Radius.full`
@@ -94,7 +98,7 @@ The visual language evokes a well-traveled food journal — warm, tactile, and r
 - Active: terracotta tint + subtle scale transform
 - All scroll content must have `paddingBottom: 120+` to clear the tab bar
 
-### 3.6 HeaderBar
+### 3.6 HeaderBar (`components/HeaderBar.tsx`)
 
 - Shared `HeaderBar` component on all 5 tab screens
 - `transparent` prop on Discover (overlays hero carousel, no background)
@@ -123,7 +127,7 @@ The visual language evokes a well-traveled food journal — warm, tactile, and r
 | Data fetching | @tanstack/react-query | — |
 | Splash | expo-splash-screen | — |
 
-### 4.2 Provider Stack (app/_layout.tsx)
+### 4.2 Provider Stack (`app/_layout.tsx`)
 
 ```
 SafeAreaProvider
@@ -373,7 +377,9 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 
 ---
 
-## 7. Component Library
+## 7. Technical Architecture
+
+### 7.1 Component Library
 
 | Component | File | Purpose |
 |-----------|------|---------|
@@ -386,9 +392,7 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 | ErrorFallback | `components/ErrorFallback.tsx` | Fallback UI for caught errors |
 | KeyboardAwareScrollViewCompat | `components/KeyboardAwareScrollViewCompat.tsx` | Cross-platform keyboard-aware scroll |
 
----
-
-## 8. File Map
+### 7.2 File Map
 
 ```
 artifacts/mobile/
@@ -407,7 +411,7 @@ artifacts/mobile/
 │   ├── cook-mode/[id].tsx             # Cook Mode
 │   ├── profile.tsx                    # Profile & Settings
 │   └── bookmarks.tsx                  # Bookmarks
-├── components/                        # Shared UI components
+├── components/                        # Shared UI components (see 7.1)
 ├── constants/                         # Design tokens (colors, typography, spacing, radius, shadows, glass)
 ├── context/
 │   ├── ThemeContext.tsx                # Theme preference + AsyncStorage
@@ -421,9 +425,68 @@ artifacts/mobile/
 └── MASTER_BLUEPRINT.md                # This file
 ```
 
+### 7.3 Performance
+
+- Recipe data is 97 items loaded from a static file — no lazy loading needed
+- `useMemo` used for filtered lists (Search, Grocery grouping)
+- `expo-image` with `transition={300}` for smooth image loads
+- FlatList with `pagingEnabled` for hero carousel (Discover)
+
+### 7.4 Persistence
+
+| Data | Storage | Status |
+|------|---------|--------|
+| Theme preference | AsyncStorage (`@fork_compass_theme`) | IMPLEMENTED |
+| Bookmarked recipe IDs | AsyncStorage (`@fork_compass_bookmarks`) | IMPLEMENTED |
+| Cook session state | — | NOT BUILT (resets on unmount) |
+| Weekly itinerary | — | NOT BUILT (hardcoded) |
+| Grocery checked state | — | NOT BUILT (screen-local) |
+
+### 7.5 Platform Compatibility
+
+- Expo SDK 54, managed workflow
+- `expo-keep-awake` v15 (compatible with SDK 54)
+- `react-native-keyboard-controller` v1.18.5 (compatible with SDK 54)
+- Web fallbacks via `Platform.OS === 'web'` in tab bar positioning and GlassView rendering
+
 ---
 
-## 9. Systems Roadmap
+## 8. Accessibility
+
+> Status: **IMPLEMENTED** across all screens. Maintained as a baseline — no regressions allowed.
+
+### 8.1 Interactive Elements
+
+- All `Pressable` components have `accessibilityRole="button"` and descriptive `accessibilityLabel`
+- Checkboxes use `accessibilityRole="checkbox"` with `accessibilityState={{ checked }}`
+- Toggle groups use `accessibilityState={{ selected }}` for active state
+
+### 8.2 Navigation
+
+- Tab bar items have `tabBarAccessibilityLabel` (e.g., "Discover tab", "Search tab")
+- Hero carousel has `accessibilityRole="adjustable"` with dynamic label showing current country
+- All back buttons and close buttons have `accessibilityLabel="Go back"` / `"Close"`
+
+### 8.3 Media
+
+- `expo-image` components use `accessible={false}` for decorative images (hero backgrounds, recipe cards)
+- Informational images use `accessibilityLabel` with content description (e.g., recipe title)
+
+### 8.4 Haptic Feedback
+
+- Cook Mode: `Haptics.impactAsync(Medium)` on step forward, `Light` on step back
+- Cook Mode: `Haptics.notificationAsync(Success)` on timer completion
+- Haptics provide non-visual confirmation of actions
+
+### 8.5 Color Contrast
+
+- All text colors meet WCAG contrast ratios against their backgrounds
+- `outline` tokens provide sufficient contrast for metadata text
+- Interactive elements use terracotta `#9A4100` which meets AA contrast on cream `#FEF9F3`
+
+---
+
+## 9. Execution Roadmap
 
 ### Priority 1: AppContext — Global State Foundation
 
