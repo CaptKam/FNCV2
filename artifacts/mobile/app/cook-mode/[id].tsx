@@ -12,7 +12,6 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
-import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useApp } from '@/context/AppContext';
 
 const TIMER_SIZE = 220;
@@ -122,9 +121,6 @@ export default function CookModeScreen() {
         pillBorder: 'rgba(255,255,255,0.05)',
         pillLabelColor: 'rgba(245,240,234,0.35)',
         pillValueColor: '#C5702A',
-        ingredientCardBg: 'rgba(51,48,44,0.5)',
-        ingredientCardBorder: 'rgba(255,255,255,0.05)',
-        ingredientCardLabel: 'rgba(245,240,234,0.5)',
         timerRingIdle: 'rgba(255,255,255,0.08)',
         timerDigits: '#F2EDE7',
         timerLabel: 'rgba(245,240,234,0.35)',
@@ -141,32 +137,29 @@ export default function CookModeScreen() {
       }
     : {
         bg: '#FEF9F3',
-        headerBg: 'rgba(255,255,255,0.6)',
-        headerBorder: 'rgba(0,0,0,0.05)',
-        headerIcon: '#9A4100',
-        headerTitle: '#9A4100',
-        instructionColor: '#1C1917',
-        detailColor: '#57534e',
-        pillBg: 'rgba(255,255,255,0.8)',
-        pillBorder: 'rgba(154,65,0,0.1)',
-        pillLabelColor: 'rgba(154,65,0,0.8)',
-        pillValueColor: '#1C1917',
-        ingredientCardBg: 'rgba(255,255,255,0.6)',
-        ingredientCardBorder: 'rgba(154,65,0,0.1)',
-        ingredientCardLabel: 'rgba(154,65,0,0.8)',
-        timerRingIdle: 'rgba(154,65,0,0.15)',
-        timerDigits: '#1C1917',
-        timerLabel: '#78716c',
-        durationIcon: '#78716c',
-        durationText: '#78716c',
-        prevIcon: '#78716c',
-        prevText: '#78716c',
-        navDivider: 'rgba(154,65,0,0.1)',
+        headerBg: 'rgba(255,255,255,0.7)',
+        headerBorder: 'rgba(0,0,0,0.06)',
+        headerIcon: '#1D1B18',
+        headerTitle: '#1D1B18',
+        instructionColor: '#1D1B18',
+        detailColor: '#52443C',
+        pillBg: '#F2E8DF',
+        pillBorder: 'rgba(0,0,0,0.06)',
+        pillLabelColor: 'rgba(82,68,60,0.7)',
+        pillValueColor: '#9A4100',
+        timerRingIdle: 'rgba(0,0,0,0.05)',
+        timerDigits: '#1D1B18',
+        timerLabel: '#52443C',
+        durationIcon: '#85736B',
+        durationText: '#85736B',
+        prevIcon: '#52443C',
+        prevText: '#52443C',
+        navDivider: 'rgba(0,0,0,0.08)',
         donenessBg: 'rgba(154,65,0,0.05)',
         donenessBorder: 'rgba(154,65,0,0.1)',
         donenessIconBg: 'rgba(154,65,0,0.1)',
-        donenessTitle: '#1C1917',
-        donenessText: '#57534e',
+        donenessTitle: '#1D1B18',
+        donenessText: '#52443C',
       };
 
   if (!recipe) {
@@ -238,63 +231,27 @@ export default function CookModeScreen() {
         contentContainerStyle={[styles.scrollInner, { paddingBottom: insets.bottom + 120 }]}
         showsVerticalScrollIndicator={false}
       >
+        {matchedIngredients.length > 0 && (
+          <View style={styles.pillCluster}>
+            {matchedIngredients.map((ing, idx) => (
+              <View key={idx} style={[styles.ingredientPill, { backgroundColor: t.pillBg, borderColor: t.pillBorder }]}>
+                <Text style={[styles.pillLabel, { color: t.pillLabelColor }]}>Ingredient</Text>
+                <Text style={[styles.pillValue, { color: t.pillValueColor }]}>{convertAmount(ing.amount, app.useMetric)} {ing.name}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         <View style={styles.heroSection}>
-          {isDark ? (
-            <>
-              <Text style={[styles.heroInstructionDark, { color: t.instructionColor }]}>
-                {highlightCulinaryVerbs(heroText.toUpperCase()).map((seg, si) =>
-                  seg.isVerb ? (
-                    <Text key={si} style={{ color: colors.inversePrimary }}>{seg.text}</Text>
-                  ) : (
-                    <Text key={si}>{seg.text}</Text>
-                  )
-                )}
-              </Text>
-              {detailText.length > 0 && (
-                <Text style={[styles.heroDetailDark, { color: t.detailColor }]}>
-                  {detailText}
-                </Text>
-              )}
-            </>
-          ) : (
-            <Text style={[styles.heroInstructionLight, { color: t.instructionColor }]}>
-              {highlightCulinaryVerbs(instructionText).map((seg, si) =>
-                seg.isVerb ? (
-                  <Text key={si} style={{ fontWeight: '700', color: colors.primary }}>{seg.text}</Text>
-                ) : (
-                  <Text key={si}>{seg.text}</Text>
-                )
-              )}
+          <Text style={[styles.heroInstruction, { color: t.instructionColor }]}>
+            {heroText.toUpperCase()}
+          </Text>
+          {detailText.length > 0 && (
+            <Text style={[styles.heroDetail, { color: t.detailColor }]}>
+              {detailText}
             </Text>
           )}
         </View>
-
-        {matchedIngredients.length > 0 && (
-          isDark ? (
-            <View style={styles.pillCluster}>
-              {matchedIngredients.map((ing, idx) => (
-                <View key={idx} style={[styles.ingredientPillDark, { backgroundColor: t.pillBg, borderTopColor: t.pillBorder }]}>
-                  <Text style={[styles.pillLabelDark, { color: t.pillLabelColor }]}>Ingredient</Text>
-                  <Text style={[styles.pillValueDark, { color: t.pillValueColor }]}>{convertAmount(ing.amount, app.useMetric)} {ing.name}</Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View style={[styles.ingredientCard, { backgroundColor: t.ingredientCardBg, borderColor: t.ingredientCardBorder }]}>
-              <View style={styles.ingredientCardHeader}>
-                <MaterialCommunityIcons name="silverware-fork-knife" size={20} color={colors.primary} />
-                <Text style={[styles.ingredientCardTitle, { color: t.ingredientCardLabel }]}>Ingredients for this step</Text>
-              </View>
-              <View style={styles.ingredientPillsRow}>
-                {matchedIngredients.map((ing, idx) => (
-                  <View key={idx} style={[styles.ingredientPillLight, { backgroundColor: t.pillBg, borderColor: t.pillBorder }]}>
-                    <Text style={[styles.pillValueLight, { color: t.pillValueColor }]}>{convertAmount(ing.amount, app.useMetric)} {ing.name}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )
-        )}
 
         {hasTimer && (
           <View style={styles.timerSection}>
@@ -429,27 +386,20 @@ const styles = StyleSheet.create({
   heroSection: {
     marginBottom: Spacing.xl,
   },
-  heroInstructionDark: {
+  heroInstruction: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: '800',
-    letterSpacing: -1,
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: '900',
+    letterSpacing: -1.5,
     textTransform: 'uppercase',
   },
-  heroDetailDark: {
+  heroDetail: {
     fontFamily: 'NotoSerif_400Regular',
     fontSize: 18,
     lineHeight: 26,
     fontStyle: 'italic',
     marginTop: 14,
-  },
-  heroInstructionLight: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 22,
-    lineHeight: 32,
-    fontWeight: '600',
-    letterSpacing: -0.3,
   },
   pillCluster: {
     flexDirection: 'row',
@@ -457,57 +407,24 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: Spacing.xl,
   },
-  ingredientPillDark: {
+  ingredientPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: Radius.full,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderWidth: StyleSheet.hairlineWidth,
   },
-  pillLabelDark: {
+  pillLabel: {
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
-  pillValueDark: {
+  pillValue: {
     fontSize: 13,
     fontWeight: '700',
-  },
-  ingredientCard: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: Spacing.xl,
-    borderWidth: 1,
-  },
-  ingredientCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 14,
-  },
-  ingredientCardTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  ingredientPillsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  ingredientPillLight: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: Radius.full,
-    borderWidth: 1,
-  },
-  pillValueLight: {
-    fontSize: 14,
-    fontWeight: '600',
   },
   timerSection: {
     alignItems: 'center',
