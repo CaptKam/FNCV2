@@ -13,6 +13,7 @@ import { GlassView } from '@/components/GlassView';
 import { countries } from '@/data/countries';
 import { recipes, Step } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
+import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -251,7 +252,13 @@ export default function RecipeDetailScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[Typography.body, { color: colors.onSurface }]}>
-                    {getStepInstruction(step, app.cookingLevel)}
+                    {highlightCulinaryVerbs(getStepInstruction(step, app.cookingLevel)).map((seg, si) =>
+                      seg.isVerb ? (
+                        <Text key={si} style={{ fontWeight: '700', color: colors.primary }}>{seg.text}</Text>
+                      ) : (
+                        <Text key={si}>{seg.text}</Text>
+                      )
+                    )}
                   </Text>
                   {step.duration && (
                     <View style={styles.timerRow}>

@@ -12,6 +12,7 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
+import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useApp } from '@/context/AppContext';
 
 export default function CookModeScreen() {
@@ -165,7 +166,13 @@ export default function CookModeScreen() {
 
       <View style={styles.mainContent}>
         <Text style={[Typography.body, styles.instruction, { color: colors.inverseOnSurface }]}>
-          {step.instruction}
+          {highlightCulinaryVerbs(step.instruction).map((seg, si) =>
+            seg.isVerb ? (
+              <Text key={si} style={{ fontWeight: '700', color: colors.primary }}>{seg.text}</Text>
+            ) : (
+              <Text key={si}>{seg.text}</Text>
+            )
+          )}
         </Text>
 
         {step.duration && step.duration > 0 && (
