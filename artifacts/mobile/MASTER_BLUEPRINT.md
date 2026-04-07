@@ -476,7 +476,7 @@ Root Stack
 | Timer play/pause/reset | IMPLEMENTED |
 | Contextual ingredient pills (matched to current step) | IMPLEMENTED |
 | Previous/Next step navigation | IMPLEMENTED |
-| Swipe gestures for step navigation | IMPLEMENTED |
+| Swipe gestures for step navigation | NOT BUILT — button-based prev/next only |
 | Haptic feedback (step changes, timer completion) | IMPLEMENTED |
 | Keep-awake (screen stays on) | IMPLEMENTED |
 | Servings scaler | NOT BUILT |
@@ -553,8 +553,9 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 
 ## 6.6 Cook Session System — MOSTLY FUNCTIONAL, NO PERSISTENCE
 
-- Cook Mode screen works end-to-end: step navigation, swipe gestures, timers, haptics, keep-awake, contextual ingredients
-- BUT: no session persistence — leaving the screen resets all state
+- Cook Mode screen works end-to-end: step navigation (button-based prev/next), timers, haptics, keep-awake, contextual ingredients
+- BUT: no swipe gesture navigation — step changes are button-only
+- No session persistence — leaving the screen resets all state
 - Cook tab "Resume Session" card is hardcoded to `recipes[3]`, not a real active session
 - No CookingPill floating indicator above tab bar
 - No servings scaler in Cook Mode
@@ -764,7 +765,7 @@ All three contexts wrap the app in `_layout.tsx` alongside existing `ThemeProvid
 
 **Scope:**
 - Servings scaler in Cook Mode top bar (reads from `CookSessionContext`, scales ingredient pill amounts)
-- Swipe gesture polish: spring animation (280ms, damping: 18, stiffness: 120) with medium haptic on step change
+- Swipe gesture navigation for step changes: add `GestureDetector` with horizontal pan gesture, spring animation (280ms, damping: 18, stiffness: 120) with medium haptic on step change
 - Session auto-save: on step change, persist current step + timer to AsyncStorage
 - Session resume: on mount, restore from context (which loaded from AsyncStorage)
 - CookingPill indicator visible across all tabs (renders in root layout when session active)
