@@ -3,13 +3,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useMemo } from "react";
 import { Platform, StyleSheet, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { GlassView } from "@/components/GlassView";
+import { BlurView } from "expo-blur";
 import { useThemeColors } from "@/hooks/useThemeColors";
 import { Radius } from "@/constants/radius";
-import { Shadows } from "@/constants/shadows";
 import { useApp } from "@/context/AppContext";
 
-const TAB_BAR_HEIGHT = 52;
+export const TAB_BAR_HEIGHT = 56;
 
 export default function TabLayout() {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
@@ -21,6 +20,37 @@ export default function TabLayout() {
     [app.groceryItems]
   );
 
+  const tabBarBackground = () => {
+    if (Platform.OS === 'web') {
+      return (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            { backgroundColor: `${colors.surface}F2` },
+          ]}
+        />
+      );
+    }
+    return (
+      <BlurView
+        intensity={80}
+        tint={colors.isDark ? 'dark' : 'light'}
+        style={StyleSheet.absoluteFill}
+      >
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: `${colors.surface}CC`,
+              borderTopWidth: StyleSheet.hairlineWidth,
+              borderTopColor: `${colors.outlineVariant}40`,
+            },
+          ]}
+        />
+      </BlurView>
+    );
+  };
+
   return (
     <Tabs
       screenOptions={{
@@ -30,31 +60,23 @@ export default function TabLayout() {
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontFamily: "Inter_500Medium",
-          fontSize: 10,
+          fontSize: 11,
           marginTop: 2,
         },
         tabBarStyle: {
           position: "absolute",
-          bottom: insets.bottom + 8,
-          left: SCREEN_WIDTH * 0.05,
-          right: SCREEN_WIDTH * 0.05,
-          height: TAB_BAR_HEIGHT,
-          borderRadius: Radius.full,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: TAB_BAR_HEIGHT + insets.bottom,
+          paddingBottom: insets.bottom,
           backgroundColor: "transparent",
           borderTopWidth: 0,
           elevation: 0,
-          maxWidth: 400,
-          alignSelf: "center",
-          overflow: "hidden",
-          ...Shadows.ambient,
         },
-        tabBarBackground: () => (
-          <GlassView
-            style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]}
-          />
-        ),
+        tabBarBackground,
         tabBarItemStyle: {
-          paddingTop: 8,
+          paddingTop: 6,
         },
       }}
     >
@@ -64,14 +86,11 @@ export default function TabLayout() {
           title: "Discover",
           tabBarAccessibilityLabel: "Discover tab",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="compass-outline" size={24} color={color} />
-            </View>
+            <MaterialCommunityIcons
+              name={focused ? "compass" : "compass-outline"}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
@@ -81,14 +100,11 @@ export default function TabLayout() {
           title: "Search",
           tabBarAccessibilityLabel: "Search tab",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="magnify" size={24} color={color} />
-            </View>
+            <MaterialCommunityIcons
+              name="magnify"
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
@@ -98,14 +114,11 @@ export default function TabLayout() {
           title: "Plan",
           tabBarAccessibilityLabel: "Plan tab",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="calendar-month-outline" size={24} color={color} />
-            </View>
+            <MaterialCommunityIcons
+              name={focused ? "calendar-month" : "calendar-month-outline"}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
@@ -117,14 +130,11 @@ export default function TabLayout() {
           tabBarBadge: groceryBadgeCount > 0 ? groceryBadgeCount : undefined,
           tabBarBadgeStyle: { backgroundColor: colors.primary, color: colors.onPrimary, fontSize: 10 },
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="cart-outline" size={24} color={color} />
-            </View>
+            <MaterialCommunityIcons
+              name={focused ? "cart" : "cart-outline"}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
@@ -134,27 +144,14 @@ export default function TabLayout() {
           title: "Cook",
           tabBarAccessibilityLabel: "Cook tab",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="chef-hat" size={24} color={color} />
-            </View>
+            <MaterialCommunityIcons
+              name="chef-hat"
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.full,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
