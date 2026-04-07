@@ -95,11 +95,13 @@ interface AppContextValue {
   cookingLevel: CookingLevel;
   coursePreference: CoursePreference;
   groceryPartner: GroceryPartner;
+  useMetric: boolean;
   dietaryFlags: string[];
   allergens: string[];
   setCookingLevel: (level: CookingLevel) => void;
   setCoursePreference: (pref: CoursePreference) => void;
   setGroceryPartner: (partner: GroceryPartner) => void;
+  setUseMetric: (metric: boolean) => void;
   setDietaryFlags: (flags: string[]) => void;
   setAllergens: (allergens: string[]) => void;
 
@@ -190,6 +192,7 @@ const defaultPreferences = {
   cookingLevel: 'home_cook' as CookingLevel,
   coursePreference: 'main' as CoursePreference,
   groceryPartner: 'instacart' as GroceryPartner,
+  useMetric: true,
   dietaryFlags: [] as string[],
   allergens: [] as string[],
 };
@@ -219,6 +222,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [cookingLevel, setCookingLevelState] = useState<CookingLevel>(defaultPreferences.cookingLevel);
   const [coursePreference, setCoursePreferenceState] = useState<CoursePreference>(defaultPreferences.coursePreference);
   const [groceryPartner, setGroceryPartnerState] = useState<GroceryPartner>(defaultPreferences.groceryPartner);
+  const [useMetric, setUseMetricState] = useState(defaultPreferences.useMetric);
   const [dietaryFlags, setDietaryFlagsState] = useState<string[]>(defaultPreferences.dietaryFlags);
   const [allergens, setAllergensState] = useState<string[]>(defaultPreferences.allergens);
   const [totalRecipesCooked, setTotalRecipesCooked] = useState(defaultHistory.totalRecipesCooked);
@@ -245,6 +249,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (pr.cookingLevel) setCookingLevelState(pr.cookingLevel);
       if (pr.coursePreference) setCoursePreferenceState(pr.coursePreference);
       if (pr.groceryPartner) setGroceryPartnerState(pr.groceryPartner);
+      if (pr.useMetric != null) setUseMetricState(pr.useMetric);
       if (pr.dietaryFlags) setDietaryFlagsState(pr.dietaryFlags);
       if (pr.allergens) setAllergensState(pr.allergens);
       if (hi.totalRecipesCooked != null) setTotalRecipesCooked(hi.totalRecipesCooked);
@@ -271,8 +276,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (hydrated.current)
-      Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, dietaryFlags, allergens });
-  }, [cookingLevel, coursePreference, groceryPartner, dietaryFlags, allergens]);
+      Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, useMetric, dietaryFlags, allergens });
+  }, [cookingLevel, coursePreference, groceryPartner, useMetric, dietaryFlags, allergens]);
 
   useEffect(() => {
     if (hydrated.current)
@@ -647,6 +652,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setCookingLevel = useCallback((l: CookingLevel) => setCookingLevelState(l), []);
   const setCoursePreference = useCallback((p: CoursePreference) => setCoursePreferenceState(p), []);
   const setGroceryPartner = useCallback((p: GroceryPartner) => setGroceryPartnerState(p), []);
+  const setUseMetric = useCallback((m: boolean) => setUseMetricState(m), []);
   const setDietaryFlags = useCallback((f: string[]) => setDietaryFlagsState(f), []);
   const setAllergens = useCallback((a: string[]) => setAllergensState(a), []);
 
@@ -709,11 +715,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     cookingLevel,
     coursePreference,
     groceryPartner,
+    useMetric,
     dietaryFlags,
     allergens,
     setCookingLevel,
     setCoursePreference,
     setGroceryPartner,
+    setUseMetric,
     setDietaryFlags,
     setAllergens,
 

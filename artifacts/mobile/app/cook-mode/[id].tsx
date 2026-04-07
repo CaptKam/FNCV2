@@ -11,6 +11,7 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
+import { convertAmount } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 
 export default function CookModeScreen() {
@@ -214,7 +215,7 @@ export default function CookModeScreen() {
               style={[styles.ingredientPill, { backgroundColor: colors.secondaryContainer }]}
             >
               <Text style={[Typography.titleSmall, { color: colors.onSecondaryContainer }]}>
-                {ing.name}: {ing.amount}
+                {ing.name}: {convertAmount(ing.amount, app.useMetric)}
               </Text>
             </View>
           ))}

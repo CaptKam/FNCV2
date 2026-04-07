@@ -107,6 +107,7 @@ export default function ProfileScreen() {
     cookingLevel,
     coursePreference,
     groceryPartner,
+    useMetric,
   } = app;
 
   const levelName = app.getCookingLevelName();
@@ -274,6 +275,24 @@ export default function ProfileScreen() {
                 >
                   <Text style={[Typography.labelSmall, { color: colors.primary }]}>
                     {coursePreference === 'main' ? 'MAIN ONLY' : 'FULL COURSE'}
+                  </Text>
+                </Pressable>
+              }
+            />
+            <SettingRow
+              icon="scale"
+              label="Measurement Units"
+              subtitle={useMetric ? 'Metric (g, ml, °C)' : 'Imperial (oz, cups, °F)'}
+              colors={colors}
+              trailing={
+                <Pressable
+                  onPress={() => app.setUseMetric(!useMetric)}
+                  style={[styles.unitToggle, { backgroundColor: colors.surfaceContainerHigh }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Switch to ${useMetric ? 'imperial' : 'metric'} units`}
+                >
+                  <Text style={[Typography.labelSmall, { color: colors.primary }]}>
+                    {useMetric ? 'METRIC' : 'IMPERIAL'}
                   </Text>
                 </Pressable>
               }
