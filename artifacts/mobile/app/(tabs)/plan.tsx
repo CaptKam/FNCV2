@@ -165,7 +165,11 @@ export default function PlanScreen() {
       <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
         <Pressable onPress={() => {
           const firstRecipeId = PLANNED_DAYS[firstPlannedDay];
-          if (firstRecipeId) router.push(`/cook-mode/${firstRecipeId}`);
+          if (firstRecipeId) {
+            router.push(`/cook-mode/${firstRecipeId}`);
+          } else {
+            router.push('/(tabs)/cook');
+          }
         }}>
           <GlassView style={[styles.readyCTAInner, { ...Shadows.ambient }]}>
             <View style={[styles.playCircle, { backgroundColor: colors.primary }]}>
