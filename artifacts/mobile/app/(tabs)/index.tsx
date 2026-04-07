@@ -1,4 +1,5 @@
 import React, { useRef, useState, useMemo, useCallback } from 'react';
+import * as Haptics from 'expo-haptics';
 import {
   View,
   Text,
@@ -63,6 +64,14 @@ function formatDateShort(dateStr: string): string {
   return `${months[d.getMonth()]} ${d.getDate()}`;
 }
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  if (hour < 21) return "Good evening — what's for dinner?";
+  return 'Late night cravings?';
+}
+
 export default function DiscoverScreen() {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const colors = useThemeColors();
@@ -106,6 +115,7 @@ export default function DiscoverScreen() {
 
   const handleAddTonight = useCallback((recipe: Recipe) => {
     app.addCourseToDay(todayDate, 'main', recipe);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
     showToast(`Added to tonight's plan.`);
   }, [app, todayDate, showToast]);
 
@@ -172,6 +182,9 @@ export default function DiscoverScreen() {
                   style={StyleSheet.absoluteFill}
                 />
                 <View style={styles.heroContent}>
+                  <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic' }]}>
+                    {getGreeting()}
+                  </Text>
                   <GlassView style={styles.flagBadge}>
                     <Text style={{ fontSize: 14 }}>{item.flag}</Text>
                     <Text style={[Typography.caption, { color: colors.textOnImage }]}>{item.region}</Text>

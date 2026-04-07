@@ -119,10 +119,10 @@ export default function CookScreen() {
             <View style={[styles.emptyHeroInner, { borderColor: colors.outlineVariant }]}>
               <MaterialCommunityIcons name="weather-sunset" size={44} color={colors.outlineVariant} />
               <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
-                Nothing on the stove
+                Ready when you are
               </Text>
               <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', lineHeight: 22 }]}>
-                Plan a meal to get started, or browse recipes for inspiration.
+                Pick a recipe and we'll guide you through every step.
               </Text>
             </View>
           </View>

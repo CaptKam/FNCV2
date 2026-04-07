@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import * as Haptics from 'expo-haptics';
 import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -149,7 +150,10 @@ export default function GroceryScreen() {
       "Remove all grocery items? This can't be undone.",
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Clear All', style: 'destructive', onPress: () => app.clearAllGroceryItems() },
+        { text: 'Clear All', style: 'destructive', onPress: () => {
+          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } catch {}
+          app.clearAllGroceryItems();
+        } },
       ]
     );
   };
@@ -167,7 +171,7 @@ export default function GroceryScreen() {
             No ingredients yet
           </Text>
           <Text style={[Typography.body, { color: colors.outline, textAlign: 'center', paddingHorizontal: Spacing.xl }]}>
-            Plan some meals to build your list.
+            Plan some meals and we'll build your shopping list automatically.
           </Text>
           <Pressable
             onPress={() => router.push('/(tabs)')}
@@ -449,7 +453,10 @@ export default function GroceryScreen() {
               return (
                 <Pressable
                   key={item.id}
-                  onPress={() => app.toggleGroceryItem(item.id)}
+                  onPress={() => {
+                    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                    app.toggleGroceryItem(item.id);
+                  }}
                   style={[
                     styles.itemRow,
                     {

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import * as Haptics from 'expo-haptics';
 import { Storage } from '@/utils/storage';
 
 const STORAGE_KEY = '@fork_compass_bookmarks';
@@ -36,6 +37,7 @@ export function BookmarksProvider({ children }: { children: React.ReactNode }) {
 
   const toggleBookmark = useCallback(
     (recipeId: string) => {
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
       setBookmarkedIds((prev) => {
         const next = prev.includes(recipeId)
           ? prev.filter((id) => id !== recipeId)
