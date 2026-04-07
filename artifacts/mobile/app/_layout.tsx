@@ -21,6 +21,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AppProvider } from "@/context/AppContext";
 import { BookmarksProvider } from "@/context/BookmarksContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -77,9 +78,11 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <ThemeProvider>
               <BookmarksProvider>
-                <KeyboardProvider>
-                  <RootLayoutNav />
-                </KeyboardProvider>
+                <AppProvider>
+                  <KeyboardProvider>
+                    <RootLayoutNav />
+                  </KeyboardProvider>
+                </AppProvider>
               </BookmarksProvider>
             </ThemeProvider>
           </GestureHandlerRootView>
