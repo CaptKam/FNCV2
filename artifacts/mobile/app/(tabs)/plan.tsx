@@ -187,7 +187,6 @@ export default function PlanScreen() {
   }, [selectedDay]);
 
   const primaryMeal = selectedDay?.courses.main;
-
   // ─── Grocery banner ───
   const renderGroceryBanner = () => (
     <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
