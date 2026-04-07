@@ -17,10 +17,9 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
-import { recipes } from '@/data/recipes';
-import { countries } from '@/data/countries';
 import { useThemePreference, ThemePreference } from '@/context/ThemeContext';
 import { useApp } from '@/context/AppContext';
+import { useBookmarks } from '@/context/BookmarksContext';
 
 const THEME_OPTIONS: { id: ThemePreference; label: string; icon: string; desc: string }[] = [
   { id: 'system', label: 'System', icon: 'cellphone-cog', desc: 'Match your device settings' },
@@ -35,6 +34,14 @@ const DIETARY_OPTIONS = [
   { id: 'dairy-free', label: 'Dairy-Free', emoji: '\u{1F95B}' },
   { id: 'nut-free', label: 'Nut-Free', emoji: '\u{1F95C}' },
   { id: 'halal', label: 'Halal', emoji: '\u{2728}' },
+];
+
+const SERVING_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
+
+const GROCERY_PARTNERS: { id: 'instacart' | 'kroger' | 'walmart'; label: string; icon: string }[] = [
+  { id: 'instacart', label: 'Instacart', icon: 'cart' },
+  { id: 'kroger', label: 'Kroger', icon: 'store' },
+  { id: 'walmart', label: 'Walmart', icon: 'store-outline' },
 ];
 
 interface SettingRowProps {
@@ -83,25 +90,39 @@ export default function ProfileScreen() {
 
   const { preference, setPreference } = useThemePreference();
   const app = useApp();
+  const { bookmarkCount } = useBookmarks();
+
   const [showThemeModal, setShowThemeModal] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [weeklyDigest, setWeeklyDigest] = useState(true);
-  const [metricUnits, setMetricUnits] = useState(true);
-  const [hapticEnabled, setHapticEnabled] = useState(true);
-  const [selectedDietary, setSelectedDietary] = useState<string[]>([]);
+  const [showServingsModal, setShowServingsModal] = useState(false);
+  const [showPartnerModal, setShowPartnerModal] = useState(false);
+
+  // Read all state from AppContext
+  const {
+    xp,
+    level,
+    totalRecipesCooked,
+    passportStamps,
+    dietaryFlags,
+    allergens,
+    cookingLevel,
+    coursePreference,
+    groceryPartner,
+  } = app;
+
+  const levelName = app.getCookingLevelName();
+  const progress = (xp % 300) / 300;
+  const xpToNext = 300 - (xp % 300);
+  const countriesExplored = Object.keys(passportStamps).length;
 
   const toggleDietary = (id: string) => {
-    setSelectedDietary((prev) =>
-      prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
-    );
+    const next = dietaryFlags.includes(id)
+      ? dietaryFlags.filter((d) => d !== id)
+      : [...dietaryFlags, id];
+    app.setDietaryFlags(next);
   };
 
-  const xp = 2450;
-  const level = 8;
-  const progress = 0.65;
-  const recipesCooked = 23;
-  const countriesExplored = 5;
-  const streakDays = 12;
+  // Default servings derived from coursePreference context (main = standard, full = larger)
+  const [defaultServings, setDefaultServings] = useState(4);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -117,15 +138,16 @@ export default function ProfileScreen() {
           <View style={{ width: 24 }} />
         </View>
 
+        {/* Profile card — wired to AppContext XP/level */}
         <View style={[styles.profileCard, { paddingHorizontal: Spacing.page }]}>
           <View style={[styles.avatarLarge, { backgroundColor: colors.surfaceContainerHigh }]}>
             <Feather name="user" size={40} color={colors.outline} />
           </View>
           <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center' }]}>
-            Home Chef
+            {levelName}
           </Text>
           <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center' }]}>
-            Culinary explorer since 2024
+            Culinary explorer · Level {level}
           </Text>
 
           <View style={styles.levelContainer}>
@@ -144,14 +166,15 @@ export default function ProfileScreen() {
               />
             </View>
             <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', marginTop: 4 }]}>
-              550 XP to Level {level + 1}
+              {xpToNext} XP to Level {level + 1}
             </Text>
           </View>
         </View>
 
+        {/* Stats — wired to AppContext */}
         <View style={[styles.statsRow, { paddingHorizontal: Spacing.page }]}>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Text style={[Typography.display, { color: colors.primary, fontSize: 32 }]}>{recipesCooked}</Text>
+            <Text style={[Typography.display, { color: colors.primary, fontSize: 32 }]}>{totalRecipesCooked}</Text>
             <Text style={[Typography.caption, { color: colors.outline }]}>Recipes{'\n'}Cooked</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
@@ -159,11 +182,12 @@ export default function ProfileScreen() {
             <Text style={[Typography.caption, { color: colors.outline }]}>Countries{'\n'}Explored</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Text style={[Typography.display, { color: colors.primary, fontSize: 32 }]}>{streakDays}</Text>
-            <Text style={[Typography.caption, { color: colors.outline }]}>Day{'\n'}Streak</Text>
+            <Text style={[Typography.display, { color: colors.primary, fontSize: 32 }]}>{bookmarkCount}</Text>
+            <Text style={[Typography.caption, { color: colors.outline }]}>Recipes{'\n'}Saved</Text>
           </View>
         </View>
 
+        {/* Dietary preferences — wired to AppContext */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
             DIETARY PREFERENCES
@@ -173,7 +197,7 @@ export default function ProfileScreen() {
           </Text>
           <View style={styles.dietaryGrid}>
             {DIETARY_OPTIONS.map((option) => {
-              const isSelected = selectedDietary.includes(option.id);
+              const isSelected = dietaryFlags.includes(option.id);
               return (
                 <Pressable
                   key={option.id}
@@ -205,6 +229,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Cooking settings — wired to AppContext */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
             COOKING SETTINGS
@@ -216,45 +241,39 @@ export default function ProfileScreen() {
             <SettingRow
               icon="chef-hat"
               label="Cooking Level"
-              subtitle={app.cookingLevel === 'beginner' ? 'Beginner' : app.cookingLevel === 'home_cook' ? 'Home Cook' : 'Chef'}
+              subtitle={cookingLevel === 'beginner' ? 'Beginner' : cookingLevel === 'home_cook' ? 'Home Cook' : 'Chef'}
               colors={colors}
               trailing={
                 <Pressable
                   onPress={() => {
                     const levels = ['beginner', 'home_cook', 'chef'] as const;
-                    const idx = levels.indexOf(app.cookingLevel);
+                    const idx = levels.indexOf(cookingLevel);
                     app.setCookingLevel(levels[(idx + 1) % levels.length]);
                   }}
-                  style={[
-                    styles.unitToggle,
-                    { backgroundColor: colors.surfaceContainerHigh },
-                  ]}
+                  style={[styles.unitToggle, { backgroundColor: colors.surfaceContainerHigh }]}
                   accessibilityRole="button"
-                  accessibilityLabel={`Change cooking level, currently ${app.cookingLevel}`}
+                  accessibilityLabel={`Change cooking level, currently ${cookingLevel}`}
                 >
                   <Text style={[Typography.labelSmall, { color: colors.primary }]}>
-                    {app.cookingLevel === 'beginner' ? 'BEGINNER' : app.cookingLevel === 'home_cook' ? 'HOME COOK' : 'CHEF'}
+                    {cookingLevel === 'beginner' ? 'BEGINNER' : cookingLevel === 'home_cook' ? 'HOME COOK' : 'CHEF'}
                   </Text>
                 </Pressable>
               }
             />
             <SettingRow
-              icon="scale"
-              label="Measurement Units"
-              subtitle={metricUnits ? 'Metric (g, ml, °C)' : 'Imperial (oz, cups, °F)'}
+              icon="silverware-fork-knife"
+              label="Course Preference"
+              subtitle={coursePreference === 'main' ? 'Main course only' : 'Full course (appetizer + main + dessert)'}
               colors={colors}
               trailing={
                 <Pressable
-                  onPress={() => setMetricUnits(!metricUnits)}
-                  style={[
-                    styles.unitToggle,
-                    { backgroundColor: colors.surfaceContainerHigh },
-                  ]}
+                  onPress={() => app.setCoursePreference(coursePreference === 'main' ? 'full' : 'main')}
+                  style={[styles.unitToggle, { backgroundColor: colors.surfaceContainerHigh }]}
                   accessibilityRole="button"
-                  accessibilityLabel={`Switch to ${metricUnits ? 'imperial' : 'metric'} units`}
+                  accessibilityLabel={`Switch course preference, currently ${coursePreference}`}
                 >
                   <Text style={[Typography.labelSmall, { color: colors.primary }]}>
-                    {metricUnits ? 'METRIC' : 'IMPERIAL'}
+                    {coursePreference === 'main' ? 'MAIN ONLY' : 'FULL COURSE'}
                   </Text>
                 </Pressable>
               }
@@ -262,73 +281,21 @@ export default function ProfileScreen() {
             <SettingRow
               icon="account-group"
               label="Default Servings"
-              subtitle="4 servings"
-              onPress={() => {}}
+              subtitle={`${defaultServings} servings`}
+              onPress={() => setShowServingsModal(true)}
               colors={colors}
             />
             <SettingRow
-              icon="timer-outline"
-              label="Timer Sound"
-              subtitle="Gentle chime"
-              onPress={() => {}}
+              icon="truck-delivery-outline"
+              label="Grocery Partner"
+              subtitle={GROCERY_PARTNERS.find((p) => p.id === groceryPartner)?.label ?? 'Instacart'}
+              onPress={() => setShowPartnerModal(true)}
               colors={colors}
-            />
-            <SettingRow
-              icon="vibrate"
-              label="Haptic Feedback"
-              subtitle="Vibrate on step transitions"
-              colors={colors}
-              trailing={
-                <Switch
-                  value={hapticEnabled}
-                  onValueChange={setHapticEnabled}
-                  trackColor={{ false: colors.surfaceContainerHigh, true: `${colors.primary}60` }}
-                  thumbColor={colors.primary}
-                />
-              }
             />
           </View>
         </View>
 
-        <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
-          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            NOTIFICATIONS
-          </Text>
-          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
-            Notifications
-          </Text>
-          <View style={styles.settingsGroup}>
-            <SettingRow
-              icon="bell-outline"
-              label="Push Notifications"
-              subtitle="Cooking reminders & tips"
-              colors={colors}
-              trailing={
-                <Switch
-                  value={notificationsEnabled}
-                  onValueChange={setNotificationsEnabled}
-                  trackColor={{ false: colors.surfaceContainerHigh, true: `${colors.primary}60` }}
-                  thumbColor={colors.primary}
-                />
-              }
-            />
-            <SettingRow
-              icon="email-outline"
-              label="Weekly Digest"
-              subtitle="New recipes & seasonal highlights"
-              colors={colors}
-              trailing={
-                <Switch
-                  value={weeklyDigest}
-                  onValueChange={setWeeklyDigest}
-                  trackColor={{ false: colors.surfaceContainerHigh, true: `${colors.primary}60` }}
-                  thumbColor={colors.primary}
-                />
-              }
-            />
-          </View>
-        </View>
-
+        {/* General */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
             GENERAL
@@ -342,13 +309,6 @@ export default function ProfileScreen() {
               label="Appearance"
               subtitle={preference === 'system' ? 'Follow system theme' : preference === 'light' ? 'Light mode' : 'Dark mode'}
               onPress={() => setShowThemeModal(true)}
-              colors={colors}
-            />
-            <SettingRow
-              icon="download-outline"
-              label="Offline Recipes"
-              subtitle="3 recipes saved offline"
-              onPress={() => {}}
               colors={colors}
             />
             <SettingRow
@@ -404,6 +364,7 @@ export default function ProfileScreen() {
         </Text>
       </ScrollView>
 
+      {/* Theme picker modal */}
       <Modal
         visible={showThemeModal}
         transparent
@@ -452,6 +413,104 @@ export default function ProfileScreen() {
                       {option.desc}
                     </Text>
                   </View>
+                  {isActive && (
+                    <MaterialCommunityIcons name="check-circle" size={22} color={colors.primary} />
+                  )}
+                </Pressable>
+              );
+            })}
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Servings picker modal */}
+      <Modal
+        visible={showServingsModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowServingsModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowServingsModal(false)} accessibilityRole="button" accessibilityLabel="Close servings picker">
+          <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
+            <View style={[styles.modalHandle, { backgroundColor: colors.handleBar }]} />
+            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
+              Default Servings
+            </Text>
+            <View style={styles.servingsGrid}>
+              {SERVING_OPTIONS.map((n) => {
+                const isActive = defaultServings === n;
+                return (
+                  <Pressable
+                    key={n}
+                    onPress={() => {
+                      setDefaultServings(n);
+                      setShowServingsModal(false);
+                    }}
+                    style={[
+                      styles.servingOption,
+                      {
+                        backgroundColor: isActive ? colors.primary : colors.surfaceContainerLow,
+                      },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${n} servings`}
+                    accessibilityState={{ selected: isActive }}
+                  >
+                    <Text style={[Typography.titleMedium, { color: isActive ? colors.onPrimary : colors.onSurface }]}>
+                      {n}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Grocery partner picker modal */}
+      <Modal
+        visible={showPartnerModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPartnerModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowPartnerModal(false)} accessibilityRole="button" accessibilityLabel="Close grocery partner picker">
+          <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
+            <View style={[styles.modalHandle, { backgroundColor: colors.handleBar }]} />
+            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
+              Grocery Partner
+            </Text>
+            {GROCERY_PARTNERS.map((partner) => {
+              const isActive = groceryPartner === partner.id;
+              return (
+                <Pressable
+                  key={partner.id}
+                  onPress={() => {
+                    app.setGroceryPartner(partner.id);
+                    setShowPartnerModal(false);
+                  }}
+                  style={[
+                    styles.themeOption,
+                    {
+                      backgroundColor: isActive ? `${colors.primary}15` : colors.surfaceContainerLow,
+                      borderColor: isActive ? colors.primary : 'transparent',
+                      borderWidth: 1.5,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={partner.label}
+                  accessibilityState={{ selected: isActive }}
+                >
+                  <View style={[styles.themeIconWrap, { backgroundColor: isActive ? `${colors.primary}20` : colors.surfaceContainerHigh }]}>
+                    <MaterialCommunityIcons
+                      name={partner.icon as any}
+                      size={22}
+                      color={isActive ? colors.primary : colors.outline}
+                    />
+                  </View>
+                  <Text style={[Typography.titleSmall, { color: isActive ? colors.primary : colors.onSurface, flex: 1 }]}>
+                    {partner.label}
+                  </Text>
                   {isActive && (
                     <MaterialCommunityIcons name="check-circle" size={22} color={colors.primary} />
                   )}
@@ -600,6 +659,19 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: Radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  servingsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  servingOption: {
+    width: 56,
+    height: 56,
+    borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
