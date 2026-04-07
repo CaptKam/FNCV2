@@ -31,7 +31,7 @@ export default function TabLayout() {
         },
         tabBarStyle: {
           position: "absolute",
-          bottom: Platform.OS === "web" ? 34 : Math.max(insets.bottom, 16) + 16,
+          bottom: Math.max(insets.bottom, 16) + 16,
           left: SCREEN_WIDTH * 0.05,
           right: SCREEN_WIDTH * 0.05,
           height: TAB_BAR_HEIGHT,

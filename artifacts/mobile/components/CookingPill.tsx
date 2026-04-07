@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, StyleSheet, Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
@@ -9,21 +10,27 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { useApp } from '@/context/AppContext';
 
+const TAB_BAR_HEIGHT = 64;
+
 export function CookingPill() {
   const colors = useThemeColors();
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
   const { activeCookSession } = useApp();
 
-  // Hide if no session or if already on cook-mode screen
   if (!activeCookSession || pathname.startsWith('/cook-mode')) return null;
+
+  // Position above the floating tab bar: tab bottom + tab height + gap
+  const tabBarBottom = Math.max(insets.bottom, 16) + 16;
+  const pillBottom = tabBarBottom + TAB_BAR_HEIGHT + 12;
 
   const stepProgress = `Step ${activeCookSession.currentStepIndex + 1}/${activeCookSession.totalSteps}`;
 
   return (
     <Pressable
       onPress={() => router.push(`/cook-mode/${activeCookSession.recipeId}`)}
-      style={styles.container}
+      style={[styles.container, { bottom: pillBottom }]}
       accessibilityRole="button"
       accessibilityLabel={`Resume cooking ${activeCookSession.recipeName}, ${stepProgress}`}
     >
@@ -44,7 +51,6 @@ export function CookingPill() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 148,
     left: Spacing.page,
     right: Spacing.page,
     zIndex: 60,
