@@ -260,8 +260,7 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   dayLeft: {
-    alignItems: 'center',
-    width: 24,
+    width: 12,
     paddingTop: 4,
   },
   timelineNode: {
