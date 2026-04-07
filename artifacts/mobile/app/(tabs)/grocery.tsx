@@ -187,7 +187,7 @@ export default function GroceryScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 68 }}
+        contentContainerStyle={{ paddingBottom: 180, paddingTop: insets.top + 76 }}
       >
         <View style={styles.titleSection}>
           <Text style={[Typography.labelLarge, { color: colors.outline, textAlign: 'center', marginBottom: Spacing.xs }]}>
@@ -585,10 +585,10 @@ const styles = StyleSheet.create({
   },
   recipeCloseBtn: {
     position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 32,
-    height: 32,
+    top: 8,
+    right: 8,
+    width: 26,
+    height: 26,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
@@ -599,8 +599,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   stepperBtn: {
-    width: 36,
-    height: 36,
+    width: 26,
+    height: 26,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
@@ -691,8 +691,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xs,
   },
   checkbox: {
-    width: 28,
-    height: 28,
+    width: 26,
+    height: 26,
     borderRadius: Radius.full,
     borderWidth: 2,
     alignItems: 'center',

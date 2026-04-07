@@ -89,8 +89,8 @@ const styles = StyleSheet.create({
     right: Spacing.sm,
   },
   heartGlass: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',

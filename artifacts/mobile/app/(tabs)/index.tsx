@@ -43,10 +43,7 @@ function getMonday(d: Date): Date {
 }
 
 function toISO(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return d.toISOString().split('T')[0];
 }
 
 function addDays(dateStr: string, n: number): string {
@@ -144,7 +141,7 @@ export default function DiscoverScreen() {
       <HeaderBar transparent />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 140 }}
       >
 
         {/* Hero Carousel */}
