@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kitchen Lab - Mission Control</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#1d1b18",
+                    "surface-container": "#f2ede7",
+                    "outline-variant": "#ddc1b4",
+                    "surface": "#fef9f3",
+                    "secondary-fixed-dim": "#f9b897",
+                    "surface-dim": "#ded9d4",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed": "#331101",
+                    "surface-variant": "#e6e2dc",
+                    "primary-container": "#9a4100",
+                    "surface-tint": "#9d4303",
+                    "on-secondary-fixed-variant": "#683b23",
+                    "secondary": "#845238",
+                    "on-tertiary-container": "#c0d6ff",
+                    "primary-fixed": "#ffdbcb",
+                    "tertiary-container": "#005caf",
+                    "surface-bright": "#fef9f3",
+                    "inverse-on-surface": "#f5f0ea",
+                    "secondary-container": "#ffbd9d",
+                    "on-surface": "#1d1b18",
+                    "primary": "#753000",
+                    "on-primary-container": "#ffc9af",
+                    "on-primary-fixed-variant": "#783100",
+                    "on-tertiary-fixed-variant": "#004689",
+                    "error": "#ba1a1a",
+                    "tertiary": "#004485",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#001b3c",
+                    "outline": "#897267",
+                    "on-primary-fixed": "#341100",
+                    "on-error-container": "#93000a",
+                    "on-surface-variant": "#564339",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e6e2dc",
+                    "inverse-primary": "#ffb691",
+                    "primary-fixed-dim": "#ffb691",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#a7c8ff",
+                    "tertiary-fixed": "#d5e3ff",
+                    "inverse-surface": "#32302c",
+                    "secondary-fixed": "#ffdbcb",
+                    "on-secondary": "#ffffff",
+                    "background": "#fef9f3",
+                    "surface-container-high": "#ece7e2",
+                    "surface-container-low": "#f8f3ed",
+                    "on-secondary-container": "#7a4a31",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Noto Serif"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fef9f3; }
+        .serif-hero { font-family: 'Noto Serif', serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .liquid-glass {
+            background: rgba(254, 249, 243, 0.7);
+            backdrop-filter: blur(32px);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface bg-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#FEF9F3]/80 dark:bg-[#1A1A1A]/80 backdrop-blur-3xl shadow-[0_20px_40px_rgba(29,27,24,0.06)] border-t border-white/40">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#9A4100]" data-icon="restaurant_menu">restaurant_menu</span>
+<h1 class="font-['Noto_Serif'] font-bold text-lg tracking-tight text-[#9A4100]">Kitchen Lab</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right hidden md:block">
+<p class="text-[10px] uppercase tracking-widest font-medium text-[#4A4A4A]">Executive Chef</p>
+<p class="text-xs font-semibold text-[#1A1A1A]">Marcus Aurelius</p>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-[#9A4100]/20">
+<img alt="Executive Chef Profile" data-alt="professional portrait of a chef in a modern kitchen, warm lighting, blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxoAq9z2WR_P9g-d0-BOU5Js6WE-50sQ9SWtYC5LahbWxYNL5b5fEU5zCU-UFtZ30WIKae2E3ZQ1nVEwHy2ZoAb6BJdxYz2gqK5u6AvykD9wq-90fP-SNUqe6soMZRvLFKmatENGa7pmQevZT1Rv29l3ZpfK9sdSBF5IT7MljIX9FJa3p5Hbg1fLZeh26lmpW4Sq7_JWlO0O8qSHcd3OMC2HbsWanyWQjOiy2-anrVOtifce1KKDHYCUNMPGWejSVyXPvBie911J2E"/>
+</div>
+</div>
+</header>
+<!-- Hero Section: Lamb Tagine -->
+<main class="pt-16 max-w-5xl mx-auto px-4 md:px-6">
+<section class="relative mt-8 group">
+<div class="aspect-[16/9] md:aspect-[21/9] rounded-[2rem] overflow-hidden shadow-2xl">
+<img alt="Lamb Tagine" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Close-up of a slow-cooked lamb tagine with apricots and almonds in a traditional ceramic dish, steaming hot, moody atmospheric lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP_getAX7cPT3TYTrAYWbUe8jXwSet4hm5y6TZmZsHC7blBtdoYw95HQQD_aJm_TAe6x_uS8eoGQyZmH50nwXy9WsVKe8qDJGv42Ococ6W9m7MXvgY4WudF41j2QqLNicLbTpTIWbOZzK9IvrAbDP1tHI0Js95PmFDt8exYPb-MxHizABQW54WNDTbic7m0tTH3zHnUdfWOizepqnasuBxaV6j3mcbRxabFqs62VUjiCi6ks60rP6wiWu5JaGU0Ba_g4puI6EkJiqL"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+</div>
+<!-- Floating Glass Info Card -->
+<div class="absolute -bottom-6 left-6 right-6 md:left-12 md:right-auto md:w-96 liquid-glass p-6 rounded-2xl shadow-[0_20px_40px_rgba(29,27,24,0.12)]">
+<div class="flex flex-col gap-1 mb-4">
+<span class="text-[10px] uppercase tracking-[0.2em] font-bold text-primary italic">Now Preparation</span>
+<h2 class="serif-hero text-3xl font-bold text-on-surface">Lamb Tagine</h2>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-primary mb-1" data-icon="schedule">schedule</span>
+<span class="text-xs font-medium">2h 15m</span>
+</div>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-primary mb-1" data-icon="group">group</span>
+<span class="text-xs font-medium">4 Servings</span>
+</div>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-primary mb-1" data-icon="star">star</span>
+<span class="text-xs font-medium uppercase tracking-tighter">Expert</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Bento Grid Content -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 mt-16 md:mt-24">
+<!-- Dinner Party Module -->
+<div class="md:col-span-7 bg-surface-container-low rounded-[2rem] p-8 flex flex-col gap-6 relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="serif-hero text-2xl font-bold mb-1">Dinner Party</h3>
+<p class="text-primary font-medium tracking-wide">A Moroccan Night</p>
+</div>
+<div class="bg-primary/10 p-3 rounded-2xl">
+<span class="material-symbols-outlined text-primary" data-icon="celebration">celebration</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-4 p-4 bg-surface rounded-2xl border-t border-white/60">
+<div class="flex -space-x-3">
+<img alt="Guest 1" class="w-8 h-8 rounded-full border-2 border-surface" data-alt="portrait of a guest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzNQF11JKoj1kYsRK8p9QusQN5FzfGoIETc6vmKEzgKZmSrw4owB830OjJxeJu_QEV50UNhNCoPXULotkbASk8Io9WDshhUN46RyTe1rMOWaY_EfBNbAjYRMtOL86y94XyiwONG6ADWNwOkMNB4mwA49Nd4bFYuTA_iPy2jlnEgpL97vWq3bAFFIvxgEfaVeyX7DZaeDrllf7EliCswgNGXP8hxRtjELBkJrYsR-f3uUF1WYf3G7jhrNwr_By2Z6NkSNM7MeVYH8lo"/>
+<img alt="Guest 2" class="w-8 h-8 rounded-full border-2 border-surface" data-alt="portrait of a guest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd--YUcq2W3P6Rdqx9jFFLng50jHaZUNAvCHkTIg1SaywpU0bOJ9Ft_TEr5UPGgH5Ql9GcxDSp9emLpozDa3LHz_-5KXIw0V4WZrA3BzlEKRsOVZZPb89LxiE06NjHrQ11IxomFS4yXgeTy-P13_kETozjctmGCS3YT1QCC7vrfZ4nVFVVtpnxMP1A44RbbX4LbGu8HdFkBpB_vyZorIja5jUvVlq3PMlVi8y_S7p7-wmQYey1kKOCHllK98DhysFffYQrm2qPASTh"/>
+<img alt="Guest 3" class="w-8 h-8 rounded-full border-2 border-surface" data-alt="portrait of a guest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwHpik4zGwzAa5phgOGjsnZEKNE61e3w8XbR4Xp6-bQ1QshKoPDWbFOYkmhDcH-y0T3PAo1S-azwE7_qYcDhA-YhQAdMZO-QHWdL_U9EPKKEhrCGocABVj8m6kGN8EHN441fZ6_vrto7DIjJ8FEi08ugc6sCp7JVG52I4650j8FqSIDLmxodLo0LZ8uyGd2mXzLQ6oM_RftAK8xMgIgOiJB5iNv87IPp8qVq5T1exEhT0-x0epVlmY8fqaszP6L22e7QQJYSWxZqLG"/>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border-2 border-surface flex items-center justify-center text-[10px] font-bold text-on-surface-variant">?</div>
+</div>
+<p class="text-sm font-medium text-on-surface-variant">4 Guests <span class="opacity-60 text-xs">(3 Confirmed, 1 Pending)</span></p>
+</div>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-2 px-4 py-2 bg-error/10 text-error rounded-full text-xs font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-sm" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+                            2 Nut Allergies
+                        </div>
+<div class="flex items-center gap-2 px-4 py-2 bg-error/10 text-error rounded-full text-xs font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-sm" data-icon="spa" style="font-variation-settings: 'FILL' 1;">spa</span>
+                            1 Vegan
+                        </div>
+</div>
+</div>
+</div>
+<!-- Kitchen Check Section -->
+<div class="md:col-span-5 bg-surface-container-highest rounded-[2rem] p-8 flex flex-col gap-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="fact_check">fact_check</span>
+<h3 class="serif-hero text-xl font-bold">Kitchen Check</h3>
+</div>
+<ul class="space-y-4">
+<li class="flex items-center gap-4 group cursor-pointer">
+<div class="w-6 h-6 rounded-lg border-2 border-primary/30 flex items-center justify-center group-hover:border-primary transition-colors">
+<span class="material-symbols-outlined text-primary text-sm opacity-0 group-hover:opacity-100" data-icon="check">check</span>
+</div>
+<span class="text-sm font-medium text-on-surface-variant">Ingredients Prepped</span>
+</li>
+<li class="flex items-center gap-4 group cursor-pointer">
+<div class="w-6 h-6 rounded-lg border-2 border-primary/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm opacity-0" data-icon="check">check</span>
+</div>
+<span class="text-sm font-medium text-on-surface-variant">Equipment Ready</span>
+</li>
+<li class="flex items-center gap-4 group cursor-pointer">
+<div class="w-6 h-6 rounded-lg bg-primary flex items-center justify-center border-2 border-primary">
+<span class="material-symbols-outlined text-white text-sm" data-icon="check" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-on-surface">Atmosphere Set</span>
+<span class="text-[10px] text-primary/70 font-bold uppercase tracking-widest italic">Moroccan Music playing</span>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<!-- Primary CTA Area -->
+<div class="mt-12 mb-12 flex flex-col items-center gap-4">
+<button class="group relative px-12 py-5 bg-[#9A4100] text-white rounded-full font-bold text-lg tracking-tight shadow-[0_20px_40px_rgba(154,65,0,0.25)] hover:scale-105 active:scale-95 transition-all duration-300">
+                Begin the Journey
+                <span class="material-symbols-outlined ml-2 align-middle transform transition-transform group-hover:translate-x-1" data-icon="east">east</span>
+</button>
+<p class="text-[10px] uppercase tracking-[0.3em] font-medium text-on-surface-variant opacity-60">Ready to initiate kitchen lab sequence</p>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-8 left-0 right-0 z-50 flex justify-around items-center px-4 w-full">
+<div class="flex justify-around items-center w-full max-w-md mx-auto h-16 rounded-full bg-[#FEF9F3]/70 dark:bg-[#1A1A1A]/70 backdrop-blur-[40px] shadow-[0_20px_40px_rgba(29,27,24,0.1)] border-t border-white/40 px-2">
+<a class="flex flex-col items-center justify-center text-[#4A4A4A] dark:text-[#E0E0E0] opacity-60 hover:opacity-100 transition-all" href="#">
+<span class="material-symbols-outlined mb-0.5" data-icon="tactic">tactic</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-widest font-medium">Mission</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#9A4100] text-white rounded-full w-12 h-12 scale-110 shadow-lg transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="science">science</span>
+<!-- Label hidden for active as per many modern navs, but keeping structure -->
+</a>
+<a class="flex flex-col items-center justify-center text-[#4A4A4A] dark:text-[#E0E0E0] opacity-60 hover:opacity-100 transition-all" href="#">
+<span class="material-symbols-outlined mb-0.5" data-icon="inventory_2">inventory_2</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-widest font-medium">Pantry</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#4A4A4A] dark:text-[#E0E0E0] opacity-60 hover:opacity-100 transition-all" href="#">
+<span class="material-symbols-outlined mb-0.5" data-icon="groups">groups</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-widest font-medium">Social</span>
+</a>
+</div>
+</nav>
+</body></html>

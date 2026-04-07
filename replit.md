@@ -28,7 +28,7 @@ Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a 
 - **Components**: GlassView, SectionHeader, RecipeCard, DestinationCard
 
 ### Screens
-- 5 tabs: Discover (hero carousel), Search (filter chips), Plan (timeline), Grocery (checkboxes), Cook (reputation profile)
+- 5 tabs: Discover (hero carousel), Search (filter chips), Plan (timeline), Grocery (checkboxes), Cook ("Kitchen Lab" mission control)
 - Detail screens: Country Detail, Recipe Detail
 - Cook Mode: Full-screen step-by-step with timer, haptics, keep-awake
 - Profile & Settings: dietary preferences, cooking settings, notifications, general
