@@ -426,13 +426,13 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   pillLabel: {
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: '700',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
   pillValue: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '700',
   },
   timerSection: {
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     letterSpacing: -2,
   },
   timerLabel: {
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: 3,
     marginTop: 4,

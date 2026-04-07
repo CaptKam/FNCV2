@@ -319,7 +319,7 @@ export default function GroceryScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={`View recipe ${recipe.title}`}
                       >
-                        <Text style={[Typography.caption, { color: colors.primary, marginTop: 2 }]}>
+                        <Text style={[Typography.titleSmall, { color: colors.primary, marginTop: 2 }]}>
                           View Recipe
                         </Text>
                       </Pressable>
@@ -477,7 +477,7 @@ export default function GroceryScreen() {
                       {item.name}
                     </Text>
                     <View style={styles.itemMetaRow}>
-                      <Text style={[Typography.caption, { color: colors.outline }]}>
+                      <Text style={[Typography.bodySmall, { color: colors.outline }]}>
                         {scaledAmount}
                       </Text>
                       {item.recipeNames.length > 1 && (
