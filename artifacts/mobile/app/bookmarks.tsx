@@ -11,6 +11,7 @@ import { Radius } from '@/constants/radius';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { useBookmarks } from '@/context/BookmarksContext';
+import { HeaderBar } from '@/components/HeaderBar';
 
 const FILTERS = ['All', 'Main', 'Appetizer', 'Dessert'];
 
@@ -40,24 +41,11 @@ export default function BookmarksScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar showBack />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top }}
+        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 76 }}
       >
-        <View style={styles.topBar}>
-          <View style={styles.topBarLeft}>
-            <Pressable
-              onPress={() => router.back()}
-              hitSlop={12}
-              style={styles.topBarBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Go back"
-            >
-              <MaterialCommunityIcons name="arrow-left" size={24} color={colors.onSurface} />
-            </Pressable>
-            <Text style={[styles.pageTitle, { color: colors.onSurface }]}>Saved Collections</Text>
-          </View>
-        </View>
 
         <ScrollView
           horizontal
@@ -228,31 +216,6 @@ export default function BookmarksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.page,
-    paddingVertical: Spacing.md,
-  },
-  topBarLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  topBarBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: Radius.full,
-  },
-  pageTitle: {
-    fontFamily: 'NotoSerif_700Bold',
-    fontSize: 22,
-    fontWeight: '700',
-    letterSpacing: -0.5,
   },
   filterRow: {
     paddingHorizontal: Spacing.page,

@@ -10,6 +10,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
+import { HeaderBar } from '@/components/HeaderBar';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { useApp } from '@/context/AppContext';
@@ -58,24 +59,11 @@ export default function CookScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top }}
+        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 76 }}
       >
-        <View style={styles.topBar}>
-          <View style={styles.topBarLeft}>
-            <MaterialCommunityIcons name="silverware-fork-knife" size={22} color={colors.primary} />
-            <Text style={[Typography.headline, { color: colors.primary, letterSpacing: -0.3 }]}>Kitchen Lab</Text>
-          </View>
-          <Pressable
-            onPress={() => router.push('/profile')}
-            style={[styles.profileAvatar, { backgroundColor: colors.surfaceContainerHigh }]}
-            accessibilityRole="button"
-            accessibilityLabel="View profile"
-          >
-            <MaterialCommunityIcons name="account" size={22} color={colors.outline} />
-          </Pressable>
-        </View>
 
         {heroRecipe ? (
           <View style={styles.heroSection}>
@@ -339,25 +327,6 @@ export default function CookScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.page,
-    paddingVertical: Spacing.md,
-  },
-  topBarLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  profileAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   heroSection: {
     marginHorizontal: Spacing.page,
     marginBottom: Spacing.xl,

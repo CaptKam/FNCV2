@@ -54,7 +54,7 @@ const colors = {
     input: '#DDC1B4',
   },
   dark: {
-    primary: '#C5702A',
+    primary: '#9A4100',
     primaryBase: '#9A4100',
     onPrimary: '#FFFFFF',
     primaryContainer: '#6B2A00',
@@ -81,7 +81,7 @@ const colors = {
     inverseOnSurface: '#32302C',
     inversePrimary: '#9A4100',
     overlay: 'rgba(0,0,0,0.7)',
-    shadow: '#1D1B18',
+    shadow: '#000000',
     textOnImage: '#FFFFFF',
     handleBar: '#999999',
     categoryProduce: '#4CAF50',

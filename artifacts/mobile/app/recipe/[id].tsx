@@ -17,6 +17,7 @@ import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { HeaderBar } from '@/components/HeaderBar';
 
 // ─── Helpers ───
 
@@ -30,10 +31,7 @@ function getMonday(d: Date): Date {
 }
 
 function toISO(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return d.toISOString().split('T')[0];
 }
 
 function addDays(dateStr: string, n: number): string {
@@ -74,15 +72,8 @@ export default function RecipeDetailScreen() {
   const [servings, setServings] = useState(recipe?.servings ?? 1);
   const [showPlanSheet, setShowPlanSheet] = useState(false);
   const [planCourseType, setPlanCourseType] = useState<'appetizer' | 'main' | 'dessert'>('main');
-  const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
 
-  // Next recipe suggestion
-  const nextRecipe = useMemo(() => {
-    if (!recipe) return null;
-    const countryRecipes = recipes.filter((r) => r.countryId === recipe.countryId && r.id !== recipe.id);
-    return countryRecipes[0] ?? null;
-  }, [recipe]);
-
+  // Generate the next 14 days for the "Add to Plan" sheet
   const planDays = useMemo(() => {
     const start = toISO(getMonday(new Date()));
     return Array.from({ length: 14 }, (_, i) => {
@@ -121,26 +112,34 @@ export default function RecipeDetailScreen() {
     setShowPlanSheet(false);
   };
 
-  const handleAddToGrocery = () => {
-    app.addToGrocery(recipe);
-  };
-
-  const toggleIngredientCheck = (globalIdx: number) => {
-    setCheckedIngredients((prev) => {
-      const next = new Set(prev);
-      if (next.has(globalIdx)) next.delete(globalIdx);
-      else next.add(globalIdx);
-      return next;
-    });
-  };
-
-  // Flatten ingredients with global index for checkbox tracking
-  let globalIngIdx = 0;
-
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Hero Image */}
+      <HeaderBar
+        transparent
+        showBack
+        rightAction={
+          <Pressable
+            onPress={() => toggleBookmark(recipe.id)}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+          >
+            <MaterialCommunityIcons
+              name={isSaved ? 'heart' : 'heart-outline'}
+              size={20}
+              color={isSaved ? '#FF6B6B' : '#FFFFFF'}
+            />
+          </Pressable>
+        }
+      />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={styles.heroContainer}>
           <Image
             source={{ uri: recipe.image }}
@@ -150,165 +149,64 @@ export default function RecipeDetailScreen() {
             accessible={false}
           />
           <LinearGradient
-            colors={['rgba(0,0,0,0.4)', 'transparent', 'transparent']}
-            locations={[0, 0.4, 1]}
+            colors={['rgba(0,0,0,0.2)', 'transparent', 'rgba(0,0,0,0.65)']}
+            locations={[0, 0.3, 1]}
             style={StyleSheet.absoluteFill}
           />
-          <Pressable
-            onPress={() => router.back()}
-            style={[styles.headerBtn, { top: insets.top + 8, left: Spacing.page }]}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <GlassView style={styles.headerBtnGlass}>
-              <Feather name="arrow-left" size={20} color={colors.onSurface} />
-            </GlassView>
-          </Pressable>
-          <Pressable
-            onPress={() => toggleBookmark(recipe.id)}
-            style={[styles.headerBtn, { top: insets.top + 8, right: Spacing.page }]}
-            accessibilityRole="button"
-            accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-          >
-            <GlassView style={styles.headerBtnGlass}>
-              <MaterialCommunityIcons
-                name={isSaved ? 'heart' : 'heart-outline'}
-                size={20}
-                color={isSaved ? colors.primary : colors.onSurface}
-              />
-            </GlassView>
-          </Pressable>
+          <View style={styles.heroText}>
+            <Text style={[Typography.labelSmall, { color: 'rgba(255,255,255,0.8)' }]}>
+              {country.flag} {country.name}
+            </Text>
+            <Text style={[Typography.display, { color: colors.textOnImage }]}>{recipe.title}</Text>
+          </View>
         </View>
 
-        {/* Content Canvas — overlaps hero */}
-        <View style={[styles.contentCanvas, { backgroundColor: colors.surface }]}>
-          {/* Title */}
-          <View style={styles.titleSection}>
-            <Text style={[styles.recipeTitle, { color: colors.onSurface }]}>
-              {recipe.title}
-            </Text>
-            <Text style={[Typography.bodySmall, { color: colors.secondary, letterSpacing: 0.5 }]}>
-              {recipe.category.charAt(0).toUpperCase() + recipe.category.slice(1)} · {country.name} {country.flag}
-            </Text>
-          </View>
-
-          {/* Metadata Pills */}
-          <View style={styles.metaPills}>
-            <View style={[styles.metaPill, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="clock-outline" size={16} color={colors.primary} />
-              <Text style={[styles.metaPillText, { color: colors.onSurface }]}>{recipe.prepTime} min prep</Text>
+        <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.lg }}>
+          <View style={styles.statsRow}>
+            <View style={styles.stat}>
+              <Feather name="clock" size={16} color={colors.outline} />
+              <Text style={[Typography.caption, { color: colors.outline }]}>Prep {recipe.prepTime}m</Text>
             </View>
-            <View style={[styles.metaPill, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="fire" size={16} color={colors.primary} />
-              <Text style={[styles.metaPillText, { color: colors.onSurface }]}>{recipe.cookTime} min cook</Text>
+            <View style={styles.stat}>
+              <Feather name="thermometer" size={16} color={colors.outline} />
+              <Text style={[Typography.caption, { color: colors.outline }]}>Cook {recipe.cookTime}m</Text>
             </View>
-            <View style={[styles.metaPill, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="chart-bar" size={16} color={colors.primary} />
-              <Text style={[styles.metaPillText, { color: colors.onSurface }]}>{recipe.difficulty}</Text>
+            <View style={styles.stat}>
+              <Feather name="bar-chart-2" size={16} color={colors.outline} />
+              <Text style={[Typography.caption, { color: colors.outline }]}>{recipe.difficulty}</Text>
+            </View>
+            <View style={styles.stat}>
+              <Feather name="users" size={16} color={colors.outline} />
+              <Text style={[Typography.caption, { color: colors.outline }]}>{currentServings}</Text>
             </View>
           </View>
 
-          {/* Serving Adjuster Card */}
-          <View style={[styles.servingCard, { backgroundColor: colors.surfaceContainerHigh }]}>
-            <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Servings</Text>
-            <View style={[styles.servingStepper, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <Pressable
-                onPress={() => { if (currentServings > 1) setServings(currentServings - 1); }}
-                style={[styles.servingStepBtn, { opacity: currentServings <= 1 ? 0.3 : 1 }]}
-                accessibilityRole="button"
-                accessibilityLabel="Decrease servings"
-              >
-                <Feather name="minus" size={18} color={colors.primary} />
-              </Pressable>
-              <Text style={[Typography.titleMedium, { color: colors.onSurface, fontWeight: '700' }]}>
-                {currentServings} servings
-              </Text>
-              <Pressable
-                onPress={() => setServings(currentServings + 1)}
-                style={styles.servingStepBtn}
-                accessibilityRole="button"
-                accessibilityLabel="Increase servings"
-              >
-                <Feather name="plus" size={18} color={colors.primary} />
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Ingredients with Checkboxes */}
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Ingredients</Text>
-
-            {Object.entries(ingredientGroups).map(([category, ingredients]) => (
-              <View key={category} style={{ marginBottom: Spacing.lg }}>
-                <Text style={[styles.categoryLabel, { color: colors.secondary }]}>
-                  {category}:
-                </Text>
-                {ingredients.map((ing, idx) => {
-                  const thisIdx = globalIngIdx++;
-                  const checked = checkedIngredients.has(thisIdx);
-                  return (
-                    <Pressable
-                      key={thisIdx}
-                      onPress={() => toggleIngredientCheck(thisIdx)}
-                      style={styles.ingredientItem}
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked }}
-                      accessibilityLabel={`${convertAmount(ing.amount, app.useMetric)} ${ing.name}`}
-                    >
-                      <View
-                        style={[
-                          styles.ingredientCheckbox,
-                          checked
-                            ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                            : { borderColor: `${colors.outlineVariant}66` },
-                        ]}
-                      >
-                        {checked && (
-                          <MaterialCommunityIcons name="check" size={14} color={colors.textOnImage} />
-                        )}
-                      </View>
-                      <Text
-                        style={[
-                          Typography.body,
-                          {
-                            color: checked ? colors.onSurfaceVariant : colors.onSurface,
-                            textDecorationLine: checked ? 'line-through' : 'none',
-                            opacity: checked ? 0.6 : 1,
-                            flex: 1,
-                          },
-                        ]}
-                      >
-                        {convertAmount(ing.amount, app.useMetric)} {ing.name}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            ))}
-          </View>
-
-          {/* Add to Grocery CTA */}
-          <Pressable
-            onPress={handleAddToGrocery}
-            style={styles.groceryCTA}
-            accessibilityRole="button"
-            accessibilityLabel="Add ingredients to grocery list"
-          >
-            <LinearGradient
-              colors={['#C75B12', colors.primary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              style={styles.groceryCTAGradient}
+          <View style={styles.servingsAdjuster}>
+            <Pressable
+              onPress={() => { if (currentServings > 1) setServings(currentServings - 1); }}
+              style={[styles.servingBtn, { borderColor: colors.primary, opacity: currentServings <= 1 ? 0.3 : 1 }]}
+              accessibilityRole="button"
+              accessibilityLabel="Decrease servings"
             >
-              <MaterialCommunityIcons name="basket" size={20} color={colors.onPrimary} />
-              <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Add to Grocery List</Text>
-            </LinearGradient>
-          </Pressable>
+              <Feather name="minus" size={18} color={colors.primary} />
+            </Pressable>
+            <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
+              {currentServings} servings
+            </Text>
+            <Pressable
+              onPress={() => setServings(currentServings + 1)}
+              style={[styles.servingBtn, { borderColor: colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel="Increase servings"
+            >
+              <Feather name="plus" size={18} color={colors.primary} />
+            </Pressable>
+          </View>
 
-          {/* Add to Plan */}
+          {/* Add to Plan button */}
           <Pressable
             onPress={() => setShowPlanSheet(true)}
-            style={[styles.planBtn, { borderColor: colors.primary }]}
+            style={[styles.addToPlanBtn, { borderColor: colors.primary }]}
             accessibilityRole="button"
             accessibilityLabel="Add to meal plan"
           >
@@ -316,24 +214,47 @@ export default function RecipeDetailScreen() {
             <Text style={[Typography.titleSmall, { color: colors.primary }]}>Add to Plan</Text>
           </Pressable>
 
-          {/* Instructions */}
-          <View style={[styles.section, { marginTop: Spacing.xxl }]}>
-            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Instructions</Text>
+          <View style={{ marginTop: Spacing.xl }}>
+            <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 4 }]}>
+              WHAT YOU NEED
+            </Text>
+            <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
+              Ingredients
+            </Text>
 
-            {recipe.steps.map((step, idx) => {
-              const instruction = getStepInstruction(step, app.cookingLevel);
-              const matchedIngs = recipe.ingredients.filter((ing) =>
-                instruction.toLowerCase().includes(ing.name.toLowerCase())
-              );
-              return (
-                <View key={idx} style={styles.stepCard}>
-                  <View style={styles.stepHeader}>
-                    <View style={[styles.stepCircle, { backgroundColor: colors.primary }]}>
-                      <Text style={[styles.stepNum, { color: colors.onPrimary }]}>{idx + 1}</Text>
-                    </View>
+            {Object.entries(ingredientGroups).map(([category, ingredients]) => (
+              <View key={category} style={{ marginBottom: Spacing.lg }}>
+                <Text style={[Typography.labelLarge, { color: colors.primary, marginBottom: Spacing.sm }]}>
+                  {category.toUpperCase()}
+                </Text>
+                {ingredients.map((ing, idx) => (
+                  <View key={idx} style={styles.ingredientRow}>
+                    <Text style={[Typography.body, { color: colors.onSurface, flex: 1 }]}>
+                      {ing.name}
+                    </Text>
+                    <Text style={[Typography.bodySmall, { color: colors.outline }]}>{convertAmount(ing.amount, app.useMetric)}</Text>
                   </View>
-                  <Text style={[Typography.body, { color: colors.onSurfaceVariant, lineHeight: 26 }]}>
-                    {highlightCulinaryVerbs(instruction).map((seg, si) =>
+                ))}
+              </View>
+            ))}
+          </View>
+
+          <View style={{ marginTop: Spacing.lg }}>
+            <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 4 }]}>
+              STEP BY STEP
+            </Text>
+            <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
+              Instructions
+            </Text>
+
+            {recipe.steps.map((step, idx) => (
+              <View key={idx} style={styles.stepRow}>
+                <View style={[styles.stepNumber, { backgroundColor: colors.primary }]}>
+                  <Text style={[Typography.caption, { color: colors.onPrimary }]}>{idx + 1}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[Typography.body, { color: colors.onSurface }]}>
+                    {highlightCulinaryVerbs(getStepInstruction(step, app.cookingLevel)).map((seg, si) =>
                       seg.isVerb ? (
                         <Text key={si} style={{ fontWeight: '700', color: colors.primary }}>{seg.text}</Text>
                       ) : (
@@ -341,90 +262,52 @@ export default function RecipeDetailScreen() {
                       )
                     )}
                   </Text>
-                  {(matchedIngs.length > 0 || step.duration) && (
-                    <View style={[styles.stepCallout, { backgroundColor: colors.surfaceContainerLow, borderLeftColor: `${colors.primary}4D` }]}>
-                      {matchedIngs.length > 0 && (
-                        <>
-                          <Text style={[styles.calloutLabel, { color: colors.secondary }]}>You'll need:</Text>
-                          <Text style={[Typography.bodySmall, { color: colors.onSurface }]}>
-                            {matchedIngs.map((i) => `${convertAmount(i.amount, app.useMetric)} ${i.name}`).join(', ')}
-                          </Text>
-                        </>
-                      )}
-                      {step.duration && (
-                        <View style={styles.stepTimerRow}>
-                          <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
-                          <Text style={[Typography.caption, { color: colors.outline }]}>{step.duration} min</Text>
-                        </View>
-                      )}
+                  {step.duration && (
+                    <View style={styles.timerRow}>
+                      <Feather name="clock" size={12} color={colors.outline} />
+                      <Text style={[Typography.caption, { color: colors.outline }]}>
+                        {step.duration} min
+                      </Text>
                     </View>
                   )}
                 </View>
-              );
-            })}
+              </View>
+            ))}
           </View>
 
-          {/* Enter Cook Mode */}
-          <Pressable
-            onPress={handleStartCooking}
-            style={[styles.cookModeCTA, { backgroundColor: colors.inverseSurface }]}
-            accessibilityRole="button"
-            accessibilityLabel={`Enter cook mode for ${recipe.title}`}
+          <View
+            style={[
+              styles.culturalNote,
+              {
+                backgroundColor: colors.surfaceContainerLow,
+                borderLeftColor: colors.primary,
+              },
+            ]}
           >
-            <View style={styles.cookModeLeft}>
-              <MaterialCommunityIcons name="silverware-fork-knife" size={20} color={colors.inversePrimary} />
-              <Text style={[Typography.titleMedium, { color: colors.inverseOnSurface }]}>Enter Cook Mode</Text>
-            </View>
-            <Feather name="arrow-right" size={20} color={colors.inverseOnSurface} />
-          </Pressable>
-
-          {/* Cultural Note Quote */}
-          <View style={[styles.quoteCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <MaterialCommunityIcons
-              name="format-quote-open"
-              size={48}
-              color={colors.primary}
-              style={{ opacity: 0.1, position: 'absolute', top: -4, left: -4 }}
-            />
-            <Text style={[styles.quoteText, { color: colors.primary }]}>
-              "{recipe.culturalNote}"
+            <Text style={[Typography.labelLarge, { color: colors.primary, marginBottom: 4 }]}>
+              CULTURAL NOTE
+            </Text>
+            <Text style={[Typography.body, { color: colors.onSurfaceVariant, fontSize: 15 }]}>
+              {recipe.culturalNote}
             </Text>
           </View>
-
-          {/* Next Journey Card */}
-          {nextRecipe && (
-            <View style={styles.nextSection}>
-              <Text style={[styles.nextLabel, { color: colors.secondary }]}>The Next Journey</Text>
-              <Pressable
-                onPress={() => router.push(`/recipe/${nextRecipe.id}`)}
-                style={styles.nextCard}
-                accessibilityRole="button"
-                accessibilityLabel={`View ${nextRecipe.title}`}
-              >
-                <Image
-                  source={{ uri: nextRecipe.image }}
-                  style={styles.nextImage}
-                  contentFit="cover"
-                  transition={300}
-                />
-                <LinearGradient
-                  colors={['transparent', 'rgba(0,0,0,0.75)']}
-                  style={styles.nextGradient}
-                >
-                  <Text style={[Typography.headline, { color: colors.textOnImage, fontSize: 22 }]}>
-                    {nextRecipe.title}
-                  </Text>
-                  <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
-                    {nextRecipe.difficulty} · {nextRecipe.prepTime + nextRecipe.cookTime} min
-                  </Text>
-                </LinearGradient>
-              </Pressable>
-            </View>
-          )}
         </View>
       </ScrollView>
 
-      {/* Plan sheet modal */}
+      {/* Bottom CTA: Start Cooking */}
+      <View style={[styles.cookCTA, { bottom: insets.bottom + 16, paddingHorizontal: Spacing.page }]}>
+        <Pressable
+          onPress={handleStartCooking}
+          style={[styles.cookButton, { backgroundColor: colors.primary }]}
+          accessibilityRole="button"
+          accessibilityLabel={`Start cooking ${recipe.title}`}
+        >
+          <Feather name="play" size={20} color={colors.onPrimary} />
+          <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
+        </Pressable>
+      </View>
+
+      {/* Add to Plan bottom sheet */}
       <Modal
         visible={showPlanSheet}
         transparent
@@ -440,6 +323,8 @@ export default function RecipeDetailScreen() {
             <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
               Add to Plan
             </Text>
+
+            {/* Course type selector */}
             <View style={styles.courseTypeRow}>
               {(['appetizer', 'main', 'dessert'] as const).map((ct) => {
                 const isActive = planCourseType === ct;
@@ -462,6 +347,8 @@ export default function RecipeDetailScreen() {
                 );
               })}
             </View>
+
+            {/* Day list */}
             <FlatList
               data={planDays}
               keyExtractor={(item) => item.date}
@@ -491,219 +378,86 @@ export default function RecipeDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  heroContainer: { height: 397, position: 'relative' },
-  headerBtn: { position: 'absolute', zIndex: 10 },
-  headerBtnGlass: {
-    width: 44,
-    height: 44,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  contentCanvas: {
-    marginTop: -32,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: Spacing.page,
-    paddingTop: 40,
-  },
-  titleSection: {
-    marginBottom: 32,
-  },
-  recipeTitle: {
-    fontFamily: 'NotoSerif_600SemiBold',
-    fontSize: 34,
-    letterSpacing: -0.5,
-    marginBottom: 8,
-  },
-  metaPills: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 40,
-  },
-  metaPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  heroContainer: { height: 380, position: 'relative' },
+  heroText: {
+    position: 'absolute',
+    bottom: Spacing.xl,
+    left: Spacing.page,
+    right: Spacing.page,
     gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: Radius.full,
   },
-  metaPillText: {
-    fontSize: 11,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: Spacing.lg,
   },
-  servingCard: {
-    borderRadius: Radius.xl,
-    padding: 16,
+  stat: { alignItems: 'center', gap: 4 },
+  servingsAdjuster: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 48,
+    justifyContent: 'center',
+    gap: Spacing.lg,
   },
-  servingStepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  servingBtn: {
+    width: 40,
+    height: 40,
     borderRadius: Radius.full,
-    padding: 4,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  servingStepBtn: {
-    width: 44,
-    height: 44,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  section: {
-    marginBottom: 40,
-  },
-  sectionTitle: {
-    fontFamily: 'NotoSerif_600SemiBold',
-    fontSize: 24,
-    marginBottom: 24,
-  },
-  categoryLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    marginBottom: 16,
-  },
-  ingredientCheckbox: {
-    width: 24,
-    height: 24,
+  addToPlanBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: 12,
     borderRadius: Radius.full,
-    borderWidth: 2,
+    borderWidth: 1.5,
+    marginTop: Spacing.md,
+  },
+  ingredientRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.sm,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  stepNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
   },
-  ingredientItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 16,
-    marginBottom: 16,
-    minHeight: 44,
-  },
-  groceryCTA: {
-    marginBottom: 12,
-    borderRadius: Radius.xl,
-    overflow: 'hidden',
-  },
-  groceryCTAGradient: {
+  timerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    height: 56,
-    borderRadius: Radius.xl,
+    gap: 4,
+    marginTop: 6,
   },
-  planBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingVertical: 14,
-    borderRadius: Radius.xl,
-    borderWidth: 1.5,
-    marginBottom: 16,
-  },
-  stepCard: {
-    marginBottom: 48,
-  },
-  stepHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginBottom: 16,
-  },
-  stepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepNum: {
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  stepCallout: {
-    padding: 16,
+  culturalNote: {
+    padding: Spacing.lg,
     borderRadius: Radius.lg,
     borderLeftWidth: 4,
-    marginTop: 16,
-    gap: 4,
+    marginTop: Spacing.xl,
   },
-  calloutLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    marginBottom: 4,
+  cookCTA: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
   },
-  stepTimerRow: {
+  cookButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 4,
-  },
-  cookModeCTA: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    height: 64,
-    borderRadius: Radius.xl,
-    marginBottom: 64,
-  },
-  cookModeLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  quoteCard: {
-    borderRadius: 24,
-    padding: 32,
-    position: 'relative',
-    overflow: 'hidden',
-    marginBottom: 64,
-  },
-  quoteText: {
-    fontFamily: 'NotoSerif_600SemiBold',
-    fontStyle: 'italic',
-    fontSize: 18,
-    lineHeight: 30,
-  },
-  nextSection: {
-    marginBottom: 40,
-  },
-  nextLabel: {
-    fontSize: 10,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: 3,
-    marginBottom: 16,
-    marginLeft: 4,
-  },
-  nextCard: {
-    aspectRatio: 16 / 9,
-    borderRadius: 24,
-    overflow: 'hidden',
-  },
-  nextImage: {
-    ...StyleSheet.absoluteFillObject,
-    width: '100%',
-    height: '100%',
-  },
-  nextGradient: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    padding: 24,
-    gap: 4,
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: 16,
+    borderRadius: Radius.full,
   },
   sheetOverlay: {
     flex: 1,

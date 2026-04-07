@@ -50,13 +50,13 @@ export const Typography: Record<string, TextStyle> = {
   },
   labelLarge: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 11,
+    fontSize: 10,
     letterSpacing: 0.5,
     textTransform: 'uppercase' as const,
   },
   labelSmall: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
+    fontSize: 10,
     letterSpacing: 0.3,
     textTransform: 'uppercase' as const,
   },

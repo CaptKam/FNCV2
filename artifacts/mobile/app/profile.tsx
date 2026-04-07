@@ -17,6 +17,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
+import { HeaderBar } from '@/components/HeaderBar';
 import { useThemePreference, ThemePreference } from '@/context/ThemeContext';
 import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
@@ -127,17 +128,11 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      <HeaderBar showBack />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top }}
+        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 76 }}
       >
-        <View style={[styles.header, { paddingHorizontal: Spacing.page }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back">
-            <Feather name="arrow-left" size={24} color={colors.onSurface} />
-          </Pressable>
-          <Text style={[Typography.title, { color: colors.onSurface }]}>Profile & Settings</Text>
-          <View style={{ width: 24 }} />
-        </View>
 
         {/* Profile card — wired to AppContext XP/level */}
         <View style={[styles.profileCard, { paddingHorizontal: Spacing.page }]}>
@@ -545,12 +540,6 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: Spacing.md,
-  },
   profileCard: {
     alignItems: 'center',
     paddingVertical: Spacing.xl,

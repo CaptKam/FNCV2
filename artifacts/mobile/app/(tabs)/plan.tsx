@@ -29,10 +29,7 @@ function getMonday(d: Date): Date {
 }
 
 function toISO(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return d.toISOString().split('T')[0];
 }
 
 function addDays(dateStr: string, n: number): string {
@@ -259,7 +256,7 @@ export default function PlanScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 68 }}
+        contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 76 }}
       >
 
         {/* Week pill with chevron navigation */}
@@ -655,7 +652,7 @@ export default function PlanScreen() {
         <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
           <Pressable onPress={() => {
             const mainToday = todaysMeals.find((m) => weekDays.find((d) =>
-              d.date === getTodayISO() && d.courses.main?.recipeId === m.recipeId
+              d.date === new Date().toISOString().split('T')[0] && d.courses.main?.recipeId === m.recipeId
             ));
             const targetId = mainToday?.recipeId ?? todaysMeals[0]?.recipeId;
             if (targetId) {
@@ -837,9 +834,9 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   dayCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
