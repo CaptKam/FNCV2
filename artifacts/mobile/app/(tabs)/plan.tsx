@@ -77,9 +77,9 @@ export default function PlanScreen() {
             </View>
             <Pressable
               onPress={() => router.push('/(tabs)/grocery')}
-              style={[styles.reviewBtn, { backgroundColor: `${colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.6)'}` }]}
+              style={[styles.reviewBtn, { backgroundColor: colors.primary }]}
             >
-              <Text style={[Typography.labelSmall, { color: colors.primary, letterSpacing: 0.2 }]}>
+              <Text style={[Typography.labelSmall, { color: colors.onPrimary, letterSpacing: 0.2 }]}>
                 Review
               </Text>
             </Pressable>
@@ -165,7 +165,7 @@ export default function PlanScreen() {
       <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
         <Pressable onPress={() => {
           const firstRecipeId = PLANNED_DAYS[firstPlannedDay];
-          if (firstRecipeId) router.push(`/recipe/${firstRecipeId}`);
+          if (firstRecipeId) router.push(`/cook-mode/${firstRecipeId}`);
         }}>
           <GlassView style={[styles.readyCTAInner, { ...Shadows.ambient }]}>
             <View style={[styles.playCircle, { backgroundColor: colors.primary }]}>
