@@ -12,6 +12,7 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
+import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useApp } from '@/context/AppContext';
 
 const TIMER_SIZE = 220;
@@ -134,6 +135,7 @@ export default function CookModeScreen() {
         donenessIconBg: 'rgba(154,65,0,0.15)',
         donenessTitle: '#F2EDE7',
         donenessText: 'rgba(245,240,234,0.7)',
+        verbHighlight: '#FFB691',
       }
     : {
         bg: '#FEF9F3',
@@ -160,6 +162,7 @@ export default function CookModeScreen() {
         donenessIconBg: 'rgba(154,65,0,0.1)',
         donenessTitle: '#1D1B18',
         donenessText: '#52443C',
+        verbHighlight: '#9A4100',
       };
 
   if (!recipe) {
@@ -244,7 +247,13 @@ export default function CookModeScreen() {
 
         <View style={styles.heroSection}>
           <Text style={[styles.heroInstruction, { color: t.instructionColor }]}>
-            {heroText.toUpperCase()}
+            {highlightCulinaryVerbs(heroText.toUpperCase()).map((seg, si) =>
+              seg.isVerb ? (
+                <Text key={si} style={{ color: t.verbHighlight }}>{seg.text}</Text>
+              ) : (
+                <Text key={si}>{seg.text}</Text>
+              )
+            )}
           </Text>
           {detailText.length > 0 && (
             <Text style={[styles.heroDetail, { color: t.detailColor }]}>
