@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, FlatList } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import React, { useState, useMemo } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
+import { Shadows } from '@/constants/shadows';
+import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 
 interface GroceryItem {
@@ -15,33 +16,43 @@ interface GroceryItem {
   amount: string;
   category: string;
   checked: boolean;
-  aisle?: string;
+  recipeCount: number;
 }
 
-const CATEGORIES = [
-  { emoji: '\u{1F96C}', name: 'Produce' },
-  { emoji: '\u{1F969}', name: 'Protein' },
-  { emoji: '\u{1F9C0}', name: 'Dairy' },
-  { emoji: '\u{1F36F}', name: 'Pantry' },
-  { emoji: '\u{1F9C2}', name: 'Spices' },
+const CATEGORIES: { icon: string; name: string; color: string }[] = [
+  { icon: 'leaf', name: 'Produce', color: '#4CAF50' },
+  { icon: 'food-steak', name: 'Protein', color: '#E57373' },
+  { icon: 'cheese', name: 'Dairy', color: '#FFD54F' },
+  { icon: 'package-variant-closed', name: 'Pantry', color: '#A1887F' },
+  { icon: 'shaker-outline', name: 'Spices', color: '#FF8A65' },
+  { icon: 'dots-horizontal', name: 'Other', color: '#90A4AE' },
 ];
 
-function buildGroceryList(): GroceryItem[] {
-  const selectedRecipes = recipes.slice(0, 4);
-  const items: GroceryItem[] = [];
-  const seen = new Set<string>();
+const RETAILERS = [
+  { name: 'Walmart', icon: 'store' },
+  { name: 'Amazon Fresh', icon: 'truck-delivery' },
+  { name: 'Instacart', icon: 'cart' },
+  { name: 'Target', icon: 'bullseye' },
+];
 
-  selectedRecipes.forEach((recipe) => {
+function buildGroceryList(sourceRecipes: typeof recipes): GroceryItem[] {
+  const items: GroceryItem[] = [];
+  const seen = new Map<string, number>();
+
+  sourceRecipes.forEach((recipe) => {
     recipe.ingredients.forEach((ing) => {
-      if (!seen.has(ing.name)) {
-        seen.add(ing.name);
+      const existing = seen.get(ing.name);
+      if (existing !== undefined) {
+        items[existing].recipeCount += 1;
+      } else {
+        seen.set(ing.name, items.length);
         items.push({
           id: `${recipe.id}-${ing.name}`,
           name: ing.name,
           amount: ing.amount,
           category: ing.category,
           checked: false,
-          aisle: `${(items.length % 12) + 1}`,
+          recipeCount: 1,
         });
       }
     });
@@ -53,45 +64,75 @@ export default function GroceryScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<'online' | 'instore'>('online');
-  const [groceryItems, setGroceryItems] = useState<GroceryItem[]>(buildGroceryList);
+  const [selectedRetailer, setSelectedRetailer] = useState(2);
+  const [zipCode, setZipCode] = useState('10001');
+  const [activeRecipes, setActiveRecipes] = useState(() => recipes.slice(0, 4));
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
-  const toggleItem = (id: string) => {
-    setGroceryItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item))
-    );
+  const groceryItems = useMemo(() => {
+    const items = buildGroceryList(activeRecipes);
+    return items.map((item) => ({ ...item, checked: checkedIds.has(item.name) }));
+  }, [activeRecipes, checkedIds]);
+
+  const toggleItem = (name: string) => {
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
   };
 
-  const groupedItems = CATEGORIES.map((cat) => ({
-    ...cat,
-    items: groceryItems.filter((item) => item.category === cat.name),
-  })).filter((group) => group.items.length > 0);
+  const removeRecipe = (recipeId: string) => {
+    setActiveRecipes((prev) => prev.filter((r) => r.id !== recipeId));
+  };
+
+  const groupedItems = useMemo(() => {
+    return CATEGORIES.map((cat) => ({
+      ...cat,
+      items: groceryItems.filter((item) => item.category === cat.name),
+    }));
+  }, [groceryItems]);
 
   const checkedCount = groceryItems.filter((i) => i.checked).length;
   const totalCount = groceryItems.length;
+  const recipeCount = activeRecipes.length;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 16 }}
+        contentContainerStyle={{ paddingBottom: 180, paddingTop: insets.top + 16 }}
       >
-        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
-          <Text style={[Typography.labelLarge, { color: colors.outline }]}>WEEKLY PROVISIONS</Text>
-          <Text style={[Typography.display, { color: colors.onSurface }]}>My Groceries</Text>
+        <View style={styles.titleSection}>
+          <Text style={[Typography.labelLarge, { color: colors.outline, textAlign: 'center', marginBottom: Spacing.xs }]}>
+            WEEKLY PROVISIONS
+          </Text>
+          <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center' }]}>
+            My Groceries
+          </Text>
+          <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', marginTop: Spacing.xs }]}>
+            {recipeCount} Recipes  •  {totalCount} Items
+          </Text>
         </View>
 
-        <View style={[styles.tabToggle, { paddingHorizontal: Spacing.page }]}>
+        <View style={[styles.toggleContainer, { backgroundColor: colors.surfaceContainerLow }]}>
           <Pressable
             onPress={() => setActiveTab('online')}
             style={[
-              styles.tabPill,
-              { backgroundColor: activeTab === 'online' ? colors.surfaceContainerLowest : 'transparent' },
+              styles.togglePill,
+              activeTab === 'online' && { backgroundColor: colors.primary },
             ]}
           >
+            <MaterialCommunityIcons
+              name="truck-delivery-outline"
+              size={16}
+              color={activeTab === 'online' ? colors.onPrimary : colors.outline}
+            />
             <Text
               style={[
                 Typography.titleSmall,
-                { color: activeTab === 'online' ? colors.onSurface : colors.outline },
+                { color: activeTab === 'online' ? colors.onPrimary : colors.outline },
               ]}
             >
               Online
@@ -100,14 +141,19 @@ export default function GroceryScreen() {
           <Pressable
             onPress={() => setActiveTab('instore')}
             style={[
-              styles.tabPill,
-              { backgroundColor: activeTab === 'instore' ? colors.surfaceContainerLowest : 'transparent' },
+              styles.togglePill,
+              activeTab === 'instore' && { backgroundColor: colors.primary },
             ]}
           >
+            <MaterialCommunityIcons
+              name="store-outline"
+              size={16}
+              color={activeTab === 'instore' ? colors.onPrimary : colors.outline}
+            />
             <Text
               style={[
                 Typography.titleSmall,
-                { color: activeTab === 'instore' ? colors.onSurface : colors.outline },
+                { color: activeTab === 'instore' ? colors.onPrimary : colors.outline },
               ]}
             >
               In-Store
@@ -115,107 +161,233 @@ export default function GroceryScreen() {
           </Pressable>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.recipeListContainer}
-        >
-          {recipes.slice(0, 4).map((recipe) => (
-            <View key={recipe.id} style={[styles.recipeChip, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <Feather name="book-open" size={14} color={colors.onSurface} />
-              <View>
-                <Text style={[Typography.titleSmall, { color: colors.onSurface }]} numberOfLines={1}>
-                  {recipe.title}
-                </Text>
-                <Text style={[Typography.caption, { color: colors.outline }]}>
-                  {recipe.ingredients.length} items
-                </Text>
-              </View>
+        <View style={{ marginBottom: Spacing.lg }}>
+          <Text style={[Typography.headline, { color: colors.onSurface, paddingHorizontal: Spacing.page, marginBottom: Spacing.md }]}>
+            Active Recipe Sources
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.recipeCarousel}
+          >
+            {activeRecipes.map((recipe) => (
+              <GlassView
+                key={recipe.id}
+                style={[styles.recipeCard, { borderRadius: Radius.lg }]}
+              >
+                <Image
+                  source={{ uri: recipe.image }}
+                  style={styles.recipeImage}
+                />
+                <View style={styles.recipeCardContent}>
+                  <Text style={[Typography.titleSmall, { color: colors.onSurface }]} numberOfLines={1}>
+                    {recipe.title}
+                  </Text>
+                  <View style={styles.recipeCardMeta}>
+                    <View style={[styles.servingBadge, { backgroundColor: `${colors.primary}20` }]}>
+                      <MaterialCommunityIcons name="account-group-outline" size={12} color={colors.primary} />
+                      <Text style={[Typography.labelSmall, { color: colors.primary }]}>
+                        {recipe.servings}
+                      </Text>
+                    </View>
+                    <Text style={[Typography.caption, { color: colors.primary }]}>
+                      View Recipe
+                    </Text>
+                  </View>
+                </View>
+                <Pressable
+                  onPress={() => removeRecipe(recipe.id)}
+                  style={[styles.recipeCloseBtn, { backgroundColor: colors.surfaceContainerHigh }]}
+                >
+                  <MaterialCommunityIcons name="close" size={14} color={colors.outline} />
+                </Pressable>
+              </GlassView>
+            ))}
+          </ScrollView>
+        </View>
+
+        {activeTab === 'online' && (
+          <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
+            <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center', marginBottom: Spacing.md }]}>
+              Select Retailer
+            </Text>
+            <View style={[styles.zipInputContainer, { backgroundColor: colors.surfaceContainerLow, borderRadius: Radius.md }]}>
+              <MaterialCommunityIcons name="map-marker-outline" size={20} color={colors.outline} />
+              <TextInput
+                value={zipCode}
+                onChangeText={setZipCode}
+                style={[Typography.body, { flex: 1, color: colors.onSurface, paddingVertical: Spacing.sm }]}
+                placeholder="Enter zip code"
+                placeholderTextColor={colors.outline}
+                keyboardType="number-pad"
+              />
+              <MaterialCommunityIcons name="magnify" size={20} color={colors.primary} />
             </View>
-          ))}
-        </ScrollView>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.retailerRow}
+            >
+              {RETAILERS.map((retailer, index) => (
+                <Pressable
+                  key={retailer.name}
+                  onPress={() => setSelectedRetailer(index)}
+                  style={styles.retailerItem}
+                >
+                  <View
+                    style={[
+                      styles.retailerCircle,
+                      {
+                        backgroundColor: selectedRetailer === index
+                          ? `${colors.primary}15`
+                          : colors.surfaceContainerLow,
+                      },
+                      selectedRetailer === index && {
+                        ...Shadows.subtle,
+                      },
+                    ]}
+                  >
+                    <MaterialCommunityIcons
+                      name={retailer.icon as any}
+                      size={28}
+                      color={selectedRetailer === index ? colors.primary : colors.outline}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      Typography.caption,
+                      {
+                        color: selectedRetailer === index ? colors.primary : colors.outline,
+                        textAlign: 'center',
+                        marginTop: Spacing.xs,
+                      },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {retailer.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {groupedItems.map((group) => (
           <View key={group.name} style={styles.categorySection}>
-            <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.sm }}>
-              <Text style={[Typography.headline, { color: colors.onSurface }]}>
-                {group.emoji} {group.name}
+            <View style={styles.categoryHeader}>
+              <View style={[styles.categoryIconCircle, { backgroundColor: `${group.color}20` }]}>
+                <MaterialCommunityIcons name={group.icon as any} size={18} color={group.color} />
+              </View>
+              <Text style={[Typography.headline, { color: colors.onSurface, flex: 1 }]}>
+                {group.name}
               </Text>
+              {group.items.length > 0 && (
+                <Text style={[Typography.caption, { color: colors.outline }]}>
+                  {group.items.filter((i) => i.checked).length}/{group.items.length}
+                </Text>
+              )}
             </View>
-            {group.items.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => toggleItem(item.id)}
+
+            {group.items.length === 0 ? (
+              <View
                 style={[
-                  styles.itemRow,
+                  styles.emptyCategory,
                   {
-                    backgroundColor: colors.surfaceContainerLow,
+                    borderColor: colors.outlineVariant,
                     marginHorizontal: Spacing.page,
                   },
                 ]}
               >
-                <View
+                <MaterialCommunityIcons name={group.icon as any} size={24} color={colors.outlineVariant} />
+                <Text style={[Typography.bodySmall, { color: colors.outline, marginTop: Spacing.xs }]}>
+                  No {group.name.toLowerCase()} items needed
+                </Text>
+              </View>
+            ) : (
+              group.items.map((item) => (
+                <Pressable
+                  key={item.id}
+                  onPress={() => toggleItem(item.name)}
                   style={[
-                    styles.checkbox,
+                    styles.itemRow,
                     {
-                      borderColor: item.checked ? colors.success : colors.outline,
-                      backgroundColor: item.checked ? colors.success : 'transparent',
+                      backgroundColor: colors.surfaceContainerLow,
+                      marginHorizontal: Spacing.page,
                     },
                   ]}
                 >
-                  {item.checked && <Feather name="check" size={12} color="#FFFFFF" />}
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
+                  <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
+                    <MaterialCommunityIcons name={group.icon as any} size={16} color={group.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[
+                        Typography.body,
+                        {
+                          color: item.checked ? colors.outline : colors.onSurface,
+                          textDecorationLine: item.checked ? 'line-through' : 'none',
+                        },
+                      ]}
+                    >
+                      {item.name}
+                    </Text>
+                    <View style={styles.itemMetaRow}>
+                      <Text style={[Typography.caption, { color: colors.outline }]}>
+                        {item.amount}
+                      </Text>
+                      {item.recipeCount > 1 && (
+                        <View style={[styles.recipeCountBadge, { backgroundColor: `${colors.primary}15` }]}>
+                          <Text style={[Typography.labelSmall, { color: colors.primary }]}>
+                            Used in {item.recipeCount} Recipes
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                  <View
                     style={[
-                      Typography.body,
+                      styles.checkbox,
                       {
-                        color: item.checked ? colors.outline : colors.onSurface,
-                        textDecorationLine: item.checked ? 'line-through' : 'none',
+                        backgroundColor: item.checked ? colors.success : 'transparent',
+                        borderColor: item.checked ? colors.success : colors.outlineVariant,
                       },
                     ]}
                   >
-                    {item.name}
-                  </Text>
-                  <Text style={[Typography.bodySmall, { color: colors.outline }]}>
-                    {item.amount}
-                  </Text>
-                </View>
-                {item.checked ? (
-                  <View style={[styles.pantryBadge, { backgroundColor: `${colors.success}20` }]}>
-                    <Text style={[Typography.labelSmall, { color: colors.success }]}>IN PANTRY</Text>
+                    {item.checked && (
+                      <MaterialCommunityIcons name="check" size={14} color="#FFFFFF" />
+                    )}
                   </View>
-                ) : (
-                  <Text style={[Typography.caption, { color: colors.outline }]}>
-                    Aisle {item.aisle}
-                  </Text>
-                )}
-              </Pressable>
-            ))}
+                </Pressable>
+              ))
+            )}
           </View>
         ))}
       </ScrollView>
 
-      <View style={[styles.bottomBar, { bottom: 80 }]}>
-        <LinearGradient
-          colors={[colors.primary, '#753000']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.bottomBarGradient}
-        >
-          <View>
-            <Text style={[Typography.labelSmall, { color: 'rgba(255,255,255,0.7)' }]}>SUBTOTAL</Text>
-            <Text style={[Typography.titleMedium, { color: '#FFFFFF' }]}>
-              {checkedCount}/{totalCount} items
+      <View style={[styles.stickyBottom, { bottom: 80, paddingHorizontal: Spacing.page }]}>
+        <GlassView style={[styles.stickyBottomInner, { borderRadius: Radius.lg }]}>
+          <View style={[styles.ecoBanner, { backgroundColor: `${colors.success}12` }]}>
+            <MaterialCommunityIcons name="leaf" size={16} color={colors.success} />
+            <Text style={[Typography.caption, { color: colors.success, flex: 1 }]}>
+              Shopping locally saves ~2.4 lbs of CO₂ per trip
             </Text>
           </View>
-          <Pressable style={styles.orderBtn}>
-            <Text style={[Typography.titleSmall, { color: colors.primary }]}>
-              ORDER FROM INSTACART
-            </Text>
-          </Pressable>
-          <Feather name="arrow-right" size={20} color="#FFFFFF" />
-        </LinearGradient>
+          <View style={styles.orderSection}>
+            <View style={styles.orderStats}>
+              <Text style={[Typography.caption, { color: colors.outline }]}>
+                {checkedCount}/{totalCount} items  •  Est. $47.50
+              </Text>
+            </View>
+            <Pressable
+              style={[styles.orderButton, { backgroundColor: colors.primary }]}
+            >
+              <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
+                Order from {RETAILERS[selectedRetailer].name}
+              </Text>
+              <MaterialCommunityIcons name="arrow-right" size={18} color={colors.onPrimary} />
+            </Pressable>
+          </View>
+        </GlassView>
       </View>
     </View>
   );
@@ -223,33 +395,112 @@ export default function GroceryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  tabToggle: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
-  },
-  tabPill: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.full,
-  },
-  recipeListContainer: {
+  titleSection: {
     paddingHorizontal: Spacing.page,
-    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+    alignItems: 'center',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    marginHorizontal: Spacing.page,
+    borderRadius: Radius.full,
+    padding: 4,
     marginBottom: Spacing.xl,
   },
-  recipeChip: {
+  togglePill: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: 10,
+    borderRadius: Radius.full,
+  },
+  recipeCarousel: {
+    paddingHorizontal: Spacing.page,
+    gap: Spacing.md,
+  },
+  recipeCard: {
+    width: 160,
+    overflow: 'hidden',
+  },
+  recipeImage: {
+    width: 160,
+    height: 100,
+  },
+  recipeCardContent: {
+    padding: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  recipeCardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  servingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: Spacing.xs,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+  },
+  recipeCloseBtn: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 24,
+    height: 24,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  zipInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: Spacing.md,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  retailerRow: {
+    gap: Spacing.lg,
     paddingVertical: Spacing.sm,
-    borderRadius: Radius.md,
-    marginRight: Spacing.sm,
-    maxWidth: 180,
+  },
+  retailerItem: {
+    alignItems: 'center',
+    width: 72,
+  },
+  retailerCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   categorySection: {
     marginBottom: Spacing.lg,
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.page,
+    marginBottom: Spacing.sm,
+  },
+  categoryIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyCategory: {
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderRadius: Radius.md,
+    paddingVertical: Spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   itemRow: {
     flexDirection: 'row',
@@ -258,38 +509,63 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: 14,
     borderRadius: Radius.sm,
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  ingredientThumb: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itemMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginTop: 2,
+  },
+  recipeCountBadge: {
+    paddingHorizontal: Spacing.xs,
+    paddingVertical: 1,
+    borderRadius: Radius.xs,
   },
   checkbox: {
-    width: 24,
-    height: 24,
+    width: 26,
+    height: 26,
     borderRadius: Radius.full,
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pantryBadge: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: Radius.xs,
-  },
-  bottomBar: {
+  stickyBottom: {
     position: 'absolute',
-    left: Spacing.page,
-    right: Spacing.page,
+    left: 0,
+    right: 0,
   },
-  bottomBarGradient: {
+  stickyBottomInner: {
+    overflow: 'hidden',
+  },
+  ecoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 14,
-    borderRadius: Radius.full,
-  },
-  orderBtn: {
-    backgroundColor: '#FFFFFF',
+    gap: Spacing.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
+  },
+  orderSection: {
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  orderStats: {
+    alignItems: 'center',
+  },
+  orderButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: 14,
     borderRadius: Radius.full,
   },
 });
