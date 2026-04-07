@@ -513,8 +513,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // COOK SESSION ACTIONS
   // ═══════════════════════════════════════════
 
+  const completeCookSessionInternal = useCallback(() => {
+    const session = activeCookSession;
+    setActiveCookSession(null);
+    if (session) {
+      setTotalRecipesCooked((prev) => prev + 1);
+      setXp((prevXp) => {
+        const newXp = prevXp + 50;
+        setLevel(Math.floor(newXp / 300) + 1);
+        return newXp;
+      });
+      const allRecipes: Recipe[] = require('@/data/recipes').recipes;
+      const recipe = allRecipes.find((r) => r.id === session.recipeId);
+      if (recipe) {
+        setPassportStamps((prev) => ({
+          ...prev,
+          [recipe.countryId]: (prev[recipe.countryId] ?? 0) + 1,
+        }));
+      }
+    }
+  }, [activeCookSession]);
+
   const startCookSession = useCallback((recipe: Recipe, servings: number) => {
-    // Complete any existing session first (awards XP)
     if (activeCookSession) {
       completeCookSessionInternal();
     }
@@ -532,29 +552,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: 'active',
     });
   }, [activeCookSession, completeCookSessionInternal]);
-
-  const completeCookSessionInternal = useCallback(() => {
-    const session = activeCookSession;
-    setActiveCookSession(null);
-    if (session) {
-      setTotalRecipesCooked((prev) => prev + 1);
-      // Award 50 XP per completed recipe
-      setXp((prevXp) => {
-        const newXp = prevXp + 50;
-        setLevel(Math.floor(newXp / 300) + 1);
-        return newXp;
-      });
-      // Find country from recipes
-      const allRecipes: Recipe[] = require('@/data/recipes').recipes;
-      const recipe = allRecipes.find((r) => r.id === session.recipeId);
-      if (recipe) {
-        setPassportStamps((prev) => ({
-          ...prev,
-          [recipe.countryId]: (prev[recipe.countryId] ?? 0) + 1,
-        }));
-      }
-    }
-  }, [activeCookSession]);
 
   const advanceStepRef = useRef(false);
 
