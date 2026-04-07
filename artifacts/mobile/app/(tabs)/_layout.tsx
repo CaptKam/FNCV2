@@ -72,7 +72,9 @@ export default function TabLayout() {
           paddingBottom: insets.bottom,
           backgroundColor: "transparent",
           borderTopWidth: 0,
+          borderTopColor: "transparent",
           elevation: 0,
+          shadowOpacity: 0,
         },
         tabBarBackground,
         tabBarItemStyle: {
