@@ -23,16 +23,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((data) => {
-      if (data === 'light' || data === 'dark' || data === 'system') {
-        setPreferenceState(data);
-      }
-    });
+    AsyncStorage.getItem(STORAGE_KEY)
+      .then((data) => {
+        if (data === 'light' || data === 'dark' || data === 'system') {
+          setPreferenceState(data);
+        }
+      })
+      .catch((e) => {
+        console.warn('Failed to load theme preference from storage:', e);
+        setPreferenceState('system');
+      });
   }, []);
 
   const setPreference = useCallback((pref: ThemePreference) => {
     setPreferenceState(pref);
-    AsyncStorage.setItem(STORAGE_KEY, pref).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEY, pref).catch((e) => {
+      console.warn('Failed to save theme preference to storage:', e);
+    });
   }, []);
 
   const isDark =

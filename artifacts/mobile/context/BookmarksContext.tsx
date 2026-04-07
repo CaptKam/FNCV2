@@ -21,17 +21,22 @@ export function BookmarksProvider({ children }: { children: React.ReactNode }) {
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((data) => {
-      if (data) {
-        try {
+    AsyncStorage.getItem(STORAGE_KEY)
+      .then((data) => {
+        if (data) {
           setBookmarkedIds(JSON.parse(data));
-        } catch {}
-      }
-    });
+        }
+      })
+      .catch((e) => {
+        console.warn('Failed to load bookmarks from storage:', e);
+        setBookmarkedIds([]);
+      });
   }, []);
 
   const persist = useCallback((ids: string[]) => {
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(ids)).catch(() => {});
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(ids)).catch((e) => {
+      console.warn('Failed to save bookmarks to storage:', e);
+    });
   }, []);
 
   const isBookmarked = useCallback(
