@@ -20,12 +20,12 @@ export default function RecipeDetailScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [servings, setServings] = useState(0);
-
   const { isBookmarked, toggleBookmark } = useBookmarks();
   const recipe = recipes.find((r) => r.id === id);
   const country = recipe ? countries.find((c) => c.id === recipe.countryId) : null;
   const isSaved = recipe ? isBookmarked(recipe.id) : false;
+
+  const [servings, setServings] = useState(recipe?.servings ?? 1);
 
   if (!recipe || !country) {
     return (
@@ -37,7 +37,7 @@ export default function RecipeDetailScreen() {
     );
   }
 
-  const currentServings = servings || recipe.servings;
+  const currentServings = servings;
   const ingredientGroups = recipe.ingredients.reduce(
     (acc, ing) => {
       if (!acc[ing.category]) acc[ing.category] = [];
@@ -112,8 +112,8 @@ export default function RecipeDetailScreen() {
 
           <View style={styles.servingsAdjuster}>
             <Pressable
-              onPress={() => setServings(Math.max(1, currentServings - 1))}
-              style={[styles.servingBtn, { borderColor: colors.primary }]}
+              onPress={() => { if (currentServings > 1) setServings(currentServings - 1); }}
+              style={[styles.servingBtn, { borderColor: colors.primary, opacity: currentServings <= 1 ? 0.3 : 1 }]}
             >
               <Feather name="minus" size={18} color={colors.primary} />
             </Pressable>
