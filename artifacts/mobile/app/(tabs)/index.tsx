@@ -141,7 +141,7 @@ export default function DiscoverScreen() {
       <HeaderBar transparent />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 140 }}
       >
 
         {/* Hero Carousel */}
