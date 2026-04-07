@@ -35,27 +35,22 @@ export default function TabLayout() {
         },
         tabBarStyle: {
           position: "absolute",
-          bottom: insets.bottom,
-          left: SCREEN_WIDTH * 0.05,
-          right: SCREEN_WIDTH * 0.05,
-          height: TAB_BAR_HEIGHT,
-          borderRadius: Radius.full,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: TAB_BAR_HEIGHT + insets.bottom,
+          paddingBottom: insets.bottom,
           backgroundColor: "transparent",
           borderTopWidth: 0,
-          borderTopColor: "transparent",
           elevation: 0,
-          maxWidth: 400,
-          alignSelf: "center",
-          overflow: "hidden",
-          ...Shadows.ambient,
         },
         tabBarBackground: () => (
           <GlassView
-            style={[StyleSheet.absoluteFill, { borderRadius: Radius.full }]}
+            style={StyleSheet.absoluteFill}
           />
         ),
         tabBarItemStyle: {
-          paddingTop: 8,
+          paddingTop: 6,
         },
       }}
     >
