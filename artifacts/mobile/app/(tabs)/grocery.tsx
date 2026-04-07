@@ -203,9 +203,11 @@ export default function GroceryScreen() {
                         {recipe.servings}
                       </Text>
                     </View>
-                    <Text style={[Typography.caption, { color: colors.primary }]}>
-                      View Recipe
-                    </Text>
+                    <Pressable>
+                      <Text style={[Typography.caption, { color: colors.primary }]}>
+                        View Recipe
+                      </Text>
+                    </Pressable>
                   </View>
                 </View>
                 <Pressable
