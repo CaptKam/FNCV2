@@ -20,28 +20,30 @@ export function HeaderBar({ transparent = false }: HeaderBarProps) {
   const router = useRouter();
 
   const content = (
-    <View style={[styles.inner, { paddingTop: insets.top + 8 }]}>
+    <View style={[styles.inner, { paddingTop: insets.top + 12 }]}>
       <View style={styles.left}>
         <Pressable
           onPress={() => router.push('/profile')}
-          style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}
+          style={[styles.avatar, { backgroundColor: transparent ? 'rgba(255,255,255,0.15)' : colors.surfaceContainerHigh }]}
           accessibilityRole="button"
           accessibilityLabel="Profile"
         >
-          <MaterialCommunityIcons name="account-outline" size={20} color={colors.outline} />
+          <MaterialCommunityIcons name="account-outline" size={20} color={transparent ? colors.textOnImage : colors.outline} />
         </Pressable>
-        <Text style={[Typography.title, { color: colors.onSurface, fontStyle: 'italic' }]}>
-          Fork & Compass
-        </Text>
+        {!transparent && (
+          <Text style={[Typography.title, { color: colors.onSurface, fontStyle: 'italic' }]}>
+            Fork & Compass
+          </Text>
+        )}
       </View>
       <Pressable
         hitSlop={12}
         onPress={() => router.push('/bookmarks')}
-        style={[styles.iconBtn, { backgroundColor: transparent ? 'rgba(255,255,255,0.2)' : 'transparent' }]}
+        style={[styles.iconBtn, { backgroundColor: transparent ? 'rgba(255,255,255,0.15)' : 'transparent' }]}
         accessibilityRole="button"
         accessibilityLabel="Bookmarks"
       >
-        <MaterialCommunityIcons name="bookmark-outline" size={22} color={colors.primary} />
+        <MaterialCommunityIcons name="bookmark-outline" size={22} color={transparent ? colors.textOnImage : colors.primary} />
       </Pressable>
     </View>
   );

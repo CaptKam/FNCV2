@@ -10,7 +10,7 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { useApp } from '@/context/AppContext';
 
-const TAB_BAR_HEIGHT = 52;
+const TAB_BAR_HEIGHT = 56;
 
 export function CookingPill() {
   const colors = useThemeColors();
@@ -21,9 +21,8 @@ export function CookingPill() {
 
   if (!activeCookSession || pathname.startsWith('/cook-mode')) return null;
 
-  // Position above the floating tab bar: tab bottom + tab height + gap
-  const tabBarBottom = insets.bottom + 8;
-  const pillBottom = tabBarBottom + TAB_BAR_HEIGHT + 8;
+  // Position above the docked tab bar
+  const pillBottom = insets.bottom + TAB_BAR_HEIGHT + 12;
 
   const stepProgress = `Step ${activeCookSession.currentStepIndex + 1}/${activeCookSession.totalSteps}`;
 
