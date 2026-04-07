@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import * as Haptics from 'expo-haptics';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -196,6 +197,7 @@ export default function PlanScreen() {
 
   // ─── Remove course (long press) ───
   const handleRemoveCourse = useCallback((date: string, courseType: 'appetizer' | 'main' | 'dessert') => {
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } catch {}
     app.removeCourseFromDay(date, courseType);
   }, [app]);
 
@@ -338,7 +340,10 @@ export default function PlanScreen() {
                 return (
                   <Pressable
                     key={i}
-                    onPress={() => setSelectedDayIndex(i)}
+                    onPress={() => {
+                      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                      setSelectedDayIndex(i);
+                    }}
                     style={[
                       styles.dayCircle,
                       isActive && { backgroundColor: colors.primary },
@@ -686,6 +691,7 @@ export default function PlanScreen() {
               .map((d) => d.date);
             if (emptyDates.length > 0) {
               app.autoGenerateWeek(emptyDates, app.coursePreference);
+              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
             }
           }}
           style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
