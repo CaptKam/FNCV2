@@ -1,8 +1,13 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "4bmksSL-SUsj2HChDsQwf"
 uri = "file://artifacts/mobile/assets/images/icon.png"
 type = "image"
 title = "generated_image"
+
+[[outputs]]
+id = "yJxDBayy570500E6Tn99s"
+uri = "file://artifacts/mobile/FLOW_MAP.md"
+type = "text"
+title = "Fork & Compass — Complete App Flow Map"
