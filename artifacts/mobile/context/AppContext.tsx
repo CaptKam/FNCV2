@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Storage } from '@/utils/storage';
 import { Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
 
@@ -228,49 +228,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const hydrated = useRef(false);
 
-  // ─── Persistence helpers ───
-
-  const persist = useCallback(async (key: string, value: unknown) => {
-    try {
-      await AsyncStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {
-      console.warn(`Failed to persist ${key}:`, e);
-    }
-  }, []);
-
   // ─── Hydrate on mount ───
 
   useEffect(() => {
     (async () => {
-      try {
-        const [rawIt, rawGr, rawCs, rawPr, rawHi] = await Promise.all([
-          AsyncStorage.getItem(KEYS.itinerary),
-          AsyncStorage.getItem(KEYS.grocery),
-          AsyncStorage.getItem(KEYS.cookSession),
-          AsyncStorage.getItem(KEYS.preferences),
-          AsyncStorage.getItem(KEYS.history),
-        ]);
-        if (rawIt) setItinerary(JSON.parse(rawIt));
-        if (rawGr) setGroceryItems(JSON.parse(rawGr));
-        if (rawCs) setActiveCookSession(JSON.parse(rawCs));
-        if (rawPr) {
-          const p = JSON.parse(rawPr);
-          if (p.cookingLevel) setCookingLevelState(p.cookingLevel);
-          if (p.coursePreference) setCoursePreferenceState(p.coursePreference);
-          if (p.groceryPartner) setGroceryPartnerState(p.groceryPartner);
-          if (p.dietaryFlags) setDietaryFlagsState(p.dietaryFlags);
-          if (p.allergens) setAllergensState(p.allergens);
-        }
-        if (rawHi) {
-          const h = JSON.parse(rawHi);
-          if (h.totalRecipesCooked != null) setTotalRecipesCooked(h.totalRecipesCooked);
-          if (h.xp != null) setXp(h.xp);
-          if (h.level != null) setLevel(h.level);
-          if (h.passportStamps) setPassportStamps(h.passportStamps);
-        }
-      } catch (e) {
-        console.warn('Failed to hydrate AppContext:', e);
-      }
+      const [it, gr, cs, pr, hi] = await Promise.all([
+        Storage.get<ItineraryDay[]>(KEYS.itinerary, []),
+        Storage.get<GroceryItem[]>(KEYS.grocery, []),
+        Storage.get<CookSession | null>(KEYS.cookSession, null),
+        Storage.get(KEYS.preferences, defaultPreferences),
+        Storage.get(KEYS.history, defaultHistory),
+      ]);
+      setItinerary(it);
+      setGroceryItems(gr);
+      setActiveCookSession(cs);
+      if (pr.cookingLevel) setCookingLevelState(pr.cookingLevel);
+      if (pr.coursePreference) setCoursePreferenceState(pr.coursePreference);
+      if (pr.groceryPartner) setGroceryPartnerState(pr.groceryPartner);
+      if (pr.dietaryFlags) setDietaryFlagsState(pr.dietaryFlags);
+      if (pr.allergens) setAllergensState(pr.allergens);
+      if (hi.totalRecipesCooked != null) setTotalRecipesCooked(hi.totalRecipesCooked);
+      if (hi.xp != null) setXp(hi.xp);
+      if (hi.level != null) setLevel(hi.level);
+      if (hi.passportStamps) setPassportStamps(hi.passportStamps);
       hydrated.current = true;
     })();
   }, []);
@@ -278,26 +258,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // ─── Persist on change (skip initial hydration) ───
 
   useEffect(() => {
-    if (hydrated.current) persist(KEYS.itinerary, itinerary);
-  }, [itinerary, persist]);
+    if (hydrated.current) Storage.set(KEYS.itinerary, itinerary);
+  }, [itinerary]);
 
   useEffect(() => {
-    if (hydrated.current) persist(KEYS.grocery, groceryItems);
-  }, [groceryItems, persist]);
+    if (hydrated.current) Storage.set(KEYS.grocery, groceryItems);
+  }, [groceryItems]);
 
   useEffect(() => {
-    if (hydrated.current) persist(KEYS.cookSession, activeCookSession);
-  }, [activeCookSession, persist]);
-
-  useEffect(() => {
-    if (hydrated.current)
-      persist(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, dietaryFlags, allergens });
-  }, [cookingLevel, coursePreference, groceryPartner, dietaryFlags, allergens, persist]);
+    if (hydrated.current) Storage.set(KEYS.cookSession, activeCookSession);
+  }, [activeCookSession]);
 
   useEffect(() => {
     if (hydrated.current)
-      persist(KEYS.history, { totalRecipesCooked, xp, level, passportStamps });
-  }, [totalRecipesCooked, xp, level, passportStamps, persist]);
+      Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, dietaryFlags, allergens });
+  }, [cookingLevel, coursePreference, groceryPartner, dietaryFlags, allergens]);
+
+  useEffect(() => {
+    if (hydrated.current)
+      Storage.set(KEYS.history, { totalRecipesCooked, xp, level, passportStamps });
+  }, [totalRecipesCooked, xp, level, passportStamps]);
 
   // ═══════════════════════════════════════════
   // GROCERY ACTIONS (defined first, used by itinerary)

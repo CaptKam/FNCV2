@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useColorScheme } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Storage } from '@/utils/storage';
 
 const STORAGE_KEY = '@fork_compass_theme';
 
@@ -23,23 +23,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>('system');
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((data) => {
-        if (data === 'light' || data === 'dark' || data === 'system') {
-          setPreferenceState(data);
-        }
-      })
-      .catch((e) => {
-        console.warn('Failed to load theme preference from storage:', e);
-        setPreferenceState('system');
-      });
+    Storage.get<ThemePreference>(STORAGE_KEY, 'system').then((val) => {
+      if (val === 'light' || val === 'dark' || val === 'system') {
+        setPreferenceState(val);
+      }
+    });
   }, []);
 
   const setPreference = useCallback((pref: ThemePreference) => {
     setPreferenceState(pref);
-    AsyncStorage.setItem(STORAGE_KEY, pref).catch((e) => {
-      console.warn('Failed to save theme preference to storage:', e);
-    });
+    Storage.set(STORAGE_KEY, pref);
   }, []);
 
   const isDark =
