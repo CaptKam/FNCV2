@@ -56,6 +56,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Discover",
+          tabBarAccessibilityLabel: "Discover tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
@@ -72,6 +73,7 @@ export default function TabLayout() {
         name="search"
         options={{
           title: "Search",
+          tabBarAccessibilityLabel: "Search tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
@@ -88,6 +90,7 @@ export default function TabLayout() {
         name="plan"
         options={{
           title: "Plan",
+          tabBarAccessibilityLabel: "Plan tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
@@ -104,6 +107,7 @@ export default function TabLayout() {
         name="grocery"
         options={{
           title: "Grocery",
+          tabBarAccessibilityLabel: "Grocery tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
@@ -120,6 +124,7 @@ export default function TabLayout() {
         name="cook"
         options={{
           title: "Cook",
+          tabBarAccessibilityLabel: "Cook tab",
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[

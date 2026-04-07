@@ -81,6 +81,7 @@ export default function SearchScreen() {
               placeholder="Ingredients, dishes, or moods..."
               placeholderTextColor={colors.outline}
               style={[Typography.body, { color: colors.onSurface, flex: 1 }]}
+              accessibilityLabel="Search recipes or countries"
             />
           </View>
         </View>
@@ -101,6 +102,9 @@ export default function SearchScreen() {
                     activeMood === mood ? colors.primary : colors.surfaceContainerHigh,
                 },
               ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Filter by ${mood}`}
+              accessibilityState={{ selected: activeMood === mood }}
             >
               <Text
                 style={[
@@ -122,12 +126,15 @@ export default function SearchScreen() {
               key={recipe.id}
               onPress={() => router.push(`/recipe/${recipe.id}`)}
               style={[styles.card, { width: CARD_WIDTH }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
             >
               <Image
                 source={{ uri: recipe.image }}
                 style={styles.cardImage}
                 contentFit="cover"
                 transition={300}
+                accessibilityLabel={recipe.title}
               />
               <View style={styles.cardContent}>
                 <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 16 }]} numberOfLines={2}>
@@ -139,11 +146,13 @@ export default function SearchScreen() {
                 <Pressable
                   onPress={() => router.push(`/recipe/${recipe.id}`)}
                   style={styles.addButton}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Add ${recipe.title}`}
                 >
                   <Text style={[Typography.titleSmall, { color: colors.primary }]}>ADD +</Text>
                 </Pressable>
               </View>
-              <Pressable style={styles.heartBtn} hitSlop={8}>
+              <Pressable style={styles.heartBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Save ${recipe.title} to bookmarks`}>
                 <GlassView style={styles.heartGlass}>
                   <Feather name="heart" size={14} color="#FFFFFF" />
                 </GlassView>

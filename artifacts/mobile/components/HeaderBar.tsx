@@ -25,6 +25,8 @@ export function HeaderBar({ transparent = false }: HeaderBarProps) {
         <Pressable
           onPress={() => router.push('/profile')}
           style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}
+          accessibilityRole="button"
+          accessibilityLabel="Profile"
         >
           <MaterialCommunityIcons name="account-outline" size={20} color={colors.outline} />
         </Pressable>
@@ -36,6 +38,8 @@ export function HeaderBar({ transparent = false }: HeaderBarProps) {
         hitSlop={12}
         onPress={() => router.push('/bookmarks')}
         style={[styles.iconBtn, { backgroundColor: transparent ? 'rgba(255,255,255,0.2)' : 'transparent' }]}
+        accessibilityRole="button"
+        accessibilityLabel="Bookmarks"
       >
         <MaterialCommunityIcons name="bookmark-outline" size={22} color={colors.primary} />
       </Pressable>

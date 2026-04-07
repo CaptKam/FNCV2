@@ -41,6 +41,7 @@ export default function CountryDetailScreen() {
             style={StyleSheet.absoluteFill}
             contentFit="cover"
             transition={300}
+            accessible={false}
           />
           <LinearGradient
             colors={['rgba(0,0,0,0.3)', 'transparent', 'rgba(0,0,0,0.6)']}
@@ -50,6 +51,8 @@ export default function CountryDetailScreen() {
           <Pressable
             onPress={() => router.back()}
             style={[styles.backButton, { top: insets.top + 8 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <GlassView style={styles.backGlass}>
               <Feather name="arrow-left" size={20} color="#FFFFFF" />
@@ -87,12 +90,15 @@ export default function CountryDetailScreen() {
               key={recipe.id}
               onPress={() => router.push(`/recipe/${recipe.id}`)}
               style={[styles.recipeRow, { backgroundColor: colors.surfaceContainerLow }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${recipe.title}, ${recipe.cookTime} minutes, ${recipe.difficulty}`}
             >
               <Image
                 source={{ uri: recipe.image }}
                 style={styles.recipeThumb}
                 contentFit="cover"
                 transition={300}
+                accessibilityLabel={recipe.title}
               />
               <View style={styles.recipeInfo}>
                 <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 17 }]} numberOfLines={1}>

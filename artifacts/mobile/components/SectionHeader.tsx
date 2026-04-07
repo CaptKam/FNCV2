@@ -21,7 +21,7 @@ export function SectionHeader({ label, title, actionText, onAction }: SectionHea
         <Text style={[Typography.headlineLarge, { color: colors.onSurface }]}>{title}</Text>
       </View>
       {actionText && onAction && (
-        <Pressable onPress={onAction} hitSlop={12}>
+        <Pressable onPress={onAction} hitSlop={12} accessibilityRole="button" accessibilityLabel={actionText}>
           <Text style={[Typography.titleSmall, { color: colors.primary }]}>{actionText}</Text>
         </Pressable>
       )}

@@ -31,12 +31,15 @@ export function DestinationCard({ country }: DestinationCardProps) {
       onPressOut={() => { scale.value = withTiming(1, { duration: 300 }); }}
       onPress={() => router.push(`/country/${country.id}`)}
       style={[styles.card, { width: CARD_WIDTH }]}
+      accessibilityRole="button"
+      accessibilityLabel={`Explore ${country.region}, ${country.name}`}
     >
       <AnimatedImage
         source={{ uri: country.heroImage }}
         style={[styles.image, imageStyle]}
         contentFit="cover"
         transition={300}
+        accessible={false}
       />
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.65)']}

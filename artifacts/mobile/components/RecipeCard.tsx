@@ -27,6 +27,8 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
     <Pressable
       onPress={() => router.push(`/recipe/${recipe.id}`)}
       style={[styles.card, { backgroundColor: colors.surfaceContainer, width: CARD_WIDTH }]}
+      accessibilityRole="button"
+      accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
     >
       <View style={styles.imageContainer}>
         <Image
@@ -34,11 +36,14 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           style={styles.image}
           contentFit="cover"
           transition={300}
+          accessibilityLabel={recipe.title}
         />
         <Pressable
           onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
           style={styles.heartButton}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={isFav ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
         >
           <GlassView style={styles.heartGlass}>
             <MaterialCommunityIcons

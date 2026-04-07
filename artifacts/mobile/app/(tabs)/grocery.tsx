@@ -151,6 +151,9 @@ export default function GroceryScreen() {
               styles.togglePill,
               activeTab === 'online' && { backgroundColor: colors.primary },
             ]}
+            accessibilityRole="button"
+            accessibilityLabel="Online shopping"
+            accessibilityState={{ selected: activeTab === 'online' }}
           >
             <MaterialCommunityIcons
               name="truck-delivery-outline"
@@ -172,6 +175,9 @@ export default function GroceryScreen() {
               styles.togglePill,
               activeTab === 'instore' && { backgroundColor: colors.primary },
             ]}
+            accessibilityRole="button"
+            accessibilityLabel="In-store shopping"
+            accessibilityState={{ selected: activeTab === 'instore' }}
           >
             <MaterialCommunityIcons
               name="store-outline"
@@ -207,11 +213,14 @@ export default function GroceryScreen() {
                   <Image
                     source={{ uri: recipe.image }}
                     style={styles.recipeImage}
+                    accessible={false}
                   />
                   <View style={[styles.servingBadge, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
                     <Pressable
                       onPress={() => updateServings(recipe.id, -1)}
                       style={styles.servingBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Decrease servings for ${recipe.title}`}
                     >
                       <MaterialCommunityIcons name="minus" size={12} color="#FFFFFF" />
                     </Pressable>
@@ -222,6 +231,8 @@ export default function GroceryScreen() {
                     <Pressable
                       onPress={() => updateServings(recipe.id, 1)}
                       style={styles.servingBtn}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Increase servings for ${recipe.title}`}
                     >
                       <MaterialCommunityIcons name="plus" size={12} color="#FFFFFF" />
                     </Pressable>
@@ -229,6 +240,8 @@ export default function GroceryScreen() {
                   <Pressable
                     onPress={() => removeRecipe(recipe.id)}
                     style={[styles.recipeCloseBtn, { backgroundColor: 'rgba(0,0,0,0.45)' }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${recipe.title} from grocery list`}
                   >
                     <MaterialCommunityIcons name="close" size={14} color="#FFFFFF" />
                   </Pressable>
@@ -240,7 +253,7 @@ export default function GroceryScreen() {
                   <Text style={[Typography.caption, { color: colors.outline }]}>
                     {recipe.ingredients.length} ingredients
                   </Text>
-                  <Pressable>
+                  <Pressable accessibilityRole="button" accessibilityLabel={`View recipe ${recipe.title}`}>
                     <Text style={[Typography.caption, { color: colors.primary, marginTop: 2 }]}>
                       View Recipe
                     </Text>
@@ -265,6 +278,7 @@ export default function GroceryScreen() {
                 placeholder="Enter zip code"
                 placeholderTextColor={colors.outline}
                 keyboardType="number-pad"
+                accessibilityLabel="Enter zip code"
               />
               <MaterialCommunityIcons name="magnify" size={20} color={colors.primary} />
             </View>
@@ -278,6 +292,9 @@ export default function GroceryScreen() {
                   key={retailer.name}
                   onPress={() => setSelectedRetailer(index)}
                   style={styles.retailerItem}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${retailer.name}`}
+                  accessibilityState={{ selected: selectedRetailer === index }}
                 >
                   <View
                     style={[
@@ -360,6 +377,9 @@ export default function GroceryScreen() {
                       marginHorizontal: Spacing.page,
                     },
                   ]}
+                  accessibilityRole="checkbox"
+                  accessibilityLabel={`${item.name}, ${item.amount}`}
+                  accessibilityState={{ checked: item.checked }}
                 >
                   <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
                     <MaterialCommunityIcons name={group.icon} size={16} color={group.color} />
@@ -425,6 +445,8 @@ export default function GroceryScreen() {
             </View>
             <Pressable
               style={[styles.orderButton, { backgroundColor: colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel={`Order from ${RETAILERS[selectedRetailer].name}`}
             >
               <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
                 Order from {RETAILERS[selectedRetailer].name}  •  $47.50

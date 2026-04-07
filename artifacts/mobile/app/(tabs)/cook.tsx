@@ -37,7 +37,7 @@ export default function CookScreen() {
         contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 68 }}
       >
         <View style={[styles.profileSection, { paddingHorizontal: Spacing.page }]}>
-          <Pressable onPress={() => router.push('/profile')} style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}>
+          <Pressable onPress={() => router.push('/profile')} style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]} accessibilityRole="button" accessibilityLabel="View profile">
             <Feather name="user" size={28} color={colors.outline} />
           </Pressable>
           <View style={styles.profileInfo}>
@@ -64,12 +64,15 @@ export default function CookScreen() {
           <Pressable
             onPress={() => router.push(`/cook-mode/${activeRecipe.id}`)}
             style={styles.activeCard}
+            accessibilityRole="button"
+            accessibilityLabel={`Continue cooking ${activeRecipe.title}`}
           >
             <Image
               source={{ uri: activeRecipe.image }}
               style={styles.activeImage}
               contentFit="cover"
               transition={300}
+              accessible={false}
             />
             <LinearGradient
               colors={['transparent', 'rgba(0,0,0,0.7)']}
@@ -87,7 +90,7 @@ export default function CookScreen() {
                 <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', fontSize: 14 }]}>
                   Step 3 of {activeRecipe.steps.length}
                 </Text>
-                <Pressable style={[styles.resumeBtn, { backgroundColor: colors.primary }]}>
+                <Pressable style={[styles.resumeBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel="Resume cooking session">
                   <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Resume Session</Text>
                 </Pressable>
               </GlassView>
@@ -106,12 +109,13 @@ export default function CookScreen() {
             contentContainerStyle={{ paddingHorizontal: Spacing.page, gap: Spacing.md }}
           >
             {TECHNIQUES.map((tech) => (
-              <Pressable key={tech.title} style={styles.techCard}>
+              <Pressable key={tech.title} style={styles.techCard} accessibilityRole="button" accessibilityLabel={`${tech.title}, ${tech.duration}`}>
                 <Image
                   source={{ uri: tech.image }}
                   style={styles.techImage}
                   contentFit="cover"
                   transition={300}
+                  accessible={false}
                 />
                 <LinearGradient
                   colors={['transparent', 'rgba(0,0,0,0.75)']}
@@ -162,7 +166,7 @@ export default function CookScreen() {
                 +24 joined
               </Text>
             </View>
-            <Pressable style={[styles.waitlistBtn, { borderColor: colors.primary }]}>
+            <Pressable style={[styles.waitlistBtn, { borderColor: colors.primary }]} accessibilityRole="button" accessibilityLabel="Join waitlist for Mastering Japanese Dashi">
               <Text style={[Typography.titleSmall, { color: colors.primary }]}>Join Waitlist</Text>
             </Pressable>
           </View>
@@ -176,7 +180,7 @@ export default function CookScreen() {
                 Pantry stocked for this week
               </Text>
             </View>
-            <Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="Scan pantry">
               <Text style={[Typography.titleSmall, { color: colors.primary }]}>Scan Pantry</Text>
             </Pressable>
           </View>

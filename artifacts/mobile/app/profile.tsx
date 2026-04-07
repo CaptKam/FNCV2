@@ -56,6 +56,8 @@ function SettingRow({ icon, label, subtitle, onPress, trailing, colors }: Settin
           opacity: pressed && onPress ? 0.8 : 1,
         },
       ]}
+      accessibilityRole="button"
+      accessibilityLabel={subtitle ? `${label}, ${subtitle}` : label}
     >
       <View style={[styles.settingIcon, { backgroundColor: `${colors.primary}15` }]}>
         <MaterialCommunityIcons name={icon as any} size={20} color={colors.primary} />
@@ -106,7 +108,7 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top }}
       >
         <View style={[styles.header, { paddingHorizontal: Spacing.page }]}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back">
             <Feather name="arrow-left" size={24} color={colors.onSurface} />
           </Pressable>
           <Text style={[Typography.title, { color: colors.onSurface }]}>Profile & Settings</Text>
@@ -182,6 +184,9 @@ export default function ProfileScreen() {
                       borderWidth: 1.5,
                     },
                   ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${option.label} diet`}
+                  accessibilityState={{ selected: isSelected }}
                 >
                   <Text style={{ fontSize: 18 }}>{option.emoji}</Text>
                   <Text
@@ -218,6 +223,8 @@ export default function ProfileScreen() {
                     styles.unitToggle,
                     { backgroundColor: colors.surfaceContainerHigh },
                   ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Switch to ${metricUnits ? 'imperial' : 'metric'} units`}
                 >
                   <Text style={[Typography.labelSmall, { color: colors.primary }]}>
                     {metricUnits ? 'METRIC' : 'IMPERIAL'}
@@ -357,6 +364,8 @@ export default function ProfileScreen() {
               { text: 'Sign Out', style: 'destructive' },
             ])}
             style={[styles.signOutBtn, { borderColor: colors.error }]}
+            accessibilityRole="button"
+            accessibilityLabel="Sign out"
           >
             <MaterialCommunityIcons name="logout" size={18} color={colors.error} />
             <Text style={[Typography.titleSmall, { color: colors.error }]}>Sign Out</Text>
@@ -374,7 +383,7 @@ export default function ProfileScreen() {
         animationType="fade"
         onRequestClose={() => setShowThemeModal(false)}
       >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowThemeModal(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setShowThemeModal(false)} accessibilityRole="button" accessibilityLabel="Close appearance settings">
           <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
             <View style={styles.modalHandle} />
             <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
@@ -397,6 +406,9 @@ export default function ProfileScreen() {
                       borderWidth: 1.5,
                     },
                   ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${option.label} theme, ${option.desc}`}
+                  accessibilityState={{ selected: isActive }}
                 >
                   <View style={[styles.themeIconWrap, { backgroundColor: isActive ? `${colors.primary}20` : colors.surfaceContainerHigh }]}>
                     <MaterialCommunityIcons

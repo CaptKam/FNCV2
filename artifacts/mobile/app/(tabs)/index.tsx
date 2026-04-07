@@ -65,6 +65,8 @@ export default function DiscoverScreen() {
             onScroll={handleScroll}
             scrollEventThrottle={16}
             keyExtractor={(item) => item.id}
+            accessibilityRole="adjustable"
+            accessibilityLabel={`Country carousel, showing ${heroCountries[activeHero]?.name ?? ''}`}
             renderItem={({ item }) => (
               <View style={{ width: SCREEN_WIDTH, height: HERO_HEIGHT }}>
                 <Image
@@ -72,6 +74,7 @@ export default function DiscoverScreen() {
                   style={StyleSheet.absoluteFill}
                   contentFit="cover"
                   transition={300}
+                  accessible={false}
                 />
                 <LinearGradient
                   colors={['rgba(0,0,0,0.2)', 'transparent', 'rgba(0,0,0,0.6)']}
@@ -89,6 +92,8 @@ export default function DiscoverScreen() {
                   <Pressable
                     onPress={() => router.push(`/country/${item.id}`)}
                     style={[styles.exploreCTA, { backgroundColor: colors.primary }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Explore ${item.name}`}
                   >
                     <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>
                       Explore {item.name}
@@ -121,6 +126,7 @@ export default function DiscoverScreen() {
               style={styles.tonightImage}
               contentFit="cover"
               transition={300}
+              accessible={false}
             />
             <View style={styles.tonightContent}>
               <Text style={[Typography.labelLarge, { color: colors.primary }]}>
@@ -129,7 +135,7 @@ export default function DiscoverScreen() {
               <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={1}>
                 {tonightsRecipe.title}
               </Text>
-              <Pressable onPress={() => router.push(`/recipe/${tonightsRecipe.id}`)}>
+              <Pressable onPress={() => router.push(`/recipe/${tonightsRecipe.id}`)} accessibilityRole="button" accessibilityLabel={`Cook ${tonightsRecipe.title} tonight`}>
                 <Text style={[Typography.titleSmall, { color: colors.primary }]}>
                   Cook Tonight
                 </Text>
