@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Storage } from '@/utils/storage';
 
 const STORAGE_KEY = '@fork_compass_bookmarks';
 
@@ -21,22 +21,11 @@ export function BookmarksProvider({ children }: { children: React.ReactNode }) {
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((data) => {
-        if (data) {
-          setBookmarkedIds(JSON.parse(data));
-        }
-      })
-      .catch((e) => {
-        console.warn('Failed to load bookmarks from storage:', e);
-        setBookmarkedIds([]);
-      });
+    Storage.get<string[]>(STORAGE_KEY, []).then(setBookmarkedIds);
   }, []);
 
   const persist = useCallback((ids: string[]) => {
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(ids)).catch((e) => {
-      console.warn('Failed to save bookmarks to storage:', e);
-    });
+    Storage.set(STORAGE_KEY, ids);
   }, []);
 
   const isBookmarked = useCallback(
