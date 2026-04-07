@@ -68,6 +68,13 @@ const DAILY_MEALS: Record<string, { time: string; label: string; recipeId?: stri
   ],
 };
 
+type CourseSlot = { label: string; icon: string; placeholder: string };
+const COURSE_SLOTS: CourseSlot[] = [
+  { label: 'Appetizer', icon: 'food-variant', placeholder: 'Add an Appetizer...' },
+  { label: 'Dessert', icon: 'ice-cream', placeholder: 'Sweet finish...' },
+  { label: 'Drink Pairings', icon: 'glass-wine', placeholder: 'Pair with a drink...' },
+];
+
 type WeekOption = 'this-week' | 'next-week' | 'past';
 
 export default function PlanScreen() {
@@ -79,6 +86,7 @@ export default function PlanScreen() {
   const [selectedWeek, setSelectedWeek] = useState<WeekOption>('this-week');
   const [isDailyView, setIsDailyView] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [multipleMeals, setMultipleMeals] = useState(false);
 
   const getRecipe = (id: string) => recipes.find((r) => r.id === id);
   const plannedCount = Object.keys(PLANNED_DAYS).length;
@@ -92,6 +100,32 @@ export default function PlanScreen() {
 
   const selectedDay = DAYS[selectedDayIndex];
   const dailyMeals = DAILY_MEALS[selectedDay] || [];
+  const primaryMeal = dailyMeals.find((m) => m.label === 'Dinner') || dailyMeals[dailyMeals.length - 1];
+  const primaryRecipe = primaryMeal?.recipeId ? getRecipe(primaryMeal.recipeId) : null;
+
+  const renderGroceryBanner = () => (
+    <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
+      <View style={[styles.groceryBanner, { backgroundColor: `${colors.primary}10` }]}>
+        <MaterialCommunityIcons name="basket" size={22} color={colors.primary} />
+        <View style={styles.groceryTextWrap}>
+          <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>
+            Grocery List Update
+          </Text>
+          <Text style={[Typography.caption, { color: colors.outline }]}>
+            {plannedCount * 3 + 2} items missing for your planned meals
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => router.push('/(tabs)/grocery')}
+          style={[styles.reviewBtn, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)' }]}
+        >
+          <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700' }]}>
+            Review
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -123,6 +157,11 @@ export default function PlanScreen() {
                 </Text>
                 <MaterialCommunityIcons name="chevron-down" size={18} color={colors.primary} />
               </View>
+              {isDailyView && (
+                <Text style={[Typography.caption, { color: colors.primary, marginTop: 2 }]}>
+                  {selectedDay}, {MOCK_DATES[selectedDay]}
+                </Text>
+              )}
             </Pressable>
             <Pressable hitSlop={12}>
               <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
@@ -131,7 +170,7 @@ export default function PlanScreen() {
         </View>
 
         {isDailyView && (
-          <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
+          <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
             <GlassView style={[styles.daySelectorPill, { ...Shadows.subtle }]}>
               {DAY_LETTERS.map((letter, i) => {
                 const isActive = i === selectedDayIndex;
@@ -160,73 +199,148 @@ export default function PlanScreen() {
           </View>
         )}
 
-        {!isDailyView && (
-          <View style={{ height: Spacing.sm }} />
-        )}
-
-        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
-          <View style={[styles.groceryBanner, { backgroundColor: `${colors.primary}10` }]}>
-            <MaterialCommunityIcons name="basket" size={22} color={colors.primary} />
-            <View style={styles.groceryTextWrap}>
-              <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>
-                Grocery List Update
-              </Text>
-              <Text style={[Typography.caption, { color: colors.outline }]}>
-                {plannedCount * 3 + 2} items missing for your planned meals
-              </Text>
-            </View>
-            <Pressable
-              onPress={() => router.push('/(tabs)/grocery')}
-              style={[styles.reviewBtn, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)' }]}
-            >
-              <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700' }]}>
-                Review
-              </Text>
+        {isDailyView && (
+          <View style={[styles.multipleMealsRow, { marginHorizontal: Spacing.page }]}>
+            <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1 }]}>
+              MULTIPLE MEALS
+            </Text>
+            <Pressable onPress={() => setMultipleMeals(!multipleMeals)}>
+              <MaterialCommunityIcons
+                name={multipleMeals ? 'toggle-switch' : 'toggle-switch-off-outline'}
+                size={36}
+                color={multipleMeals ? colors.primary : colors.outlineVariant}
+              />
             </Pressable>
           </View>
-        </View>
+        )}
+
+        {!isDailyView && <View style={{ height: Spacing.sm }} />}
+
+        {!isDailyView && renderGroceryBanner()}
 
         {isDailyView ? (
-          <View style={styles.timeline}>
-            <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
-            {dailyMeals.map((meal, idx) => {
-              const recipe = meal.recipeId ? getRecipe(meal.recipeId) : null;
-              return (
-                <View key={`${selectedDay}-${idx}`} style={styles.dayRow}>
+          multipleMeals ? (
+            <>
+              <View style={styles.timeline}>
+                <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
+                {dailyMeals.map((meal, idx) => {
+                  const recipe = meal.recipeId ? getRecipe(meal.recipeId) : null;
+                  return (
+                    <View key={`${selectedDay}-${idx}`} style={styles.dayRow}>
+                      <View style={styles.dayLeft}>
+                        <View
+                          style={[
+                            styles.timelineNode,
+                            {
+                              backgroundColor: recipe ? colors.primary : colors.surfaceContainerHigh,
+                            },
+                          ]}
+                        />
+                      </View>
+                      <View style={styles.dayRight}>
+                        <Text style={[Typography.labelLarge, { color: colors.primary, marginBottom: Spacing.sm, letterSpacing: 1.5 }]}>
+                          {meal.time} {'\u2022'} {meal.label}
+                        </Text>
+                        {recipe ? (
+                          <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)}>
+                            <GlassView style={styles.mealCard}>
+                              <Image
+                                source={{ uri: recipe.image }}
+                                style={styles.mealImage}
+                                contentFit="cover"
+                                transition={300}
+                              />
+                              <View style={styles.recipeBadge}>
+                                <GlassView style={styles.recipeBadgeGlass}>
+                                  <Text style={[Typography.labelSmall, { color: '#FFFFFF', fontWeight: '700' }]}>RECIPE</Text>
+                                </GlassView>
+                              </View>
+                              <View style={styles.mealContent}>
+                                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 22 }]} numberOfLines={1}>
+                                  {recipe.title}
+                                </Text>
+                                <View style={styles.mealMeta}>
+                                  <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
+                                  <Text style={[Typography.caption, { color: colors.outline }]}>
+                                    {recipe.prepTime + recipe.cookTime}m
+                                  </Text>
+                                </View>
+                              </View>
+                            </GlassView>
+                          </Pressable>
+                        ) : (
+                          <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
+                            <View style={styles.emptyCardRow}>
+                              <MaterialCommunityIcons
+                                name={meal.label === 'Breakfast' ? 'white-balance-sunny' : 'silverware-variant'}
+                                size={20}
+                                color={colors.outline}
+                              />
+                              <Text style={[Typography.bodySmall, { color: colors.outline, fontStyle: 'italic' }]}>
+                                {meal.label} unassigned...
+                              </Text>
+                            </View>
+                            <Pressable
+                              onPress={() => router.push('/(tabs)/search')}
+                              style={styles.addMealBtn}
+                            >
+                              <MaterialCommunityIcons name="plus-circle-outline" size={16} color={colors.primary} />
+                              <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5 }]}>
+                                Add Meal
+                              </Text>
+                            </Pressable>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+              {renderGroceryBanner()}
+            </>
+          ) : (
+            <>
+              <View style={styles.timeline}>
+                <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
+
+                <View style={styles.dayRow}>
                   <View style={styles.dayLeft}>
-                    <View
-                      style={[
-                        styles.timelineNode,
-                        {
-                          backgroundColor: recipe ? colors.primary : colors.surfaceContainerHigh,
-                          borderColor: recipe ? colors.primary : colors.outline,
-                        },
-                      ]}
-                    />
+                    <View style={[styles.timelineNode, { backgroundColor: colors.primary }]} />
                   </View>
                   <View style={styles.dayRight}>
-                    <Text style={[Typography.labelLarge, { color: colors.primary, marginBottom: Spacing.sm, letterSpacing: 1.5 }]}>
-                      {meal.time} {'\u2022'} {meal.label}
-                    </Text>
-                    {recipe ? (
-                      <Pressable
-                        onPress={() => router.push(`/recipe/${recipe.id}`)}
-                      >
+                    <View style={styles.primaryMealHeader}>
+                      <Text style={[Typography.labelLarge, { color: colors.primary, letterSpacing: 1.5 }]}>
+                        {primaryMeal?.time || '07:30 PM'} {'\u2022'} Primary Meal (Dinner)
+                      </Text>
+                      <View style={[styles.dinnerPartyBadge, { backgroundColor: `${colors.primary}15` }]}>
+                        <MaterialCommunityIcons name="account-group" size={14} color={colors.primary} />
+                        <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.3 }]}>
+                          Dinner Party
+                        </Text>
+                      </View>
+                    </View>
+                    {primaryRecipe ? (
+                      <Pressable onPress={() => router.push(`/recipe/${primaryRecipe.id}`)}>
                         <GlassView style={styles.mealCard}>
                           <Image
-                            source={{ uri: recipe.image }}
-                            style={styles.mealImage}
+                            source={{ uri: primaryRecipe.image }}
+                            style={styles.mealImageTall}
                             contentFit="cover"
                             transition={300}
                           />
+                          <View style={styles.recipeBadge}>
+                            <GlassView style={styles.recipeBadgeGlass}>
+                              <Text style={[Typography.labelSmall, { color: '#FFFFFF', fontWeight: '700' }]}>RECIPE</Text>
+                            </GlassView>
+                          </View>
                           <View style={styles.mealContent}>
-                            <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 22 }]} numberOfLines={1}>
-                              {recipe.title}
+                            <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 24 }]} numberOfLines={1}>
+                              {primaryRecipe.title}
                             </Text>
                             <View style={styles.mealMeta}>
                               <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
                               <Text style={[Typography.caption, { color: colors.outline }]}>
-                                {recipe.prepTime + recipe.cookTime}m
+                                {primaryRecipe.prepTime + primaryRecipe.cookTime}m
                               </Text>
                             </View>
                           </View>
@@ -234,32 +348,64 @@ export default function PlanScreen() {
                       </Pressable>
                     ) : (
                       <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
-                        <View style={styles.emptyCardRow}>
-                          <MaterialCommunityIcons
-                            name={meal.label === 'Breakfast' ? 'white-balance-sunny' : 'silverware-variant'}
-                            size={20}
-                            color={colors.outline}
-                          />
-                          <Text style={[Typography.bodySmall, { color: colors.outline, fontStyle: 'italic' }]}>
-                            {meal.label} unassigned...
-                          </Text>
-                        </View>
+                        <MaterialCommunityIcons name="silverware-variant" size={32} color={colors.outlineVariant} />
+                        <Text style={[Typography.bodySmall, { color: colors.outline }]}>
+                          No meal planned yet
+                        </Text>
                         <Pressable
                           onPress={() => router.push('/(tabs)/search')}
-                          style={styles.addMealBtn}
+                          style={[styles.browseBtn, { backgroundColor: colors.primary }]}
                         >
-                          <MaterialCommunityIcons name="plus-circle-outline" size={16} color={colors.primary} />
-                          <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5 }]}>
-                            Add Meal
+                          <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
+                            Browse Recipes
                           </Text>
                         </Pressable>
                       </View>
                     )}
                   </View>
                 </View>
-              );
-            })}
-          </View>
+
+                {COURSE_SLOTS.map((course) => (
+                  <View key={course.label} style={styles.dayRow}>
+                    <View style={styles.dayLeft}>
+                      <View style={[styles.timelineNodeSmall, { backgroundColor: `${colors.primary}40` }]} />
+                    </View>
+                    <View style={styles.dayRight}>
+                      <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm, letterSpacing: 1 }]}>
+                        {course.label.toUpperCase()}
+                      </Text>
+                      <View style={[styles.courseCard, {
+                        borderColor: colors.outlineVariant,
+                        backgroundColor: colors.isDark ? 'rgba(242,237,231,0.05)' : 'rgba(242,237,231,0.3)',
+                      }]}>
+                        <View style={styles.courseCardInner}>
+                          <View style={styles.emptyCardRow}>
+                            <MaterialCommunityIcons
+                              name={course.icon as any}
+                              size={20}
+                              color={`${colors.outline}99`}
+                            />
+                            <Text style={[Typography.bodySmall, { color: `${colors.outline}99`, fontStyle: 'italic' }]}>
+                              {course.placeholder}
+                            </Text>
+                          </View>
+                          <Pressable
+                            onPress={() => router.push('/(tabs)/search')}
+                            style={[styles.addCircle, {
+                              backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)',
+                            }]}
+                          >
+                            <MaterialCommunityIcons name="plus" size={18} color={colors.primary} />
+                          </Pressable>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+              {renderGroceryBanner()}
+            </>
+          )
         ) : (
           <View style={styles.timeline}>
             <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
@@ -275,7 +421,6 @@ export default function PlanScreen() {
                         styles.timelineNode,
                         {
                           backgroundColor: recipe ? colors.primary : colors.surfaceContainerHigh,
-                          borderColor: recipe ? colors.primary : colors.outline,
                         },
                       ]}
                     />
@@ -295,8 +440,8 @@ export default function PlanScreen() {
                           contentFit="cover"
                           transition={300}
                         />
-                        <View style={styles.dinnerBadge}>
-                          <GlassView style={styles.dinnerBadgeGlass}>
+                        <View style={styles.recipeBadge}>
+                          <GlassView style={styles.recipeBadgeGlass}>
                             <Text style={[Typography.labelSmall, { color: '#FFFFFF' }]}>DINNER</Text>
                           </GlassView>
                         </View>
@@ -499,6 +644,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  multipleMealsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
   groceryBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -519,6 +671,7 @@ const styles = StyleSheet.create({
   timeline: {
     paddingHorizontal: Spacing.page,
     position: 'relative',
+    marginBottom: Spacing.lg,
   },
   timelineLine: {
     position: 'absolute',
@@ -541,9 +694,29 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: Radius.full,
   },
+  timelineNodeSmall: {
+    width: 9,
+    height: 9,
+    borderRadius: Radius.full,
+    marginLeft: 1.5,
+    opacity: 0.6,
+  },
   dayRight: {
     flex: 1,
     marginLeft: Spacing.lg,
+  },
+  primaryMealHeader: {
+    marginBottom: Spacing.md,
+    gap: 8,
+  },
+  dinnerPartyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: Radius.full,
   },
   mealCard: {
     borderRadius: Radius.lg,
@@ -553,12 +726,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 160,
   },
-  dinnerBadge: {
+  mealImageTall: {
+    width: '100%',
+    height: 176,
+  },
+  recipeBadge: {
     position: 'absolute',
     top: Spacing.md,
     right: Spacing.md,
   },
-  dinnerBadgeGlass: {
+  recipeBadgeGlass: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: Radius.full,
@@ -591,6 +768,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginTop: Spacing.sm,
+  },
+  courseCard: {
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderRadius: Radius.lg,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+  },
+  courseCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  addCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   browseBtn: {
     paddingHorizontal: Spacing.lg,
