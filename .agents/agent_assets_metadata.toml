@@ -11,3 +11,9 @@ id = "yJxDBayy570500E6Tn99s"
 uri = "file://artifacts/mobile/FLOW_MAP.md"
 type = "text"
 title = "Fork & Compass — Complete App Flow Map"
+
+[[outputs]]
+id = "Up35_iuxXSUCSjJgSW8oO"
+uri = "file://artifacts/mobile/BUILD_STATUS.md"
+type = "text"
+title = "Fork & Compass — Build Status Report"
