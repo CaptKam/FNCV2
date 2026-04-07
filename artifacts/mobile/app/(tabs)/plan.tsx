@@ -219,7 +219,7 @@ export default function PlanScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 68 }}
+        contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 76 }}
       >
 
         {/* Week pill with chevron navigation */}
