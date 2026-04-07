@@ -1,116 +1,274 @@
-# FORK & COMPASS — Master Blueprint V3
+# FORK & COMPASS
 
-> **"Pick a country, cook a dinner, feel like you traveled."**
+## Master Blueprint V3
 
----
+**Product Vision · Design System · Architecture · Systems Roadmap**
 
-## 1. Product Vision
+*Pick a country, cook a dinner, feel like you traveled.*
 
-Fork & Compass transforms home kitchens into portals to the world. Each session begins with a country — its food culture, its signature dishes, its stories — and ends with a real meal on the table. The app isn't a recipe database; it's a curated culinary travel experience that makes cooking feel like an adventure.
+Confidential · Version 3.0 · April 2026 · Solo Founder: Kam
 
-**Core Loop:** Discover a country → Choose a recipe → Plan your week → Shop for ingredients → Cook with guided steps
-
-**Target User:** Home cooks who want more than instructions — they want context, culture, and the feeling of having traveled somewhere new.
-
-**Data Model:** All data is local mock data. 8 countries, 97 recipes with full ingredient lists, step-by-step instructions, and cultural notes. No backend required.
+voyageapron.com
 
 ---
 
-## 2. Design Philosophy: "The Ethereal Archivist" — IMPLEMENTED
+# 1. Product Vision
 
-> Status: **IMPLEMENTED.** All principles below are realized in the current codebase. Design system is locked.
+> Status: **IMPLEMENTED.** The product vision below is fully realized in the current build. All core loop steps (Discover → Recipe → Plan → Grocery → Cook) have working UI screens.
 
-The visual language evokes a well-traveled food journal — warm, tactile, and refined. Every surface feels like parchment held up to light; every interaction has weight and intention.
+## The Soul of the Product
 
-**Principles:**
-- **Warmth over coolness** — Terracotta and cream, never clinical blues or grays
-- **Glass over solid** — Frosted translucency suggests depth without heaviness
-- **Editorial typography** — Serif headlines give authority; sans-serif body gives clarity
-- **Restraint** — No gratuitous animation, no visual clutter, no solid borders
-- **Consistency** — Terracotta `#9A4100` is THE interactive color in both light and dark mode
+Fork & Compass is a premium culinary travel app built on a single, powerful premise: you can travel the world from your kitchen. Pick a country. Plan a dinner. Shop the ingredients. Cook the meal. Feel like you traveled. The app exists at the intersection of food, culture, and the ritual of gathering around a table.
 
-**Non-Negotiable Rules:**
-- No solid borders anywhere — use Liquid Glass specular highlight (`borderTopWidth: 1`, top edge only)
-- No pure `#000000` — use `colors.inverseSurface` (`#32302C` light / `#F0ECE6` dark)
-- Terracotta `#9A4100` for ALL interactive elements in both light AND dark mode
-- Noto Serif for headlines/display text, Inter for body/labels
-- 8pt spacing grid
-- Floating pill tab bar with GlassView background
-- Dark mode must be fully supported
-- Web fallback: GlassView renders as `View` with background color overlay (no BlurView on web)
+This is not a recipe database. It is not a meal kit replacement. Fork & Compass is a cultural experience engine that happens to involve cooking. Every interaction should feel like opening a beautifully edited travel magazine and stepping inside.
 
----
+> "Pick a country, cook a dinner, feel like you traveled."
 
-## 3. The Ethereal Archivist Design System — IMPLEMENTED
+## Origin Story
 
-> Status: **IMPLEMENTED.** All tokens, components, and patterns below are built and in use across all screens. The design system files are in `constants/` and `components/`. No design reskin work remains.
+Born during the COVID era, when friends would pick a country and build an entire evening around its cuisine, drinks, and music to simulate the travel they couldn't do. That dinner party energy—the planning, the anticipation, the shared experience—is the emotional core of everything Fork & Compass builds.
 
-### 3.1 Color Tokens (`constants/colors.ts`)
+## Who This Is For
 
-| Token | Light Mode | Dark Mode |
-|-------|-----------|-----------|
-| `primary` | `#9A4100` (terracotta) | `#9A4100` (same) |
-| `onPrimary` | `#FFFFFF` | `#4A1C00` |
-| `surface` | `#FEF9F3` (cream) | `#161412` |
-| `onSurface` | `#1D1B18` | `#F0ECE6` |
-| `onSurfaceVariant` | `#564339` | `#D4C4B8` |
-| `outline` | `#897267` | `#9D8C82` |
-| `outlineVariant` | `#DDC1B4` | `#514339` |
-| `surfaceContainerLow` | `#F8F3ED` | `#1D1B18` |
-| `surfaceContainerHigh` | `#ECE7E2` | `#2C2926` |
-| `inverseSurface` | `#32302C` | `#F0ECE6` |
-| `inverseOnSurface` | `#F5F0EA` | `#32302C` |
-| `success` | `#2D6A4F` | `#52B788` |
-| `error` | `#BA1A1A` | `#FFB4AB` |
+Serious home cooks who see cooking as exploration, not obligation. People who already cook well and want to go deeper into world cuisine. The user who spends Sunday afternoon planning the week's meals, who browses recipes the way others browse travel blogs, and who treats a dinner party as an event worth orchestrating.
 
-### 3.2 Typography (`constants/typography.ts`)
+## Competitive Positioning
 
-| Style | Font | Weight | Usage |
-|-------|------|--------|-------|
-| `display` / `displayMedium` / `displayLarge` | Noto Serif | 700 | Page titles, hero overlays |
-| `headline` / `headlineLarge` | Noto Serif | 400 | Section titles |
-| `title` / `titleMedium` / `titleSmall` | Inter | 600 | Buttons, card titles |
-| `body` / `bodySmall` | Inter | 400 | Body copy, descriptions |
-| `label` / `labelLarge` / `labelSmall` | Inter | 500 | Chip labels, category headers |
-| `caption` | Inter | 400 | Metadata, timestamps |
+Fork & Compass owns culturally authentic world cuisine for serious home cooks. The moat is cultural depth combined with the travel premise. NYT Cooking skews American and European. SideChef pivoted to grocery commerce. HelloFresh validated that people want to cook international food at home but commoditized the experience. No one has built a premium, editorial-quality platform that treats each country's cuisine as a world worth exploring.
 
-### 3.3 Liquid Glass Effect (`constants/glass.ts` + `components/GlassView.tsx`)
-
-- `BlurView` (expo-blur) with `intensity: 32` (light) / `40` (dark), tint `light`/`dark`
-- Background overlay: `rgba(255,255,255,0.7)` (light) / `rgba(29,27,24,0.85)` (dark)
-- Specular highlight: **TOP edge only** — 1px `borderTopColor: rgba(255,255,255,0.4)` (light) / `rgba(255,255,255,0.15)` (dark)
-- Applied via shared `GlassView` component — never build glass effects inline
-- Used for: tab bar background, header bar, floating cards, badges, overlays
-
-### 3.4 Layout & Spacing (`constants/spacing.ts`, `constants/radius.ts`, `constants/shadows.ts`)
-
-- 8pt grid: `Spacing.xs=4, sm=8, md=16, lg=24, xl=32, xxl=48`
-- Page horizontal padding: `Spacing.page` (20)
-- Border radii: `Radius.sm=8, md=12, lg=16, xl=24, full=9999`
-- Shadows: `Shadows.subtle` (cards), `Shadows.ambient` (floating elements)
-
-### 3.5 Tab Bar (`app/(tabs)/_layout.tsx`)
-
-- Floating pill: absolute positioned, `bottom: insets.bottom + 16`
-- GlassView background with `borderRadius: Radius.full`
-- Icons: MaterialCommunityIcons (`compass-outline`, `magnify`, `calendar-month-outline`, `cart-outline`, `chef-hat`)
-- Labels: Inter 500, 10pt
-- Active: terracotta tint + subtle scale transform
-- All scroll content must have `paddingBottom: 120+` to clear the tab bar
-
-### 3.6 HeaderBar (`components/HeaderBar.tsx`)
-
-- Shared `HeaderBar` component on all 5 tab screens
-- `transparent` prop on Discover (overlays hero carousel, no background)
-- Frosted glass (GlassView) on all other tabs
-- `position: absolute`, `zIndex: 70`
-- Content below must offset with `paddingTop: insets.top + 68`
+| Competitor | Strength | Gap Fork & Compass Fills |
+|-----------|----------|--------------------------|
+| NYT Cooking | Trusted editorial voice, large audience | American/European bias; no cultural travel framing |
+| SideChef | Step-by-step guidance, grocery integration | Pivoted to commerce; lost editorial soul |
+| HelloFresh | Validated international cooking at home | Kit model, not exploration; commoditized |
+| Mela / Paprika | Clean recipe management UIs | Utility-first; no cultural depth or social features |
 
 ---
 
-## 4. App Architecture
+# 2. Design Philosophy
 
-### 4.1 Tech Stack
+> Status: **IMPLEMENTED.** All design philosophy principles below are realized in the current codebase. The design system is locked and enforced via `useThemeColors()`, typography tokens, and shared components.
+
+Every pixel in Fork & Compass is governed by three interlocking design frameworks: Steve Jobs' functional aesthetics, Apple's Human Interface Guidelines (including iOS 26 Liquid Glass), and the editorial sensibility of luxury print magazines. These are not decorative references. They are structural foundations that dictate every decision from navigation architecture to button placement to the weight of a shadow.
+
+## 2.1 — Design Is How It Works
+
+> "Most people make the mistake of thinking design is what it looks like. Design is how it works." — Steve Jobs
+
+This is the governing law of Fork & Compass. Beautiful food photography means nothing if the user cannot figure out how to plan their week. A glassmorphic tab bar is worthless if it obscures the content it frames. Every aesthetic choice must serve a functional purpose. If a visual element does not help the user accomplish their goal, it is removed.
+
+The implication is absolute: the design team and engineering team are not separate functions operating in sequence. They are a unified discipline. The interface is not a skin applied over logic. The interface is the logic, made visible.
+
+## 2.2 — The Subtraction Audit
+
+> "Simple can be harder than complex. You have to work hard to get your thinking clean to make it simple." — Steve Jobs
+
+Fork & Compass applies a rigorous subtraction audit to every screen, every feature, and every interaction:
+
+| Audit Test | Question | If It Fails |
+|-----------|----------|-------------|
+| Mission-Critical | What is the ONE thing the user needs here? | Remove or deeply subordinate the element |
+| Grandma Test | Could a non-technical user complete this without explanation? | Redesign until no instruction is needed |
+| Day-Better Test | Does this genuinely make someone's day better? | Cut it, regardless of engineering investment |
+
+The backward-planning timeline engine is the perfect example. Users don't want to manually calculate when to start each dish. They want dinner ready at 7:00 PM. The system absorbs all of that complexity—prep times, concurrent dishes, resting periods—and presents one simple output: "Start at 4:25 PM." The user never sees the algorithm. They see a result that makes their evening effortless.
+
+## 2.3 — The Four HIG Pillars
+
+Apple's Human Interface Guidelines rest on four foundational principles. Every Fork & Compass screen must satisfy all four simultaneously:
+
+| Principle | Definition | Fork & Compass Application |
+|-----------|-----------|---------------------------|
+| Clarity | Every element communicates its purpose without ambiguity | Recipe cards show prep time, difficulty, and country at a glance. No decoding required. |
+| Deference | The UI steps back; content takes center stage | Food photography is the hero. Chrome is minimal. Glass effects frame content, never compete with it. |
+| Depth | Visual layers and motion convey hierarchy | Modal sheets slide up for cook mode. Plan view layers weekly over daily. Spatial relationships are always clear. |
+| Consistency | Familiar patterns across every screen | Tab bar is always bottom. Back is always top-left. Swipe gestures behave identically everywhere. |
+
+## 2.4 — iOS 26 Liquid Glass and Glassmorphic Identity
+
+With iOS 26, Apple introduced Liquid Glass—a translucent, dynamic material that reflects and refracts surrounding content in real time. This is the most significant visual redesign since iOS 7. Fork & Compass embraces Liquid Glass as its native visual identity, not as decoration but as structural design language.
+
+Liquid Glass uses real-time lensing (not simple blur), specular highlights that respond to device motion, adaptive shadows that change based on content context, and content-aware color that samples surrounding imagery. The effect is a UI that feels alive, dimensional, and physically present.
+
+**Liquid Glass Implementation Rules:**
+- Glass effects apply exclusively to the navigation layer: tab bar, toolbars, sheet headers, floating action overlays. Never applied to content itself.
+- Three variants: Regular (medium transparency, general use), Clear (high transparency for media-rich hero backgrounds), Identity (no glass effect, for screens where clarity trumps depth).
+- Food photography, recipe text, and editorial content remain crisp beneath glass surfaces. Content legibility is never sacrificed for aesthetic effect.
+- Specular highlights respond to device motion via gyroscope data, creating natural depth without demanding attention.
+- Glass elements use content-aware color: the tab bar subtly shifts warmth over a terracotta hero image, cools over a blue-toned Japanese garden.
+- On devices below iOS 26, the system degrades gracefully to BlurView frosted glass with identical layout behavior—no feature loss, only reduced visual richness.
+
+**Current Implementation:** The app uses `GlassView` (BlurView-based) with specular top-edge highlight (`borderTopWidth: 1`). Intensity: 32 (light) / 40 (dark). Background overlay: `rgba(255,255,255,0.7)` (light) / `rgba(29,27,24,0.85)` (dark). Web fallback renders as solid `View` with background color.
+
+The inner glow effect on glass surfaces uses a 1px inset shadow at rgba(255,255,255,0.08) to simulate light refraction at the glass edge. On dark mode, this shifts to rgba(255,255,255,0.04). The shadow must be inset, never outset—outset shadows on glass create a floating-sticker effect that breaks spatial coherence.
+
+## 2.5 — The Back of the Cabinet
+
+> "A true craftsman does not use inferior plywood for the back of a cabinet, even though no one will see it." — Paul Jobs, as told by Steve Jobs
+
+The codebase of Fork & Compass is the back of the cabinet. The API server, the Drizzle ORM schema, the timeline engine algorithm, the grocery list category detection—none of this is visible to the user. All of it must be crafted with the same care as the interface. No perpetual beta. No "ship it and fix it later." No technical debt accepted as inevitable.
+
+## 2.6 — Human-Centric Communication
+
+Fork & Compass speaks like a knowledgeable friend who happens to have traveled the world, not like a software application. Every piece of copy—error messages, button labels, onboarding flows, recipe instructions—is written in warm, active, descriptive language.
+
+- Adaptive cooking language across three skill tiers: First Steps (🌱), Home Cook (🍳), Chef's Table (👨‍🍳). Same ingredients, different instruction voice.
+- Error states never blame the user. "Something went wrong" becomes "We couldn't load that recipe. Let's try again."
+- Cultural context is woven into recipes—not as academic footnotes, but as the kind of story a friend tells while you cook together.
+
+## 2.7 — The Evolved iOS 26 Triad
+
+Beyond the four classic pillars, iOS 26 introduces a refined triad that Fork & Compass fully adopts:
+
+| Principle | Definition | Fork & Compass Implementation |
+|-----------|-----------|-------------------------------|
+| Hierarchy | Dynamic prioritization—the interface adapts what it shows based on user context | Cook mode suppresses all navigation chrome. Plan tab surfaces the next upcoming meal. Discover hides metadata until the user scrolls past the hero. |
+| Harmony | Software shapes follow hardware. Glass blends interface into device. | Tab bar glass material matches device edge curves. Content insets respect Dynamic Island and home indicator. The app feels physically embedded in the device. |
+| Consistency | Adaptive, not uniform. Behavior stays constant as appearance adapts. | Same interaction model across iPhone SE and iPhone 16 Pro Max. Compact and regular size classes both receive full functionality—no features hidden on smaller screens. |
+
+## 2.8 — Non-Negotiable Design Rules
+
+1. Design is how it works. If beautiful but confusing, it has failed.
+2. Subtract before you add. Every element must earn its place.
+3. Content is the hero. Food photography and cultural stories, not chrome and UI widgets.
+4. Finish the back of the cabinet. The codebase, API, admin—invisible quality everywhere.
+5. Follow the HIG. Tab bars at bottom. Back at top-left. Standard gestures. No exceptions.
+6. Glass is for navigation, never for content. Liquid Glass frames the experience. Food stays crisp.
+7. Speak like a human. Warm, active, culturally literate. Never robotic. Never blame the user.
+8. Accessibility is architecture. VoiceOver, Dynamic Type, 48pt touch targets, reduced motion, color independence.
+9. Say no to protect the yes. Features are deferred, not deleted. Deferred means not built today.
+
+---
+
+# 3. The Ethereal Archivist Design System
+
+> Status: **IMPLEMENTED.** The design system below is fully built and enforced across all screens. All tokens are defined in `constants/` and consumed via `useThemeColors()`, `Typography`, `Spacing`, `Radius`, and `Shadows` exports. No design reskin work remains.
+
+The design system is the single source of truth for every visual decision. No color, font, spacing value, or radius may be used outside of these tokens. This is enforced at the code level via `useThemeColors()`, the typography export, the Radius export, and the Spacing export. Hardcoded values are treated as bugs.
+
+## 3.1 — Color Palette
+
+Color is functional, not decorative. Every color in Fork & Compass communicates a specific meaning and adapts automatically between light and dark mode via the `useThemeColors()` hook. Hex values are never hardcoded in components.
+
+| Token | Light Value | Dark Value | Usage |
+|-------|-----------|-----------|-------|
+| `primary` | `#9A4100` | `#9A4100` | Interactive elements, CTAs, active states, brand identity |
+| `onPrimary` | `#FFFFFF` | `#4A1C00` | Text/icons on primary-colored surfaces |
+| `surface` | `#FEF9F3` | `#161412` | Primary background, content area |
+| `surfaceContainerLow` | `#F8F3ED` | `#1D1B18` | Cards, elevated containers |
+| `surfaceContainerHigh` | `#ECE7E2` | `#2C2926` | Selected states, hover backgrounds |
+| `onSurface` | `#1D1B18` | `#F0ECE6` | Primary text, headlines |
+| `onSurfaceVariant` | `#564339` | `#D4C4B8` | Secondary text, metadata, captions |
+| `secondaryContainer` | `#FFBD9D` | `#683B23` | Soft background accents, badge fills |
+| `outline` | `#897267` | `#9D8C82` | Borders, separators |
+| `outlineVariant` | `#DDC1B4` | `#514339` | Dividers, card borders, section separators |
+| `error` | `#BA1A1A` | `#FFB4AB` | Destructive actions, validation errors |
+| `success` | `#2D6A4F` | `#52B788` | Completed states, timer completions |
+| `warning` | `#BA7517` | `#EF9F27` | Dietary conflict alerts, caution states |
+| `inverseSurface` | `#32302C` | `#F0ECE6` | Inverted backgrounds |
+| `inverseOnSurface` | `#F5F0EA` | `#32302C` | Text on inverted backgrounds |
+| `overlay` | `rgba(0,0,0,0.55)` | `rgba(0,0,0,0.7)` | Hero gradient overlays, modal scrims |
+
+**Dark Mode Rules:**
+- Dark mode is mandatory, not polish. Apple reviewers check it.
+- Never use pure black (`#000000`) as a background. Fork & Compass dark surface is `#161412`—a warm near-black with subtle brown undertone that matches the terracotta identity.
+- Text hierarchy uses the `onSurface`/`onSurfaceVariant` tokens, which automatically adapt. Never hardcode white text.
+- Glass surfaces in dark mode reduce their opacity slightly (0.85 vs 0.70) to maintain the sense of depth without washing out underlying content.
+
+## 3.2 — Typography
+
+Typography is the primary visual structure of the entire interface. All text uses semantic tokens from the Typography export. Raw fontFamily strings are never written in component files.
+
+| Token | Font | Size | Weight | Usage |
+|-------|------|------|--------|-------|
+| `displayLarge` | Noto Serif 600 | 44pt / 52lh | SemiBold | Splash screen, onboarding hero |
+| `displayMedium` | Noto Serif 600 | 36pt / 44lh | SemiBold | Country hero overlay names |
+| `display` | Noto Serif 700 | 28pt / 34lh | Bold | Screen titles, section anchors |
+| `headlineLarge` | Noto Serif 600 | 32pt / 40lh | SemiBold | Featured recipe titles |
+| `headline` | Noto Serif 700 | 22pt / 28lh | Bold | Section headers, card titles |
+| `title` | Noto Serif 500 | 18pt / 24lh | Medium | Recipe names in lists, region names |
+| `titleLarge` | Inter 600 | 22pt / 28lh | SemiBold | Large UI labels |
+| `titleMedium` | Inter 600 | 17pt / 24lh | SemiBold | Button text, navigation labels |
+| `titleSmall` | Inter 600 | 16pt / 22lh | SemiBold | Tab labels, chip text |
+| `body` | Inter 400 | 17pt / 26lh | Regular | Recipe instructions, descriptions |
+| `bodySmall` | Inter 400 | 14pt / 20lh | Regular | Footnotes, helper text |
+| `caption` | Inter 500 | 14pt / 20lh | Medium | Section labels, timestamps |
+| `labelLarge` | Inter 500 | 14pt / 20lh | Medium | Category headers, chip labels |
+| `labelSmall` | Inter 500 | 13pt / 18lh | Medium | Badges, chip text, tab bar labels |
+
+**Typography Rules:**
+- Headlines use Noto Serif for editorial warmth. Body uses Inter for screen-optimized legibility. Never mix these roles.
+- Hierarchy is maintained through weight and size contrast, never color alone.
+- On dark backgrounds, bump font weight up one level: Regular becomes Medium, Medium becomes SemiBold.
+
+## 3.3 — Spacing Scale
+
+All spacing is based on a strict 4pt/8pt grid. Every margin, padding, and gap value must come from the Spacing export. Arbitrary numbers are treated as bugs.
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `xs` | 4pt | Icon-to-label gaps, inner badge padding |
+| `sm` | 8pt | Between related items within a group |
+| `md` | 16pt | Standard card padding, section margins |
+| `lg` | 24pt | Between cards in a list, page horizontal margins |
+| `xl` | 32pt | Between major content sections |
+| `xxl` | 48pt | Between editorial sections (hero to content) |
+| `page` | 20pt | Standard horizontal page margin |
+
+## 3.4 — Border Radius
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `Radius.sm` | 8pt | Chips, badges, small interactive elements, filter pills |
+| `Radius.md` | 12pt | Cards, input fields, list items, recipe thumbnails |
+| `Radius.lg` | 16pt | Modals, bottom sheets, large containers, cook mode panels |
+| `Radius.xl` | 24pt | Hero image corners, large feature cards |
+| `Radius.full` | 9999pt | Avatars, circular buttons, pills, floating action buttons |
+
+Sections are separated by color shifts and generous whitespace, not border lines. This matches the luxury magazine aesthetic.
+
+## 3.5 — Elevation and Shadow System
+
+Shadows use a consistent three-tier system. All shadows use the shadow token for shadowColor, with opacity controlled separately.
+
+| Level | shadowOffset | shadowOpacity | shadowRadius | Usage |
+|-------|-------------|--------------|-------------|-------|
+| Subtle | {0, 2} | 0.06 | 8 | Cards at rest, list items, non-interactive surfaces |
+| Medium | {0, 4} | 0.12 | 12 | Cards on hover/press, floating pills, bottom sheet |
+| Prominent | {0, 8} | 0.18 | 24 | Cook mode toolbar, modal sheets, glass overlays |
+
+On dark mode, shadowOpacity increases by 50% to maintain visual separation against dark surfaces.
+
+## 3.6 — Motion and Haptics
+
+All animations respect `useReducedMotion()`. When the OS accessibility setting is enabled, every transition simplifies to an instant crossfade. No exceptions.
+
+| Interaction | Duration | Easing | Haptic |
+|------------|----------|--------|--------|
+| Button press feedback | 150ms | ease-in (scale 0.97) | UIImpactFeedback .light |
+| Primary CTA tap | 200ms | spring (damping: 15) | UIImpactFeedback .medium |
+| Cook mode step swipe | 280ms | spring (damping: 18, stiffness: 120) | UIImpactFeedback .medium |
+| Timer completion | Instant | N/A | UINotificationFeedback .success |
+| Recipe bookmark toggle | 250ms | spring (damping: 12) | UIImpactFeedback .light |
+| Bottom sheet present | 400ms | cubic-bezier ease-out | UIImpactFeedback .light |
+
+Cook mode uses `expo-keep-awake` to prevent screen dimming during active cooking sessions. Haptic feedback is purposeful and sparse.
+
+## 3.7 — Touch Targets and Accessibility Constants
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| MIN_TAP_TARGET | 48pt | All interactive elements (exceeds Apple's 44pt minimum) |
+| PRIMARY_BUTTON_HEIGHT | 52pt | All primary CTA buttons across the app |
+| MIN_ROW_HEIGHT | 56pt | Minimum height for any tappable list row |
+| TAB_BAR_HEIGHT | 64pt | Tab bar height including glass padding |
+| MIN_INTERACTIVE_GAP | 8pt | Minimum space between adjacent tappable elements |
+
+---
+
+# 4. App Architecture
+
+## 4.1 Tech Stack
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
@@ -127,7 +285,7 @@ The visual language evokes a well-traveled food journal — warm, tactile, and r
 | Data fetching | @tanstack/react-query | — |
 | Splash | expo-splash-screen | — |
 
-### 4.2 Provider Stack (`app/_layout.tsx`)
+## 4.2 Provider Stack (`app/_layout.tsx`)
 
 ```
 SafeAreaProvider
@@ -140,7 +298,7 @@ SafeAreaProvider
                                 └─ <Stack> navigator
 ```
 
-### 4.3 Navigation Structure
+## 4.3 Navigation Structure
 
 ```
 Root Stack
@@ -157,7 +315,7 @@ Root Stack
 └── bookmarks         # Bookmarks (push)
 ```
 
-### 4.4 Data Layer
+## 4.4 Data Layer
 
 - `data/countries.ts` — 8 countries with `id`, `name`, `flag`, `region`, `heroImage`, `cuisineLabel`, `description`
 - `data/recipes.ts` — 97 recipes with `id`, `countryId`, `title`, `image`, `category`, `prepTime`, `cookTime`, `servings`, `difficulty`, `ingredients[]`, `steps[]`, `culturalNote`
@@ -165,9 +323,9 @@ Root Stack
 
 ---
 
-## 5. Screen Feature Specs & Status
+# 5. Screen Feature Specs & Status
 
-### 5.1 Discover (`/(tabs)/index`)
+## 5.1 Discover (`/(tabs)/index`)
 
 **Purpose:** Immersive entry point showcasing countries and trending recipes.
 
@@ -181,7 +339,7 @@ Root Stack
 | Trending Bites grid (RecipeCard) | IMPLEMENTED |
 | HeaderBar (transparent mode) | IMPLEMENTED |
 
-### 5.2 Search (`/(tabs)/search`)
+## 5.2 Search (`/(tabs)/search`)
 
 **Purpose:** Find recipes by text query and mood filters.
 
@@ -194,7 +352,7 @@ Root Stack
 | Heart/bookmark button on cards | IMPLEMENTED (UI only — not wired to BookmarksContext) |
 | HeaderBar (frosted glass) | IMPLEMENTED |
 
-### 5.3 Plan (`/(tabs)/plan`)
+## 5.3 Plan (`/(tabs)/plan`)
 
 **Purpose:** Weekly meal planner with daily/weekly views.
 
@@ -211,7 +369,7 @@ Root Stack
 | Persistent itinerary state | NOT BUILT |
 | HeaderBar (frosted glass) | IMPLEMENTED |
 
-### 5.4 Grocery (`/(tabs)/grocery`)
+## 5.4 Grocery (`/(tabs)/grocery`)
 
 **Purpose:** Smart grocery list aggregated from active recipes.
 
@@ -230,7 +388,7 @@ Root Stack
 | Tab badge for unchecked count | NOT BUILT — state is screen-local |
 | HeaderBar (frosted glass) | IMPLEMENTED |
 
-### 5.5 Cook (`/(tabs)/cook`)
+## 5.5 Cook (`/(tabs)/cook`)
 
 **Purpose:** Cooking hub with reputation, technique library, and session resume.
 
@@ -244,7 +402,7 @@ Root Stack
 | Profile link (avatar → /profile) | IMPLEMENTED |
 | HeaderBar (frosted glass) | IMPLEMENTED |
 
-### 5.6 Country Detail (`/country/[id]`)
+## 5.6 Country Detail (`/country/[id]`)
 
 **Purpose:** Deep dive into a country's culinary heritage and recipes.
 
@@ -256,7 +414,7 @@ Root Stack
 | Back button (GlassView) | IMPLEMENTED |
 | "Add to Plan" action | NOT BUILT |
 
-### 5.7 Recipe Detail (`/recipe/[id]`)
+## 5.7 Recipe Detail (`/recipe/[id]`)
 
 **Purpose:** Full recipe view with ingredients, steps, and cooking CTA.
 
@@ -273,7 +431,7 @@ Root Stack
 | "Add to Plan" action | NOT BUILT |
 | "Add to Grocery" action | NOT BUILT |
 
-### 5.8 Cook Mode (`/cook-mode/[id]`)
+## 5.8 Cook Mode (`/cook-mode/[id]`)
 
 **Purpose:** Distraction-free step-by-step cooking with timers.
 
@@ -291,7 +449,7 @@ Root Stack
 | Servings scaler | NOT BUILT |
 | Session persistence (resume after leaving) | NOT BUILT — state resets on unmount |
 
-### 5.9 Profile (`/profile`)
+## 5.9 Profile (`/profile`)
 
 **Purpose:** User preferences and app settings.
 
@@ -303,7 +461,7 @@ Root Stack
 | Notification toggles | IMPLEMENTED (UI only) |
 | General settings | IMPLEMENTED |
 
-### 5.10 Bookmarks (`/bookmarks`)
+## 5.10 Bookmarks (`/bookmarks`)
 
 **Purpose:** Saved/favorited recipes.
 
@@ -317,9 +475,9 @@ Root Stack
 
 ---
 
-## 6. Major Systems Inventory
+# 6. Major Systems Inventory
 
-### 6.1 ThemeContext — IMPLEMENTED
+## 6.1 ThemeContext — IMPLEMENTED
 
 - **File:** `context/ThemeContext.tsx`
 - **State:** `preference: 'system' | 'light' | 'dark'`, `isDark: boolean`
@@ -327,7 +485,7 @@ Root Stack
 - **Consumers:** `useThemePreference()` → `useThemeColors()` hook used by all screens
 - **Status:** Fully functional. Theme picker in Profile wired correctly.
 
-### 6.2 BookmarksContext — IMPLEMENTED
+## 6.2 BookmarksContext — IMPLEMENTED
 
 - **File:** `context/BookmarksContext.tsx`
 - **State:** `bookmarkedIds: string[]`
@@ -336,7 +494,7 @@ Root Stack
 - **Status:** Fully functional. Toggle, persistence, and count all work.
 - **Note:** Search screen heart buttons are NOT wired to this context (UI-only).
 
-### 6.3 AppContext / Global Session State — NOT BUILT
+## 6.3 AppContext / Global Session State — NOT BUILT
 
 No shared context exists for:
 - Active cook session (recipe, step, timer)
@@ -345,14 +503,14 @@ No shared context exists for:
 
 Each of these is either hardcoded or local to a single screen. Screens cannot communicate session state.
 
-### 6.4 Meal Planning System — UI BUILT, LOGIC NOT WIRED
+## 6.4 Meal Planning System — UI BUILT, LOGIC NOT WIRED
 
 - Plan tab has full weekly/daily view UI with day selectors, meal time slots, course slots, and week picker
 - All data comes from hardcoded constants (`PLANNED_DAYS`, `DAILY_MEALS`, `MOCK_DATES`)
 - No state management, no persistence, no add/remove/edit actions
 - No `PlanContext` exists
 
-### 6.5 Grocery System — PARTIAL
+## 6.5 Grocery System — PARTIAL
 
 - Grocery tab builds a deduplicated list from `activeRecipes` (hardcoded to `recipes.slice(0, 4)`)
 - Checkboxes work (local `checkedIds` Set state)
@@ -360,7 +518,7 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 - Ingredient amounts are display strings — no parsing, no scaling, no numeric summation
 - State is screen-local: no context, no persistence, no tab badge
 
-### 6.6 Cook Session System — MOSTLY FUNCTIONAL, NO PERSISTENCE
+## 6.6 Cook Session System — MOSTLY FUNCTIONAL, NO PERSISTENCE
 
 - Cook Mode screen works end-to-end: step navigation, timers, haptics, keep-awake, contextual ingredients
 - BUT: no session persistence — leaving the screen resets all state
@@ -368,7 +526,7 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 - No CookingPill floating indicator
 - No servings scaler in Cook Mode
 
-### 6.7 Ingredient Amount Parsing — NOT BUILT
+## 6.7 Ingredient Amount Parsing — NOT BUILT
 
 - All ingredient amounts are display strings (`"400g"`, `"2 tbsp, freshly cracked"`, `"1 large, diced"`)
 - No parsing utility exists to extract numeric values and units
@@ -377,9 +535,9 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 
 ---
 
-## 7. Technical Architecture
+# 7. Technical Architecture
 
-### 7.1 Component Library
+## 7.1 Component Library
 
 | Component | File | Purpose |
 |-----------|------|---------|
@@ -392,7 +550,7 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 | ErrorFallback | `components/ErrorFallback.tsx` | Fallback UI for caught errors |
 | KeyboardAwareScrollViewCompat | `components/KeyboardAwareScrollViewCompat.tsx` | Cross-platform keyboard-aware scroll |
 
-### 7.2 File Map
+## 7.2 File Map
 
 ```
 artifacts/mobile/
@@ -425,14 +583,7 @@ artifacts/mobile/
 └── MASTER_BLUEPRINT.md                # This file
 ```
 
-### 7.3 Performance
-
-- Recipe data is 97 items loaded from a static file — no lazy loading needed
-- `useMemo` used for filtered lists (Search, Grocery grouping)
-- `expo-image` with `transition={300}` for smooth image loads
-- FlatList with `pagingEnabled` for hero carousel (Discover)
-
-### 7.4 Persistence
+## 7.3 Persistence
 
 | Data | Storage | Status |
 |------|---------|--------|
@@ -442,7 +593,7 @@ artifacts/mobile/
 | Weekly itinerary | — | NOT BUILT (hardcoded) |
 | Grocery checked state | — | NOT BUILT (screen-local) |
 
-### 7.5 Platform Compatibility
+## 7.4 Platform Compatibility
 
 - Expo SDK 54, managed workflow
 - `expo-keep-awake` v15 (compatible with SDK 54)
@@ -451,44 +602,55 @@ artifacts/mobile/
 
 ---
 
-## 8. Accessibility
+# 8. Accessibility
 
 > Status: **IMPLEMENTED** across all screens. Maintained as a baseline — no regressions allowed.
 
-### 8.1 Interactive Elements
+## 8.1 Interactive Elements
 
 - All `Pressable` components have `accessibilityRole="button"` and descriptive `accessibilityLabel`
 - Checkboxes use `accessibilityRole="checkbox"` with `accessibilityState={{ checked }}`
 - Toggle groups use `accessibilityState={{ selected }}` for active state
 
-### 8.2 Navigation
+## 8.2 Navigation
 
 - Tab bar items have `tabBarAccessibilityLabel` (e.g., "Discover tab", "Search tab")
 - Hero carousel has `accessibilityRole="adjustable"` with dynamic label showing current country
 - All back buttons and close buttons have `accessibilityLabel="Go back"` / `"Close"`
 
-### 8.3 Media
+## 8.3 Media
 
 - `expo-image` components use `accessible={false}` for decorative images (hero backgrounds, recipe cards)
 - Informational images use `accessibilityLabel` with content description (e.g., recipe title)
 
-### 8.4 Haptic Feedback
+## 8.4 Haptic Feedback
 
 - Cook Mode: `Haptics.impactAsync(Medium)` on step forward, `Light` on step back
 - Cook Mode: `Haptics.notificationAsync(Success)` on timer completion
 - Haptics provide non-visual confirmation of actions
 
-### 8.5 Color Contrast
+## 8.5 Color Contrast
 
 - All text colors meet WCAG contrast ratios against their backgrounds
 - `outline` tokens provide sufficient contrast for metadata text
 - Interactive elements use terracotta `#9A4100` which meets AA contrast on cream `#FEF9F3`
 
+## 8.6 Deferred Accessibility Items
+
+| Requirement | Standard | Status |
+|------------|----------|--------|
+| Dynamic Type scaling | All text scales with user preference | Partial — needs verification at largest sizes |
+| Touch target audit | Minimum 48pt for all interactive elements | Audit needed before TestFlight |
+| Color independence | Never use color as sole indicator of meaning | Needs audit across badges and states |
+| Reduce Motion | Simpler transitions when OS setting enabled | Implemented via `useReducedMotion()` |
+
 ---
 
-## 9. Execution Roadmap
+# 9. Execution Roadmap
 
-### Priority 1: AppContext — Global State Foundation
+Applying the Top 10 List Protocol — the Jobsian framework of listing ten priorities and crossing out the bottom seven — Fork & Compass's immediate execution focuses on three things only:
+
+## Priority 1: AppContext — Global State Foundation
 
 **Goal:** Create the shared state layer that all other systems depend on.
 
@@ -501,11 +663,9 @@ All three contexts wrap the app in `_layout.tsx` alongside existing `ThemeProvid
 
 **Unblocks:** Everything in P2 and P3.
 
-### Priority 2: Plan → Grocery → Cook Core Loop Wiring
+## Priority 2: Plan → Grocery → Cook Core Loop Wiring
 
 **Goal:** Make the core user journey functional end-to-end.
-
-**Scope:**
 
 **Plan tab:**
 - Replace hardcoded `PLANNED_DAYS` / `DAILY_MEALS` / `MOCK_DATES` with `PlanContext` state
@@ -532,7 +692,7 @@ All three contexts wrap the app in `_layout.tsx` alongside existing `ThemeProvid
 
 **Depends on:** P1
 
-### Priority 3: Cook Mode Polish
+## Priority 3: Cook Mode Polish
 
 **Goal:** Complete the cook mode experience with scaling and session persistence.
 
@@ -545,9 +705,19 @@ All three contexts wrap the app in `_layout.tsx` alongside existing `ThemeProvid
 
 **Depends on:** P1, P2
 
+## On the Horizon (Deferred, Not Forgotten)
+
+- Multi-Course Timeline Coordinator (backward-planning dinner engine)
+- Dinner Party feature (guest management, RSVP, dietary conflicts)
+- Delivery integration (Instacart, Walmart, Kroger)
+- Pantry Inventory (kitchen scanner, auto-subtract from grocery)
+- Skill-level adaptive cooking language (First Steps / Home Cook / Chef's Table)
+- Search bookmark wiring (heart buttons → BookmarksContext)
+- Admin dashboard
+
 ---
 
-## 10. Design Rules Checklist
+# 10. Design Rules Checklist
 
 For every change, verify:
 
