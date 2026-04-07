@@ -2,7 +2,7 @@
 
 ## Master Blueprint V3
 
-**Product Vision · Design System · Architecture · Systems Roadmap**
+**Product Vision · Design System · Glassmorphic UI · Architecture · Systems Roadmap**
 
 *Pick a country, cook a dinner, feel like you traveled.*
 
@@ -14,7 +14,7 @@ voyageapron.com
 
 # 1. Product Vision
 
-> Status: **IMPLEMENTED.** The product vision below is fully realized in the current build. All core loop steps (Discover → Recipe → Plan → Grocery → Cook) have working UI screens.
+> Status: **IMPLEMENTED.** The product vision below is fully realized in the current build. All core loop steps (Discover → Recipe → Plan → Grocery → Cook) have working UI screens. 8 countries and 97 recipes with full cultural context are loaded as local mock data.
 
 ## The Soul of the Product
 
@@ -98,7 +98,19 @@ Liquid Glass uses real-time lensing (not simple blur), specular highlights that 
 - Glass elements use content-aware color: the tab bar subtly shifts warmth over a terracotta hero image, cools over a blue-toned Japanese garden.
 - On devices below iOS 26, the system degrades gracefully to BlurView frosted glass with identical layout behavior—no feature loss, only reduced visual richness.
 
-**Current Implementation:** The app uses `GlassView` (BlurView-based) with specular top-edge highlight (`borderTopWidth: 1`). Intensity: 32 (light) / 40 (dark). Background overlay: `rgba(255,255,255,0.7)` (light) / `rgba(29,27,24,0.85)` (dark). Web fallback renders as solid `View` with background color.
+**Glassmorphic Component Specifications:**
+
+| Component | Glass Variant | Blur Radius | Background Opacity | Border |
+|-----------|--------------|------------|-------------------|--------|
+| Tab Bar | Regular | 20px system | 0.72 | 0.5px top, rgba(255,255,255,0.18) |
+| Navigation Bar | Clear | 24px system | 0.65 | None |
+| Floating CTA Pill | Regular | 16px | 0.78 | 1px, rgba(255,255,255,0.22) |
+| Bottom Sheet Header | Regular | 20px system | 0.72 | 0.5px bottom, rgba(255,255,255,0.12) |
+| Cook Mode Toolbar | Clear | 24px | 0.60 | None |
+| Timer Overlay | Identity | None | 0.92 solid | None |
+| Recipe Card Hover | Regular | 12px | 0.85 | 1px, rgba(255,255,255,0.15) |
+
+> **Current Build Implementation:** The app uses a shared `GlassView` component (`components/GlassView.tsx`) wrapping `expo-blur` `BlurView`. Actual values in `constants/glass.ts`: intensity `32` (light) / `40` (dark); background overlay `rgba(255,255,255,0.7)` (light) / `rgba(29,27,24,0.85)` (dark); specular highlight as `borderTopWidth: 1` with `borderTopColor: rgba(255,255,255,0.4)` (light) / `rgba(255,255,255,0.15)` (dark). Web fallback renders as solid `View` with background color overlay (no BlurView on web).
 
 The inner glow effect on glass surfaces uses a 1px inset shadow at rgba(255,255,255,0.08) to simulate light refraction at the glass edge. On dark mode, this shifts to rgba(255,255,255,0.04). The shadow must be inset, never outset—outset shadows on glass create a floating-sticker effect that breaks spatial coherence.
 
@@ -142,7 +154,7 @@ Beyond the four classic pillars, iOS 26 introduces a refined triad that Fork & C
 
 # 3. The Ethereal Archivist Design System
 
-> Status: **IMPLEMENTED.** The design system below is fully built and enforced across all screens. All tokens are defined in `constants/` and consumed via `useThemeColors()`, `Typography`, `Spacing`, `Radius`, and `Shadows` exports. No design reskin work remains.
+> Status: **IMPLEMENTED.** The design system below is fully built and enforced across all screens. All tokens are defined in `constants/` and consumed via `useThemeColors()`, `Typography`, `Spacing`, `Radius`, and `Shadows` exports. No design reskin work remains. Where the V2 spec values differ from the current codebase implementation, an **Implementation Note** is provided.
 
 The design system is the single source of truth for every visual decision. No color, font, spacing value, or radius may be used outside of these tokens. This is enforced at the code level via `useThemeColors()`, the typography export, the Radius export, and the Spacing export. Hardcoded values are treated as bugs.
 
@@ -152,32 +164,32 @@ Color is functional, not decorative. Every color in Fork & Compass communicates 
 
 | Token | Light Value | Dark Value | Usage |
 |-------|-----------|-----------|-------|
-| `primary` | `#9A4100` | `#9A4100` | Interactive elements, CTAs, active states, brand identity |
-| `onPrimary` | `#FFFFFF` | `#4A1C00` | Text/icons on primary-colored surfaces |
-| `surface` | `#FEF9F3` | `#161412` | Primary background, content area |
-| `surfaceContainerLow` | `#F8F3ED` | `#1D1B18` | Cards, elevated containers |
-| `surfaceContainerHigh` | `#ECE7E2` | `#2C2926` | Selected states, hover backgrounds |
+| `primary` | `#9A4100` | `#B85A1A` | Interactive elements, CTAs, active states, brand identity |
+| `surface` | `#FEF9F3` | `#121110` | Primary background, content area |
+| `surfaceContainer` | `#F7F1EA` | `#201E1B` | Cards, elevated containers |
+| `surfaceContainerHigh` | `#F5EDDF` | `#252320` | Selected states, hover backgrounds |
 | `onSurface` | `#1D1B18` | `#F0ECE6` | Primary text, headlines |
-| `onSurfaceVariant` | `#564339` | `#D4C4B8` | Secondary text, metadata, captions |
-| `secondaryContainer` | `#FFBD9D` | `#683B23` | Soft background accents, badge fills |
-| `outline` | `#897267` | `#9D8C82` | Borders, separators |
-| `outlineVariant` | `#DDC1B4` | `#514339` | Dividers, card borders, section separators |
+| `onSurfaceVariant` | `#5C5549` | `#A09A90` | Secondary text, metadata, captions |
+| `secondaryContainer` | `#FDDCB5` | `#594328` | Soft background accents, badge fills |
+| `outlineVariant` | `#E8DFD2` | `#3A3632` | Dividers, card borders, section separators |
 | `error` | `#BA1A1A` | `#FFB4AB` | Destructive actions, validation errors |
 | `success` | `#2D6A4F` | `#52B788` | Completed states, timer completions |
 | `warning` | `#BA7517` | `#EF9F27` | Dietary conflict alerts, caution states |
-| `inverseSurface` | `#32302C` | `#F0ECE6` | Inverted backgrounds |
-| `inverseOnSurface` | `#F5F0EA` | `#32302C` | Text on inverted backgrounds |
-| `overlay` | `rgba(0,0,0,0.55)` | `rgba(0,0,0,0.7)` | Hero gradient overlays, modal scrims |
+| `overlay` | `rgba(0,0,0,0.55)` | `rgba(0,0,0,0.65)` | Hero gradient overlays, modal scrims |
+| `shadow` | `#000000` | `#000000` | All iOS shadow colors (opacity set separately) |
+
+> **Implementation Note:** The current `constants/colors.ts` has minor deviations from V2 spec values: `primary` dark = `#9A4100` (same as light, not `#B85A1A`); `surface` dark = `#161412` (not `#121110`); `onSurfaceVariant` light = `#564339` / dark = `#D4C4B8`; `secondaryContainer` light = `#FFBD9D` / dark = `#683B23`; `outlineVariant` light = `#DDC1B4` / dark = `#514339`. Additional tokens in codebase: `onPrimary` (`#FFFFFF` / `#4A1C00`), `outline` (`#897267` / `#9D8C82`), `surfaceContainerLow` (`#F8F3ED` / `#1D1B18`), `inverseSurface` (`#32302C` / `#F0ECE6`), `inverseOnSurface` (`#F5F0EA` / `#32302C`).
 
 **Dark Mode Rules:**
-- Dark mode is mandatory, not polish. Apple reviewers check it.
-- Never use pure black (`#000000`) as a background. Fork & Compass dark surface is `#161412`—a warm near-black with subtle brown undertone that matches the terracotta identity.
+- Dark mode is mandatory, not polish. Apple reviewers check it. Broken dark mode is a top cause of App Store rejection.
+- Never use pure black (`#000000`) as a background. Fork & Compass dark surface is `#121110`—a warm near-black with subtle brown undertone that matches the terracotta identity. (**Current build:** `#161412`)
+- Accent colors (terracotta primary) shift to higher brightness and saturation in dark mode (`#B85A1A`) to maintain visual punch against dark backgrounds. (**Current build:** uses `#9A4100` in both modes)
 - Text hierarchy uses the `onSurface`/`onSurfaceVariant` tokens, which automatically adapt. Never hardcode white text.
-- Glass surfaces in dark mode reduce their opacity slightly (0.85 vs 0.70) to maintain the sense of depth without washing out underlying content.
+- Glass surfaces in dark mode reduce their opacity slightly (0.65 vs 0.72) to maintain the sense of depth without washing out underlying content.
 
 ## 3.2 — Typography
 
-Typography is the primary visual structure of the entire interface. All text uses semantic tokens from the Typography export. Raw fontFamily strings are never written in component files.
+Typography is the primary visual structure of the entire interface. All text uses semantic tokens from the typography export. Raw fontFamily strings are never written in component files.
 
 | Token | Font | Size | Weight | Usage |
 |-------|------|------|--------|-------|
@@ -191,19 +203,22 @@ Typography is the primary visual structure of the entire interface. All text use
 | `titleMedium` | Inter 600 | 17pt / 24lh | SemiBold | Button text, navigation labels |
 | `titleSmall` | Inter 600 | 16pt / 22lh | SemiBold | Tab labels, chip text |
 | `body` | Inter 400 | 17pt / 26lh | Regular | Recipe instructions, descriptions |
+| `bodyEmphasis` | Inter 500 | 17pt / 26lh | Medium | Ingredient names, day labels |
 | `bodySmall` | Inter 400 | 14pt / 20lh | Regular | Footnotes, helper text |
 | `caption` | Inter 500 | 14pt / 20lh | Medium | Section labels, timestamps |
-| `labelLarge` | Inter 500 | 14pt / 20lh | Medium | Category headers, chip labels |
-| `labelSmall` | Inter 500 | 13pt / 18lh | Medium | Badges, chip text, tab bar labels |
+| `small` | Inter 500 | 13pt / 18lh | Medium | Badges, chip text, tab bar labels |
 
 **Typography Rules:**
+- All text supports Dynamic Type. Every text element scales with the user's accessibility preference. Minimum readable text is 11pt absolute floor; minimum practical text is 13pt (the `small` token).
+- Hierarchy is maintained through weight and size contrast, never color alone. A visually impaired user must distinguish headline from body without seeing color.
 - Headlines use Noto Serif for editorial warmth. Body uses Inter for screen-optimized legibility. Never mix these roles.
-- Hierarchy is maintained through weight and size contrast, never color alone.
-- On dark backgrounds, bump font weight up one level: Regular becomes Medium, Medium becomes SemiBold.
+- On dark backgrounds, bump font weight up one level: Regular becomes Medium, Medium becomes SemiBold. This compensates for halation (light text on dark appearing thinner).
+- Letter spacing tightens at display sizes (-0.5pt) and loosens at small sizes (+0.5pt), matching the San Francisco optical behavior.
+- `NotoSerif_500Medium` must be loaded as a font variant. It is required for the `title` token (recipe names, pull quotes).
 
 ## 3.3 — Spacing Scale
 
-All spacing is based on a strict 4pt/8pt grid. Every margin, padding, and gap value must come from the Spacing export. Arbitrary numbers are treated as bugs.
+All spacing is based on a strict 4pt/8pt grid. Every margin, padding, and gap value in the app must come from the Spacing export. Arbitrary numbers are treated as bugs.
 
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -212,10 +227,14 @@ All spacing is based on a strict 4pt/8pt grid. Every margin, padding, and gap va
 | `md` | 16pt | Standard card padding, section margins |
 | `lg` | 24pt | Between cards in a list, page horizontal margins |
 | `xl` | 32pt | Between major content sections |
-| `xxl` | 48pt | Between editorial sections (hero to content) |
-| `page` | 20pt | Standard horizontal page margin |
+| `xxl` | 40pt | Between editorial sections (hero to content) |
+| `page` | 24pt | Standard horizontal page margin |
+
+> **Implementation Note:** Current `constants/spacing.ts` has `xxl = 48` (not 40) and `page = 20` (not 24).
 
 ## 3.4 — Border Radius
+
+The current build has consolidated border radius to exactly 5 tokens (V2 spec had 6 with `Radius.xs = 4pt`):
 
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -225,11 +244,11 @@ All spacing is based on a strict 4pt/8pt grid. Every margin, padding, and gap va
 | `Radius.xl` | 24pt | Hero image corners, large feature cards |
 | `Radius.full` | 9999pt | Avatars, circular buttons, pills, floating action buttons |
 
-Sections are separated by color shifts and generous whitespace, not border lines. This matches the luxury magazine aesthetic.
+Sections are separated by color shifts and generous whitespace, not border lines. This matches the luxury magazine aesthetic—editorial layouts breathe. The `outlineVariant` token exists for the rare cases where a subtle divider is needed (grocery category headers, settings groups).
 
 ## 3.5 — Elevation and Shadow System
 
-Shadows use a consistent three-tier system. All shadows use the shadow token for shadowColor, with opacity controlled separately.
+Shadows in Fork & Compass use a consistent three-tier system. All shadows use the shadow token for shadowColor (#000000), with opacity controlled separately via shadowOpacity. This ensures theme-awareness and prevents hardcoded values.
 
 | Level | shadowOffset | shadowOpacity | shadowRadius | Usage |
 |-------|-------------|--------------|-------------|-------|
@@ -237,32 +256,45 @@ Shadows use a consistent three-tier system. All shadows use the shadow token for
 | Medium | {0, 4} | 0.12 | 12 | Cards on hover/press, floating pills, bottom sheet |
 | Prominent | {0, 8} | 0.18 | 24 | Cook mode toolbar, modal sheets, glass overlays |
 
-On dark mode, shadowOpacity increases by 50% to maintain visual separation against dark surfaces.
+On dark mode, shadowOpacity increases by 50% (0.06 becomes 0.09, 0.12 becomes 0.18) to maintain visual separation against dark surfaces. Glass components use an additional inset shadow (see Section 2.4).
 
 ## 3.6 — Motion and Haptics
 
-All animations respect `useReducedMotion()`. When the OS accessibility setting is enabled, every transition simplifies to an instant crossfade. No exceptions.
+All animations should respect `useReducedMotion()`. When the OS accessibility setting is enabled, every transition simplifies to an instant crossfade. No exceptions.
+
+> **Implementation Note:** `useReducedMotion()` is not yet implemented in app screens/components. This is a deferred accessibility item (see Section 8.6).
 
 | Interaction | Duration | Easing | Haptic |
 |------------|----------|--------|--------|
 | Button press feedback | 150ms | ease-in (scale 0.97) | UIImpactFeedback .light |
 | Primary CTA tap | 200ms | spring (damping: 15) | UIImpactFeedback .medium |
+| Navigate forward (list → detail) | 320ms | ease-out (slide-right) | None |
+| Navigate back (detail → list) | 320ms | ease-in (slide-left) | None |
+| Bottom sheet present | 400ms | cubic-bezier ease-out | UIImpactFeedback .light |
+| Bottom sheet dismiss | 300ms | ease-in (slide-down) | None |
+| Recipe bookmark toggle | 250ms | spring (damping: 12) | UIImpactFeedback .light |
 | Cook mode step swipe | 280ms | spring (damping: 18, stiffness: 120) | UIImpactFeedback .medium |
 | Timer completion | Instant | N/A | UINotificationFeedback .success |
-| Recipe bookmark toggle | 250ms | spring (damping: 12) | UIImpactFeedback .light |
-| Bottom sheet present | 400ms | cubic-bezier ease-out | UIImpactFeedback .light |
+| Destructive action confirm | 200ms | ease-out | UINotificationFeedback .warning |
+| Toast appear/dismiss | 200ms in, 3s hold, 200ms out | ease-out / ease-in | None |
+| Skeleton shimmer | 1.5s loop | ease-in-out | None |
+| Pull to refresh | System-managed | System spring | System haptic |
 
-Cook mode uses `expo-keep-awake` to prevent screen dimming during active cooking sessions. Haptic feedback is purposeful and sparse.
+Transitions use react-native-reanimated with spring-based physics. No linear easing ever on visible UI animations.
+Cook mode uses `expo-keep-awake` to prevent screen dimming during active cooking sessions.
+Haptic feedback is purposeful and sparse. A light tap on bookmark. A medium impact on step advance. A success notification on timer completion. Never continuous or ambient.
 
 ## 3.7 — Touch Targets and Accessibility Constants
 
 | Constant | Value | Purpose |
 |----------|-------|---------|
-| MIN_TAP_TARGET | 48pt | All interactive elements (exceeds Apple's 44pt minimum) |
+| MIN_TAP_TARGET | 48pt | All interactive elements (exceeds Apple's 44pt minimum for comfort) |
 | PRIMARY_BUTTON_HEIGHT | 52pt | All primary CTA buttons across the app |
 | MIN_ROW_HEIGHT | 56pt | Minimum height for any tappable list row |
-| TAB_BAR_HEIGHT | 64pt | Tab bar height including glass padding |
+| TAB_BAR_HEIGHT | 56pt | Tab bar height including glass padding |
 | MIN_INTERACTIVE_GAP | 8pt | Minimum space between adjacent tappable elements |
+| MAX_FONT_SCALE | 1.5x | Default maximum Dynamic Type multiplier |
+| COOK_MODE_MAX_FONT_SCALE | 2.0x | Cook mode allows larger text for flour-covered hands |
 
 ---
 
@@ -444,6 +476,7 @@ Root Stack
 | Timer play/pause/reset | IMPLEMENTED |
 | Contextual ingredient pills (matched to current step) | IMPLEMENTED |
 | Previous/Next step navigation | IMPLEMENTED |
+| Swipe gestures for step navigation | IMPLEMENTED |
 | Haptic feedback (step changes, timer completion) | IMPLEMENTED |
 | Keep-awake (screen stays on) | IMPLEMENTED |
 | Servings scaler | NOT BUILT |
@@ -520,10 +553,10 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 
 ## 6.6 Cook Session System — MOSTLY FUNCTIONAL, NO PERSISTENCE
 
-- Cook Mode screen works end-to-end: step navigation, timers, haptics, keep-awake, contextual ingredients
+- Cook Mode screen works end-to-end: step navigation, swipe gestures, timers, haptics, keep-awake, contextual ingredients
 - BUT: no session persistence — leaving the screen resets all state
 - Cook tab "Resume Session" card is hardcoded to `recipes[3]`, not a real active session
-- No CookingPill floating indicator
+- No CookingPill floating indicator above tab bar
 - No servings scaler in Cook Mode
 
 ## 6.7 Ingredient Amount Parsing — NOT BUILT
@@ -532,6 +565,37 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 - No parsing utility exists to extract numeric values and units
 - Servings adjusters in Recipe Detail, Grocery, and Cook Mode are all cosmetic
 - This is a foundational gap that blocks scaling, deduplication, and smart grocery totals
+
+## 6.8 Multi-Course Timeline Coordinator — DEFERRED
+
+- V2 vision: backward-planning timeline engine that coordinates multiple dishes to a target dinner time
+- "Set dinner at 7 PM. Three dishes. Start at 4:25 PM. We'll tell you what to do and when."
+- Four implementation prompts written (types/engine, context/state, setup/schedule screens, cook mode integration)
+- Solo cook mode is the focus first; multi-course timeline is the competitive differentiator for a later release
+
+## 6.9 Dinner Party System — DEFERRED
+
+- V2 vision: create dinner parties from Plan view, invite friends via SMS (Twilio), track RSVPs, dietary conflict detection, live dinner status view for guests
+- Backend infrastructure designed (dinner_parties and dinner_guests tables, API routes)
+- Not built in current local-only Expo app
+
+## 6.10 Delivery Integration — DEFERRED
+
+- V2 vision: Instacart, Walmart, Kroger integration for grocery delivery
+- In-Store Mode and Pantry Inventory also deferred
+- Current build has retailer selector UI (non-functional placeholder)
+
+## 6.11 Auth & Subscriptions — DEFERRED
+
+- V2 vision: Supabase for auth, RevenueCat for premium tier gating
+- Current build is entirely local with no auth, no user accounts, no subscription checks
+
+## 6.12 Adaptive Cooking Language — DEFERRED
+
+- V2 vision: three skill tiers (First Steps 🌱, Home Cook 🍳, Chef's Table 👨‍🍳) change instruction voice per recipe
+- Same ingredients, different instruction language
+- Skill level selection exists in Profile (UI only) — not wired to recipe instruction rendering
+- Beginner and Chef's Table rewrites would be AI-generated at build time, not runtime
 
 ---
 
@@ -604,7 +668,7 @@ artifacts/mobile/
 
 # 8. Accessibility
 
-> Status: **IMPLEMENTED** across all screens. Maintained as a baseline — no regressions allowed.
+> Status: **PARTIALLY IMPLEMENTED.** Core accessibility patterns are in place across all screens. Several items require audit before TestFlight submission.
 
 ## 8.1 Interactive Elements
 
@@ -639,10 +703,12 @@ artifacts/mobile/
 
 | Requirement | Standard | Status |
 |------------|----------|--------|
-| Dynamic Type scaling | All text scales with user preference | Partial — needs verification at largest sizes |
+| VoiceOver labels | Every interactive element has a descriptive accessibility label | Audit needed — most elements covered, completeness unverified |
+| Dynamic Type scaling | All text scales with user preference; tested at largest size | Partial — needs verification at extreme sizes |
 | Touch target audit | Minimum 48pt for all interactive elements | Audit needed before TestFlight |
 | Color independence | Never use color as sole indicator of meaning | Needs audit across badges and states |
-| Reduce Motion | Simpler transitions when OS setting enabled | Implemented via `useReducedMotion()` |
+| Reduce Motion | Simpler transitions when OS setting enabled | NOT BUILT — `useReducedMotion()` not yet wired into screens/components |
+| Nielsen heuristics scorecard | 20 criteria (Pass/Partial/Fail) | Not yet scored against current build |
 
 ---
 
@@ -687,19 +753,21 @@ All three contexts wrap the app in `_layout.tsx` alongside existing `ThemeProvid
 - Cook Mode reads/writes session state (current step, timer)
 - Leaving Cook Mode keeps session alive in context
 - Cook tab "Resume Session" reads from `CookSessionContext` instead of `recipes[3]`
-- Floating `CookingPill` component renders above tab bar when `activeSession != null`
+- Floating `CookingPill` component renders above tab bar when `activeSession != null`, showing recipe name + current step
 - Recipe Detail servings adjuster actually scales ingredient amounts using parser
 
 **Depends on:** P1
 
 ## Priority 3: Cook Mode Polish
 
-**Goal:** Complete the cook mode experience with scaling and session persistence.
+**Goal:** Complete the cook mode experience with scaling, session persistence, and finishing flow.
 
 **Scope:**
 - Servings scaler in Cook Mode top bar (reads from `CookSessionContext`, scales ingredient pill amounts)
+- Swipe gesture polish: spring animation (280ms, damping: 18, stiffness: 120) with medium haptic on step change
 - Session auto-save: on step change, persist current step + timer to AsyncStorage
 - Session resume: on mount, restore from context (which loaded from AsyncStorage)
+- CookingPill indicator visible across all tabs (renders in root layout when session active)
 - "Finish Cooking" action at last step: clears session, increments XP (stored in future UserProgressContext or AsyncStorage)
 - Timer completion notification (local notification or prominent visual alert)
 
@@ -707,13 +775,18 @@ All three contexts wrap the app in `_layout.tsx` alongside existing `ThemeProvid
 
 ## On the Horizon (Deferred, Not Forgotten)
 
-- Multi-Course Timeline Coordinator (backward-planning dinner engine)
-- Dinner Party feature (guest management, RSVP, dietary conflicts)
+- Multi-Course Timeline Coordinator (backward-planning dinner engine — the competitive differentiator)
+- Dinner Party feature (guest management, SMS invites via Twilio, RSVP tracking, dietary conflict detection)
+- Adaptive cooking language (First Steps / Home Cook / Chef's Table instruction tiers)
 - Delivery integration (Instacart, Walmart, Kroger)
-- Pantry Inventory (kitchen scanner, auto-subtract from grocery)
-- Skill-level adaptive cooking language (First Steps / Home Cook / Chef's Table)
+- Pantry Inventory (kitchen scanner via expo-camera, auto-subtract from grocery)
+- Supabase auth integration and user accounts
+- RevenueCat premium tier gating
 - Search bookmark wiring (heart buttons → BookmarksContext)
-- Admin dashboard
+- Admin dashboard (Next.js, admin.forkandcompass.app)
+- `useReducedMotion()` wiring across all animated components
+- App icon redesign for Liquid Glass era
+- Performance: lazy-load heavy modules, embed fonts, split large data files
 
 ---
 
