@@ -188,34 +188,37 @@ export default function GroceryScreen() {
                 key={recipe.id}
                 style={[styles.recipeCard, { borderRadius: Radius.lg }]}
               >
-                <Image
-                  source={{ uri: recipe.image }}
-                  style={styles.recipeImage}
-                />
+                <View style={styles.recipeImageWrap}>
+                  <Image
+                    source={{ uri: recipe.image }}
+                    style={styles.recipeImage}
+                  />
+                  <View style={[styles.servingBadge, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
+                    <MaterialCommunityIcons name="account-group-outline" size={12} color="#FFFFFF" />
+                    <Text style={[Typography.labelSmall, { color: '#FFFFFF' }]}>
+                      {recipe.servings} servings
+                    </Text>
+                  </View>
+                  <Pressable
+                    onPress={() => removeRecipe(recipe.id)}
+                    style={[styles.recipeCloseBtn, { backgroundColor: 'rgba(0,0,0,0.45)' }]}
+                  >
+                    <MaterialCommunityIcons name="close" size={14} color="#FFFFFF" />
+                  </Pressable>
+                </View>
                 <View style={styles.recipeCardContent}>
                   <Text style={[Typography.titleSmall, { color: colors.onSurface }]} numberOfLines={1}>
                     {recipe.title}
                   </Text>
-                  <View style={styles.recipeCardMeta}>
-                    <View style={[styles.servingBadge, { backgroundColor: `${colors.primary}20` }]}>
-                      <MaterialCommunityIcons name="account-group-outline" size={12} color={colors.primary} />
-                      <Text style={[Typography.labelSmall, { color: colors.primary }]}>
-                        {recipe.servings}
-                      </Text>
-                    </View>
-                    <Pressable>
-                      <Text style={[Typography.caption, { color: colors.primary }]}>
-                        View Recipe
-                      </Text>
-                    </Pressable>
-                  </View>
+                  <Text style={[Typography.caption, { color: colors.outline }]}>
+                    {recipe.ingredients.length} ingredients
+                  </Text>
+                  <Pressable>
+                    <Text style={[Typography.caption, { color: colors.primary, marginTop: 2 }]}>
+                      View Recipe
+                    </Text>
+                  </Pressable>
                 </View>
-                <Pressable
-                  onPress={() => removeRecipe(recipe.id)}
-                  style={[styles.recipeCloseBtn, { backgroundColor: colors.surfaceContainerHigh }]}
-                >
-                  <MaterialCommunityIcons name="close" size={14} color={colors.outline} />
-                </Pressable>
               </GlassView>
             ))}
           </ScrollView>
@@ -436,36 +439,37 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   recipeCard: {
-    width: 160,
+    width: 200,
     overflow: 'hidden',
   },
+  recipeImageWrap: {
+    position: 'relative',
+  },
   recipeImage: {
-    width: 160,
-    height: 100,
+    width: 200,
+    height: 130,
   },
   recipeCardContent: {
-    padding: Spacing.sm,
+    padding: Spacing.md,
     gap: Spacing.xs,
   },
-  recipeCardMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
   servingBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: 2,
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
     borderRadius: Radius.full,
   },
   recipeCloseBtn: {
     position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 24,
-    height: 24,
+    top: 8,
+    right: 8,
+    width: 26,
+    height: 26,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
