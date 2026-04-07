@@ -118,7 +118,6 @@ const HEADER_HEIGHT = 56;
 const styles = StyleSheet.create({
   container: {
     zIndex: 70,
-    overflow: 'hidden',
   },
   absolute: {
     position: 'absolute',
@@ -127,12 +126,12 @@ const styles = StyleSheet.create({
     right: 0,
   },
   inner: {
-    height: HEADER_HEIGHT,
+    minHeight: HEADER_HEIGHT,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.page,
-    paddingBottom: Spacing.sm,
+    paddingBottom: 12,
   },
   left: {
     flexDirection: 'row',
