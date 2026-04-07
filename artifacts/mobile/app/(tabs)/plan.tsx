@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, Modal } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -29,14 +29,26 @@ const PLANNED_DAYS: Record<string, string> = {
   Saturday: 'jp-1',
 };
 
+type WeekOption = 'this-week' | 'next-week' | 'past';
+
 export default function PlanScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedWeek, setSelectedWeek] = useState<WeekOption>('this-week');
+  const [isDailyView, setIsDailyView] = useState(false);
+
   const getRecipe = (id: string) => recipes.find((r) => r.id === id);
   const plannedCount = Object.keys(PLANNED_DAYS).length;
   const firstPlannedDay = Object.keys(PLANNED_DAYS)[0];
+
+  const weekLabels: Record<WeekOption, string> = {
+    'this-week': 'This Week',
+    'next-week': 'Next Week',
+    'past': 'Past Journeys',
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -58,15 +70,17 @@ export default function PlanScreen() {
             <Pressable hitSlop={12}>
               <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
             </Pressable>
-            <View style={styles.weekCenter}>
+            <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter}>
               <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 2 }]}>
                 CURRENT PLANNING
               </Text>
               <View style={styles.weekTitleRow}>
-                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>This Week</Text>
+                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>
+                  {weekLabels[selectedWeek]}
+                </Text>
                 <MaterialCommunityIcons name="chevron-down" size={18} color={colors.primary} />
               </View>
-            </View>
+            </Pressable>
             <Pressable hitSlop={12}>
               <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
             </Pressable>
@@ -197,6 +211,87 @@ export default function PlanScreen() {
           </GlassView>
         </Pressable>
       </View>
+
+      <Modal
+        visible={showDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDropdown(false)}
+      >
+        <Pressable style={styles.dropdownOverlay} onPress={() => setShowDropdown(false)}>
+          <View style={{ paddingTop: insets.top + 100, paddingHorizontal: Spacing.page, alignItems: 'center' }}>
+            <Pressable
+              style={[styles.dropdownSheet, {
+                backgroundColor: colors.isDark ? 'rgba(30,28,25,0.92)' : 'rgba(255,255,255,0.85)',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 16 },
+                shadowOpacity: 0.15,
+                shadowRadius: 32,
+                elevation: 20,
+              }]}
+              onPress={(e) => e.stopPropagation()}
+            >
+              {(['this-week', 'next-week', 'past'] as WeekOption[]).map((option) => {
+                const isActive = selectedWeek === option;
+                return (
+                  <Pressable
+                    key={option}
+                    onPress={() => {
+                      setSelectedWeek(option);
+                      setShowDropdown(false);
+                    }}
+                    style={[
+                      styles.dropdownItem,
+                      isActive && { backgroundColor: `${colors.primary}15` },
+                    ]}
+                  >
+                    <Text style={[
+                      Typography.titleSmall,
+                      { color: isActive ? colors.primary : colors.onSurface },
+                      isActive && { fontWeight: '700' },
+                    ]}>
+                      {weekLabels[option]}
+                    </Text>
+                    {isActive && (
+                      <MaterialCommunityIcons name="check" size={18} color={colors.primary} />
+                    )}
+                  </Pressable>
+                );
+              })}
+
+              <View style={[styles.dropdownDivider, { backgroundColor: `${colors.onSurface}08` }]} />
+
+              <Pressable
+                style={styles.dropdownItem}
+                onPress={() => setIsDailyView(false)}
+              >
+                <Text style={[Typography.titleSmall, { color: !isDailyView ? colors.primary : colors.onSurface }]}>
+                  Weekly Summary
+                </Text>
+                <MaterialCommunityIcons
+                  name={!isDailyView ? 'toggle-switch' : 'toggle-switch-off-outline'}
+                  size={32}
+                  color={!isDailyView ? colors.primary : colors.outlineVariant}
+                />
+              </Pressable>
+
+              <Pressable
+                style={styles.dropdownItem}
+                onPress={() => setIsDailyView(true)}
+              >
+                <Text style={[Typography.titleSmall, { color: isDailyView ? colors.primary : colors.onSurface }]}>
+                  Daily View
+                </Text>
+                <MaterialCommunityIcons
+                  name={isDailyView ? 'toggle-switch' : 'toggle-switch-off-outline'}
+                  size={32}
+                  color={isDailyView ? colors.primary : colors.outlineVariant}
+                />
+              </Pressable>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -332,5 +427,28 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dropdownOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  dropdownSheet: {
+    width: 240,
+    borderRadius: 20,
+    padding: Spacing.sm,
+    gap: 2,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 12,
+    borderRadius: Radius.md,
+  },
+  dropdownDivider: {
+    height: 1,
+    marginVertical: 4,
+    marginHorizontal: Spacing.sm,
   },
 });

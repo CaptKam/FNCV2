@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#d5e3ff",
+                        "on-tertiary-fixed-variant": "#004689",
+                        "on-primary-fixed-variant": "#783100",
+                        "surface-variant": "#e6e2dc",
+                        "surface-tint": "#9d4303",
+                        "surface-container": "#f2ede7",
+                        "primary-fixed-dim": "#ffb691",
+                        "on-primary-container": "#ffc9af",
+                        "tertiary": "#004485",
+                        "primary": "#753000",
+                        "outline-variant": "#ddc1b4",
+                        "on-error": "#ffffff",
+                        "background": "#fef9f3",
+                        "tertiary-container": "#005caf",
+                        "surface-container-low": "#f8f3ed",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#001b3c",
+                        "secondary-fixed-dim": "#f9b897",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#ffb691",
+                        "surface-container-highest": "#e6e2dc",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#fef9f3",
+                        "primary-container": "#9a4100",
+                        "primary-fixed": "#ffdbcb",
+                        "inverse-on-surface": "#f5f0ea",
+                        "on-surface-variant": "#564339",
+                        "on-secondary-fixed-variant": "#683b23",
+                        "outline": "#897267",
+                        "on-surface": "#1d1b18",
+                        "on-tertiary-container": "#c0d6ff",
+                        "on-secondary-fixed": "#331101",
+                        "surface-dim": "#ded9d4",
+                        "on-secondary-container": "#7a4a31",
+                        "tertiary-fixed-dim": "#a7c8ff",
+                        "inverse-surface": "#32302c",
+                        "on-primary-fixed": "#341100",
+                        "surface": "#fef9f3",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#ffbd9d",
+                        "secondary": "#845238",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffdbcb",
+                        "error": "#ba1a1a",
+                        "on-background": "#1d1b18",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#ece7e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fef9f3; color: #1d1b18; }
+        .font-serif { font-family: 'Noto Serif', serif; }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(32px);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .transit-line {
+            position: absolute;
+            left: 23px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #9a4100;
+            opacity: 0.2;
+        }
+        .transit-node {
+            position: absolute;
+            left: 18px;
+            top: 24px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #9a4100;
+            z-index: 10;
+        }
+        .blank-ticket {
+            border: 1px dashed #ddc1b4;
+            background: rgba(242, 237, 231, 0.5);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-stone-50/70 backdrop-blur-2xl shadow-[0_20px_40px_rgba(29,27,24,0.06)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-white/40">
+<img class="w-full h-full object-cover" data-alt="Portrait of a professional chef in a clean white kitchen setting with soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAasP4Nd9cn90FLNcb9bMekCKyj8puBIb7MURfoKzLXZi-qmyJpxvZgqnearKPipN_vJGzgQOHxUShuxhFZG5oK_QK9zmr6uE0VkR0wr6v7rXLKYLIe6j_lkaNB_MbcJ0OPX7axqzlp2O9ZvYYDSuSPzEl84wo5o1AXL0lhvDWmUTXKMR5i1jRqz2ksPKjgWGhD6na0CR3ktnz9vlGZhmkN2pDLpiVawO4N1rRbGMli2YHBGhepGLTVQFVWfCfCgpeL9jirUXO7UjpU"/>
+</div>
+<span class="text-xl font-serif text-orange-900">Fork &amp; Compass</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-stone-500 hover:bg-white/20 transition-all rounded-full">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+</div>
+</header>
+<main class="pt-24 pb-48 px-6 max-w-2xl mx-auto space-y-8">
+<!-- Week Navigation -->
+<section class="sticky top-20 z-40 py-2">
+<div class="liquid-glass rounded-full px-6 py-4 flex items-center justify-between shadow-[0_20px_40px_rgba(29,27,24,0.06)]">
+<button class="material-symbols-outlined text-primary">chevron_left</button>
+<div class="flex flex-col items-center">
+<p class="text-[10px] uppercase tracking-widest text-outline font-bold">Current Planning</p>
+<div class="relative group flex items-center gap-1 cursor-pointer">
+<h2 class="font-serif text-xl text-on-surface">This Week</h2>
+<span class="material-symbols-outlined text-primary text-lg">expand_more</span>
+<!-- Dropdown Menu (Hidden by default) -->
+<div class="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-56 bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl border-t border-white/60 overflow-hidden opacity-100 pointer-events-auto transition-all z-50 ring-1 ring-black/5">
+<div class="p-2 space-y-1">
+<a class="flex items-center justify-between px-4 py-3 rounded-lg bg-primary/10 text-primary transition-colors" href="#">
+<span class="text-sm font-semibold tracking-tight">This Week</span>
+<span class="material-symbols-outlined text-sm">check</span>
+</a>
+<a class="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-black/5 text-on-surface transition-colors" href="#">
+<span class="text-sm font-medium">Next Week</span>
+</a>
+<a class="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-black/5 text-on-surface transition-colors" href="#">
+<span class="text-sm font-medium">Past Journeys</span>
+</a>
+<div class="h-px bg-on-surface/5 my-1"></div>
+<div class="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-black/5 text-on-surface cursor-pointer transition-colors">
+<span class="text-sm font-medium">Weekly Summary</span>
+<span class="material-symbols-outlined text-primary text-2xl">toggle_on</span>
+</div>
+<div class="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-black/5 text-on-surface cursor-pointer transition-colors">
+<span class="text-sm font-medium">Daily Deep Dive</span>
+<span class="material-symbols-outlined text-outline-variant text-2xl">toggle_off</span>
+</div>
+</div></div>
+</div>
+</div>
+<button class="material-symbols-outlined text-primary">chevron_right</button>
+</div>
+</section>
+<!-- Grocery Alert -->
+<section>
+<div class="bg-primary-container/10 border-t border-white/40 rounded-lg p-4 flex items-center justify-between backdrop-blur-xl">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-weight="fill">shopping_basket</span>
+<div>
+<p class="text-sm font-medium text-on-surface">Grocery List Update</p>
+<p class="text-xs text-outline">14 items missing for your planned meals</p>
+</div>
+</div>
+<button class="text-xs font-bold text-primary px-3 py-1 bg-white/50 rounded-full border border-white/40">Review</button>
+</div>
+</section>
+<!-- Planning Stack -->
+<section class="relative">
+<div class="transit-line"></div>
+<div class="space-y-12">
+<!-- Monday Row -->
+<div class="relative pl-12 group">
+<div class="transit-node"></div>
+<header class="mb-4">
+<h3 class="text-sm font-bold text-outline">Monday, Oct 12</h3>
+</header>
+<div class="space-y-4">
+<!-- Main Course Card -->
+<div class="liquid-glass rounded-lg overflow-hidden shadow-[0_20px_40px_rgba(29,27,24,0.04)]">
+<div class="h-40 w-full relative">
+<img class="w-full h-full object-cover" data-alt="Vibrant healthy salad bowl with roasted vegetables, quinoa, and avocado on a textured ceramic plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9pBXTMTKaNRRvnSf7M9d-RRqZWO6Cmc3N-YA0GOqzrU_PtIUTxIJX4Ze8NMdM_C2U1l-r-NkPfMs_BZRB49e-5UeEICi6TE4ukcnUeHRaPT58DiZtM8Q96V84gdbTbacA9fg1GSS23Pt_6nARiZqmaucIcXJ8O92x-K7Fb67ywOPf0IXluPtQEa8MK08cpV9NHhuzfS5Z6dq8FJIioZtB23JXUxxNPTpIvV-9YeJUJEN2ucSB5uoh195A4DXPrzTcxDyAHsHnIH_J"/>
+<div class="absolute top-4 right-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-primary">DINNER</div>
+</div>
+<div class="p-5">
+<h4 class="font-serif text-2xl mb-1">Roasted Harvest Bowl</h4>
+<div class="flex items-center gap-4 text-xs text-outline">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 35m</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">nutrition</span> 420 kcal</span>
+</div>
+</div>
+</div>
+<!-- Blank Ticket Slot -->
+<div class="blank-ticket rounded-lg p-4 flex items-center justify-between">
+<div class="flex items-center gap-3 text-outline italic">
+<span class="material-symbols-outlined text-sm">wb_sunny</span>
+<span class="text-sm">Breakfast unassigned...</span>
+</div>
+<button class="material-symbols-outlined text-primary text-xl">add_circle</button>
+</div>
+</div>
+</div>
+<!-- Tuesday Row -->
+<div class="relative pl-12">
+<div class="transit-node opacity-40"></div>
+<header class="mb-4 flex items-center justify-between">
+<h3 class="text-sm font-bold text-outline">Tuesday, Oct 13</h3>
+<button class="flex items-center gap-2 px-3 py-1 bg-surface-container rounded-full text-[10px] font-bold text-secondary uppercase tracking-tight">
+<span class="material-symbols-outlined text-sm">groups</span> Dinner Party
+                        </button>
+</header>
+<div class="space-y-4">
+<!-- Empty State Group -->
+<div class="grid grid-cols-1 gap-4">
+<div class="blank-ticket rounded-lg p-8 flex flex-col items-center justify-center border-dashed border-2">
+<span class="material-symbols-outlined text-outline-variant text-4xl mb-2">restaurant_menu</span>
+<p class="text-sm text-outline font-medium">No meals planned yet</p>
+<button class="mt-4 bg-primary text-on-primary px-6 py-2 rounded-full text-xs font-bold shadow-lg">Browse Recipes</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Wednesday Row -->
+<div class="relative pl-12">
+<div class="transit-node"></div>
+<header class="mb-4">
+<h3 class="text-sm font-bold text-outline">Wednesday, Oct 14</h3>
+</header>
+<div class="space-y-4">
+<!-- Main Course Card -->
+<div class="liquid-glass rounded-lg overflow-hidden shadow-[0_20px_40px_rgba(29,27,24,0.04)]">
+<div class="h-40 w-full relative">
+<img class="w-full h-full object-cover" data-alt="Rustic Italian pasta dish with fresh basil and tomatoes in a dark moody atmosphere with side lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrdVtyChCyLP7GCxTf_F5ecb5Z0XsbONWAqQEB9-4Tta_IhGP9ymaTQQGUduYTrXKeQpZ9S0ZF6PRHWdniR9T9BEerfHkjTmqXvF-7zcXFVOC-DvqDffdvZG8RPMfKDcotVO-TXxU7dlmTTfHVQYE6tmxBYBiSNlYf7E9DsNX8NSr65aSINaxvilk49NSmgksJ6k6dMBV7YPgh_KMHfe7GGN_fDAE0XWZZ67Gy6Nop9zuwITsQNrpuWFW0RC1tG6dB5djgbaVBxM80"/>
+<div class="absolute top-4 right-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-primary">DINNER</div>
+</div>
+<div class="p-5">
+<h4 class="font-serif text-2xl mb-1">Wild Mushroom Linguine</h4>
+<div class="flex items-center gap-4 text-xs text-outline">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 20m</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">local_fire_department</span> 510 kcal</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Sticky Ready to Cook Bar -->
+<div class="fixed bottom-32 left-1/2 -translate-x-1/2 w-[85%] max-w-sm z-[60]">
+<button class="w-full liquid-glass rounded-full py-4 px-6 shadow-2xl flex items-center justify-between group overflow-hidden relative">
+<div class="absolute inset-0 bg-primary opacity-0 group-active:opacity-10 transition-opacity"></div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-sm">play_arrow</span>
+</div>
+<span class="font-bold text-primary tracking-tight">Ready to Cook</span>
+</div>
+<span class="text-[10px] font-bold text-outline uppercase">Monday's Prep</span>
+</button>
+</div>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-center pb-8">
+<div class="bg-stone-50/70 backdrop-blur-2xl w-[90%] max-w-md rounded-full border-t border-white/40 px-6 py-3 flex justify-between items-center shadow-[0_20px_40px_rgba(29,27,24,0.06)]">
+<a class="flex flex-col items-center justify-center text-stone-500 p-2 hover:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-[10px] font-medium font-body">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 p-2 hover:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="text-[10px] font-medium font-body">Search</span>
+</a>
+<!-- Active State: Plan -->
+<a class="flex flex-col items-center justify-center bg-orange-900/10 text-orange-900 rounded-full p-2 scale-110 duration-300" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-[10px] font-medium font-body">Plan</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 p-2 hover:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="text-[10px] font-medium font-body">Grocery</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-500 p-2 hover:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="text-[10px] font-medium font-body">Cook</span>
+</a>
+</div>
+</nav>
+</body></html>
