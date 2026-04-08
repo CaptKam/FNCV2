@@ -77,23 +77,27 @@ export default function CookModeScreen() {
     return () => clearInterval(interval);
   }, [timerRunning, timerSeconds, app]);
 
+  // Dinner plan awareness
+  const dinnerPlan = app.activeDinnerPlan;
+  const dinnerEventIndex = app.currentDinnerEventIndex;
+  const isDinnerMode = dinnerPlan != null;
+  const dinnerEvent = isDinnerMode ? dinnerPlan.events[dinnerEventIndex] : null;
+  const dinnerTotalEvents = isDinnerMode ? dinnerPlan.events.length : 0;
+
   // Detect completion — navigate to dinner-complete or back
   const prevSessionRef = React.useRef(session);
   const prevDinnerRef = React.useRef(dinnerPlan);
   const hasNavigatedRef = React.useRef(false);
   const activeParty = app.activeDinnerParty;
   useEffect(() => {
-    // Single recipe mode: session became null
     if (prevSessionRef.current && !session && !hasNavigatedRef.current && !isDinnerMode) {
       hasNavigatedRef.current = true;
       if (activeParty) {
-        // Dinner party was active — go to celebration screen
         router.replace('/dinner-complete');
       } else {
         router.back();
       }
     }
-    // Dinner plan mode: plan became null (completed)
     if (prevDinnerRef.current && !dinnerPlan && !hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
       if (activeParty) {
@@ -105,13 +109,6 @@ export default function CookModeScreen() {
     prevSessionRef.current = session;
     prevDinnerRef.current = dinnerPlan;
   }, [session, dinnerPlan, isDinnerMode, activeParty, router]);
-
-  // Dinner plan awareness
-  const dinnerPlan = app.activeDinnerPlan;
-  const dinnerEventIndex = app.currentDinnerEventIndex;
-  const isDinnerMode = dinnerPlan != null;
-  const dinnerEvent = isDinnerMode ? dinnerPlan.events[dinnerEventIndex] : null;
-  const dinnerTotalEvents = isDinnerMode ? dinnerPlan.events.length : 0;
 
   const goNext = useCallback(() => {
     if (isDinnerMode) {
