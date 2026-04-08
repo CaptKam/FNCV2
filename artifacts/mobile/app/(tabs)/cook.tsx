@@ -52,6 +52,12 @@ export default function CookScreen() {
   const hasActiveSession = activeCookSession != null && sessionRecipe != null;
   const hasTodayPlan = !hasActiveSession && todayRecipe != null;
 
+  // Dinner party awareness
+  const todayDate = new Date().toISOString().split('T')[0];
+  const todayParty = app.getDinnerPartyForDate(todayDate);
+  const hasDinnerParty = todayParty != null && todayParty.status !== 'completed';
+  const partyGuestCount = todayParty ? app.getGuestCount(todayParty.id) : null;
+
   const heroRecipe = hasActiveSession ? sessionRecipe : hasTodayPlan ? todayRecipe : null;
   const heroCountry = heroRecipe ? countries.find((c) => c.id === heroRecipe.countryId) : null;
 
@@ -83,8 +89,13 @@ export default function CookScreen() {
             <View style={styles.heroCard}>
               <GlassView style={styles.heroCardInner}>
                 <Text style={[Typography.labelLarge, { color: colors.primary, fontStyle: 'italic' }]}>
-                  {hasActiveSession ? 'Now Cooking' : 'Tonight\'s Dinner'}
+                  {hasActiveSession ? 'Now Cooking' : hasDinnerParty ? 'Dinner Party' : 'Tonight\'s Dinner'}
                 </Text>
+                {hasDinnerParty && partyGuestCount && !hasActiveSession && (
+                  <Text style={[Typography.caption, { color: colors.outline, marginTop: 2 }]}>
+                    {partyGuestCount.total} guest{partyGuestCount.total !== 1 ? 's' : ''} · {partyGuestCount.accepted} accepted
+                  </Text>
+                )}
                 <Text style={[Typography.display, { color: colors.onSurface, marginBottom: Spacing.sm }]}>
                   {heroRecipe.title}
                 </Text>
@@ -212,6 +223,10 @@ export default function CookScreen() {
               onPress={() => {
                 if (hasActiveSession) {
                   router.push(`/cook-mode/${activeCookSession!.recipeId}`);
+                } else if (hasDinnerParty && todayParty && todayRecipe) {
+                  app.startDinnerPartyCooking(todayParty.id);
+                  app.startCookSession(todayRecipe, todayRecipe.servings);
+                  router.push(`/cook-mode/${todayRecipe.id}`);
                 } else if (hasTodayPlan && todayRecipe) {
                   app.startCookSession(todayRecipe, todayRecipe.servings);
                   router.push(`/cook-mode/${todayRecipe.id}`);
@@ -226,10 +241,20 @@ export default function CookScreen() {
               </Text>
               <MaterialCommunityIcons name="arrow-right" size={22} color={colors.onPrimary} />
             </Pressable>
+            {hasDinnerParty && !hasActiveSession && todayParty && (
+              <Pressable
+                onPress={() => router.push(`/dinner-setup?date=${todayDate}`)}
+                style={[styles.reviewPartyBtn, { borderColor: colors.primary }]}
+                accessibilityRole="button"
+                accessibilityLabel="Review dinner party"
+              >
+                <Text style={[Typography.titleSmall, { color: colors.primary }]}>Review Party</Text>
+              </Pressable>
+            )}
             <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant, opacity: 0.6 }]}>
               {hasActiveSession
                 ? `Step ${activeCookSession!.currentStepIndex + 1} of ${activeCookSession!.totalSteps}`
-                : 'Ready to initiate kitchen lab sequence'}
+                : hasDinnerParty ? `${partyGuestCount?.accepted ?? 0} guests confirmed` : 'Ready to initiate kitchen lab sequence'}
             </Text>
           </View>
         )}
@@ -457,6 +482,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl + Spacing.xs,
     paddingVertical: Spacing.md + 2,
     borderRadius: Radius.full,
+  },
+  reviewPartyBtn: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    marginTop: Spacing.sm,
   },
   levelSection: {
     paddingHorizontal: Spacing.page,

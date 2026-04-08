@@ -233,17 +233,30 @@ export default function DiscoverScreen() {
                 accessible={false}
               />
               <View style={styles.tonightContent}>
-                <Text style={[Typography.labelLarge, { color: colors.primary }]}>
-                  TONIGHT'S PLAN
-                </Text>
-                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={1}>
-                  {tonightMeal.recipeName}
-                </Text>
-                <Pressable onPress={handleCookTonight} accessibilityRole="button" accessibilityLabel={`Cook ${tonightMeal.recipeName} tonight`}>
-                  <Text style={[Typography.titleSmall, { color: colors.primary }]}>
-                    Cook Tonight
-                  </Text>
-                </Pressable>
+                {(() => {
+                  const todayParty = app.getDinnerPartyForDate(todayDate);
+                  const isDinnerParty = todayParty && todayParty.status !== 'completed';
+                  return (
+                    <>
+                      <Text style={[Typography.labelLarge, { color: colors.primary }]}>
+                        {isDinnerParty ? "TONIGHT'S DINNER PARTY" : "TONIGHT'S PLAN"}
+                      </Text>
+                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={1}>
+                        {tonightMeal.recipeName}
+                      </Text>
+                      {isDinnerParty && (
+                        <Text style={[Typography.caption, { color: colors.outline }]}>
+                          {app.getGuestCount(todayParty!.id).total} guests
+                        </Text>
+                      )}
+                      <Pressable onPress={handleCookTonight} accessibilityRole="button" accessibilityLabel={isDinnerParty ? 'Cook for your guests' : `Cook ${tonightMeal.recipeName} tonight`}>
+                        <Text style={[Typography.titleSmall, { color: colors.primary }]}>
+                          {isDinnerParty ? 'Cook for your guests' : 'Cook Tonight'}
+                        </Text>
+                      </Pressable>
+                    </>
+                  );
+                })()}
               </View>
             </GlassView>
           </View>
