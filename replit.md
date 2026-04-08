@@ -47,6 +47,13 @@ Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a 
 - Allergen detection: auto-scans ingredients for top-9 allergens (utils/allergens.ts)
 - No backend required
 
+### Animation Components (Kinetic Polish)
+- `PressableScale` — Spring-based press animation (withSpring, damping 15/20, stiffness 300/400)
+- `AnimatedHeart` — Bookmark heart with spring bounce (1→1.35→1) + haptic feedback, stopPropagation built-in
+- `AnimatedListItem` — Staggered fade+slide entrance (60ms per item, 20px slide, spring physics)
+- Tab bar `AnimatedIcon` — Spring scale + background opacity animation on tab focus (damping 16, stiffness 260)
+- All animations respect `useReducedMotion` accessibility setting
+
 ### Key Files
 - `artifacts/mobile/constants/` — colors, typography, spacing, radius, shadows, glass tokens
 - `artifacts/mobile/data/` — countries.ts, recipes.ts, nutrition.ts

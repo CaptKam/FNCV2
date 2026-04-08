@@ -16,7 +16,7 @@ import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
-
+import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { TECHNIQUES } from '@/data/techniques';
 
 const KITCHEN_CHECKS = [
@@ -218,39 +218,40 @@ export default function CookScreen() {
               <Text style={[Typography.title, { color: colors.onSurface }]}>Your Progress</Text>
             </View>
             {KITCHEN_CHECKS.map((item, idx) => (
-              <Pressable
-                key={item.label}
-                onPress={() => {
-                  const next = [...checks];
-                  next[idx] = !next[idx];
-                  setChecks(next);
-                }}
-                style={styles.checkItem}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: checks[idx] }}
-                accessibilityLabel={item.label}
-              >
-                <View
-                  style={[
-                    styles.checkBox,
-                    checks[idx]
-                      ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                      : { borderColor: colors.primarySoft },
-                  ]}
+              <AnimatedListItem key={item.label} index={idx}>
+                <Pressable
+                  onPress={() => {
+                    const next = [...checks];
+                    next[idx] = !next[idx];
+                    setChecks(next);
+                  }}
+                  style={styles.checkItem}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: checks[idx] }}
+                  accessibilityLabel={item.label}
                 >
-                  {checks[idx] && (
-                    <MaterialCommunityIcons name="check" size={16} color={colors.onPrimary} />
-                  )}
-                </View>
-                <Text
-                  style={[
-                    Typography.bodySmall,
-                    { color: checks[idx] ? colors.onSurface : colors.onSurfaceVariant },
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </Pressable>
+                  <View
+                    style={[
+                      styles.checkBox,
+                      checks[idx]
+                        ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                        : { borderColor: colors.primarySoft },
+                    ]}
+                  >
+                    {checks[idx] && (
+                      <MaterialCommunityIcons name="check" size={16} color={colors.onPrimary} />
+                    )}
+                  </View>
+                  <Text
+                    style={[
+                      Typography.bodySmall,
+                      { color: checks[idx] ? colors.onSurface : colors.onSurfaceVariant },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </Pressable>
+              </AnimatedListItem>
             ))}
           </View>
         </View>

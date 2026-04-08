@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
@@ -145,25 +146,17 @@ export default function RecipeDetailScreen() {
         transparent
         showBack
         rightAction={
-          <Pressable
-            onPress={() => toggleBookmark(recipe.id)}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: 'rgba(30,25,20,0.85)',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-          >
-            <MaterialCommunityIcons
-              name={isSaved ? 'heart' : 'heart-outline'}
+          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(30,25,20,0.85)', alignItems: 'center', justifyContent: 'center' }}>
+            <AnimatedHeart
+              filled={isSaved}
+              onToggle={() => toggleBookmark(recipe.id)}
               size={20}
-              color={isSaved ? colors.error : colors.textOnImage}
+              filledColor={colors.error}
+              outlineColor={colors.textOnImage}
+              accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+              hitSlop={12}
             />
-          </Pressable>
+          </View>
         }
       />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>

@@ -26,6 +26,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { SectionHeader } from '@/components/SectionHeader';
 import { RecipeCard } from '@/components/RecipeCard';
 import { DestinationCard } from '@/components/DestinationCard';
+import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { countries } from '@/data/countries';
 import { recipes, Recipe } from '@/data/recipes';
 import { useApp } from '@/context/AppContext';
@@ -325,8 +326,8 @@ export default function DiscoverScreen() {
         <View style={{ marginTop: Spacing.xl }}>
           <SectionHeader label="POPULAR RECIPES" title="Popular Recipes" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
           <View style={styles.grid}>
-            {trendingRecipes.map((recipe) => (
-              <View key={recipe.id}>
+            {trendingRecipes.map((recipe, index) => (
+              <AnimatedListItem key={recipe.id} index={index}>
                 <RecipeCard recipe={recipe} />
                 <View style={styles.quickActions}>
                   <Pressable
@@ -348,7 +349,7 @@ export default function DiscoverScreen() {
                     <Text style={[Typography.labelSmall, { color: colors.primary }]}>Week</Text>
                   </Pressable>
                 </View>
-              </View>
+              </AnimatedListItem>
             ))}
           </View>
         </View>
