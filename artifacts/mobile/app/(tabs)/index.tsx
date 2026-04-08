@@ -23,7 +23,7 @@ import { OVERLAY_BUTTON } from '@/constants/icons';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
-import { AddToPlanSheet } from '@/components/AddToPlanSheet';
+import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
 import { countries } from '@/data/countries';
 import { recipes, Recipe } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
@@ -145,12 +145,6 @@ export default function DiscoverScreen() {
     if (toastTimeout.current) clearTimeout(toastTimeout.current);
     toastTimeout.current = setTimeout(() => setToastMessage(null), 2500);
   }, []);
-
-  const handleAddTonight = useCallback((recipe: Recipe) => {
-    app.addCourseToDay(todayDate, 'main', recipe);
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
-    showToast(`Added to tonight's plan.`);
-  }, [app, todayDate, showToast]);
 
   const handleAddToPlan = useCallback((date: string) => {
     if (!addSheetRecipe) return;
@@ -393,7 +387,7 @@ export default function DiscoverScreen() {
                     transition={300}
                     accessible={false}
                   />
-                  {/* Heart overlay */}
+                  {/* Heart overlay — top-left */}
                   <Pressable
                     onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
                     style={[styles.heartBtn, {
@@ -414,16 +408,14 @@ export default function DiscoverScreen() {
                       hitSlop={0}
                     />
                   </Pressable>
-                  {/* Tonight quick-add */}
-                  <Pressable
-                    onPress={(e) => { e.stopPropagation(); handleAddTonight(recipe); }}
-                    style={[styles.tonightQuickAdd, { backgroundColor: colors.surfaceContainerHigh }]}
-                    hitSlop={6}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Add ${recipe.title} to tonight`}
-                  >
-                    <MaterialCommunityIcons name="weather-night" size={16} color={colors.primary} />
-                  </Pressable>
+                  {/* Add to plan — top-right */}
+                  <View style={styles.addOverlay}>
+                    <AddToPlanButton
+                      onPress={() => setAddSheetRecipe(recipe)}
+                      recipeName={recipe.title}
+                      variant="overlay"
+                    />
+                  </View>
                 </View>
                 <View style={styles.recipeContent}>
                   <Text style={[Typography.titleSmall, { color: colors.onSurface, fontFamily: 'NotoSerif_600SemiBold' }]} numberOfLines={2}>
@@ -630,22 +622,17 @@ const styles = StyleSheet.create({
   heartBtn: {
     position: 'absolute',
     top: Spacing.sm,
-    right: Spacing.sm,
+    left: Spacing.sm,
     width: OVERLAY_BUTTON.size,
     height: OVERLAY_BUTTON.size,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tonightQuickAdd: {
+  addOverlay: {
     position: 'absolute',
-    bottom: Spacing.sm,
+    top: Spacing.sm,
     right: Spacing.sm,
-    width: 32,
-    height: 32,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   recipeContent: {
     padding: Spacing.md,
