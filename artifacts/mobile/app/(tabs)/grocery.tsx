@@ -269,7 +269,7 @@ export default function GroceryScreen() {
         </View>
 
         <View style={[styles.toggleContainer, { backgroundColor: colors.surfaceContainerLow }]}>
-          <Pressable
+          <PressableScale
             onPress={() => setActiveTab('online')}
             style={[
               styles.togglePill,
@@ -292,8 +292,8 @@ export default function GroceryScreen() {
             >
               Online
             </Text>
-          </Pressable>
-          <Pressable
+          </PressableScale>
+          <PressableScale
             onPress={() => setActiveTab('instore')}
             style={[
               styles.togglePill,
@@ -316,7 +316,7 @@ export default function GroceryScreen() {
             >
               In-Store
             </Text>
-          </Pressable>
+          </PressableScale>
         </View>
 
         {/* Manual item entry */}
@@ -458,10 +458,9 @@ export default function GroceryScreen() {
           </View>
         )}
 
-        {/* Clear buttons */}
         {checkedCount > 0 && (
           <View style={[styles.clearRow, { paddingHorizontal: Spacing.page }]}>
-            <Pressable
+            <PressableScale
               onPress={handleClearChecked}
               style={[styles.clearBtn, { borderColor: colors.outlineVariant }]}
               accessibilityRole="button"
@@ -471,8 +470,8 @@ export default function GroceryScreen() {
               <Text style={[Typography.titleSmall, { color: colors.outline }]}>
                 Clear Completed ({checkedCount})
               </Text>
-            </Pressable>
-            <Pressable
+            </PressableScale>
+            <PressableScale
               onPress={handleClearAll}
               style={[styles.clearBtn, { borderColor: colors.error }]}
               accessibilityRole="button"
@@ -482,7 +481,7 @@ export default function GroceryScreen() {
               <Text style={[Typography.titleSmall, { color: colors.error }]}>
                 Clear All
               </Text>
-            </Pressable>
+            </PressableScale>
           </View>
         )}
 
