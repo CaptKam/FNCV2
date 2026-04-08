@@ -1102,9 +1102,9 @@ const styles = StyleSheet.create({
   },
   recipeBadge: {
     position: 'absolute',
-    top: '50%',
+    top: Spacing.sm,
     left: '50%',
-    transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+    transform: [{ translateX: '-50%' }],
   },
   recipeBadgePill: {
     paddingHorizontal: Spacing.sm,
