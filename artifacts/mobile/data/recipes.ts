@@ -11,6 +11,13 @@ export interface Step {
   duration?: number;
 }
 
+export interface NutritionInfo {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
 export interface Recipe {
   id: string;
   countryId: string;
@@ -24,9 +31,16 @@ export interface Recipe {
   ingredients: Ingredient[];
   steps: Step[];
   culturalNote: string;
+  nutrition: NutritionInfo | null;
+  allergens: string[];
 }
 
-export const recipes: Recipe[] = [
+import { nutritionData } from './nutrition';
+import { detectAllergens } from '../utils/allergens';
+
+type RawRecipe = Omit<Recipe, 'nutrition' | 'allergens'>;
+
+const rawRecipes: RawRecipe[] = [
   {
     id: 'it-1',
     countryId: 'italy',
@@ -2744,3 +2758,9 @@ export const recipes: Recipe[] = [
     culturalNote: 'Affogato means "drowned" in Italian. This elegantly simple dessert perfectly captures the Italian philosophy that the best things need the fewest ingredients.',
   },
 ];
+
+export const recipes: Recipe[] = rawRecipes.map((r) => ({
+  ...r,
+  nutrition: nutritionData[r.id] ?? null,
+  allergens: detectAllergens(r.ingredients),
+}));

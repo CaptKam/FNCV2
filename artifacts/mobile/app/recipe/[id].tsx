@@ -14,7 +14,7 @@ import { countries } from '@/data/countries';
 import { recipes, Step } from '@/data/recipes';
 import { convertAmount, formatCookTime } from '@/data/helpers';
 import { getPerServingNutrition } from '@/data/nutrition';
-import { detectAllergensWithCache, ALLERGEN_INFO, getDietaryConflicts } from '@/utils/allergens';
+import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allergens';
 import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
@@ -104,7 +104,7 @@ export default function RecipeDetailScreen() {
         fat: Math.round(perServingNutrition.fat * currentServings),
       }
     : null;
-  const recipeAllergens = useMemo(() => detectAllergensWithCache(recipe.ingredients, recipe.id), [recipe.id]);
+  const recipeAllergens = recipe.allergens as AllergenType[];
   const dietaryConflicts = useMemo(
     () => getDietaryConflicts(recipeAllergens, app.dietaryFlags),
     [recipeAllergens, app.dietaryFlags]
@@ -279,7 +279,7 @@ export default function RecipeDetailScreen() {
                       ]}
                     >
                       <MaterialCommunityIcons
-                        name={info.icon as any}
+                        name={info.icon}
                         size={14}
                         color={isUserAllergen ? colors.error : colors.onSurfaceVariant}
                       />

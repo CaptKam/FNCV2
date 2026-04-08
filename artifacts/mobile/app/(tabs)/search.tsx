@@ -22,7 +22,7 @@ import { DestinationCard } from '@/components/DestinationCard';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
-import { detectAllergensWithCache, ALLERGEN_INFO, AllergenType } from '@/utils/allergens';
+import { ALLERGEN_INFO, AllergenType } from '@/utils/allergens';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
@@ -64,8 +64,7 @@ export default function SearchScreen() {
 
     if (excludedAllergens.length > 0) {
       results = results.filter((r) => {
-        const ra = detectAllergensWithCache(r.ingredients, r.id);
-        return !excludedAllergens.some((a) => ra.includes(a));
+        return !excludedAllergens.some((a) => r.allergens.includes(a));
       });
     }
 
@@ -168,7 +167,7 @@ export default function SearchScreen() {
                     accessibilityState={{ selected: isActive }}
                   >
                     <MaterialCommunityIcons
-                      name={isActive ? 'close-circle' : (info.icon as any)}
+                      name={isActive ? 'close-circle' : info.icon}
                       size={14}
                       color={isActive ? colors.error : colors.onSurfaceVariant}
                     />

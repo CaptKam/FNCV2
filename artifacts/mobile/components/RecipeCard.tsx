@@ -10,7 +10,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { GlassView } from './GlassView';
 import { Recipe } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
-import { detectAllergensWithCache } from '@/utils/allergens';
+import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allergens';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 
@@ -24,10 +24,12 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   const colors = useThemeColors();
   const router = useRouter();
   const { isBookmarked, toggleBookmark } = useBookmarks();
-  const { allergens: userAllergens } = useApp();
+  const { allergens: userAllergens, dietaryFlags } = useApp();
   const isFav = isBookmarked(recipe.id);
-  const recipeAllergens = detectAllergensWithCache(recipe.ingredients, recipe.id);
-  const hasConflict = userAllergens.length > 0 && recipeAllergens.some((a) => userAllergens.includes(a));
+  const recipeAllergens = recipe.allergens as AllergenType[];
+  const hasUserAllergenConflict = userAllergens.length > 0 && recipeAllergens.some((a) => userAllergens.includes(a));
+  const hasDietaryConflict = getDietaryConflicts(recipeAllergens, dietaryFlags).length > 0;
+  const hasConflict = hasUserAllergenConflict || hasDietaryConflict;
 
   return (
     <Pressable
@@ -78,6 +80,40 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             </View>
           )}
         </View>
+        {recipeAllergens.length > 0 && (
+          <View style={styles.allergenDotsRow}>
+            {recipeAllergens.slice(0, 4).map((a) => {
+              const info = ALLERGEN_INFO[a];
+              if (!info) return null;
+              const isConflict = userAllergens.includes(a);
+              return (
+                <View
+                  key={a}
+                  style={[
+                    styles.allergenDot,
+                    {
+                      backgroundColor: isConflict ? `${colors.error}18` : colors.surfaceContainerHigh,
+                    },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={info.icon}
+                    size={10}
+                    color={isConflict ? colors.error : colors.outline}
+                  />
+                  <Text style={[Typography.caption, { fontSize: 9, color: isConflict ? colors.error : colors.outline }]}>
+                    {info.label}
+                  </Text>
+                </View>
+              );
+            })}
+            {recipeAllergens.length > 4 && (
+              <Text style={[Typography.caption, { fontSize: 9, color: colors.outline }]}>
+                +{recipeAllergens.length - 4}
+              </Text>
+            )}
+          </View>
+        )}
       </View>
     </Pressable>
   );
@@ -133,6 +169,20 @@ const styles = StyleSheet.create({
     gap: 3,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
+    borderRadius: Radius.full,
+  },
+  allergenDotsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flexWrap: 'wrap',
+  },
+  allergenDot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
     borderRadius: Radius.full,
   },
 });

@@ -9,7 +9,9 @@ export type AllergenType =
   | 'soy'
   | 'sesame';
 
-export const ALLERGEN_INFO: Record<AllergenType, { label: string; icon: string; color: string }> = {
+export type AllergenIcon = 'cow' | 'egg' | 'fish' | 'food-drumstick' | 'tree' | 'peanut' | 'grain' | 'soy-sauce' | 'seed';
+
+export const ALLERGEN_INFO: Record<AllergenType, { label: string; icon: AllergenIcon; color: string }> = {
   milk: { label: 'Milk', icon: 'cow', color: '#5B9BD5' },
   egg: { label: 'Egg', icon: 'egg', color: '#FFC000' },
   fish: { label: 'Fish', icon: 'fish', color: '#4472C4' },
