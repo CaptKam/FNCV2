@@ -9,6 +9,7 @@ import { Radius } from '@/constants/radius';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { GlassView } from './GlassView';
 import { Recipe } from '@/data/recipes';
+import { formatCookTime } from '@/data/helpers';
 import { useBookmarks } from '@/context/BookmarksContext';
 
 interface RecipeCardProps {
@@ -28,7 +29,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
       onPress={() => router.push(`/recipe/${recipe.id}`)}
       style={[styles.card, { backgroundColor: colors.surfaceContainer, width: CARD_WIDTH }]}
       accessibilityRole="button"
-      accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
+      accessibilityLabel={`${recipe.title}, ${formatCookTime(recipe.prepTime + recipe.cookTime)}, ${recipe.difficulty}`}
     >
       <View style={styles.imageContainer}>
         <Image
@@ -61,7 +62,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         <View style={[styles.timeBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
           <Feather name="clock" size={10} color={colors.outline} />
           <Text style={[Typography.caption, { color: colors.outline }]}>
-            {recipe.prepTime + recipe.cookTime} min
+            {formatCookTime(recipe.prepTime + recipe.cookTime)}
           </Text>
         </View>
       </View>

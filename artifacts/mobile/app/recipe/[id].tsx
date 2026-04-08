@@ -366,20 +366,34 @@ export default function RecipeDetailScreen() {
               keyExtractor={(item) => item.date}
               showsVerticalScrollIndicator={false}
               style={{ maxHeight: 320 }}
-              renderItem={({ item }) => (
-                <Pressable
-                  onPress={() => handleAddToPlan(item.date)}
-                  style={[styles.dayRow, { backgroundColor: colors.surfaceContainerLow }]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${item.label}, ${item.short}`}
-                >
-                  <View>
-                    <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
-                    <Text style={[Typography.caption, { color: colors.outline }]}>{item.short}</Text>
-                  </View>
-                  <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
-                </Pressable>
-              )}
+              renderItem={({ item }) => {
+                const dayIt = app.itinerary.find((d) => d.date === item.date);
+                const existingMain = dayIt?.courses?.main;
+                return (
+                  <Pressable
+                    onPress={() => handleAddToPlan(item.date)}
+                    style={[styles.dayRow, { backgroundColor: colors.surfaceContainerLow }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${item.label}, ${item.short}${existingMain ? `, has ${existingMain.recipeName}` : ''}`}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
+                        {existingMain && (
+                          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary }} />
+                        )}
+                      </View>
+                      <Text style={[Typography.caption, { color: colors.outline }]}>{item.short}</Text>
+                      {existingMain && (
+                        <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
+                          {existingMain.recipeName}
+                        </Text>
+                      )}
+                    </View>
+                    <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+                  </Pressable>
+                );
+              }}
             />
           </Pressable>
         </Pressable>
