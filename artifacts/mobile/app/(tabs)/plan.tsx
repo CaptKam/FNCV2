@@ -674,9 +674,7 @@ export default function PlanScreen() {
                             accessibilityLabel="Plan dinner party"
                           >
                             <View style={[styles.hostDinnerBtn, { backgroundColor: colors.primary }]}>
-                              <MaterialCommunityIcons name="candelabra-fire" size={16} color="#FFFFFF" />
-                              <Text style={{ fontSize: 12, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>Host a Dinner</Text>
-                              <MaterialCommunityIcons name="chevron-right" size={16} color="rgba(255,255,255,0.7)" />
+                              <MaterialCommunityIcons name="candelabra-fire" size={20} color="#FFFFFF" />
                             </View>
                           </Pressable>
                         );
@@ -988,12 +986,11 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   hostDinnerBtn: {
-    flexDirection: 'row',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: Radius.full,
+    justifyContent: 'center',
   },
   partyPill: {
     flexDirection: 'row',
