@@ -25,6 +25,7 @@ import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
 import { ALLERGEN_INFO, AllergenType } from '@/utils/allergens';
 import { useApp } from '@/context/AppContext';
+import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 
@@ -39,6 +40,7 @@ export default function SearchScreen() {
   const router = useRouter();
   const app = useApp();
   const { allergens: userAllergens } = app;
+  const { isBookmarked, toggleBookmark } = useBookmarks();
   const [query, setQuery] = useState('');
   const [activeMood, setActiveMood] = useState('All Moods');
   const [excludedAllergens, setExcludedAllergens] = useState<AllergenType[]>([]);
@@ -257,9 +259,19 @@ export default function SearchScreen() {
                   <Text style={[Typography.titleSmall, { color: colors.primary }]}>ADD +</Text>
                 </Pressable>
               </View>
-              <Pressable style={styles.heartBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Save ${recipe.title} to bookmarks`}>
+              <Pressable
+                onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+                style={styles.heartBtn}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from saved` : `Save ${recipe.title}`}
+              >
                 <View style={styles.heartGlass}>
-                  <MaterialCommunityIcons name="heart-outline" size={OVERLAY_BUTTON.iconSize} color={OVERLAY_BUTTON.iconColor} />
+                  <MaterialCommunityIcons
+                    name={isBookmarked(recipe.id) ? 'heart' : 'heart-outline'}
+                    size={OVERLAY_BUTTON.iconSize}
+                    color={isBookmarked(recipe.id) ? colors.primary : OVERLAY_BUTTON.iconColor}
+                  />
                 </View>
               </Pressable>
             </Pressable>

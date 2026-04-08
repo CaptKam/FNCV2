@@ -208,7 +208,7 @@ export default function BookmarksScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`Remove ${recipe.title} from bookmarks`}
                   >
-                    <MaterialCommunityIcons name="heart" size={22} color={colors.primary} />
+                    <MaterialCommunityIcons name="heart" size={24} color={colors.primary} />
                   </Pressable>
                 </Pressable>
               ))}
