@@ -32,7 +32,9 @@ import { useApp } from '@/context/AppContext';
 
 const HERO_HEIGHT = 480;
 
-const AVATAR_ICON_MAP: Record<string, string> = {
+type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+
+const AVATAR_ICON_MAP: Record<string, MCIconName> = {
   chef: 'chef-hat',
   globe: 'earth',
   fire: 'fire',
@@ -40,6 +42,10 @@ const AVATAR_ICON_MAP: Record<string, string> = {
   star: 'star',
   compass: 'compass',
 };
+
+function getInitials(name: string): string {
+  return name.trim().charAt(0).toUpperCase() || '?';
+}
 
 // ─── Helpers ───
 
@@ -195,11 +201,17 @@ export default function DiscoverScreen() {
                   <View style={styles.greetingRow}>
                     {app.displayName ? (
                       <View style={styles.greetingAvatar}>
-                        <MaterialCommunityIcons
-                          name={(AVATAR_ICON_MAP[app.avatarId] ?? 'chef-hat') as any}
-                          size={16}
-                          color="#FFFFFF"
-                        />
+                        {AVATAR_ICON_MAP[app.avatarId] ? (
+                          <MaterialCommunityIcons
+                            name={AVATAR_ICON_MAP[app.avatarId]}
+                            size={16}
+                            color="#FFFFFF"
+                          />
+                        ) : (
+                          <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}>
+                            {getInitials(app.displayName)}
+                          </Text>
+                        )}
                       </View>
                     ) : null}
                     <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', flex: 1 }]}>

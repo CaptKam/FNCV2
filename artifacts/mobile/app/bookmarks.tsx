@@ -17,7 +17,8 @@ import { HeaderBar } from '@/components/HeaderBar';
 const FILTERS = ['All', 'Main', 'Appetizer', 'Dessert'];
 
 type SortMode = 'date' | 'cuisine' | 'difficulty';
-const SORT_OPTIONS: { id: SortMode; label: string; icon: string }[] = [
+type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+const SORT_OPTIONS: { id: SortMode; label: string; icon: MCIconName }[] = [
   { id: 'date', label: 'Date Saved', icon: 'clock-outline' },
   { id: 'cuisine', label: 'Cuisine', icon: 'earth' },
   { id: 'difficulty', label: 'Difficulty', icon: 'signal' },
@@ -120,7 +121,7 @@ export default function BookmarksScreen() {
                   accessibilityState={{ selected: isActive }}
                 >
                   <MaterialCommunityIcons
-                    name={opt.icon as any}
+                    name={opt.icon}
                     size={14}
                     color={isActive ? colors.primary : colors.outline}
                   />

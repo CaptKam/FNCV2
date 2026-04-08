@@ -23,7 +23,9 @@ import { useThemePreference, ThemePreference } from '@/context/ThemeContext';
 import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
 
-const THEME_OPTIONS: { id: ThemePreference; label: string; icon: string; desc: string }[] = [
+type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+
+const THEME_OPTIONS: { id: ThemePreference; label: string; icon: MCIconName; desc: string }[] = [
   { id: 'system', label: 'System', icon: 'cellphone-cog', desc: 'Match your device settings' },
   { id: 'light', label: 'Light', icon: 'white-balance-sunny', desc: 'Always use light mode' },
   { id: 'dark', label: 'Dark', icon: 'moon-waning-crescent', desc: 'Always use dark mode' },
@@ -49,14 +51,14 @@ const AVATAR_OPTIONS = [
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
 
-const GROCERY_PARTNERS: { id: 'instacart' | 'kroger' | 'walmart'; label: string; icon: string }[] = [
+const GROCERY_PARTNERS: { id: 'instacart' | 'kroger' | 'walmart'; label: string; icon: MCIconName }[] = [
   { id: 'instacart', label: 'Instacart', icon: 'cart' },
   { id: 'kroger', label: 'Kroger', icon: 'store' },
   { id: 'walmart', label: 'Walmart', icon: 'store-outline' },
 ];
 
 interface SettingRowProps {
-  icon: string;
+  icon: MCIconName;
   label: string;
   subtitle?: string;
   onPress?: () => void;
@@ -79,7 +81,7 @@ function SettingRow({ icon, label, subtitle, onPress, trailing, colors }: Settin
       accessibilityLabel={subtitle ? `${label}, ${subtitle}` : label}
     >
       <View style={[styles.settingIcon, { backgroundColor: colors.primaryMuted }]}>
-        <MaterialCommunityIcons name={icon as any} size={20} color={colors.primary} />
+        <MaterialCommunityIcons name={icon} size={20} color={colors.primary} />
       </View>
       <View style={styles.settingText}>
         <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{label}</Text>
@@ -125,7 +127,7 @@ export default function ProfileScreen() {
     avatarId,
   } = app;
 
-  const currentAvatarIcon = AVATAR_OPTIONS.find((a) => a.id === avatarId)?.icon ?? 'chef-hat';
+  const currentAvatarIcon: MCIconName | null = AVATAR_OPTIONS.find((a) => a.id === avatarId)?.icon ?? null;
 
   const levelName = app.getCookingLevelName();
   const progress = (xp % 300) / 300;
@@ -167,7 +169,13 @@ export default function ProfileScreen() {
             accessibilityRole="button"
             accessibilityLabel="Edit profile"
           >
-            <MaterialCommunityIcons name={currentAvatarIcon as any} size={40} color={colors.primary} />
+            {currentAvatarIcon ? (
+              <MaterialCommunityIcons name={currentAvatarIcon} size={40} color={colors.primary} />
+            ) : (
+              <Text style={{ fontSize: 32, fontWeight: '700', color: colors.primary }}>
+                {(displayName || 'C').charAt(0).toUpperCase()}
+              </Text>
+            )}
             <View style={[styles.editBadge, { backgroundColor: colors.primary }]}>
               <Feather name="edit-2" size={10} color={colors.onPrimary} />
             </View>
@@ -447,7 +455,7 @@ export default function ProfileScreen() {
                 >
                   <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerHigh }]}>
                     <MaterialCommunityIcons
-                      name={option.icon as any}
+                      name={option.icon}
                       size={22}
                       color={isActive ? colors.primary : colors.outline}
                     />
@@ -550,7 +558,7 @@ export default function ProfileScreen() {
                 >
                   <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerHigh }]}>
                     <MaterialCommunityIcons
-                      name={partner.icon as any}
+                      name={partner.icon}
                       size={22}
                       color={isActive ? colors.primary : colors.outline}
                     />
