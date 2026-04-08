@@ -258,25 +258,24 @@ export default function SearchScreen() {
                     transition={300}
                     accessibilityLabel={recipe.title}
                   />
-                  <Pressable
-                    onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
-                    style={styles.heartBtn}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-                  >
-                    <View style={styles.heartGlass}>
-                      <AnimatedHeart
-                        filled={isBookmarked(recipe.id)}
-                        onToggle={() => toggleBookmark(recipe.id)}
-                        size={20}
-                        filledColor={colors.primary}
-                        outlineColor={OVERLAY_BUTTON.iconColor}
-                        hitSlop={0}
-                      />
-                    </View>
-                  </Pressable>
-                  <View style={styles.addOverlay}>
+                  <View style={styles.overlayStack}>
+                    <Pressable
+                      onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+                    >
+                      <View style={styles.heartGlass}>
+                        <AnimatedHeart
+                          filled={isBookmarked(recipe.id)}
+                          onToggle={() => toggleBookmark(recipe.id)}
+                          size={20}
+                          filledColor={colors.primary}
+                          outlineColor={OVERLAY_BUTTON.iconColor}
+                          hitSlop={0}
+                        />
+                      </View>
+                    </Pressable>
                     <AddToPlanButton onPress={() => setAddSheetRecipe(recipe)} recipeName={recipe.title} variant="overlay" />
                   </View>
                 </View>
@@ -365,15 +364,12 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: 'relative',
   },
-  addOverlay: {
+  overlayStack: {
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
-  },
-  heartBtn: {
-    position: 'absolute',
-    top: Spacing.sm,
-    left: Spacing.sm,
+    gap: 6,
+    alignItems: 'center',
   },
   heartGlass: {
     width: OVERLAY_BUTTON.size,

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fork &amp; Compass - Discover</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Serif:ital,wght@0,600;0,700;1,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed": "#341100",
+                        "secondary-fixed-dim": "#e1c19c",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#f8f3ed",
+                        "primary-container": "#bf550a",
+                        "surface-variant": "#e6e2dc",
+                        "secondary-fixed": "#feddb6",
+                        "on-tertiary-fixed-variant": "#00497a",
+                        "on-tertiary-fixed": "#001d35",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#ded9d4",
+                        "primary-fixed-dim": "#ffb690",
+                        "outline": "#8a7266",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#9e4300",
+                        "on-secondary-fixed-variant": "#584326",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#f2ede7",
+                        "secondary": "#725a3c",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#32302c",
+                        "on-surface-variant": "#574238",
+                        "tertiary-fixed": "#d0e4ff",
+                        "surface": "#fef9f3",
+                        "on-surface": "#1d1b18",
+                        "primary-fixed": "#ffdbcb",
+                        "on-secondary-fixed": "#291802",
+                        "on-background": "#1d1b18",
+                        "on-primary-container": "#fffbff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#9ccaff",
+                        "on-tertiary-container": "#fdfcff",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#fbdab3",
+                        "surface-bright": "#fef9f3",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#005f9c",
+                        "surface-container-high": "#ece7e2",
+                        "primary": "#9a4100",
+                        "inverse-primary": "#ffb690",
+                        "tertiary-container": "#0079c4",
+                        "background": "#fef9f3",
+                        "on-secondary-container": "#775e3f",
+                        "surface-container-highest": "#e6e2dc",
+                        "outline-variant": "#dec1b3",
+                        "on-primary-fixed-variant": "#783100",
+                        "inverse-on-surface": "#f5f0ea"
+                    },
+                    fontFamily: {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .serif-tight { letter-spacing: -0.02em; }
+        
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stagger-item { animation: fadeSlideUp 0.6s ease-out forwards; opacity: 0; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
+    </style>
+</head>
+<body class="bg-[#FEF9F3] text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<main class="max-w-md mx-auto pb-32">
+<!-- 1. GREETING + PROFILE (In-set padding) -->
+<header class="flex justify-between items-center px-5 pt-6 mb-6 stagger-item">
+<h1 class="font-headline text-2xl italic text-on-surface serif-tight">Good evening</h1>
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border-2 border-white shadow-sm">
+<img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8u0lko-aN-2hXB2NyIm_32KxSOtGNXJ_yMuT3RTrjcMB67ZT3tUgVyovNCl7oqrrlEGd93UUjieKZlkZ3fnsBE34x8DF068zW6pVPqOi6EDt5h63s7IAWx9pXwIxj93RmHRiKpOqoprk7QgTkv1EA954YUNHclDjovijrlwakQc043VbrJzIzHOZEtVfp78xKiKywEmldlu8TxfCHc7Ani5pv5A_uCsivpQRmrOjeIIZbFFzWxhiZEVjknP5eNr1-0omhjmK81B4V"/>
+</div>
+<div class="absolute top-0 right-0 w-3 h-3 bg-primary border-2 border-[#FEF9F3] rounded-full"></div>
+</div>
+</header>
+<!-- 2. HERO CAROUSEL (Full bleed-ish) -->
+<section class="mb-8 px-5 stagger-item delay-1">
+<div class="relative h-[300px] rounded-3xl overflow-hidden shadow-xl">
+<img alt="Marrakech Cuisines" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjMis935tUkAH4gR0h9yOXrLQkxoq8KZ6qGiqbBRYbqY4xOb0R9iVhzeTd3wWpQqZakZ2mzQcIfUyCMVdpydGLc-sWNrhN4waV67UZd9OzR7DtF6NtT9On0_IsZ4PwBwqbrdv-bQrdYh7TW2PNCbwn-ggd-F6IhAm514BMjdvW__kqYrInbrJyFPaTThDJH0Im8L17_iEBOS9FQCZEhMegn6gUyFEvG-iSXjAkFB0ZgyI9_yPkBLhWMRFFFelFQfHQJpH2RZCS5YMF"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6 text-white">
+<div class="flex items-center gap-1.5 mb-2">
+<span class="text-xl">🇲🇦</span>
+<span class="text-[10px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-2.5 py-1 rounded">Featured Destination</span>
+</div>
+<h2 class="font-headline text-4xl mb-4 serif-tight">Marrakech</h2>
+<div class="flex items-center justify-between">
+<button class="bg-primary text-white text-xs font-bold py-2.5 px-6 rounded-full hover:opacity-90 transition-all shadow-lg">Let's Go</button>
+<div class="flex gap-1.5">
+<div class="w-2 h-2 rounded-full bg-white"></div>
+<div class="w-2 h-2 rounded-full bg-white/30"></div>
+<div class="w-2 h-2 rounded-full bg-white/30"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. BENTO GRID (Padding consistent) -->
+<div class="px-5">
+<!-- Tonight's Plan (Part of Bento) -->
+<section class="mb-4 stagger-item delay-2">
+<div class="w-full h-[120px] bg-white rounded-3xl flex overflow-hidden shadow-sm border border-outline-variant/20">
+<div class="w-[60%] h-full relative overflow-hidden">
+<img alt="Cacio e Pepe" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZgN0mc-z6HtRa64oJZPdnwgiEMXldZUblTWAVsfcLDifxHqEf5CfCKjAOyC40OwXWDQjzXi2XuWMjY7gsqERxzAn-dFcwgXtUciLrdF-21Tu96ouXzNxoYhyHfGb7mn9t5dQ6X_PS3HxAbXEXiRffkmlwyBYY0GEKwXNYMclcjYit0JOee_EFfcOCwrbz7qk3IA_0kJSGpSAGGs7v3WJzZezQ6tJSjseD-578H9zAP31JfR-7nHiKAZpsfUDhOp2q4aT2qK4aJL6s"/>
+</div>
+<div class="flex-1 p-3 flex flex-col justify-between">
+<div>
+<span class="text-[10px] font-bold text-primary tracking-widest uppercase">Tonight</span>
+<h3 class="font-headline text-base leading-tight serif-tight truncate">Cacio e Pepe</h3>
+<p class="text-[10px] text-secondary">15 min • Easy</p>
+</div>
+<button class="bg-primary text-white text-[11px] font-bold py-1.5 px-4 rounded-full w-fit hover:opacity-90 transition-all">Cook</button>
+</div>
+</div>
+</section>
+<!-- XP + Streak (Rest of Bento) -->
+<section class="grid grid-cols-2 gap-3 mb-8 stagger-item delay-3">
+<div class="flex flex-col gap-3">
+<div class="flex-1 bg-white p-4 rounded-3xl shadow-sm border border-outline-variant/20 flex flex-col justify-center">
+<div class="flex justify-between items-end mb-2">
+<span class="text-[10px] font-bold text-secondary uppercase tracking-widest">Level 3</span>
+<span class="text-[10px] font-medium">750 XP</span>
+</div>
+<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[65%] shadow-[0_0_8px_rgba(154,65,0,0.3)]"></div>
+</div>
+</div>
+</div>
+<div class="bg-[#9A4100] p-4 rounded-3xl shadow-md text-white flex flex-col justify-center items-center relative overflow-hidden h-[100px]">
+<span class="material-symbols-outlined text-2xl mb-0.5 fill-1" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="text-xl font-headline serif-tight">8 days</span>
+<span class="text-[8px] uppercase tracking-widest opacity-80">Streak</span>
+<div class="absolute top-[-20px] right-[-20px] w-20 h-20 bg-white/10 rounded-full blur-2xl"></div>
+</div>
+</section>
+<!-- 4. EXPLORE CUISINES -->
+<section class="mb-8 stagger-item delay-4">
+<div class="flex gap-2 overflow-x-auto hide-scrollbar -mx-5 px-5">
+<button class="flex-shrink-0 bg-primary text-white px-5 py-2.5 rounded-full text-xs font-semibold shadow-md">All</button>
+<button class="flex-shrink-0 bg-white border border-outline-variant/30 text-secondary px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2">
+<span>🇮🇹</span> Italy
+                    </button>
+<button class="flex-shrink-0 bg-white border border-outline-variant/30 text-secondary px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2">
+<span>🇯🇵</span> Japan
+                    </button>
+<button class="flex-shrink-0 bg-white border border-outline-variant/30 text-secondary px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2">
+<span>🇲🇽</span> Mexico
+                    </button>
+<button class="flex-shrink-0 bg-white border border-outline-variant/30 text-secondary px-5 py-2.5 rounded-full text-xs font-semibold flex items-center gap-2">
+<span>🇻🇳</span> Vietnam
+                    </button>
+</div>
+</section>
+<!-- 5. RECIPE GRID -->
+<section class="stagger-item delay-5">
+<h2 class="font-headline text-xl text-on-surface serif-tight mb-4">Discover Daily</h2>
+<div class="grid grid-cols-2 gap-4">
+<div class="group">
+<div class="relative h-40 rounded-2xl overflow-hidden mb-2 shadow-sm">
+<img alt="Scallop Carpaccio" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaXXg7noLPu2rbTIIUn2jW2U8Hi8Im1oDku80M32mjsrsrGADsuNQ_sHfZznVogGILOyN_9I99XRqW4fACcPOYQvkHbsQSKucwOGtXebIGPAr_0-2krcHm7v3DbaKJGVYUjQhuSt6oT1ZWxj3ZwJCSR5AW6Cp1V9uqZH6w1Tu9ky5u1gD_WOEtcbLLw63aplMvAZ-3pIkF2ABVTHmJ03cj5RZ5RF2HQuNNhg_qe-WngHTiwmbksJUyQGKlD5n-kiHAipG-SElJXT5K"/>
+<div class="absolute top-2 right-2 flex flex-col gap-1.5">
+<button class="w-8 h-8 rounded-full bg-white/40 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/60 transition-colors">
+<span class="material-symbols-outlined text-lg">favorite</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-white/40 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/60 transition-colors">
+<span class="material-symbols-outlined text-lg">dark_mode</span>
+</button>
+</div>
+</div>
+<h4 class="font-semibold text-sm leading-snug">Scallop Carpaccio</h4>
+<p class="text-[10px] text-secondary">Appetizer • 10 min</p>
+</div>
+<div class="group">
+<div class="relative h-40 rounded-2xl overflow-hidden mb-2 shadow-sm">
+<img alt="Charred Octopus" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByd1nODLCK4L6JyK9skCtkjeoXDGCmh5qmtDhA6gtO73mA7wR3GNc9aPIe4giZ_Wa25kzISBPGM91Kqnu2IAYqfwanui-9svcM2J8UQ8rxI96iCnwoAX3Zsy9OIVRUtkCBMHLB29BzcKVxTaGSmoRcMDlSVblphL7RV4nvRJZpGfhJZfQ7p6aMETGV6Ee2s_CByXNqdQFROqfHRmPw1HigFC8t00GaEMjgdfxZc2MEr7uzKxHh8w0d3GQ96SPVWtRWzQLPwC5p_06o"/>
+<div class="absolute top-2 right-2 flex flex-col gap-1.5">
+<button class="w-8 h-8 rounded-full bg-white/40 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/60 transition-colors">
+<span class="material-symbols-outlined text-lg">favorite</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-white/40 backdrop-blur-xl flex items-center justify-center text-white hover:bg-white/60 transition-colors">
+<span class="material-symbols-outlined text-lg">dark_mode</span>
+</button>
+</div>
+</div>
+<h4 class="font-semibold text-sm leading-snug">Charred Octopus</h4>
+<p class="text-[10px] text-secondary">Entrée • 25 min</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BOTTOM NAVIGATION -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-3 bg-[#FEF9F3]/80 backdrop-blur-xl border-t border-outline-variant/20 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] rounded-t-[2.5rem]">
+<a class="flex flex-col items-center justify-center text-primary px-3 py-1 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="text-[9px] font-bold uppercase tracking-widest mt-1">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary opacity-50 px-3 py-1 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="text-[9px] font-bold uppercase tracking-widest mt-1">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary opacity-50 px-3 py-1 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-[9px] font-bold uppercase tracking-widest mt-1">Plan</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary opacity-50 px-3 py-1 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">shopping_basket</span>
+<span class="text-[9px] font-bold uppercase tracking-widest mt-1">Groceries</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary opacity-50 px-3 py-1 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="text-[9px] font-bold uppercase tracking-widest mt-1">Cook</span>
+</a>
+</nav>
+</body></html>

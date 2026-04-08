@@ -49,36 +49,31 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
           transition={300}
           accessibilityLabel={recipe.title}
         />
-        <Pressable
-          onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
-          style={[styles.heartButton, {
-            width: OVERLAY_BUTTON.size,
-            height: OVERLAY_BUTTON.size,
-            borderRadius: Radius.full,
-            backgroundColor: OVERLAY_BUTTON.background,
-            borderWidth: OVERLAY_BUTTON.borderWidth,
-            borderColor: OVERLAY_BUTTON.borderColor,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }]}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={isFav ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-        >
-          <AnimatedHeart
-            filled={isFav}
-            onToggle={() => toggleBookmark(recipe.id)}
-            size={OVERLAY_BUTTON.iconSize}
-            filledColor={colors.primary}
-            outlineColor={OVERLAY_BUTTON.iconColor}
-            hitSlop={0}
-          />
-        </Pressable>
-        {onAdd && (
-          <View style={styles.addOverlay}>
+        <View style={styles.overlayStack}>
+          <Pressable
+            onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+            style={[styles.overlayBtn, {
+              backgroundColor: OVERLAY_BUTTON.background,
+              borderWidth: OVERLAY_BUTTON.borderWidth,
+              borderColor: OVERLAY_BUTTON.borderColor,
+            }]}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={isFav ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+          >
+            <AnimatedHeart
+              filled={isFav}
+              onToggle={() => toggleBookmark(recipe.id)}
+              size={OVERLAY_BUTTON.iconSize}
+              filledColor={colors.primary}
+              outlineColor={OVERLAY_BUTTON.iconColor}
+              hitSlop={0}
+            />
+          </Pressable>
+          {onAdd && (
             <AddToPlanButton onPress={onAdd} recipeName={recipe.title} variant="overlay" />
-          </View>
-        )}
+          )}
+        </View>
       </View>
       <View style={styles.content}>
         <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={2}>
@@ -151,15 +146,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  heartButton: {
-    position: 'absolute',
-    top: Spacing.sm,
-    left: Spacing.sm,
-  },
-  addOverlay: {
+  overlayStack: {
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
+    gap: 6,
+    alignItems: 'center',
+  },
+  overlayBtn: {
+    width: OVERLAY_BUTTON.size,
+    height: OVERLAY_BUTTON.size,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     padding: Spacing.md,

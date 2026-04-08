@@ -387,29 +387,28 @@ export default function DiscoverScreen() {
                     transition={300}
                     accessible={false}
                   />
-                  {/* Heart overlay — top-left */}
-                  <Pressable
-                    onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
-                    style={[styles.heartBtn, {
-                      backgroundColor: OVERLAY_BUTTON.background,
-                      borderWidth: OVERLAY_BUTTON.borderWidth,
-                      borderColor: OVERLAY_BUTTON.borderColor,
-                    }]}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from saved` : `Save ${recipe.title}`}
-                  >
-                    <AnimatedHeart
-                      filled={isBookmarked(recipe.id)}
-                      onToggle={() => toggleBookmark(recipe.id)}
-                      size={OVERLAY_BUTTON.iconSize}
-                      filledColor={colors.primary}
-                      outlineColor={OVERLAY_BUTTON.iconColor}
-                      hitSlop={0}
-                    />
-                  </Pressable>
-                  {/* Add to plan — top-right */}
-                  <View style={styles.addOverlay}>
+                  {/* Overlay buttons — stacked top-right */}
+                  <View style={styles.overlayStack}>
+                    <Pressable
+                      onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+                      style={[styles.overlayBtn, {
+                        backgroundColor: OVERLAY_BUTTON.background,
+                        borderWidth: OVERLAY_BUTTON.borderWidth,
+                        borderColor: OVERLAY_BUTTON.borderColor,
+                      }]}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from saved` : `Save ${recipe.title}`}
+                    >
+                      <AnimatedHeart
+                        filled={isBookmarked(recipe.id)}
+                        onToggle={() => toggleBookmark(recipe.id)}
+                        size={OVERLAY_BUTTON.iconSize}
+                        filledColor={colors.primary}
+                        outlineColor={OVERLAY_BUTTON.iconColor}
+                        hitSlop={0}
+                      />
+                    </Pressable>
                     <AddToPlanButton
                       onPress={() => setAddSheetRecipe(recipe)}
                       recipeName={recipe.title}
@@ -619,20 +618,19 @@ const styles = StyleSheet.create({
   recipeImage: {
     width: '100%',
   },
-  heartBtn: {
+  overlayStack: {
     position: 'absolute',
     top: Spacing.sm,
-    left: Spacing.sm,
+    right: Spacing.sm,
+    gap: 6,
+    alignItems: 'center',
+  },
+  overlayBtn: {
     width: OVERLAY_BUTTON.size,
     height: OVERLAY_BUTTON.size,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  addOverlay: {
-    position: 'absolute',
-    top: Spacing.sm,
-    right: Spacing.sm,
   },
   recipeContent: {
     padding: Spacing.md,
