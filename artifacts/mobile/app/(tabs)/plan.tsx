@@ -613,6 +613,49 @@ export default function PlanScreen() {
                         </View>
                       )}
                     </View>
+                    {/* Dinner party indicator */}
+                    {(() => {
+                      const dayParty = app.getDinnerPartyForDate(day.date);
+                      if (dayParty) {
+                        const guestCount = app.getGuestCount(dayParty.id);
+                        const conflicts = app.checkDietaryConflicts(dayParty.id);
+                        return (
+                          <Pressable
+                            onPress={() => router.push(`/dinner-setup?date=${day.date}`)}
+                            style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: Spacing.sm }}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Dinner party with ${guestCount.total} guests`}
+                          >
+                            <View style={[styles.partyPill, { backgroundColor: `${colors.primary}15` }]}>
+                              <Text style={{ fontSize: 14 }}>🍽️</Text>
+                              <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{guestCount.total} guests</Text>
+                            </View>
+                            {conflicts.length > 0 && (
+                              <View style={[styles.partyPill, { backgroundColor: `${colors.warning}15` }]}>
+                                <Text style={[Typography.caption, { color: colors.warning, fontWeight: '700' }]}>⚠️ Dietary conflicts</Text>
+                              </View>
+                            )}
+                          </Pressable>
+                        );
+                      }
+                      if (mainMeal) {
+                        return (
+                          <Pressable
+                            onPress={() => router.push(`/dinner-setup?date=${day.date}`)}
+                            style={{ marginBottom: Spacing.sm }}
+                            accessibilityRole="button"
+                            accessibilityLabel="Plan dinner party"
+                          >
+                            <View style={[styles.partyPill, { backgroundColor: colors.surfaceContainerHigh }]}>
+                              <MaterialCommunityIcons name="silverware-fork-knife" size={14} color={colors.outline} />
+                              <Text style={[Typography.caption, { color: colors.outline }]}>Host a dinner</Text>
+                            </View>
+                          </Pressable>
+                        );
+                      }
+                      return null;
+                    })()}
+
                     {mainMeal ? (
                       <MealCard
                         meal={mainMeal}
@@ -860,6 +903,14 @@ const styles = StyleSheet.create({
   todayBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
+    borderRadius: Radius.full,
+  },
+  partyPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
     borderRadius: Radius.full,
   },
   multipleMealsRow: {
