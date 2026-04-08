@@ -100,7 +100,7 @@ export default function DiscoverScreen() {
 
   // Day list for picker (next 14 days)
   const planDays = useMemo(() => {
-    const start = toISO(getMonday(new Date()));
+    const start = toISO(new Date());
     return Array.from({ length: 14 }, (_, i) => {
       const date = addDays(start, i);
       return { date, label: getDayLabel(date), short: formatDateShort(date) };
@@ -261,12 +261,26 @@ export default function DiscoverScreen() {
             </GlassView>
           </View>
         ) : (
-          <View style={{ height: Spacing.lg }} />
+          <View style={{ paddingHorizontal: Spacing.page, marginTop: -Spacing.xxl }}>
+            <GlassView style={[styles.tonightCard, { ...Shadows.ambient }]}>
+              <View style={[styles.tonightImage, { backgroundColor: colors.surfaceContainerHigh, alignItems: 'center', justifyContent: 'center' }]}>
+                <Feather name="calendar" size={24} color={colors.outlineVariant} />
+              </View>
+              <View style={styles.tonightContent}>
+                <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
+                  No dinner planned yet
+                </Text>
+                <Pressable onPress={() => router.push('/(tabs)/plan')} accessibilityRole="button" accessibilityLabel="Plan tonight's dinner">
+                  <Text style={[Typography.titleSmall, { color: colors.primary }]}>Plan Tonight</Text>
+                </Pressable>
+              </View>
+            </GlassView>
+          </View>
         )}
 
         {/* Curated Regions */}
         <View style={{ marginTop: Spacing.xxl }}>
-          <SectionHeader label="CURATED REGIONS" title="Curated Regions" actionText="View All" onAction={() => {}} />
+          <SectionHeader label="CURATED REGIONS" title="Curated Regions" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
           <View style={styles.grid}>
             {curatedCountries.map((country) => (
               <DestinationCard key={country.id} country={country} />
@@ -276,7 +290,7 @@ export default function DiscoverScreen() {
 
         {/* Trending Bites — with Tonight/Week quick-add buttons */}
         <View style={{ marginTop: Spacing.xl }}>
-          <SectionHeader label="TRENDING BITES" title="Trending Bites" actionText="View All" onAction={() => {}} />
+          <SectionHeader label="TRENDING BITES" title="Trending Bites" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
           <View style={styles.grid}>
             {trendingRecipes.map((recipe) => (
               <View key={recipe.id}>

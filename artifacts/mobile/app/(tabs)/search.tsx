@@ -18,7 +18,10 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
+import { DestinationCard } from '@/components/DestinationCard';
 import { recipes } from '@/data/recipes';
+import { countries } from '@/data/countries';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
 
@@ -120,6 +123,37 @@ export default function SearchScreen() {
           ))}
         </ScrollView>
 
+        {/* Result count */}
+        {query.trim().length > 0 && filteredRecipes.length > 0 && (
+          <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
+            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
+              {filteredRecipes.length} recipe{filteredRecipes.length !== 1 ? 's' : ''} found
+            </Text>
+          </View>
+        )}
+
+        {/* Empty state when searching with no results */}
+        {query.trim().length > 0 && filteredRecipes.length === 0 ? (
+          <View style={styles.emptyState}>
+            <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
+              <MaterialCommunityIcons name="magnify" size={32} color={colors.onSurfaceVariant} />
+            </View>
+            <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
+              No matches found
+            </Text>
+            <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, textAlign: 'center' }]}>
+              Try different keywords or browse by mood
+            </Text>
+            <Text style={[Typography.labelLarge, { color: colors.outline, marginTop: Spacing.xl }]}>
+              OR EXPLORE THESE COUNTRIES
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.md, paddingHorizontal: Spacing.page, paddingTop: Spacing.md }}>
+              {countries.slice(0, 4).map((country) => (
+                <DestinationCard key={country.id} country={country} />
+              ))}
+            </ScrollView>
+          </View>
+        ) : (
         <View style={styles.grid}>
           {filteredRecipes.map((recipe) => (
             <Pressable
@@ -160,6 +194,7 @@ export default function SearchScreen() {
             </Pressable>
           ))}
         </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -216,10 +251,24 @@ const styles = StyleSheet.create({
     right: Spacing.sm,
   },
   heartGlass: {
-    width: 30,
-    height: 30,
+    width: 44,
+    height: 44,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingTop: Spacing.xxl,
+    paddingHorizontal: Spacing.page,
+    gap: Spacing.md,
+  },
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
   },
 });
