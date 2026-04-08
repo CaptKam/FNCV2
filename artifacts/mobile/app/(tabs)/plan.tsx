@@ -699,7 +699,7 @@ export default function PlanScreen() {
         )}
       </ScrollView>
 
-      {/* Cook This Dinner bar — visible when selected day has meals */}
+      {/* Cook This Dinner bar — visible when selected/today's day has meals */}
       {(() => {
         const viewDay = isDailyView ? selectedDay : weekDays.find((d) => d.date === new Date().toISOString().split('T')[0]);
         const hasMeals = viewDay && (viewDay.courses.appetizer || viewDay.courses.main || viewDay.courses.dessert);
@@ -707,7 +707,6 @@ export default function PlanScreen() {
         return (
           <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
             <Pressable onPress={() => {
-              // Collect all recipes from this day's courses
               const dayRecipes: Recipe[] = [];
               for (const meal of Object.values(viewDay.courses)) {
                 if (meal) {
@@ -716,7 +715,6 @@ export default function PlanScreen() {
                 }
               }
               if (dayRecipes.length > 0) {
-                // Default target time: 7:00 PM today
                 const target = new Date();
                 target.setHours(19, 0, 0, 0);
                 app.createDinnerPlan(dayRecipes, target, 4);
@@ -740,25 +738,35 @@ export default function PlanScreen() {
         );
       })()}
 
-      {/* Auto-generate FAB */}
-      <View style={[styles.fabContainer, { bottom: todaysMeals.length > 0 ? 160 : 100, right: Spacing.page }]}>
-        <Pressable
-          onPress={() => {
-            const emptyDates = weekDays
-              .filter((d) => !d.courses.main)
-              .map((d) => d.date);
-            if (emptyDates.length > 0) {
-              app.autoGenerateWeek(emptyDates, app.coursePreference);
-              try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
-            }
-          }}
-          style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
-          accessibilityRole="button"
-          accessibilityLabel="Auto-generate meal plan"
-        >
-          <MaterialCommunityIcons name="auto-fix" size={22} color={colors.onPrimary} />
-        </Pressable>
-      </View>
+      {/* Auto-generate FAB — only visible when there are empty days to fill */}
+      {(() => {
+        const emptyDayCount = weekDays.filter((d) => !d.courses.main).length;
+        if (emptyDayCount === 0) return null;
+
+        const viewDay = isDailyView ? selectedDay : weekDays.find((d) => d.date === new Date().toISOString().split('T')[0]);
+        const cookBarVisible = viewDay && (viewDay.courses.appetizer || viewDay.courses.main || viewDay.courses.dessert);
+
+        return (
+          <View style={[styles.fabContainer, { bottom: cookBarVisible ? 160 : 100, right: Spacing.page }]}>
+            <Pressable
+              onPress={() => {
+                const emptyDates = weekDays
+                  .filter((d) => !d.courses.main)
+                  .map((d) => d.date);
+                if (emptyDates.length > 0) {
+                  app.autoGenerateWeek(emptyDates, app.coursePreference);
+                  try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+                }
+              }}
+              style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
+              accessibilityRole="button"
+              accessibilityLabel={`Auto-generate meals for ${emptyDayCount} empty days`}
+            >
+              <MaterialCommunityIcons name="auto-fix" size={22} color={colors.onPrimary} />
+            </Pressable>
+          </View>
+        );
+      })()}
 
       {/* View dropdown modal */}
       <Modal
