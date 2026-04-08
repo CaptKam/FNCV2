@@ -109,7 +109,7 @@ function MealCard({
                 accessibilityLabel="Swap recipe"
               >
                 <View style={styles.imageActionBtn}>
-                  <MaterialCommunityIcons name="swap-horizontal" size={16} color={OVERLAY_BUTTON.iconColor} />
+                  <MaterialCommunityIcons name="swap-horizontal" size={20} color={OVERLAY_BUTTON.iconColor} />
                   <Text style={{ fontSize: 10, color: OVERLAY_BUTTON.iconColor, fontWeight: '700', letterSpacing: 0.3 }}>Swap</Text>
                 </View>
               </Pressable>
@@ -124,15 +124,15 @@ function MealCard({
                 accessibilityLabel="Remove recipe"
               >
                 <View style={styles.imageActionBtn}>
-                  <MaterialCommunityIcons name="close" size={16} color={OVERLAY_BUTTON.iconColor} />
+                  <MaterialCommunityIcons name="close" size={20} color={OVERLAY_BUTTON.iconColor} />
                   <Text style={{ fontSize: 10, color: OVERLAY_BUTTON.iconColor, fontWeight: '700', letterSpacing: 0.3 }}>Remove</Text>
                 </View>
               </Pressable>
             </View>
           )}
           <View style={styles.recipeBadge}>
-            <View style={[styles.recipeBadgePill, { backgroundColor: 'rgba(30, 25, 20, 0.85)' }]}>
-              <Text style={[Typography.labelSmall, { color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.5 }]}>{badgeLabel}</Text>
+            <View style={[styles.recipeBadgePill, { backgroundColor: OVERLAY_BUTTON.background }]}>
+              <Text style={[Typography.labelSmall, { color: OVERLAY_BUTTON.iconColor, fontWeight: '700', letterSpacing: 0.5 }]}>{badgeLabel}</Text>
             </View>
           </View>
         </View>
@@ -525,7 +525,7 @@ export default function PlanScreen() {
                               accessibilityRole="button"
                               accessibilityLabel={`Add ${slot.label}`}
                             >
-                              <MaterialCommunityIcons name="plus-circle-outline" size={16} color={colors.primary} />
+                              <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
                               <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5 }]}>
                                 Add Meal
                               </Text>

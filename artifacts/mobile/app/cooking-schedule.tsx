@@ -8,6 +8,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 import { useApp } from '@/context/AppContext';
 import { TimelineEvent } from '@/types/kitchen';
 
@@ -156,7 +157,7 @@ export default function CookingScheduleScreen() {
           accessibilityRole="button"
           accessibilityLabel="Close"
         >
-          <MaterialCommunityIcons name="arrow-left" size={20} color="#FFFFFF" />
+          <MaterialCommunityIcons name="arrow-left" size={20} color={OVERLAY_BUTTON.iconColor} />
         </Pressable>
         <View style={styles.headerCenter}>
           <Text style={[Typography.display, { color: colors.onSurface, fontSize: 22 }]}>
@@ -239,7 +240,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(30,25,20,0.85)',
+    backgroundColor: OVERLAY_BUTTON.background,
+    borderWidth: OVERLAY_BUTTON.borderWidth,
+    borderColor: OVERLAY_BUTTON.borderColor,
     alignItems: 'center',
     justifyContent: 'center',
   },

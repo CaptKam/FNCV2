@@ -17,6 +17,7 @@ import { useApp, GroceryItem } from '@/context/AppContext';
 import { recipes as allRecipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
 import { computeScaledAmount } from '@/utils/groceryScaling';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -232,7 +233,7 @@ export default function GroceryScreen() {
             Plan some meals or add items manually.
           </Text>
           <View style={[styles.manualInputWrap, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, marginHorizontal: Spacing.xl, marginTop: Spacing.md }]}>
-            <MaterialCommunityIcons name="plus-circle-outline" size={20} color={colors.outline} />
+            <MaterialCommunityIcons name="plus" size={20} color={colors.outline} />
             <TextInput
               value={manualItemName}
               onChangeText={setManualItemName}
@@ -336,7 +337,7 @@ export default function GroceryScreen() {
         {/* Manual item entry */}
         <View style={[styles.manualEntryRow, { paddingHorizontal: Spacing.page }]}>
           <View style={[styles.manualInputWrap, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-            <MaterialCommunityIcons name="plus-circle-outline" size={20} color={colors.outline} />
+            <MaterialCommunityIcons name="plus" size={20} color={colors.outline} />
             <TextInput
               value={manualItemName}
               onChangeText={setManualItemName}
@@ -386,7 +387,7 @@ export default function GroceryScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={`Remove ${recipe.title} from grocery list`}
                       >
-                        <MaterialCommunityIcons name="close" size={16} color={colors.textOnImage} />
+                        <MaterialCommunityIcons name="close" size={20} color={OVERLAY_BUTTON.iconColor} />
                       </Pressable>
                     </View>
                     <View style={styles.recipeCardContent}>
@@ -444,7 +445,7 @@ export default function GroceryScreen() {
                 These ingredients were added from your meal plan
               </Text>
               <Pressable onPress={dismissMealPlanHint} hitSlop={8} accessibilityRole="button" accessibilityLabel="Dismiss hint">
-                <MaterialCommunityIcons name="close" size={16} color={colors.onSurfaceVariant} />
+                <MaterialCommunityIcons name="close" size={20} color={colors.onSurfaceVariant} />
               </Pressable>
             </View>
           </View>
@@ -601,7 +602,7 @@ export default function GroceryScreen() {
                       accessibilityRole="button"
                       accessibilityLabel={`Remove ${item.name}`}
                     >
-                      <MaterialCommunityIcons name="close-circle-outline" size={20} color={colors.outline} />
+                      <MaterialCommunityIcons name="close" size={20} color={colors.outline} />
                     </Pressable>
                   )}
                   <Checkbox checked={item.checked} onToggle={() => app.toggleGroceryItem(item.id)} />
@@ -692,8 +693,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    width: 26,
-    height: 26,
+    width: 40,
+    height: 40,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
