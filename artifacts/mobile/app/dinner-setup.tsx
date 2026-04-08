@@ -280,7 +280,7 @@ export default function DinnerSetupScreen() {
               return (
                 <View key={courseType} style={[styles.menuRow, { backgroundColor: colors.surfaceContainerLow }]}>
                   <View style={[styles.menuImagePlaceholder, { backgroundColor: colors.surfaceContainerHigh }]}>
-                    <MaterialCommunityIcons name="silverware-variant" size={24} color={colors.outlineVariant} />
+                    <MaterialCommunityIcons name="silverware-variant" size={28} color={colors.outlineVariant} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[Typography.labelSmall, { color: colors.outline }]}>{courseType.toUpperCase()}</Text>
