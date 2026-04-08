@@ -14,7 +14,7 @@ import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
 import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
-import { Recipe } from '@/data/recipes';
+import { Recipe, recipes as allRecipes } from '@/data/recipes';
 
 // ─── Helpers ───
 
@@ -656,35 +656,46 @@ export default function PlanScreen() {
         )}
       </ScrollView>
 
-      {/* Ready to Cook bar — only visible when today has meals */}
-      {todaysMeals.length > 0 && (
-        <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
-          <Pressable onPress={() => {
-            const mainToday = todaysMeals.find((m) => weekDays.find((d) =>
-              d.date === new Date().toISOString().split('T')[0] && d.courses.main?.recipeId === m.recipeId
-            ));
-            const targetId = mainToday?.recipeId ?? todaysMeals[0]?.recipeId;
-            if (targetId) {
-              router.push(`/cook-mode/${targetId}`);
-            } else {
-              router.push('/(tabs)/cook');
-            }
-          }} accessibilityRole="button" accessibilityLabel="Ready to cook">
-            <GlassView style={[styles.readyCTAInner, { ...Shadows.ambient }]}>
-              <View style={[styles.playCircle, { backgroundColor: colors.primary }]}>
-                <MaterialCommunityIcons name="play" size={16} color={colors.onPrimary} />
-              </View>
-              <Text style={[Typography.titleSmall, { color: colors.primary, fontWeight: '700' }]}>
-                Ready to Cook
-              </Text>
-              <View style={{ flex: 1 }} />
-              <Text style={[Typography.labelSmall, { color: colors.outline }]}>
-                {isDailyView ? `${selectedDay?.dayLabel}'s Prep` : "Today's Prep"}
-              </Text>
-            </GlassView>
-          </Pressable>
-        </View>
-      )}
+      {/* Cook This Dinner bar — visible when selected day has meals */}
+      {(() => {
+        const viewDay = isDailyView ? selectedDay : weekDays.find((d) => d.date === new Date().toISOString().split('T')[0]);
+        const hasMeals = viewDay && (viewDay.courses.appetizer || viewDay.courses.main || viewDay.courses.dessert);
+        if (!hasMeals || !viewDay) return null;
+        return (
+          <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
+            <Pressable onPress={() => {
+              // Collect all recipes from this day's courses
+              const dayRecipes: Recipe[] = [];
+              for (const meal of Object.values(viewDay.courses)) {
+                if (meal) {
+                  const r = allRecipes.find((rec) => rec.id === meal.recipeId);
+                  if (r) dayRecipes.push(r);
+                }
+              }
+              if (dayRecipes.length > 0) {
+                // Default target time: 7:00 PM today
+                const target = new Date();
+                target.setHours(19, 0, 0, 0);
+                app.createDinnerPlan(dayRecipes, target, 4);
+                router.push('/cooking-schedule');
+              }
+            }} accessibilityRole="button" accessibilityLabel="Cook this dinner">
+              <GlassView style={[styles.readyCTAInner, { ...Shadows.ambient }]}>
+                <View style={[styles.playCircle, { backgroundColor: colors.primary }]}>
+                  <MaterialCommunityIcons name="play" size={16} color={colors.onPrimary} />
+                </View>
+                <Text style={[Typography.titleSmall, { color: colors.primary, fontWeight: '700' }]}>
+                  Cook This Dinner
+                </Text>
+                <View style={{ flex: 1 }} />
+                <Text style={[Typography.labelSmall, { color: colors.outline }]}>
+                  {isDailyView ? viewDay.dayLabel : 'Tonight'}
+                </Text>
+              </GlassView>
+            </Pressable>
+          </View>
+        );
+      })()}
 
       {/* Auto-generate FAB */}
       <View style={[styles.fabContainer, { bottom: todaysMeals.length > 0 ? 160 : 100, right: Spacing.page }]}>

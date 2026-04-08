@@ -3,6 +3,7 @@ import { Storage } from '@/utils/storage';
 import { Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { DinnerPlan } from '@/types/kitchen';
+import { buildDinnerTimeline } from '@/utils/timelineEngine';
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -117,6 +118,12 @@ interface AppContextValue {
 
   // Dinner plan
   pendingDinnerPlan: DinnerPlan | null;
+  activeDinnerPlan: DinnerPlan | null;
+  currentDinnerEventIndex: number;
+  createDinnerPlan: (recipes: Recipe[], targetTime: Date, servings: number) => void;
+  startDinnerPlan: () => void;
+  advanceDinnerStep: () => void;
+  completeDinnerPlan: () => void;
   setPendingDinnerPlan: (plan: DinnerPlan | null) => void;
 }
 
@@ -130,6 +137,7 @@ const KEYS = {
   cookSession: '@fork_compass_cook_session',
   preferences: '@fork_compass_preferences',
   history: '@fork_compass_history',
+  dinnerPlan: '@fork_compass_dinner_plan',
 };
 
 // ═══════════════════════════════════════════
@@ -235,6 +243,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [level, setLevel] = useState(defaultHistory.level);
   const [passportStamps, setPassportStamps] = useState<Record<string, number>>(defaultHistory.passportStamps);
   const [pendingDinnerPlan, setPendingDinnerPlan] = useState<DinnerPlan | null>(null);
+  const [activeDinnerPlan, setActiveDinnerPlan] = useState<DinnerPlan | null>(null);
+  const [currentDinnerEventIndex, setCurrentDinnerEventIndex] = useState(0);
 
   const hydrated = useRef(false);
 
@@ -242,16 +252,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const [it, gr, cs, pr, hi] = await Promise.all([
+      const [it, gr, cs, pr, hi, dp] = await Promise.all([
         Storage.get<ItineraryDay[]>(KEYS.itinerary, []),
         Storage.get<GroceryItem[]>(KEYS.grocery, []),
         Storage.get<CookSession | null>(KEYS.cookSession, null),
         Storage.get(KEYS.preferences, defaultPreferences),
         Storage.get(KEYS.history, defaultHistory),
+        Storage.get<{ plan: DinnerPlan | null; eventIndex: number }>(KEYS.dinnerPlan, { plan: null, eventIndex: 0 }),
       ]);
       setItinerary(it);
       setGroceryItems(gr);
       setActiveCookSession(cs);
+      if (dp.plan) {
+        setActiveDinnerPlan(dp.plan);
+        setCurrentDinnerEventIndex(dp.eventIndex);
+      }
       if (pr.cookingLevel) setCookingLevelState(pr.cookingLevel);
       if (pr.coursePreference) setCoursePreferenceState(pr.coursePreference);
       if (pr.groceryPartner) setGroceryPartnerState(pr.groceryPartner);
@@ -289,6 +304,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (hydrated.current)
       Storage.set(KEYS.history, { totalRecipesCooked, xp, level, passportStamps });
   }, [totalRecipesCooked, xp, level, passportStamps]);
+
+  useEffect(() => {
+    if (hydrated.current)
+      Storage.set(KEYS.dinnerPlan, { plan: activeDinnerPlan, eventIndex: currentDinnerEventIndex });
+  }, [activeDinnerPlan, currentDinnerEventIndex]);
 
   // ═══════════════════════════════════════════
   // GROCERY ACTIONS (defined first, used by itinerary)
@@ -688,6 +708,54 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [level]);
 
   // ═══════════════════════════════════════════
+  // DINNER PLAN ACTIONS
+  // ═══════════════════════════════════════════
+
+  const createDinnerPlan = useCallback((dinnerRecipes: Recipe[], targetTime: Date, servings: number) => {
+    const plan = buildDinnerTimeline(dinnerRecipes, targetTime, { mode: 'solo', servings });
+    setPendingDinnerPlan(plan);
+  }, []);
+
+  const startDinnerPlan = useCallback(() => {
+    if (pendingDinnerPlan) {
+      setActiveDinnerPlan({ ...pendingDinnerPlan, status: 'active' });
+      setCurrentDinnerEventIndex(0);
+      setPendingDinnerPlan(null);
+    }
+  }, [pendingDinnerPlan]);
+
+  const advanceDinnerStep = useCallback(() => {
+    if (!activeDinnerPlan) return;
+    const nextIndex = currentDinnerEventIndex + 1;
+    if (nextIndex >= activeDinnerPlan.events.length) {
+      // Plan complete — will be handled by completeDinnerPlan
+      setCurrentDinnerEventIndex(nextIndex);
+    } else {
+      setCurrentDinnerEventIndex(nextIndex);
+    }
+  }, [activeDinnerPlan, currentDinnerEventIndex]);
+
+  const completeDinnerPlan = useCallback(() => {
+    if (!activeDinnerPlan) return;
+    // Award XP and stamps for each recipe in the plan
+    const recipeCount = activeDinnerPlan.recipes.length;
+    setTotalRecipesCooked((prev) => prev + recipeCount);
+    setXp((prevXp) => {
+      const newXp = prevXp + (50 * recipeCount);
+      setLevel(Math.floor(newXp / 300) + 1);
+      return newXp;
+    });
+    for (const r of activeDinnerPlan.recipes) {
+      setPassportStamps((prev) => ({
+        ...prev,
+        [r.countryId]: (prev[r.countryId] ?? 0) + 1,
+      }));
+    }
+    setActiveDinnerPlan(null);
+    setCurrentDinnerEventIndex(0);
+  }, [activeDinnerPlan]);
+
+  // ═══════════════════════════════════════════
   // VALUE
   // ═══════════════════════════════════════════
 
@@ -740,6 +808,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     getCookingLevelName,
 
     pendingDinnerPlan,
+    activeDinnerPlan,
+    currentDinnerEventIndex,
+    createDinnerPlan,
+    startDinnerPlan,
+    advanceDinnerStep,
+    completeDinnerPlan,
     setPendingDinnerPlan,
   };
 
