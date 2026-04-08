@@ -181,22 +181,11 @@ export default function DiscoverScreen() {
         scrollEventThrottle={200}
         contentContainerStyle={{ paddingTop: insets.top + 76, paddingBottom: 120 }}
       >
-        {/* ═══ ROW 1: GREETING + PROFILE ═══ */}
-        <View style={[styles.greetingRow, { paddingHorizontal: GRID_PAD }]}>
+        {/* ═══ ROW 1: GREETING ═══ */}
+        <View style={{ paddingHorizontal: GRID_PAD, marginBottom: Spacing.md }}>
           <Text style={[Typography.title, { color: colors.onSurfaceVariant, fontStyle: 'italic' }]}>
             {getGreeting()}
           </Text>
-          <Pressable
-            onPress={() => router.push('/profile')}
-            style={[styles.profileBtn, { backgroundColor: colors.surfaceContainerHigh }]}
-            accessibilityRole="button"
-            accessibilityLabel="Profile"
-          >
-            <MaterialCommunityIcons name="account-outline" size={20} color={colors.onSurfaceVariant} />
-            {app.getUncheckedCount() > 0 && (
-              <View style={[styles.notifDot, { backgroundColor: colors.primary }]} />
-            )}
-          </Pressable>
         </View>
 
         {/* ═══ ROW 2: TONIGHT'S PLAN (conditional) ═══ */}
@@ -454,28 +443,6 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
-  // Row 1: Greeting
-  greetingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-  },
-  profileBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notifDot: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
 
   // Row 2: Tonight
   tonightCard: {
