@@ -42,19 +42,25 @@ function formatDateShort(dateStr: string): string {
 interface AddToPlanButtonProps {
   onPress: () => void;
   recipeName: string;
+  variant?: 'default' | 'overlay';
 }
 
-export function AddToPlanButton({ onPress, recipeName }: AddToPlanButtonProps) {
+export function AddToPlanButton({ onPress, recipeName, variant = 'default' }: AddToPlanButtonProps) {
   const colors = useThemeColors();
+  const isOverlay = variant === 'overlay';
   return (
     <Pressable
       onPress={(e) => { e.stopPropagation(); onPress(); }}
-      style={[styles.triggerBtn, { backgroundColor: colors.primarySubtle }]}
+      style={[
+        isOverlay ? styles.triggerBtnOverlay : styles.triggerBtn,
+        { backgroundColor: isOverlay ? 'rgba(0,0,0,0.45)' : colors.primarySubtle },
+        isOverlay && { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+      ]}
       accessibilityRole="button"
       accessibilityLabel={`Add ${recipeName} to meal plan`}
       hitSlop={4}
     >
-      <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+      <MaterialCommunityIcons name="plus" size={isOverlay ? 20 : 20} color={isOverlay ? '#FFFFFF' : colors.primary} />
     </Pressable>
   );
 }
@@ -200,6 +206,13 @@ const styles = StyleSheet.create({
   triggerBtn: {
     width: 36,
     height: 36,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  triggerBtnOverlay: {
+    width: 40,
+    height: 40,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',

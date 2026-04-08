@@ -250,13 +250,36 @@ export default function SearchScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
               >
-                <Image
-                  source={{ uri: recipe.image }}
-                  style={styles.cardImage}
-                  contentFit="cover"
-                  transition={300}
-                  accessibilityLabel={recipe.title}
-                />
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: recipe.image }}
+                    style={styles.cardImage}
+                    contentFit="cover"
+                    transition={300}
+                    accessibilityLabel={recipe.title}
+                  />
+                  <Pressable
+                    onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+                    style={styles.heartBtn}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+                  >
+                    <View style={styles.heartGlass}>
+                      <AnimatedHeart
+                        filled={isBookmarked(recipe.id)}
+                        onToggle={() => toggleBookmark(recipe.id)}
+                        size={20}
+                        filledColor={colors.primary}
+                        outlineColor={OVERLAY_BUTTON.iconColor}
+                        hitSlop={0}
+                      />
+                    </View>
+                  </Pressable>
+                  <View style={styles.addOverlay}>
+                    <AddToPlanButton onPress={() => setAddSheetRecipe(recipe)} recipeName={recipe.title} variant="overlay" />
+                  </View>
+                </View>
                 <View style={styles.cardContent}>
                   <Text style={[Typography.title, { color: colors.onSurface }]} numberOfLines={2}>
                     {recipe.title}
@@ -264,28 +287,7 @@ export default function SearchScreen() {
                   <Text style={[Typography.labelSmall, { color: colors.outline }]}>
                     {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
                   </Text>
-                  <View style={styles.addButton}>
-                    <AddToPlanButton onPress={() => setAddSheetRecipe(recipe)} recipeName={recipe.title} />
-                  </View>
                 </View>
-                <Pressable
-                  onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
-                  style={styles.heartBtn}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-                >
-                  <View style={styles.heartGlass}>
-                    <AnimatedHeart
-                      filled={isBookmarked(recipe.id)}
-                      onToggle={() => toggleBookmark(recipe.id)}
-                      size={20}
-                      filledColor={colors.primary}
-                      outlineColor={OVERLAY_BUTTON.iconColor}
-                      hitSlop={0}
-                    />
-                  </View>
-                </Pressable>
               </Pressable>
             </AnimatedListItem>
           ))}
@@ -360,14 +362,18 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     gap: 6,
   },
-  addButton: {
-    alignItems: 'flex-end',
-    marginTop: 4,
+  imageWrapper: {
+    position: 'relative',
+  },
+  addOverlay: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
   },
   heartBtn: {
     position: 'absolute',
     top: Spacing.sm,
-    right: Spacing.sm,
+    left: Spacing.sm,
   },
   heartGlass: {
     width: OVERLAY_BUTTON.size,

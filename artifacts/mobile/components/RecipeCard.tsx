@@ -74,6 +74,11 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
             hitSlop={0}
           />
         </Pressable>
+        {onAdd && (
+          <View style={styles.addOverlay}>
+            <AddToPlanButton onPress={onAdd} recipeName={recipe.title} variant="overlay" />
+          </View>
+        )}
       </View>
       <View style={styles.content}>
         <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={2}>
@@ -127,11 +132,6 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
             )}
           </View>
         )}
-        {onAdd && (
-          <View style={styles.addBtnRow}>
-            <AddToPlanButton onPress={onAdd} recipeName={recipe.title} />
-          </View>
-        )}
       </View>
     </Pressable>
   );
@@ -152,6 +152,11 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   heartButton: {
+    position: 'absolute',
+    top: Spacing.sm,
+    left: Spacing.sm,
+  },
+  addOverlay: {
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
@@ -195,9 +200,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: Radius.full,
-  },
-  addBtnRow: {
-    alignItems: 'flex-end',
-    marginTop: 2,
   },
 });
