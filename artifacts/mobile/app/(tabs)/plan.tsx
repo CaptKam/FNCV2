@@ -200,14 +200,6 @@ export default function PlanScreen() {
     });
   }, []);
 
-  // Auto-dismiss plan hint when first meal is added
-  useEffect(() => {
-    if (showPlanHint && plannedCount > 0) {
-      setShowPlanHint(false);
-      AsyncStorage.setItem('@fork_compass_hint_plan_seen', 'true');
-    }
-  }, [plannedCount, showPlanHint]);
-
   const dismissPlanHint = useCallback(() => {
     setShowPlanHint(false);
     AsyncStorage.setItem('@fork_compass_hint_plan_seen', 'true');
@@ -225,6 +217,14 @@ export default function PlanScreen() {
     () => weekDays.filter((d) => d.courses.appetizer || d.courses.main || d.courses.dessert).length,
     [weekDays]
   );
+
+  // Auto-dismiss plan hint when first meal is added
+  useEffect(() => {
+    if (showPlanHint && plannedCount > 0) {
+      setShowPlanHint(false);
+      AsyncStorage.setItem('@fork_compass_hint_plan_seen', 'true');
+    }
+  }, [plannedCount, showPlanHint]);
 
   // ─── Week navigation ───
   const shiftWeek = useCallback((delta: number) => {
