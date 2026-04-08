@@ -19,7 +19,8 @@ const DIFFICULTY_COLORS = {
   advanced: '#BA1A1A',
 };
 
-const CATEGORY_ICONS: Record<string, string> = {
+type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+const CATEGORY_ICONS: Record<string, MCIconName> = {
   knife: 'knife',
   heat: 'fire',
   prep: 'food-variant',
@@ -94,7 +95,7 @@ export default function TechniqueDetailScreen() {
               <Text style={[Typography.labelSmall, { color: colors.outline }]}>{technique.duration}</Text>
             </View>
             <View style={[styles.badge, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name={(CATEGORY_ICONS[technique.category] ?? 'food-variant') as any} size={16} color={colors.outline} />
+              <MaterialCommunityIcons name={CATEGORY_ICONS[technique.category] ?? 'food-variant'} size={16} color={colors.outline} />
               <Text style={[Typography.labelSmall, { color: colors.outline }]}>{technique.category}</Text>
             </View>
           </View>

@@ -61,7 +61,7 @@ function EventCard({ event, colors }: { event: TimelineEvent; colors: ReturnType
           backgroundColor: colors.surfaceContainerLow,
           borderLeftColor: isActive ? colors.primary : colors.outlineVariant,
           borderLeftWidth: 3,
-          borderStyle: isPassive ? 'dashed' as any : 'solid',
+          borderStyle: isPassive ? ('dashed' as const) : ('solid' as const),
         },
       ]}
     >

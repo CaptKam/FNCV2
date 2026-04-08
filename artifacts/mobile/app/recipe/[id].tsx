@@ -56,9 +56,8 @@ function formatDateShort(dateStr: string): string {
 }
 
 function getStepInstruction(step: Step, level: string): string {
-  const s = step as any;
-  if (level === 'beginner' && s.instructionFirstSteps) return s.instructionFirstSteps;
-  if (level === 'chef' && s.instructionChefsTable) return s.instructionChefsTable;
+  if (level === 'beginner' && step.instructionFirstSteps) return step.instructionFirstSteps;
+  if (level === 'chef' && step.instructionChefsTable) return step.instructionChefsTable;
   return step.instruction;
 }
 
@@ -418,8 +417,8 @@ export default function RecipeDetailScreen() {
 
             {/* Cooking level indicator */}
             {app.cookingLevel !== 'home_cook' && recipe.steps.some((s) =>
-              (app.cookingLevel === 'beginner' && (s as any).instructionFirstSteps) ||
-              (app.cookingLevel === 'chef' && (s as any).instructionChefsTable)
+              (app.cookingLevel === 'beginner' && s.instructionFirstSteps) ||
+              (app.cookingLevel === 'chef' && s.instructionChefsTable)
             ) && (
               <View style={[styles.levelPill, { backgroundColor: colors.surfaceContainerHigh }]}>
                 <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
