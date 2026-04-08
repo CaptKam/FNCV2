@@ -60,21 +60,6 @@ const COURSE_SLOTS: CourseSlot[] = [
   { label: 'Dessert', icon: 'ice-cream', placeholder: 'Sweet finish...', courseType: 'dessert' },
 ];
 
-function getDayNutrition(day: ItineraryDay): NutritionInfo | null {
-  const meals = [day.courses.appetizer, day.courses.main, day.courses.dessert].filter(Boolean) as PlannedMeal[];
-  if (meals.length === 0) return null;
-  const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
-  for (const meal of meals) {
-    const recipe = allRecipes.find((r) => r.id === meal.recipeId);
-    if (recipe?.nutrition) {
-      totals.calories += recipe.nutrition.calories;
-      totals.protein += recipe.nutrition.protein;
-      totals.carbs += recipe.nutrition.carbs;
-      totals.fat += recipe.nutrition.fat;
-    }
-  }
-  return totals;
-}
 
 type WeekOption = 'this-week' | 'next-week' | 'past';
 
@@ -766,33 +751,6 @@ export default function PlanScreen() {
                         </Pressable>
                       </View>
                     )}
-                    {(() => {
-                      const dayNutrition = getDayNutrition(day);
-                      if (!dayNutrition) return null;
-                      return (
-                        <View style={[styles.dayNutritionRow, { backgroundColor: colors.surfaceContainerLow }]}>
-                          <View style={styles.dayNutritionItem}>
-                            <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{dayNutrition.calories}</Text>
-                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>kcal</Text>
-                          </View>
-                          <View style={[styles.dayNutritionDot, { backgroundColor: colors.outlineVariant }]} />
-                          <View style={styles.dayNutritionItem}>
-                            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{dayNutrition.protein}g</Text>
-                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>P</Text>
-                          </View>
-                          <View style={[styles.dayNutritionDot, { backgroundColor: colors.outlineVariant }]} />
-                          <View style={styles.dayNutritionItem}>
-                            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{dayNutrition.carbs}g</Text>
-                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>C</Text>
-                          </View>
-                          <View style={[styles.dayNutritionDot, { backgroundColor: colors.outlineVariant }]} />
-                          <View style={styles.dayNutritionItem}>
-                            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{dayNutrition.fat}g</Text>
-                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>F</Text>
-                          </View>
-                        </View>
-                      );
-                    })()}
                   </View>
                 </View>
               );

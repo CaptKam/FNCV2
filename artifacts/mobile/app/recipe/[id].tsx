@@ -201,6 +201,30 @@ export default function RecipeDetailScreen() {
             </View>
           </View>
 
+          {recipe.nutrition && (
+            <View style={[styles.nutritionRow, { backgroundColor: colors.surfaceContainerLow }]}>
+              <View style={styles.nutritionItem}>
+                <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{recipe.nutrition.calories}</Text>
+                <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>kcal</Text>
+              </View>
+              <View style={[styles.nutritionDot, { backgroundColor: colors.outlineVariant }]} />
+              <View style={styles.nutritionItem}>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{recipe.nutrition.protein}g</Text>
+                <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>P</Text>
+              </View>
+              <View style={[styles.nutritionDot, { backgroundColor: colors.outlineVariant }]} />
+              <View style={styles.nutritionItem}>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{recipe.nutrition.carbs}g</Text>
+                <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>C</Text>
+              </View>
+              <View style={[styles.nutritionDot, { backgroundColor: colors.outlineVariant }]} />
+              <View style={styles.nutritionItem}>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{recipe.nutrition.fat}g</Text>
+                <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>F</Text>
+              </View>
+            </View>
+          )}
+
           <View style={styles.servingsAdjuster}>
             <Pressable
               onPress={() => { if (currentServings > 1) setServings(currentServings - 1); }}
@@ -564,6 +588,25 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   stat: { alignItems: 'center', gap: 4 },
+  nutritionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.md,
+    marginBottom: Spacing.md,
+  },
+  nutritionItem: {
+    alignItems: 'center',
+    gap: 1,
+  },
+  nutritionDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+  },
   servingsAdjuster: {
     flexDirection: 'row',
     alignItems: 'center',
