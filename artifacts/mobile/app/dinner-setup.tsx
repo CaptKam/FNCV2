@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Modal, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Modal, Alert, Share } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -30,6 +30,22 @@ function formatTime(hours: number, mins: number): string {
 function getInitials(name: string): string {
   return name.split(' ').map((w) => w[0]?.toUpperCase() ?? '').join('').slice(0, 2);
 }
+
+function formatPhoneNumber(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (raw.startsWith('+')) return raw; // international — leave as-is
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+}
+
+function formatDateDisplay(dateStr: string): string {
+  const d = new Date(dateStr);
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+const RSVP_ORDER: Array<'pending' | 'accepted' | 'maybe' | 'declined'> = ['pending', 'accepted', 'maybe', 'declined'];
 
 const RSVP_CONFIG = {
   pending: { label: 'Awaiting RSVP', bg: 'transparent', border: true, color: 'outline' },
@@ -158,22 +174,55 @@ export default function DinnerSetupScreen() {
     ]);
   };
 
-  const handlePrimaryCTA = () => {
+  const handleCycleRsvp = (guestId: string, currentStatus: typeof RSVP_ORDER[number]) => {
+    if (!partyId) return;
+    const idx = RSVP_ORDER.indexOf(currentStatus);
+    const next = RSVP_ORDER[(idx + 1) % RSVP_ORDER.length];
+    app.updateGuestRsvp(partyId, guestId, { rsvpStatus: next });
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+  };
+
+  const handleSendInvites = async () => {
     if (!partyId || !party) return;
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
-    const hasPhones = party.guests.some((g) => g.phone);
-    if (hasPhones) {
-      // Mark invites sent
-      for (const guest of party.guests) {
-        if (guest.phone) {
-          app.updateGuestRsvp(partyId, guest.id, { rsvpStatus: guest.rsvpStatus });
-        }
-      }
-      app.updateDinnerParty(partyId, { status: 'invites_sent' });
-    } else {
-      app.startDinnerPartyCooking(partyId);
+
+    const country = countries.find((c) => c.id === party.cuisineCountryId);
+    const dateDisplay = formatDateDisplay(party.date);
+    const timeDisplay = formatTime(servingHour, servingMinute);
+    let sentCount = 0;
+
+    for (const guest of party.guests) {
+      if (!guest.phone) continue;
+      const inviteText = `🍽️ You're invited to dinner!\n\n${party.title} — ${country?.name ?? ''} cuisine\n📅 ${dateDisplay} at ${timeDisplay}\n\nLet me know about any dietary needs!\n\n— Sent via Fork & Compass`;
+
+      try {
+        await Share.share({ message: inviteText, title: 'Dinner Invite' });
+        app.updateGuestRsvp(partyId, guest.id, { rsvpStatus: guest.rsvpStatus });
+        sentCount++;
+      } catch {}
     }
-    // Collect recipes and create dinner plan
+
+    app.updateDinnerParty(partyId, { status: 'invites_sent' });
+
+    // Navigate forward
+    const { recipes } = require('@/data/recipes');
+    const dinnerRecipes = Object.values(party.menu)
+      .filter(Boolean)
+      .map((m: any) => recipes.find((r: any) => r.id === m.recipeId))
+      .filter(Boolean);
+    if (dinnerRecipes.length > 0) {
+      const target = new Date();
+      target.setHours(servingHour, servingMinute, 0, 0);
+      app.createDinnerPlan(dinnerRecipes, target, guestCounts.total + 1);
+      router.push('/cooking-schedule');
+    } else {
+      router.back();
+    }
+  };
+
+  const handleJustCook = () => {
+    if (!partyId || !party) return;
+    app.startDinnerPartyCooking(partyId);
     const { recipes } = require('@/data/recipes');
     const dinnerRecipes = Object.values(party.menu)
       .filter(Boolean)
@@ -317,9 +366,14 @@ export default function DinnerSetupScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>{guest.name}</Text>
                   <View style={styles.guestBadges}>
-                    <View style={[styles.rsvpPill, rsvp.border ? { borderWidth: 1, borderColor: colors.outlineVariant } : { backgroundColor: `${rsvpColor}15` }]}>
+                    <Pressable
+                      onPress={() => handleCycleRsvp(guest.id, guest.rsvpStatus)}
+                      style={[styles.rsvpPill, rsvp.border ? { borderWidth: 1, borderColor: colors.outlineVariant } : { backgroundColor: `${rsvpColor}15` }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Change RSVP status, currently ${rsvp.label}`}
+                    >
                       <Text style={[Typography.labelSmall, { color: rsvpColor }]}>{rsvp.label}</Text>
-                    </View>
+                    </Pressable>
                     {guest.dietaryRestrictions.map((d, i) => (
                       <View key={i} style={[styles.dietPill, { backgroundColor: colors.surfaceContainerHigh }]}>
                         <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{d}</Text>
@@ -351,13 +405,13 @@ export default function DinnerSetupScreen() {
 
       {/* Sticky bottom CTAs */}
       <View style={[styles.bottomCTA, { paddingBottom: insets.bottom + 16 }]}>
-        <Pressable onPress={handlePrimaryCTA} style={[styles.primaryBtn, { backgroundColor: colors.primary }]} accessibilityRole="button">
+        <Pressable onPress={hasPhones ? handleSendInvites : handleJustCook} style={[styles.primaryBtn, { backgroundColor: colors.primary }]} accessibilityRole="button">
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>
-            {hasPhones ? "Send Invites & Start Planning" : "Let's Cook"}
+            {hasPhones ? "Send Invites & Cook" : "Let's Cook"}
           </Text>
         </Pressable>
         {hasPhones && (
-          <Pressable onPress={handleSkipInvites} style={[styles.secondaryBtn, { borderColor: colors.primary }]} accessibilityRole="button">
+          <Pressable onPress={handleJustCook} style={[styles.secondaryBtn, { borderColor: colors.primary }]} accessibilityRole="button">
             <Text style={[Typography.titleSmall, { color: colors.primary }]}>Skip Invites — Just Cook</Text>
           </Pressable>
         )}
@@ -382,8 +436,8 @@ export default function DinnerSetupScreen() {
             <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>PHONE (optional)</Text>
             <TextInput
               value={guestPhone}
-              onChangeText={setGuestPhone}
-              placeholder="+1 555 555 0100"
+              onChangeText={(text) => setGuestPhone(text.startsWith('+') ? text : formatPhoneNumber(text))}
+              placeholder="(555) 555-0100"
               placeholderTextColor={colors.outline}
               keyboardType="phone-pad"
               style={[styles.input, { backgroundColor: colors.surfaceContainerLow, color: colors.onSurface }]}
