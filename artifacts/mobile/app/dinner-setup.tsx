@@ -9,6 +9,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 import { useApp } from '@/context/AppContext';
 import { DinnerParty, DinnerGuest, DietaryConflict } from '@/types/dinnerParty';
 import { countries } from '@/data/countries';
@@ -259,8 +260,8 @@ export default function DinnerSetupScreen() {
         {/* Header */}
         <View style={styles.headerRow}>
           <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back">
-            <View style={[styles.backBtn, { backgroundColor: 'rgba(30,25,20,0.85)' }]}>
-              <MaterialCommunityIcons name="arrow-left" size={20} color="#FFFFFF" />
+            <View style={[styles.backBtn, { backgroundColor: OVERLAY_BUTTON.background, borderWidth: OVERLAY_BUTTON.borderWidth, borderColor: OVERLAY_BUTTON.borderColor }]}>
+              <MaterialCommunityIcons name="arrow-left" size={OVERLAY_BUTTON.iconSize} color={OVERLAY_BUTTON.iconColor} />
             </View>
           </Pressable>
         </View>
@@ -501,11 +502,14 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   backBtn: {
-    width: 48,
-    height: 48,
+    width: OVERLAY_BUTTON.size,
+    height: OVERLAY_BUTTON.size,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: OVERLAY_BUTTON.background,
+    borderWidth: OVERLAY_BUTTON.borderWidth,
+    borderColor: OVERLAY_BUTTON.borderColor,
   },
   menuRow: {
     flexDirection: 'row',

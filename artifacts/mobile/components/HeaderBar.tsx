@@ -9,6 +9,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { Shadows } from '@/constants/shadows';
+import { OVERLAY_BUTTON, ICON_SIZE } from '@/constants/icons';
 
 interface HeaderBarProps {
   transparent?: boolean;
@@ -23,7 +24,7 @@ export function HeaderBar({ transparent = false, showBack = false, rightAction }
 
   const titleColor = transparent ? '#FFFFFF' : colors.onSurface;
   const iconColor = transparent ? '#FFFFFF' : colors.primary;
-  const glassBg = transparent ? 'rgba(30,25,20,0.85)' : colors.surfaceContainerHigh;
+  const glassBg = transparent ? OVERLAY_BUTTON.background : colors.surfaceContainerHigh;
 
   const content = (
     <View style={[styles.inner, { paddingTop: insets.top + 8 }]}>
@@ -31,7 +32,11 @@ export function HeaderBar({ transparent = false, showBack = false, rightAction }
         {showBack ? (
           <Pressable
             onPress={() => router.back()}
-            style={[styles.avatar, { backgroundColor: glassBg }]}
+            style={[
+              styles.avatar,
+              { backgroundColor: glassBg },
+              transparent && { borderWidth: OVERLAY_BUTTON.borderWidth, borderColor: OVERLAY_BUTTON.borderColor },
+            ]}
             accessibilityRole="button"
             accessibilityLabel="Go back"
             hitSlop={12}
@@ -57,11 +62,16 @@ export function HeaderBar({ transparent = false, showBack = false, rightAction }
         <Pressable
           hitSlop={12}
           onPress={() => router.push('/bookmarks')}
-          style={[styles.iconBtn, { backgroundColor: transparent ? 'rgba(30,25,20,0.85)' : 'transparent' }]}
+          style={[
+            styles.iconBtn,
+            transparent
+              ? { backgroundColor: OVERLAY_BUTTON.background, borderWidth: OVERLAY_BUTTON.borderWidth, borderColor: OVERLAY_BUTTON.borderColor }
+              : { backgroundColor: 'transparent' },
+          ]}
           accessibilityRole="button"
           accessibilityLabel="Saved recipes"
         >
-          <MaterialCommunityIcons name="heart-outline" size={24} color={iconColor} />
+          <MaterialCommunityIcons name="heart-outline" size={ICON_SIZE.lg} color={iconColor} />
         </Pressable>
       </View>
     </View>

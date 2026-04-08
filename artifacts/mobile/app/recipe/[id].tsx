@@ -20,6 +20,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { HeaderBar } from '@/components/HeaderBar';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 
 // ─── Helpers ───
 
@@ -146,13 +147,13 @@ export default function RecipeDetailScreen() {
         transparent
         showBack
         rightAction={
-          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(30,25,20,0.85)', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: OVERLAY_BUTTON.size, height: OVERLAY_BUTTON.size, borderRadius: 20, backgroundColor: OVERLAY_BUTTON.background, borderWidth: OVERLAY_BUTTON.borderWidth, borderColor: OVERLAY_BUTTON.borderColor, alignItems: 'center', justifyContent: 'center' }}>
             <AnimatedHeart
               filled={isSaved}
               onToggle={() => toggleBookmark(recipe.id)}
-              size={20}
+              size={OVERLAY_BUTTON.iconSize}
               filledColor={colors.error}
-              outlineColor={colors.textOnImage}
+              outlineColor={OVERLAY_BUTTON.iconColor}
               accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
               hitSlop={12}
             />

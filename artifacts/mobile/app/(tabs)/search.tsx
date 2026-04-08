@@ -28,6 +28,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
 const ALLERGEN_FILTERS: AllergenType[] = ['milk', 'egg', 'wheat', 'peanuts', 'tree_nuts', 'fish', 'shellfish', 'soy', 'sesame'];
@@ -354,9 +355,12 @@ const styles = StyleSheet.create({
     right: Spacing.sm,
   },
   heartGlass: {
-    width: 44,
-    height: 44,
+    width: OVERLAY_BUTTON.size,
+    height: OVERLAY_BUTTON.size,
     borderRadius: Radius.full,
+    backgroundColor: OVERLAY_BUTTON.background,
+    borderWidth: OVERLAY_BUTTON.borderWidth,
+    borderColor: OVERLAY_BUTTON.borderColor,
     alignItems: 'center',
     justifyContent: 'center',
   },

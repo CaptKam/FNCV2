@@ -7,7 +7,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { GlassView } from './GlassView';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 import { Recipe } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
 import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allergens';
@@ -49,21 +49,28 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         />
         <Pressable
           onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
-          style={styles.heartButton}
+          style={[styles.heartButton, {
+            width: OVERLAY_BUTTON.size,
+            height: OVERLAY_BUTTON.size,
+            borderRadius: Radius.full,
+            backgroundColor: OVERLAY_BUTTON.background,
+            borderWidth: OVERLAY_BUTTON.borderWidth,
+            borderColor: OVERLAY_BUTTON.borderColor,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }]}
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={isFav ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
         >
-          <GlassView style={styles.heartGlass}>
-            <AnimatedHeart
-              filled={isFav}
-              onToggle={() => toggleBookmark(recipe.id)}
-              size={16}
-              filledColor={colors.primary}
-              outlineColor={colors.textOnImage}
-              hitSlop={0}
-            />
-          </GlassView>
+          <AnimatedHeart
+            filled={isFav}
+            onToggle={() => toggleBookmark(recipe.id)}
+            size={OVERLAY_BUTTON.iconSize}
+            filledColor={colors.primary}
+            outlineColor={OVERLAY_BUTTON.iconColor}
+            hitSlop={0}
+          />
         </Pressable>
       </View>
       <View style={styles.content}>
@@ -141,13 +148,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
-  },
-  heartGlass: {
-    width: 32,
-    height: 32,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   content: {
     padding: Spacing.md,
