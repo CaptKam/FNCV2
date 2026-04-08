@@ -72,7 +72,7 @@ function MealCard({
   meal: PlannedMeal;
   imageStyle: object;
   badgeLabel: string;
-  headlineFontSize: number;
+  headlineFontSize?: number;
   onPress: () => void;
   onSwap?: () => void;
   onRemove?: () => void;
@@ -126,7 +126,7 @@ function MealCard({
           </View>
         </View>
         <View style={styles.mealContent}>
-          <Text style={[Typography.headline, { color: colors.onSurface, fontSize: headlineFontSize }]} numberOfLines={1}>
+          <Text style={[Typography.headline, { color: colors.onSurface }]} numberOfLines={1}>
             {meal.recipeName}
           </Text>
           <View style={styles.mealMeta}>
@@ -241,7 +241,7 @@ export default function PlanScreen() {
         </View>
         <Pressable
           onPress={() => router.push('/(tabs)/grocery')}
-          style={[styles.reviewBtn, { backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)' }]}
+          style={[styles.reviewBtn, { backgroundColor: colors.glassOverlay }]}
           accessibilityRole="button"
           accessibilityLabel="Review grocery list"
         >
@@ -284,24 +284,24 @@ export default function PlanScreen() {
               <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
             </Pressable>
             <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
-              <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 2 }]}>
+              <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
                 CURRENT PLANNING
               </Text>
               <View style={styles.weekTitleRow}>
-                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>
+                <Text style={[Typography.title, { color: colors.onSurface }]}>
                   {isDailyView ? (selectedDay?.dayLabel ?? '') : weekLabels[selectedWeek]}
                 </Text>
                 {isDailyView && selectedDate === todayISO && (
-                  <Text style={[Typography.headline, { color: colors.primary, fontSize: 20 }]}> · Today</Text>
+                  <Text style={[Typography.title, { color: colors.primary }]}> · Today</Text>
                 )}
                 <MaterialCommunityIcons name="chevron-down" size={18} color={colors.primary} />
               </View>
               {isDailyView ? (
-                <Text style={[Typography.caption, { color: colors.primary, marginTop: 2 }]}>
+                <Text style={[Typography.caption, { color: colors.primary, marginTop: Spacing.xs }]}>
                   {formatDateLabel(selectedDate)} · {weekLabels[selectedWeek]}
                 </Text>
               ) : (
-                <Text style={[Typography.caption, { color: colors.outline, marginTop: 2 }]}>
+                <Text style={[Typography.caption, { color: colors.outline, marginTop: Spacing.xs }]}>
                   {weekLabel}
                 </Text>
               )}
@@ -499,9 +499,11 @@ export default function PlanScreen() {
                       />
                     ) : (
                       <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
-                        <MaterialCommunityIcons name="silverware-variant" size={32} color={colors.outlineVariant} />
+                        <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
+                          <MaterialCommunityIcons name="silverware-variant" size={28} color={colors.primary} />
+                        </View>
                         <Text style={[Typography.bodySmall, { color: colors.outline }]}>
-                          No meal planned yet
+                          No meal planned yet — let's find something delicious
                         </Text>
                         <Pressable
                           onPress={() => openPicker(selectedDate, 'main')}
@@ -544,23 +546,23 @@ export default function PlanScreen() {
                         ) : (
                           <View style={[styles.courseCard, {
                             borderColor: colors.outlineVariant,
-                            backgroundColor: colors.isDark ? 'rgba(242,237,231,0.05)' : 'rgba(242,237,231,0.3)',
+                            backgroundColor: colors.warmFill,
                           }]}>
                             <View style={styles.courseCardInner}>
                               <View style={styles.emptyCardRow}>
                                 <MaterialCommunityIcons
                                   name={course.icon as any}
                                   size={20}
-                                  color={`${colors.outline}99`}
+                                  color={colors.outlineMuted}
                                 />
-                                <Text style={[Typography.bodySmall, { color: `${colors.outline}99`, fontStyle: 'italic' }]}>
+                                <Text style={[Typography.bodySmall, { color: colors.outlineMuted, fontStyle: 'italic' }]}>
                                   {course.placeholder}
                                 </Text>
                               </View>
                               <Pressable
                                 onPress={() => openPicker(selectedDate, course.courseType)}
                                 style={[styles.addCircle, {
-                                  backgroundColor: colors.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.5)',
+                                  backgroundColor: colors.glassOverlay,
                                 }]}
                                 accessibilityRole="button"
                                 accessibilityLabel={`Add ${course.label}`}
@@ -601,13 +603,13 @@ export default function PlanScreen() {
                     />
                   </View>
                   <View style={styles.dayRight}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.sm, gap: 6 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.sm, gap: Spacing.xs }}>
                       <Text style={[Typography.titleSmall, { color: isToday ? colors.primary : colors.outline, fontWeight: isToday ? '700' : '600' }]}>
                         {day.dayLabel}, {formatDateLabel(day.date)}
                       </Text>
                       {isToday && (
                         <View style={[styles.todayBadge, { backgroundColor: colors.primary }]}>
-                          <Text style={[Typography.caption, { color: colors.onPrimary, fontSize: 10, fontWeight: '700' }]}>
+                          <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700' }]}>
                             TODAY
                           </Text>
                         </View>
@@ -628,9 +630,11 @@ export default function PlanScreen() {
                       <View
                         style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}
                       >
-                        <MaterialCommunityIcons name="silverware-variant" size={32} color={colors.outlineVariant} />
+                        <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
+                          <MaterialCommunityIcons name="silverware-variant" size={28} color={colors.primary} />
+                        </View>
                         <Text style={[Typography.bodySmall, { color: colors.outline }]}>
-                          No meals planned yet
+                          This day is wide open — discover something new
                         </Text>
                         <Pressable
                           onPress={() => openPicker(day.date, 'main')}
@@ -709,16 +713,12 @@ export default function PlanScreen() {
         animationType="fade"
         onRequestClose={() => setShowDropdown(false)}
       >
-        <Pressable style={styles.dropdownOverlay} onPress={() => setShowDropdown(false)} accessibilityRole="button" accessibilityLabel="Close menu">
+        <Pressable style={[styles.dropdownOverlay, { backgroundColor: colors.overlayBackdrop }]} onPress={() => setShowDropdown(false)} accessibilityRole="button" accessibilityLabel="Close menu">
           <View style={{ paddingTop: insets.top + 100, paddingHorizontal: Spacing.page, alignItems: 'center' }}>
             <Pressable
               style={[styles.dropdownSheet, {
-                backgroundColor: colors.isDark ? 'rgba(30,28,25,0.92)' : 'rgba(255,255,255,0.85)',
-                shadowColor: colors.shadow,
-                shadowOffset: { width: 0, height: 16 },
-                shadowOpacity: 0.15,
-                shadowRadius: 32,
-                elevation: 20,
+                backgroundColor: colors.dropdownBg,
+                ...Shadows.ambient,
               }]}
               onPress={(e) => e.stopPropagation()}
             >
@@ -754,7 +754,7 @@ export default function PlanScreen() {
                 );
               })}
 
-              <View style={[styles.dropdownDivider, { backgroundColor: `${colors.onSurface}08` }]} />
+              <View style={[styles.dropdownDivider, { backgroundColor: colors.primaryTint }]} />
 
               <Pressable
                 style={[
@@ -817,7 +817,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingVertical: 14,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.full,
   },
   weekCenter: {
@@ -826,18 +826,18 @@ const styles = StyleSheet.create({
   weekTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: Spacing.xs,
   },
   daySelectorPill: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 6,
+    padding: Spacing.xs,
     borderRadius: Radius.full,
     marginTop: Spacing.sm,
   },
   weekArrow: {
-    padding: 4,
+    padding: Spacing.xs,
   },
   dayCircle: {
     width: 36,
@@ -847,8 +847,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   todayBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: Spacing.xs,
+    paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
   },
   multipleMealsRow: {
@@ -862,17 +862,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
-    paddingVertical: 14,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.md,
-    gap: 12,
+    gap: Spacing.sm,
   },
   groceryTextWrap: {
     flex: 1,
-    gap: 2,
+    gap: Spacing.xs,
   },
   reviewBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
   },
   timeline: {
@@ -893,8 +893,8 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   dayLeft: {
-    width: 12,
-    paddingTop: 4,
+    width: Spacing.sm,
+    paddingTop: Spacing.xs,
   },
   timelineNode: {
     width: 12,
@@ -914,15 +914,15 @@ const styles = StyleSheet.create({
   },
   primaryMealHeader: {
     marginBottom: Spacing.md,
-    gap: 8,
+    gap: Spacing.sm,
   },
   dinnerPartyBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
   },
   mealCard: {
@@ -958,18 +958,18 @@ const styles = StyleSheet.create({
     right: Spacing.sm,
   },
   recipeBadgePill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
   },
   mealContent: {
     padding: Spacing.md,
-    gap: 6,
+    gap: Spacing.xs,
   },
   mealMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: Spacing.xs,
   },
   emptyCard: {
     borderWidth: 1,
@@ -980,15 +980,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
   },
+  emptyIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.xs,
+  },
   emptyCardRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: Spacing.sm,
   },
   addMealBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: Spacing.xs,
     marginTop: Spacing.sm,
   },
   courseCard: {
@@ -1012,7 +1020,7 @@ const styles = StyleSheet.create({
   },
   browseBtn: {
     paddingHorizontal: Spacing.lg,
-    paddingVertical: 10,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
     marginTop: Spacing.sm,
   },
@@ -1023,7 +1031,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    paddingVertical: 14,
+    paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.full,
   },
@@ -1050,25 +1058,24 @@ const styles = StyleSheet.create({
   },
   dropdownOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   dropdownSheet: {
     width: 240,
-    borderRadius: 20,
+    borderRadius: Radius.lg,
     padding: Spacing.sm,
-    gap: 2,
+    gap: Spacing.xs,
   },
   dropdownItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
-    paddingVertical: 12,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.md,
   },
   dropdownDivider: {
     height: 1,
-    marginVertical: 4,
+    marginVertical: Spacing.xs,
     marginHorizontal: Spacing.sm,
   },
 });

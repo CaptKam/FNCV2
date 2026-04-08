@@ -144,7 +144,7 @@ export default function CookScreen() {
                   <MaterialCommunityIcons name="party-popper" size={22} color={colors.primary} />
                 </View>
               </View>
-              <View style={[styles.guestRow, { backgroundColor: colors.surface, borderTopColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)' }]}>
+              <View style={[styles.guestRow, { backgroundColor: colors.surface, borderTopColor: colors.glassOverlay }]}>
                 <View style={styles.guestAvatars}>
                   {[1, 2, 3].map((i) => (
                     <View
@@ -156,8 +156,8 @@ export default function CookScreen() {
                     <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant, letterSpacing: 0 }]}>?</Text>
                   </View>
                 </View>
-                <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, fontSize: 13 }]}>
-                  4 Guests <Text style={{ opacity: 0.6, fontSize: 11 }}>(3 Confirmed)</Text>
+                <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
+                  4 Guests <Text style={{ opacity: 0.6 }}>(3 Confirmed)</Text>
                 </Text>
               </View>
             </View>
@@ -166,7 +166,7 @@ export default function CookScreen() {
           <View style={[styles.kitchenCheckCard, { backgroundColor: colors.surfaceContainerHighest }]}>
             <View style={styles.checkHeader}>
               <MaterialCommunityIcons name="clipboard-check-outline" size={20} color={colors.primary} />
-              <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20 }]}>Kitchen Check</Text>
+              <Text style={[Typography.title, { color: colors.onSurface }]}>Kitchen Check</Text>
             </View>
             {KITCHEN_CHECKS.map((item, idx) => (
               <Pressable
@@ -221,7 +221,7 @@ export default function CookScreen() {
               accessibilityRole="button"
               accessibilityLabel={hasActiveSession ? 'Resume cooking' : 'Begin cooking'}
             >
-              <Text style={[Typography.titleMedium, { color: colors.onPrimary, fontSize: 17, letterSpacing: -0.3 }]}>
+              <Text style={[Typography.titleMedium, { color: colors.onPrimary, letterSpacing: -0.3 }]}>
                 {hasActiveSession ? 'Resume the Journey' : 'Begin the Journey'}
               </Text>
               <MaterialCommunityIcons name="arrow-right" size={22} color={colors.onPrimary} />
@@ -291,10 +291,10 @@ export default function CookScreen() {
                   </GlassView>
                 </View>
                 <View style={styles.techContent}>
-                  <Text style={[Typography.headline, { color: colors.textOnImage, fontSize: 16 }]}>
+                  <Text style={[Typography.titleSmall, { color: colors.textOnImage }]}>
                     {tech.title}
                   </Text>
-                  <Text style={[Typography.bodySmall, { color: 'rgba(255,255,255,0.7)', fontSize: 12 }]}>
+                  <Text style={[Typography.caption, { color: colors.textOnImage, opacity: 0.7 }]}>
                     {tech.desc}
                   </Text>
                 </View>
@@ -306,10 +306,10 @@ export default function CookScreen() {
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xxl }}>
           <View style={[styles.statsCard, { backgroundColor: colors.surfaceContainerLow }]}>
             <View style={{ flex: 1 }}>
-              <Text style={[Typography.display, { color: colors.onSurface, fontSize: 32 }]}>
+              <Text style={[Typography.headlineLarge, { color: colors.onSurface }]}>
                 {app.totalRecipesCooked}
               </Text>
-              <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, fontSize: 13 }]}>
+              <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
                 Recipes cooked
               </Text>
             </View>
