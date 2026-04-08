@@ -79,8 +79,8 @@ export default function BookmarksScreen() {
 
         {savedRecipes.length === 0 ? (
           <View style={styles.emptyState}>
-            <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="bookmark-outline" size={48} color={colors.outline} />
+            <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}>
+              <MaterialCommunityIcons name="bookmark-outline" size={48} color={colors.primary} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
               Your collection is empty
@@ -219,23 +219,22 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     paddingHorizontal: Spacing.page,
-    gap: 10,
+    gap: Spacing.sm,
     marginBottom: Spacing.xl,
     paddingBottom: 2,
   },
   filterPill: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
   },
   filterText: {
-    fontSize: 13,
-    fontWeight: '500',
+    ...Typography.titleSmall,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 120,
+    paddingTop: Spacing.xxxl * 2 + Spacing.lg,
     gap: Spacing.md,
     paddingHorizontal: Spacing.page,
   },
@@ -248,26 +247,23 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   emptyTitle: {
-    fontFamily: 'NotoSerif_700Bold',
-    fontSize: 20,
-    fontWeight: '700',
+    ...Typography.headline,
     textAlign: 'center',
   },
   emptyBody: {
-    fontSize: 14,
+    ...Typography.bodySmall,
     lineHeight: 22,
     textAlign: 'center',
     paddingHorizontal: Spacing.xl,
   },
   exploreBtn: {
     paddingHorizontal: Spacing.xl,
-    paddingVertical: 14,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.full,
     marginTop: Spacing.md,
   },
   exploreBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
+    ...Typography.titleSmall,
   },
   section: {
     marginBottom: Spacing.xl,
@@ -280,16 +276,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   sectionTitle: {
-    fontFamily: 'NotoSerif_700Bold',
-    fontSize: 22,
-    fontWeight: '700',
+    ...Typography.headline,
     letterSpacing: -0.5,
   },
   sectionBadge: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+    ...Typography.labelSmall,
   },
   listGroup: {
     paddingHorizontal: Spacing.page,
@@ -297,15 +288,15 @@ const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 16,
+    gap: Spacing.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: Radius.md,
   },
   itemThumb: {
     width: 76,
     height: 76,
-    borderRadius: 14,
+    borderRadius: Radius.md,
     overflow: 'hidden',
   },
   itemImage: {
@@ -314,26 +305,20 @@ const styles = StyleSheet.create({
   },
   itemContent: {
     flex: 1,
-    gap: 3,
+    gap: Spacing.xs,
   },
   itemCategory: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+    ...Typography.labelSmall,
   },
   itemTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 17,
-    fontWeight: '700',
+    ...Typography.titleMedium,
     letterSpacing: -0.3,
   },
   itemMeta: {
-    fontSize: 13,
-    fontWeight: '400',
-    marginTop: 2,
+    ...Typography.bodySmall,
+    marginTop: Spacing.xs,
   },
   heartBtn: {
-    padding: 8,
+    padding: Spacing.sm,
   },
 });

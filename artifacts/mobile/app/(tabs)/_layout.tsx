@@ -30,7 +30,7 @@ export default function TabLayout() {
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontFamily: "Inter_500Medium",
-          fontSize: 12,
+          fontSize: 10,
           marginTop: 2,
         },
         tabBarStyle: {
@@ -63,7 +63,7 @@ export default function TabLayout() {
             <View
               style={[
                 styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
+                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
               ]}
             >
               <MaterialCommunityIcons name="compass-outline" size={24} color={color} />
@@ -80,7 +80,7 @@ export default function TabLayout() {
             <View
               style={[
                 styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
+                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
               ]}
             >
               <MaterialCommunityIcons name="magnify" size={24} color={color} />
@@ -97,7 +97,7 @@ export default function TabLayout() {
             <View
               style={[
                 styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
+                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
               ]}
             >
               <MaterialCommunityIcons name="calendar-month-outline" size={24} color={color} />
@@ -116,7 +116,7 @@ export default function TabLayout() {
             <View
               style={[
                 styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
+                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
               ]}
             >
               <MaterialCommunityIcons name="cart-outline" size={24} color={color} />
@@ -133,7 +133,7 @@ export default function TabLayout() {
             <View
               style={[
                 styles.iconWrap,
-                focused && { backgroundColor: `${colors.primary}18`, transform: [{ scale: 1.1 }] },
+                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
               ]}
             >
               <MaterialCommunityIcons name="chef-hat" size={24} color={color} />
@@ -147,8 +147,8 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   iconWrap: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
     borderRadius: Radius.full,
     alignItems: "center",
     justifyContent: "center",

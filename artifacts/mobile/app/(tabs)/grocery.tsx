@@ -164,8 +164,8 @@ export default function GroceryScreen() {
       <View style={[styles.container, { backgroundColor: colors.surface }]}>
         <HeaderBar />
         <View style={styles.emptyRoot}>
-          <View style={[styles.emptyIconCircle, { backgroundColor: colors.surfaceContainerHigh }]}>
-            <MaterialCommunityIcons name="cart-outline" size={48} color={colors.outline} />
+          <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
+            <MaterialCommunityIcons name="cart-outline" size={48} color={colors.primary} />
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
             No ingredients yet
@@ -372,7 +372,7 @@ export default function GroceryScreen() {
                       styles.retailerCircle,
                       {
                         backgroundColor: selectedRetailer === index
-                          ? `${colors.primary}15`
+                          ? colors.primaryMuted
                           : colors.surfaceContainerLow,
                       },
                       selectedRetailer === index && {
@@ -488,7 +488,7 @@ export default function GroceryScreen() {
                         {scaledAmount}
                       </Text>
                       {item.recipeNames.length > 1 && (
-                        <View style={[styles.recipeCountBadge, { backgroundColor: `${colors.primary}15` }]}>
+                        <View style={[styles.recipeCountBadge, { backgroundColor: colors.primaryMuted }]}>
                           <Text style={[Typography.labelSmall, { color: colors.primary }]}>
                             Used in {item.recipeNames.length} Recipes
                           </Text>

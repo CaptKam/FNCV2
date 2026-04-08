@@ -70,7 +70,7 @@ export default function SearchScreen() {
         contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 76 }}
       >
         <View style={{ paddingHorizontal: Spacing.page }}>
-          <Text style={[Typography.displayLarge, { color: colors.onSurface, fontSize: 42 }]}>
+          <Text style={[Typography.displayMedium, { color: colors.onSurface }]}>
             Search
           </Text>
         </View>
@@ -171,7 +171,7 @@ export default function SearchScreen() {
                 accessibilityLabel={recipe.title}
               />
               <View style={styles.cardContent}>
-                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={2}>
+                <Text style={[Typography.title, { color: colors.onSurface }]} numberOfLines={2}>
                   {recipe.title}
                 </Text>
                 <Text style={[Typography.labelSmall, { color: colors.outline }]}>
@@ -208,8 +208,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    paddingVertical: 14,
-    borderRadius: Radius.sm,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.full,
   },
   chipContainer: {
     paddingHorizontal: Spacing.page,
