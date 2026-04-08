@@ -2737,8 +2737,8 @@ export const recipes: Recipe[] = [
     ],
     steps: [
       { instruction: 'Place two scoops of vanilla gelato into each serving glass.' },
-      { instruction: 'Pull two shots of hot espresso.' },
-      { instruction: 'Pour the espresso directly over the gelato at the table.' },
+      { instruction: 'Pull two shots of hot espresso.', instructionFirstSteps: 'Brew two shots of strong espresso — the hotter and fresher, the better. If you don\'t have an espresso machine, a stovetop moka pot works beautifully. The key is that the coffee must be piping hot so it melts the gelato on contact, creating that gorgeous swirl of creamy and bitter.', instructionChefsTable: 'Pull a double shot of espresso immediately before service — temperature is critical. The espresso must be near-boiling (90°C+) to create the thermal contrast that defines an affogato. A ristretto pull provides more concentrated flavor against the sweetness of the gelato.' },
+      { instruction: 'Pour the espresso directly over the gelato at the table.', instructionFirstSteps: 'This must be done at the table, right in front of whoever is eating it! Pour the hot espresso directly over the cold gelato in one smooth pour. Watch the gelato start to melt and the espresso foam — it\'s a beautiful moment. Eat immediately with a spoon, getting some melted gelato and hot espresso in every bite. The whole point is the contrast between hot and cold, bitter and sweet.', instructionChefsTable: 'Pour the espresso over the gelato tableside in a single, confident stream. The thermal shock creates an immediate melt zone at the interface — this ephemeral state (part liquid, part frozen, part foam) is the entire point of the dish. Service timing is everything: the affogato should be consumed within 60 seconds of pouring, before it becomes coffee-flavored soup.' },
       { instruction: 'Add a splash of amaretto if desired. Serve immediately.' },
     ],
     culturalNote: 'Affogato means "drowned" in Italian. This elegantly simple dessert perfectly captures the Italian philosophy that the best things need the fewest ingredients.',
