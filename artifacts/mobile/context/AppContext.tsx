@@ -58,7 +58,7 @@ export interface CookSession {
 type CourseType = 'appetizer' | 'main' | 'dessert';
 type CookingLevel = 'beginner' | 'home_cook' | 'chef';
 type CoursePreference = 'main' | 'full';
-type GroceryPartner = 'instacart' | 'kroger' | 'walmart';
+type GroceryPartner = 'instacart' | 'kroger' | 'walmart' | 'amazon_fresh';
 
 // ═══════════════════════════════════════════
 // CONTEXT VALUE
@@ -98,12 +98,14 @@ interface AppContextValue {
   cookingLevel: CookingLevel;
   coursePreference: CoursePreference;
   groceryPartner: GroceryPartner;
+  zipCode: string;
   useMetric: boolean;
   dietaryFlags: string[];
   allergens: string[];
   setCookingLevel: (level: CookingLevel) => void;
   setCoursePreference: (pref: CoursePreference) => void;
   setGroceryPartner: (partner: GroceryPartner) => void;
+  setZipCode: (zip: string) => void;
   setUseMetric: (metric: boolean) => void;
   setDietaryFlags: (flags: string[]) => void;
   setAllergens: (allergens: string[]) => void;
@@ -228,6 +230,7 @@ const defaultPreferences = {
   cookingLevel: 'home_cook' as CookingLevel,
   coursePreference: 'main' as CoursePreference,
   groceryPartner: 'instacart' as GroceryPartner,
+  zipCode: '',
   useMetric: true,
   dietaryFlags: [] as string[],
   allergens: [] as string[],
@@ -258,6 +261,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [cookingLevel, setCookingLevelState] = useState<CookingLevel>(defaultPreferences.cookingLevel);
   const [coursePreference, setCoursePreferenceState] = useState<CoursePreference>(defaultPreferences.coursePreference);
   const [groceryPartner, setGroceryPartnerState] = useState<GroceryPartner>(defaultPreferences.groceryPartner);
+  const [zipCode, setZipCodeState] = useState(defaultPreferences.zipCode);
   const [useMetric, setUseMetricState] = useState(defaultPreferences.useMetric);
   const [dietaryFlags, setDietaryFlagsState] = useState<string[]>(defaultPreferences.dietaryFlags);
   const [allergens, setAllergensState] = useState<string[]>(defaultPreferences.allergens);
@@ -302,6 +306,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (pr.cookingLevel) setCookingLevelState(pr.cookingLevel);
       if (pr.coursePreference) setCoursePreferenceState(pr.coursePreference);
       if (pr.groceryPartner) setGroceryPartnerState(pr.groceryPartner);
+      if (pr.zipCode != null) setZipCodeState(pr.zipCode);
       if (pr.useMetric != null) setUseMetricState(pr.useMetric);
       if (pr.dietaryFlags) setDietaryFlagsState(pr.dietaryFlags);
       if (pr.allergens) setAllergensState(pr.allergens);
@@ -329,8 +334,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (hydrated.current)
-      Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, useMetric, dietaryFlags, allergens });
-  }, [cookingLevel, coursePreference, groceryPartner, useMetric, dietaryFlags, allergens]);
+      Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, dietaryFlags, allergens });
+  }, [cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, dietaryFlags, allergens]);
 
   useEffect(() => {
     if (hydrated.current)
@@ -720,6 +725,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setCookingLevel = useCallback((l: CookingLevel) => setCookingLevelState(l), []);
   const setCoursePreference = useCallback((p: CoursePreference) => setCoursePreferenceState(p), []);
   const setGroceryPartner = useCallback((p: GroceryPartner) => setGroceryPartnerState(p), []);
+  const setZipCode = useCallback((z: string) => setZipCodeState(z), []);
   const setUseMetric = useCallback((m: boolean) => setUseMetricState(m), []);
   const setDietaryFlags = useCallback((f: string[]) => setDietaryFlagsState(f), []);
   const setAllergens = useCallback((a: string[]) => setAllergensState(a), []);
@@ -996,6 +1002,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setCookingLevel,
     setCoursePreference,
     setGroceryPartner,
+    zipCode,
+    setZipCode,
     setUseMetric,
     setDietaryFlags,
     setAllergens,
