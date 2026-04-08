@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, ScrollView, StyleSheet, Pressable, Modal } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Modal, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -16,6 +16,7 @@ import { RecipePickerSheet } from '@/components/RecipePickerSheet';
 import { SmartCookBar } from '@/components/SmartCookBar';
 import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
+import { formatCookTime } from '@/data/helpers';
 import { calculateCookReadiness } from '@/utils/cookReadiness';
 
 // ─── Helpers ───
@@ -134,7 +135,7 @@ function MealCard({
           <View style={styles.mealMeta}>
             <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
             <Text style={[Typography.caption, { color: colors.outline }]}>
-              {meal.cookTime}m
+              {formatCookTime(meal.cookTime)}
             </Text>
           </View>
         </View>
@@ -719,11 +720,22 @@ export default function PlanScreen() {
             .filter((d) => !d.courses.main)
             .map((d) => d.date)
             .slice(0, dayCount);
-          if (emptyDates.length > 0) {
-            app.autoGenerateWeek(emptyDates, app.coursePreference);
-            try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
-          }
+          if (emptyDates.length === 0) return;
           setShowQuickGen(false);
+          Alert.alert(
+            'Auto-Generate Meals',
+            `Fill ${emptyDates.length} empty day${emptyDates.length > 1 ? 's' : ''} with recipes?${app.dietaryFlags.length > 0 ? '\n\nYour dietary preferences will be respected.' : ''}`,
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Generate',
+                onPress: () => {
+                  app.autoGenerateWeek(emptyDates, app.coursePreference);
+                  try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+                },
+              },
+            ]
+          );
         };
 
         return (

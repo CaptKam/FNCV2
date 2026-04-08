@@ -477,9 +477,50 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const autoGenerateWeek = useCallback(
     (selectedDates: string[], pref: CoursePreference) => {
-      // Lazy import to avoid circular deps at module scope
       const allRecipes: Recipe[] = require('@/data/recipes').recipes;
-      const shuffled = [...allRecipes].sort(() => Math.random() - 0.5);
+
+      const MEAT_TERMS = ['chicken', 'beef', 'pork', 'lamb', 'duck', 'veal', 'bacon', 'prosciutto', 'pancetta', 'sausage', 'steak', 'meatball', 'ground meat', 'chorizo', 'ham', 'turkey', 'oxtail', 'bone marrow', 'lard'];
+      const FISH_TERMS = ['fish', 'salmon', 'tuna', 'shrimp', 'prawn', 'crab', 'lobster', 'squid', 'calamari', 'clam', 'mussel', 'oyster', 'anchovy', 'sardine', 'cod', 'sea bass', 'mahi', 'scallop', 'octopus', 'bonito', 'dashi'];
+      const DAIRY_TERMS = ['cheese', 'cream', 'butter', 'milk', 'yogurt', 'ghee', 'paneer', 'mascarpone', 'ricotta', 'mozzarella', 'parmesan', 'pecorino', 'gruyère', 'crème'];
+      const EGG_TERMS = ['egg'];
+      const GLUTEN_TERMS = ['flour', 'pasta', 'bread', 'noodle', 'spaghetti', 'tonnarelli', 'udon', 'ramen', 'puff pastry', 'croissant', 'baguette', 'tortilla', 'pita', 'naan', 'crêpe', 'panko', 'breadcrumb', 'couscous', 'soy sauce'];
+      const NUT_TERMS = ['peanut', 'almond', 'cashew', 'walnut', 'pistachio', 'hazelnut', 'pine nut', 'coconut'];
+      const PORK_TERMS = ['pork', 'bacon', 'prosciutto', 'pancetta', 'ham', 'lard', 'chorizo', 'sausage'];
+
+      const hasIngredient = (recipe: Recipe, terms: string[]): boolean =>
+        recipe.ingredients.some((ing) => {
+          const n = ing.name.toLowerCase();
+          return terms.some((t) => n.includes(t));
+        });
+
+      const isCompatible = (recipe: Recipe): boolean => {
+        for (const flag of dietaryFlags) {
+          switch (flag) {
+            case 'vegetarian':
+              if (hasIngredient(recipe, [...MEAT_TERMS, ...FISH_TERMS])) return false;
+              break;
+            case 'vegan':
+              if (hasIngredient(recipe, [...MEAT_TERMS, ...FISH_TERMS, ...DAIRY_TERMS, ...EGG_TERMS])) return false;
+              break;
+            case 'gluten-free':
+              if (hasIngredient(recipe, GLUTEN_TERMS)) return false;
+              break;
+            case 'dairy-free':
+              if (hasIngredient(recipe, DAIRY_TERMS)) return false;
+              break;
+            case 'nut-free':
+              if (hasIngredient(recipe, NUT_TERMS)) return false;
+              break;
+            case 'halal':
+              if (hasIngredient(recipe, PORK_TERMS)) return false;
+              break;
+          }
+        }
+        return true;
+      };
+
+      const eligible = allRecipes.filter(isCompatible);
+      const shuffled = [...eligible].sort(() => Math.random() - 0.5);
       const usedIds = new Set<string>();
       const usedCountries = new Set<string>();
 
@@ -487,14 +528,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         for (const r of shuffled) {
           if (usedIds.has(r.id)) continue;
           if (cat && r.category !== cat) continue;
-          // Prefer unused country for variety
           if (!usedCountries.has(r.countryId) || usedIds.size > shuffled.length / 2) {
             usedIds.add(r.id);
             usedCountries.add(r.countryId);
             return r;
           }
         }
-        // Fallback: just pick any unused
         for (const r of shuffled) {
           if (usedIds.has(r.id)) continue;
           if (cat && r.category !== cat) continue;
@@ -547,7 +586,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return days;
       });
     },
-    [findOrCreateDay, addToGrocery]
+    [findOrCreateDay, addToGrocery, dietaryFlags]
   );
 
   const clearDay = useCallback(

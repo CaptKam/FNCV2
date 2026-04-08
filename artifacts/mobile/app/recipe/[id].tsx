@@ -12,7 +12,7 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { countries } from '@/data/countries';
 import { recipes, Step } from '@/data/recipes';
-import { convertAmount } from '@/data/helpers';
+import { convertAmount, formatCookTime } from '@/data/helpers';
 import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
@@ -165,11 +165,11 @@ export default function RecipeDetailScreen() {
           <View style={styles.statsRow}>
             <View style={styles.stat}>
               <Feather name="clock" size={16} color={colors.outline} />
-              <Text style={[Typography.caption, { color: colors.outline }]}>Prep {recipe.prepTime}m</Text>
+              <Text style={[Typography.caption, { color: colors.outline }]}>Prep {formatCookTime(recipe.prepTime)}</Text>
             </View>
             <View style={styles.stat}>
               <Feather name="thermometer" size={16} color={colors.outline} />
-              <Text style={[Typography.caption, { color: colors.outline }]}>Cook {recipe.cookTime}m</Text>
+              <Text style={[Typography.caption, { color: colors.outline }]}>Cook {formatCookTime(recipe.cookTime)}</Text>
             </View>
             <View style={styles.stat}>
               <Feather name="bar-chart-2" size={16} color={colors.outline} />

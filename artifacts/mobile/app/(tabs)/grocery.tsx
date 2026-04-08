@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert, Linking } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -336,75 +336,38 @@ export default function GroceryScreen() {
 
         {activeTab === 'online' && (
           <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
-            <View style={[styles.zipInputContainer, { backgroundColor: colors.surfaceContainerLow, borderRadius: Radius.md }]}>
-              <MaterialCommunityIcons name="map-marker-outline" size={20} color={colors.outline} />
-              <TextInput
-                value={app.zipCode}
-                onChangeText={(text) => app.setZipCode(text)}
-                style={[Typography.body, { flex: 1, color: colors.onSurface, paddingVertical: Spacing.sm }]}
-                placeholder="Enter your zip code"
-                placeholderTextColor={colors.outline}
-                keyboardType="number-pad"
-                accessibilityLabel="Enter zip code"
-              />
-              {app.zipCode.length > 0 && (
-                <MaterialCommunityIcons name="check-circle" size={20} color={colors.success} />
-              )}
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.retailerRow}
-            >
-              {RETAILERS.map((retailer) => {
-                const isSelected = app.groceryPartner === retailer.id;
-                return (
-                  <Pressable
-                    key={retailer.id}
-                    onPress={() => app.setGroceryPartner(retailer.id)}
-                    style={styles.retailerItem}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Select ${retailer.name}`}
-                    accessibilityState={{ selected: isSelected }}
-                  >
+            <GlassView style={{ padding: Spacing.xl, alignItems: 'center', borderRadius: Radius.lg }}>
+              <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle, marginBottom: Spacing.md }]}>
+                <MaterialCommunityIcons name="truck-delivery-outline" size={40} color={colors.primary} />
+              </View>
+              <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center', marginBottom: Spacing.xs }]}>
+                Coming Soon
+              </Text>
+              <Text style={[Typography.body, { color: colors.outline, textAlign: 'center', marginBottom: Spacing.lg }]}>
+                We're working on connecting your favorite grocery delivery services.
+              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', gap: Spacing.lg }}>
+                {RETAILERS.map((retailer) => (
+                  <View key={retailer.id} style={{ alignItems: 'center', opacity: 0.5 }}>
                     <View
                       style={[
                         styles.retailerCircle,
                         {
-                          backgroundColor: isSelected
-                            ? colors.surfaceContainerLowest ?? colors.surfaceContainerLow
-                            : colors.surfaceContainer,
-                          borderWidth: isSelected ? 2 : 1,
-                          borderColor: isSelected ? colors.primary : colors.outlineVariant,
+                          backgroundColor: colors.surfaceContainer,
+                          borderWidth: 1,
+                          borderColor: colors.outlineVariant,
                         },
                       ]}
                     >
-                      <MaterialCommunityIcons
-                        name={retailer.icon}
-                        size={28}
-                        color={isSelected ? colors.primary : colors.outline}
-                      />
+                      <MaterialCommunityIcons name={retailer.icon} size={28} color={colors.outline} />
                     </View>
-                    <Text
-                      style={[
-                        Typography.caption,
-                        {
-                          color: isSelected ? colors.primary : colors.outline,
-                          textAlign: 'center',
-                          marginTop: Spacing.xs,
-                        },
-                      ]}
-                      numberOfLines={1}
-                    >
+                    <Text style={[Typography.caption, { color: colors.outline, textAlign: 'center', marginTop: Spacing.xs }]} numberOfLines={1}>
                       {retailer.name}
                     </Text>
-                    {isSelected && (
-                      <Text style={[Typography.caption, { color: colors.success, fontSize: 10 }]}>Available</Text>
-                    )}
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
+                  </View>
+                ))}
+              </View>
+            </GlassView>
           </View>
         )}
 
@@ -526,26 +489,9 @@ export default function GroceryScreen() {
             <View style={styles.orderSection}>
               <View style={styles.orderStats}>
                 <Text style={[Typography.caption, { color: colors.outline }]}>
-                  {uncheckedCount} items  •  {RETAILERS.find((r) => r.id === app.groceryPartner)?.name ?? 'Instacart'}
+                  Online ordering coming soon
                 </Text>
               </View>
-              <Pressable
-                onPress={() => {
-                  const retailer = RETAILERS.find((r) => r.id === app.groceryPartner);
-                  if (retailer) Linking.openURL(retailer.url);
-                }}
-                style={[styles.orderButton, { backgroundColor: colors.primary }]}
-                accessibilityRole="button"
-                accessibilityLabel={`Open ${RETAILERS.find((r) => r.id === app.groceryPartner)?.name}`}
-              >
-                <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
-                  Open {RETAILERS.find((r) => r.id === app.groceryPartner)?.name ?? 'Instacart'}
-                </Text>
-                <MaterialCommunityIcons name="open-in-new" size={16} color={colors.onPrimary} />
-              </Pressable>
-              <Text style={[Typography.caption, { color: colors.onSurfaceVariant, textAlign: 'center', marginTop: Spacing.xs }]}>
-                Your grocery list will stay open — switch back anytime
-              </Text>
             </View>
           ) : (
             <>

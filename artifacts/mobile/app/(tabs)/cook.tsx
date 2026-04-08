@@ -13,6 +13,7 @@ import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
+import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 
 import { TECHNIQUES } from '@/data/techniques';
@@ -100,7 +101,7 @@ export default function CookScreen() {
                   <View style={styles.statItem}>
                     <MaterialCommunityIcons name="clock-outline" size={18} color={colors.primary} />
                     <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
-                      {heroRecipe.prepTime + heroRecipe.cookTime}m
+                      {formatCookTime(heroRecipe.prepTime + heroRecipe.cookTime)}
                     </Text>
                   </View>
                   <View style={[styles.statDivider, { backgroundColor: colors.outlineVariant }]} />

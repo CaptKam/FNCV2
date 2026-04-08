@@ -405,16 +405,11 @@ export default function DinnerSetupScreen() {
 
       {/* Sticky bottom CTAs */}
       <View style={[styles.bottomCTA, { paddingBottom: insets.bottom + 16 }]}>
-        <Pressable onPress={hasPhones ? handleSendInvites : handleJustCook} style={[styles.primaryBtn, { backgroundColor: colors.primary }]} accessibilityRole="button">
+        <Pressable onPress={handleJustCook} style={[styles.primaryBtn, { backgroundColor: colors.primary }]} accessibilityRole="button">
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>
-            {hasPhones ? "Send Invites & Cook" : "Let's Cook"}
+            Let's Cook
           </Text>
         </Pressable>
-        {hasPhones && (
-          <Pressable onPress={handleJustCook} style={[styles.secondaryBtn, { borderColor: colors.primary }]} accessibilityRole="button">
-            <Text style={[Typography.titleSmall, { color: colors.primary }]}>Skip Invites — Just Cook</Text>
-          </Pressable>
-        )}
       </View>
 
       {/* Add Guest Sheet */}
