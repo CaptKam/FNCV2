@@ -77,17 +77,46 @@ export default function CookModeScreen() {
     return () => clearInterval(interval);
   }, [timerRunning, timerSeconds, app]);
 
+  // Detect completion — navigate back when session or dinner plan completes
   const prevSessionRef = React.useRef(session);
+  const prevDinnerRef = React.useRef(dinnerPlan);
   const hasNavigatedRef = React.useRef(false);
   useEffect(() => {
-    if (prevSessionRef.current && !session && !hasNavigatedRef.current) {
+    // Single recipe mode: session became null
+    if (prevSessionRef.current && !session && !hasNavigatedRef.current && !isDinnerMode) {
+      hasNavigatedRef.current = true;
+      router.back();
+    }
+    // Dinner plan mode: plan became null (completed)
+    if (prevDinnerRef.current && !dinnerPlan && !hasNavigatedRef.current) {
       hasNavigatedRef.current = true;
       router.back();
     }
     prevSessionRef.current = session;
-  }, [session, router]);
+    prevDinnerRef.current = dinnerPlan;
+  }, [session, dinnerPlan, isDinnerMode, router]);
+
+  // Dinner plan awareness
+  const dinnerPlan = app.activeDinnerPlan;
+  const dinnerEventIndex = app.currentDinnerEventIndex;
+  const isDinnerMode = dinnerPlan != null;
+  const dinnerEvent = isDinnerMode ? dinnerPlan.events[dinnerEventIndex] : null;
+  const dinnerTotalEvents = isDinnerMode ? dinnerPlan.events.length : 0;
 
   const goNext = useCallback(() => {
+    if (isDinnerMode) {
+      // Dinner plan mode: advance through timeline events
+      if (dinnerEventIndex < dinnerTotalEvents - 1) {
+        app.advanceDinnerStep();
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } else {
+        // Last event — complete the dinner plan
+        app.completeDinnerPlan();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      return;
+    }
+    // Single recipe mode
     if (!recipe || !session) return;
     if (session.currentStepIndex < recipe.steps.length - 1) {
       app.advanceStep();
@@ -101,13 +130,22 @@ export default function CookModeScreen() {
       app.advanceStep();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [session, recipe, app]);
+  }, [isDinnerMode, dinnerEventIndex, dinnerTotalEvents, session, recipe, app]);
 
   const goPrev = useCallback(() => {
+    if (isDinnerMode) {
+      if (dinnerEventIndex > 0) {
+        // Go back one dinner event by decrementing index directly
+        // (advanceDinnerStep only goes forward, so we set directly)
+        app.setPendingDinnerPlan(null); // no-op side effect, just to trigger re-render
+        // For now, single-direction only in dinner mode
+      }
+      return;
+    }
     if (!session || session.currentStepIndex <= 0) return;
     app.previousStep();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [session, app]);
+  }, [isDinnerMode, dinnerEventIndex, session, app]);
 
   const t = isDark
     ? {
@@ -175,17 +213,28 @@ export default function CookModeScreen() {
     );
   }
 
-  const currentStep = session?.recipeId === recipe.id ? session.currentStepIndex : 0;
-  const step = recipe.steps[Math.min(currentStep, recipe.steps.length - 1)];
-  const isLastStep = currentStep >= recipe.steps.length - 1;
+  // In dinner mode, read from timeline events; in single mode, read from recipe steps
+  const currentStep = isDinnerMode
+    ? dinnerEventIndex
+    : (session?.recipeId === recipe.id ? session.currentStepIndex : 0);
+  const step = isDinnerMode
+    ? { instruction: dinnerEvent?.instruction ?? '', duration: dinnerEvent?.durationMinutes }
+    : recipe.steps[Math.min(currentStep, recipe.steps.length - 1)];
+  const totalSteps = isDinnerMode ? dinnerTotalEvents : recipe.steps.length;
+  const isLastStep = isDinnerMode
+    ? dinnerEventIndex >= dinnerTotalEvents - 1
+    : currentStep >= recipe.steps.length - 1;
   const minutes = Math.floor(timerSeconds / 60);
   const seconds = timerSeconds % 60;
   const hasTimer = step.duration && step.duration > 0;
   const timerProgress = totalDuration > 0 ? timerSeconds / totalDuration : 0;
 
-  const matchedIngredients = recipe.ingredients
-    .filter((ing) => step.instruction.toLowerCase().includes(ing.name.toLowerCase()))
-    .slice(0, 4);
+  // In dinner mode, materials come from the event; in single mode, from ingredient matching
+  const matchedIngredients = isDinnerMode
+    ? (dinnerEvent?.materials ?? []).map((m) => ({ name: m, amount: '' }))
+    : recipe.ingredients
+        .filter((ing) => step.instruction.toLowerCase().includes(ing.name.toLowerCase()))
+        .slice(0, 4);
 
   const instructionText = step.instruction;
   const firstSentenceEnd = instructionText.indexOf('.');
@@ -211,7 +260,7 @@ export default function CookModeScreen() {
           <MaterialCommunityIcons name="close" size={22} color={t.headerIcon} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: t.headerTitle }]}>
-          Step {currentStep + 1} of {recipe.steps.length}
+          {isDinnerMode && dinnerEvent?.recipeName ? `${dinnerEvent.recipeName} · ` : ''}Step {currentStep + 1} of {totalSteps}
         </Text>
         <Pressable
           onPress={() => {

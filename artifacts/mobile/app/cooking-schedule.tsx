@@ -137,7 +137,8 @@ export default function CookingScheduleScreen() {
   }
 
   const handleStartCooking = () => {
-    // Start cooking the first recipe in the plan
+    app.startDinnerPlan();
+    // Navigate to cook-mode with the first recipe
     const firstRecipe = plan.recipes[0];
     if (firstRecipe) {
       router.push(`/cook-mode/${firstRecipe.id}`);
