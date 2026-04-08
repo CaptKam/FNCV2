@@ -16,6 +16,7 @@ import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
+import { Checkbox } from '@/components/Checkbox';
 
 import { TECHNIQUES } from '@/data/techniques';
 
@@ -226,22 +227,16 @@ export default function CookScreen() {
                   setChecks(next);
                 }}
                 style={styles.checkItem}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: checks[idx] }}
                 accessibilityLabel={item.label}
               >
-                <View
-                  style={[
-                    styles.checkBox,
-                    checks[idx]
-                      ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                      : { borderColor: colors.primarySoft },
-                  ]}
-                >
-                  {checks[idx] && (
-                    <MaterialCommunityIcons name="check" size={14} color={colors.onPrimary} />
-                  )}
-                </View>
+                <Checkbox
+                  checked={checks[idx]}
+                  onToggle={() => {
+                    const next = [...checks];
+                    next[idx] = !next[idx];
+                    setChecks(next);
+                  }}
+                />
                 <Text
                   style={[
                     Typography.bodySmall,
@@ -501,14 +496,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
-  },
-  checkBox: {
-    width: Spacing.lg,
-    height: Spacing.lg,
-    borderRadius: Spacing.sm,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   ctaSection: {
     alignItems: 'center',

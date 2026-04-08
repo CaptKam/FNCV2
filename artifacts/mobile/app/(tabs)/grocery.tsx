@@ -12,6 +12,7 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
+import { Checkbox } from '@/components/Checkbox';
 import { useApp, GroceryItem } from '@/context/AppContext';
 import { recipes as allRecipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
@@ -603,19 +604,7 @@ export default function GroceryScreen() {
                       <MaterialCommunityIcons name="close-circle-outline" size={20} color={colors.outline} />
                     </Pressable>
                   )}
-                  <View
-                    style={[
-                      styles.checkbox,
-                      {
-                        backgroundColor: item.checked ? colors.success : 'transparent',
-                        borderColor: item.checked ? colors.success : colors.outlineVariant,
-                      },
-                    ]}
-                  >
-                    {item.checked && (
-                      <MaterialCommunityIcons name="check" size={14} color={colors.textOnImage} />
-                    )}
-                  </View>
+                  <Checkbox checked={item.checked} onToggle={() => app.toggleGroceryItem(item.id)} />
                 </PressableScale>
               );
             })}
@@ -805,14 +794,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xs,
     paddingVertical: 1,
     borderRadius: Radius.xs,
-  },
-  checkbox: {
-    width: 26,
-    height: 26,
-    borderRadius: Radius.full,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   stickyBottom: {
     position: 'absolute',

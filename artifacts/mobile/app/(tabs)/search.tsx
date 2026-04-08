@@ -26,6 +26,7 @@ import { formatCookTime } from '@/data/helpers';
 import { ALLERGEN_INFO, AllergenType } from '@/utils/allergens';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
 const ALLERGEN_FILTERS: AllergenType[] = ['milk', 'egg', 'wheat', 'peanuts', 'tree_nuts', 'fish', 'shellfish', 'soy', 'sesame'];
@@ -257,9 +258,9 @@ export default function SearchScreen() {
                 </Pressable>
               </View>
               <Pressable style={styles.heartBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Save ${recipe.title} to bookmarks`}>
-                <GlassView style={styles.heartGlass}>
-                  <Feather name="heart" size={14} color={colors.textOnImage} />
-                </GlassView>
+                <View style={styles.heartGlass}>
+                  <MaterialCommunityIcons name="heart-outline" size={OVERLAY_BUTTON.iconSize} color={OVERLAY_BUTTON.iconColor} />
+                </View>
               </Pressable>
             </Pressable>
           ))}
@@ -337,9 +338,12 @@ const styles = StyleSheet.create({
     right: Spacing.sm,
   },
   heartGlass: {
-    width: 44,
-    height: 44,
+    width: OVERLAY_BUTTON.size,
+    height: OVERLAY_BUTTON.size,
     borderRadius: Radius.full,
+    backgroundColor: OVERLAY_BUTTON.background,
+    borderWidth: OVERLAY_BUTTON.borderWidth,
+    borderColor: OVERLAY_BUTTON.borderColor,
     alignItems: 'center',
     justifyContent: 'center',
   },

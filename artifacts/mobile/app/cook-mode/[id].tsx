@@ -9,6 +9,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
@@ -232,11 +233,11 @@ export default function CookModeScreen() {
         <Pressable
           onPress={() => router.back()}
           hitSlop={12}
-          style={styles.headerBtn}
+          style={[styles.headerBtn, { backgroundColor: OVERLAY_BUTTON.background, borderWidth: OVERLAY_BUTTON.borderWidth, borderColor: OVERLAY_BUTTON.borderColor }]}
           accessibilityRole="button"
           accessibilityLabel="Close cook mode"
         >
-          <MaterialCommunityIcons name="close" size={22} color={t.headerIcon} />
+          <MaterialCommunityIcons name="close" size={OVERLAY_BUTTON.iconSize} color={OVERLAY_BUTTON.iconColor} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: t.headerTitle }]}>
           {isDinnerMode && dinnerEvent?.recipeName ? `${dinnerEvent.recipeName} · ` : ''}Step {currentStep + 1} of {totalSteps}
@@ -249,11 +250,11 @@ export default function CookModeScreen() {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             }
           }}
-          style={styles.headerBtn}
+          style={[styles.headerBtn, { backgroundColor: OVERLAY_BUTTON.background, borderWidth: OVERLAY_BUTTON.borderWidth, borderColor: OVERLAY_BUTTON.borderColor }]}
           accessibilityRole="button"
           accessibilityLabel="Timer"
         >
-          <MaterialCommunityIcons name="timer-outline" size={22} color={t.headerIcon} />
+          <MaterialCommunityIcons name="timer-outline" size={OVERLAY_BUTTON.iconSize} color={OVERLAY_BUTTON.iconColor} />
         </Pressable>
       </View>
 
@@ -401,11 +402,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   headerBtn: {
-    width: 44,
-    height: 44,
+    width: OVERLAY_BUTTON.size,
+    height: OVERLAY_BUTTON.size,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22,
+    borderRadius: Radius.full,
   },
   headerTitle: {
     fontFamily: 'NotoSerif_700Bold',

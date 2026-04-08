@@ -11,6 +11,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { Shadows } from '@/constants/shadows';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
@@ -122,9 +123,9 @@ function MealCard({
                 accessibilityRole="button"
                 accessibilityLabel="Swap recipe"
               >
-                <View style={[styles.imageActionBtn, { backgroundColor: 'rgba(30, 25, 20, 0.85)' }]}>
-                  <MaterialCommunityIcons name="swap-horizontal" size={16} color="#FFFFFF" />
-                  <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>Swap</Text>
+                <View style={styles.imageActionBtn}>
+                  <MaterialCommunityIcons name="swap-horizontal" size={16} color={OVERLAY_BUTTON.iconColor} />
+                  <Text style={{ fontSize: 10, color: OVERLAY_BUTTON.iconColor, fontWeight: '700', letterSpacing: 0.3 }}>Swap</Text>
                 </View>
               </Pressable>
             </View>
@@ -137,9 +138,9 @@ function MealCard({
                 accessibilityRole="button"
                 accessibilityLabel="Remove recipe"
               >
-                <View style={[styles.imageActionBtn, { backgroundColor: 'rgba(30, 25, 20, 0.85)' }]}>
-                  <MaterialCommunityIcons name="close" size={16} color="#FFFFFF" />
-                  <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>Remove</Text>
+                <View style={styles.imageActionBtn}>
+                  <MaterialCommunityIcons name="close" size={16} color={OVERLAY_BUTTON.iconColor} />
+                  <Text style={{ fontSize: 10, color: OVERLAY_BUTTON.iconColor, fontWeight: '700', letterSpacing: 0.3 }}>Remove</Text>
                 </View>
               </Pressable>
             </View>
@@ -1169,6 +1170,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+    backgroundColor: OVERLAY_BUTTON.background,
+    borderWidth: OVERLAY_BUTTON.borderWidth,
+    borderColor: OVERLAY_BUTTON.borderColor,
   },
   recipeBadge: {
     position: 'absolute',
