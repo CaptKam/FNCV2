@@ -30,14 +30,16 @@ Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a 
 ### Screens
 - 5 tabs: Discover (hero carousel), Search (filter chips), Plan (timeline), Grocery (checkboxes), Cook ("Kitchen Lab" mission control)
 - Detail screens: Country Detail, Recipe Detail
-- Cook Mode: Full-screen step-by-step with timer, haptics, keep-awake
-- Profile & Settings: dietary preferences, cooking settings, notifications, general
-- Bookmarks: saved recipes with persistence (AsyncStorage), grouped by country
+- Onboarding: 3-screen flow (welcome+name+avatar, dietary preferences, cooking level) shown on first launch
+- Cook Mode: Full-screen step-by-step with timer, haptics, keep-awake; colors fully tokenized via useThemeColors
+- Profile & Settings: editable display name + avatar, dietary preferences, cooking settings, notifications, general
+- Bookmarks: saved recipes with persistence, filter by category, sort by date/cuisine/difficulty
 
 ### State Management
+- AppContext (React Context + AsyncStorage): itinerary, grocery, cook session, preferences (incl. hasCompletedOnboarding, displayName, avatarId), XP/level, dinner parties/plans. Exposes `isHydrated` for safe onboarding guard
 - BookmarksContext (React Context + AsyncStorage): shared bookmark/favorite state across RecipeCard, Recipe Detail, and Bookmarks screen
 - ThemeContext (React Context + AsyncStorage): user theme preference (system/light/dark); `useThemeColors` reads from this context; profile page has modal picker for switching
-- Both providers wrap entire app in `_layout.tsx` (ThemeProvider outermost)
+- All providers wrap entire app in `_layout.tsx` (ThemeProvider outermost). OnboardingGuard waits for hydration before redirecting
 
 ### Data
 - All local mock data: 8 countries, 97 recipes with ingredients, steps, cultural notes
@@ -52,6 +54,7 @@ Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a 
 - `artifacts/mobile/context/BookmarksContext.tsx` — shared bookmarks state with AsyncStorage persistence
 - `artifacts/mobile/context/ThemeContext.tsx` — theme preference (system/light/dark) with AsyncStorage persistence
 - `artifacts/mobile/components/` — GlassView, SectionHeader, RecipeCard, DestinationCard
+- `artifacts/mobile/app/onboarding.tsx` — 3-screen first-launch onboarding
 - `artifacts/mobile/app/(tabs)/` — 5 tab screens
 - `artifacts/mobile/app/country/[id].tsx` — Country detail
 - `artifacts/mobile/app/recipe/[id].tsx` — Recipe detail (with bookmark button)

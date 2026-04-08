@@ -105,6 +105,9 @@ interface AppContextValue {
   useMetric: boolean;
   dietaryFlags: string[];
   allergens: string[];
+  hasCompletedOnboarding: boolean;
+  displayName: string;
+  avatarId: string;
   setCookingLevel: (level: CookingLevel) => void;
   setCoursePreference: (pref: CoursePreference) => void;
   setGroceryPartner: (partner: GroceryPartner) => void;
@@ -112,6 +115,10 @@ interface AppContextValue {
   setUseMetric: (metric: boolean) => void;
   setDietaryFlags: (flags: string[]) => void;
   setAllergens: (allergens: string[]) => void;
+  setHasCompletedOnboarding: (v: boolean) => void;
+  setDisplayName: (name: string) => void;
+  setAvatarId: (id: string) => void;
+  isHydrated: boolean;
 
   // History / XP
   totalRecipesCooked: number;
@@ -295,6 +302,9 @@ const defaultPreferences = {
   useMetric: true,
   dietaryFlags: [] as string[],
   allergens: [] as string[],
+  hasCompletedOnboarding: false,
+  displayName: '',
+  avatarId: 'chef',
 };
 
 const defaultHistory = {
@@ -326,6 +336,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [useMetric, setUseMetricState] = useState(defaultPreferences.useMetric);
   const [dietaryFlags, setDietaryFlagsState] = useState<string[]>(defaultPreferences.dietaryFlags);
   const [allergens, setAllergensState] = useState<string[]>(defaultPreferences.allergens);
+  const [hasCompletedOnboarding, setHasCompletedOnboardingState] = useState(defaultPreferences.hasCompletedOnboarding);
+  const [displayName, setDisplayNameState] = useState(defaultPreferences.displayName);
+  const [avatarId, setAvatarIdState] = useState(defaultPreferences.avatarId);
   const [totalRecipesCooked, setTotalRecipesCooked] = useState(defaultHistory.totalRecipesCooked);
   const [xp, setXp] = useState(defaultHistory.xp);
   const [level, setLevel] = useState(defaultHistory.level);
@@ -337,6 +350,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activeDinnerPlan, setActiveDinnerPlan] = useState<DinnerPlan | null>(null);
   const [currentDinnerEventIndex, setCurrentDinnerEventIndex] = useState(0);
 
+  const [isHydrated, setIsHydrated] = useState(false);
   const hydrated = useRef(false);
 
   // ─── Hydrate on mount ───
@@ -371,11 +385,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (pr.useMetric != null) setUseMetricState(pr.useMetric);
       if (pr.dietaryFlags) setDietaryFlagsState(pr.dietaryFlags);
       if (pr.allergens) setAllergensState(pr.allergens);
+      if (pr.hasCompletedOnboarding != null) setHasCompletedOnboardingState(pr.hasCompletedOnboarding);
+      if (pr.displayName != null) setDisplayNameState(pr.displayName);
+      if (pr.avatarId) setAvatarIdState(pr.avatarId);
       if (hi.totalRecipesCooked != null) setTotalRecipesCooked(hi.totalRecipesCooked);
       if (hi.xp != null) setXp(hi.xp);
       if (hi.level != null) setLevel(hi.level);
       if (hi.passportStamps) setPassportStamps(hi.passportStamps);
       hydrated.current = true;
+      setIsHydrated(true);
     })();
   }, []);
 
@@ -395,8 +413,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (hydrated.current)
-      Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, dietaryFlags, allergens });
-  }, [cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, dietaryFlags, allergens]);
+      Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, dietaryFlags, allergens, hasCompletedOnboarding, displayName, avatarId });
+  }, [cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, dietaryFlags, allergens, hasCompletedOnboarding, displayName, avatarId]);
 
   useEffect(() => {
     if (hydrated.current)
@@ -871,6 +889,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setUseMetric = useCallback((m: boolean) => setUseMetricState(m), []);
   const setDietaryFlags = useCallback((f: string[]) => setDietaryFlagsState(f), []);
   const setAllergens = useCallback((a: string[]) => setAllergensState(a), []);
+  const setHasCompletedOnboarding = useCallback((v: boolean) => setHasCompletedOnboardingState(v), []);
+  const setDisplayName = useCallback((name: string) => setDisplayNameState(name), []);
+  const setAvatarId = useCallback((id: string) => setAvatarIdState(id), []);
   const setKitchenChecks = useCallback((c: boolean[]) => setKitchenChecksState(c), []);
 
   // ═══════════════════════════════════════════
@@ -1143,6 +1164,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     useMetric,
     dietaryFlags,
     allergens,
+    hasCompletedOnboarding,
+    displayName,
+    avatarId,
     setCookingLevel,
     setCoursePreference,
     setGroceryPartner,
@@ -1151,6 +1175,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUseMetric,
     setDietaryFlags,
     setAllergens,
+    setHasCompletedOnboarding,
+    setDisplayName,
+    setAvatarId,
+    isHydrated,
 
     totalRecipesCooked,
     xp,

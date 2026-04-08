@@ -154,61 +154,33 @@ export default function CookModeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, [isDinnerMode, dinnerEventIndex, session, app]);
 
-  const t = isDark
-    ? {
-        bg: '#1C1A17',
-        headerBg: 'rgba(28,26,23,0.7)',
-        headerBorder: 'rgba(255,255,255,0.1)',
-        headerIcon: '#F2EDE7',
-        headerTitle: 'rgba(245,240,234,0.85)',
-        instructionColor: '#F2EDE7',
-        detailColor: 'rgba(245,240,234,0.4)',
-        pillBg: 'rgba(51,48,44,0.5)',
-        pillBorder: 'rgba(255,255,255,0.05)',
-        pillLabelColor: 'rgba(245,240,234,0.35)',
-        pillValueColor: '#C5702A',
-        timerRingIdle: 'rgba(255,255,255,0.08)',
-        timerDigits: '#F2EDE7',
-        timerLabel: 'rgba(245,240,234,0.35)',
-        durationIcon: 'rgba(245,240,234,0.4)',
-        durationText: 'rgba(245,240,234,0.4)',
-        prevIcon: 'rgba(245,240,234,0.6)',
-        prevText: 'rgba(245,240,234,0.5)',
-        navDivider: 'rgba(255,255,255,0.1)',
-        donenessBg: 'rgba(154,65,0,0.08)',
-        donenessBorder: 'rgba(154,65,0,0.15)',
-        donenessIconBg: 'rgba(154,65,0,0.15)',
-        donenessTitle: '#F2EDE7',
-        donenessText: 'rgba(245,240,234,0.7)',
-        verbHighlight: '#FFB691',
-      }
-    : {
-        bg: '#FEF9F3',
-        headerBg: 'rgba(255,255,255,0.7)',
-        headerBorder: 'rgba(0,0,0,0.06)',
-        headerIcon: '#1D1B18',
-        headerTitle: '#1D1B18',
-        instructionColor: '#1D1B18',
-        detailColor: '#52443C',
-        pillBg: '#F2E8DF',
-        pillBorder: 'rgba(0,0,0,0.06)',
-        pillLabelColor: 'rgba(82,68,60,0.7)',
-        pillValueColor: '#9A4100',
-        timerRingIdle: 'rgba(0,0,0,0.05)',
-        timerDigits: '#1D1B18',
-        timerLabel: '#52443C',
-        durationIcon: '#85736B',
-        durationText: '#85736B',
-        prevIcon: '#52443C',
-        prevText: '#52443C',
-        navDivider: 'rgba(0,0,0,0.08)',
-        donenessBg: 'rgba(154,65,0,0.05)',
-        donenessBorder: 'rgba(154,65,0,0.1)',
-        donenessIconBg: 'rgba(154,65,0,0.1)',
-        donenessTitle: '#1D1B18',
-        donenessText: '#52443C',
-        verbHighlight: '#9A4100',
-      };
+  const t = {
+    bg: colors.surface,
+    headerBg: colors.glassOverlay,
+    headerBorder: colors.outlineVariant,
+    headerIcon: colors.onSurface,
+    headerTitle: colors.onSurface,
+    instructionColor: colors.onSurface,
+    detailColor: colors.onSurfaceVariant,
+    pillBg: colors.surfaceContainerHigh,
+    pillBorder: colors.outlineVariant,
+    pillLabelColor: colors.outlineMuted,
+    pillValueColor: colors.primary,
+    timerRingIdle: colors.primaryTint,
+    timerDigits: colors.onSurface,
+    timerLabel: colors.onSurfaceVariant,
+    durationIcon: colors.outline,
+    durationText: colors.outline,
+    prevIcon: colors.onSurfaceVariant,
+    prevText: colors.onSurfaceVariant,
+    navDivider: colors.outlineVariant,
+    donenessBg: colors.primaryTint,
+    donenessBorder: colors.primarySubtle,
+    donenessIconBg: colors.primarySubtle,
+    donenessTitle: colors.onSurface,
+    donenessText: colors.onSurfaceVariant,
+    verbHighlight: isDark ? colors.inversePrimary : colors.primary,
+  };
 
   if (!recipe) {
     return (
@@ -401,13 +373,13 @@ export default function CookModeScreen() {
             accessibilityRole="button"
             accessibilityLabel={isLastStep ? 'Finish cooking' : 'Next step'}
           >
-            <Text style={styles.nextBtnText}>
+            <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>
               {isLastStep ? 'Finish' : 'Next'}
             </Text>
             <MaterialCommunityIcons
               name={isLastStep ? 'check' : 'arrow-right'}
               size={20}
-              color="#FFFFFF"
+              color={colors.onPrimary}
             />
           </Pressable>
         </GlassView>
@@ -614,6 +586,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    color: '#FFFFFF',
   },
 });

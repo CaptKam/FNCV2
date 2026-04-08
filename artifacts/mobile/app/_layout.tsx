@@ -20,9 +20,10 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { useRouter, useSegments } from "expo-router";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CookingPill } from "@/components/CookingPill";
-import { AppProvider } from "@/context/AppContext";
+import { AppProvider, useApp } from "@/context/AppContext";
 import { BookmarksProvider } from "@/context/BookmarksContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -30,10 +31,29 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
+function OnboardingGuard({ children }: { children: React.ReactNode }) {
+  const { hasCompletedOnboarding, isHydrated } = useApp();
+  const router = useRouter();
+  const segments = useSegments();
+
+  React.useEffect(() => {
+    if (!isHydrated) return;
+    const inOnboarding = segments[0] === 'onboarding';
+    if (!hasCompletedOnboarding && !inOnboarding) {
+      router.replace('/onboarding');
+    } else if (hasCompletedOnboarding && inOnboarding) {
+      router.replace('/(tabs)');
+    }
+  }, [hasCompletedOnboarding, isHydrated, segments]);
+
+  return <>{children}</>;
+}
+
 function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="profile" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="bookmarks" options={{ headerShown: false }} />
       <Stack.Screen name="country/[id]" options={{ headerShown: false }} />
@@ -85,8 +105,10 @@ export default function RootLayout() {
               <BookmarksProvider>
                 <AppProvider>
                   <KeyboardProvider>
-                    <RootLayoutNav />
-                    <CookingPill />
+                    <OnboardingGuard>
+                      <RootLayoutNav />
+                      <CookingPill />
+                    </OnboardingGuard>
                   </KeyboardProvider>
                 </AppProvider>
               </BookmarksProvider>

@@ -64,12 +64,13 @@ function formatDateShort(dateStr: string): string {
   return `${months[d.getMonth()]} ${d.getDate()}`;
 }
 
-function getGreeting(): string {
+function getGreeting(name?: string): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  if (hour < 21) return "Good evening — what's for dinner?";
-  return 'Late night cravings?';
+  const suffix = name ? `, ${name}` : '';
+  if (hour < 12) return `Good morning${suffix}`;
+  if (hour < 17) return `Good afternoon${suffix}`;
+  if (hour < 21) return `Good evening${suffix}`;
+  return name ? `Late night cravings, ${name}?` : 'Late night cravings?';
 }
 
 export default function DiscoverScreen() {
@@ -183,7 +184,7 @@ export default function DiscoverScreen() {
                 />
                 <View style={styles.heroContent}>
                   <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic' }]}>
-                    {getGreeting()}
+                    {getGreeting(app.displayName || undefined)}
                   </Text>
                   <GlassView style={styles.flagBadge}>
                     <Text style={{ fontSize: 14 }}>{item.flag}</Text>

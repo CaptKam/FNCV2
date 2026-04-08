@@ -8,6 +8,7 @@ import {
   Switch,
   Alert,
   Modal,
+  TextInput,
 } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -35,6 +36,15 @@ const DIETARY_OPTIONS = [
   { id: 'dairy-free', label: 'Dairy-Free', emoji: '\u{1F95B}' },
   { id: 'nut-free', label: 'Nut-Free', emoji: '\u{1F95C}' },
   { id: 'halal', label: 'Halal', emoji: '\u{2728}' },
+];
+
+const AVATAR_OPTIONS = [
+  { id: 'chef', icon: 'chef-hat' as const },
+  { id: 'globe', icon: 'earth' as const },
+  { id: 'fire', icon: 'fire' as const },
+  { id: 'heart', icon: 'heart' as const },
+  { id: 'star', icon: 'star' as const },
+  { id: 'compass', icon: 'compass' as const },
 ];
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
@@ -96,8 +106,10 @@ export default function ProfileScreen() {
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showServingsModal, setShowServingsModal] = useState(false);
   const [showPartnerModal, setShowPartnerModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [editName, setEditName] = useState(app.displayName);
+  const [editAvatar, setEditAvatar] = useState(app.avatarId);
 
-  // Read all state from AppContext
   const {
     xp,
     level,
@@ -109,7 +121,11 @@ export default function ProfileScreen() {
     coursePreference,
     groceryPartner,
     useMetric,
+    displayName,
+    avatarId,
   } = app;
+
+  const currentAvatarIcon = AVATAR_OPTIONS.find((a) => a.id === avatarId)?.icon ?? 'chef-hat';
 
   const levelName = app.getCookingLevelName();
   const progress = (xp % 300) / 300;
@@ -141,14 +157,26 @@ export default function ProfileScreen() {
             <View style={[styles.profileAccentLine, { backgroundColor: colors.primary }]} />
           </View>
           <View style={{ height: Spacing.lg }} />
-          <View style={[styles.avatarLarge, { backgroundColor: colors.primarySubtle }]}>
-            <Feather name="user" size={40} color={colors.primary} />
-          </View>
+          <Pressable
+            onPress={() => {
+              setEditName(displayName);
+              setEditAvatar(avatarId);
+              setShowProfileModal(true);
+            }}
+            style={[styles.avatarLarge, { backgroundColor: colors.primarySubtle }]}
+            accessibilityRole="button"
+            accessibilityLabel="Edit profile"
+          >
+            <MaterialCommunityIcons name={currentAvatarIcon as any} size={40} color={colors.primary} />
+            <View style={[styles.editBadge, { backgroundColor: colors.primary }]}>
+              <Feather name="edit-2" size={10} color={colors.onPrimary} />
+            </View>
+          </Pressable>
           <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center' }]}>
-            {levelName}
+            {displayName || levelName}
           </Text>
           <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center' }]}>
-            Culinary explorer · Level {level}
+            {displayName ? `${levelName} · ` : ''}Culinary explorer · Level {level}
           </Text>
 
           <View style={styles.levelContainer}>
@@ -539,6 +567,83 @@ export default function ProfileScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <Modal
+        visible={showProfileModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowProfileModal(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setShowProfileModal(false)} accessibilityRole="button" accessibilityLabel="Close profile editor">
+          <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]} onPress={(e) => e.stopPropagation()}>
+            <View style={[styles.modalHandle, { backgroundColor: colors.handleBar }]} />
+            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
+              Edit Profile
+            </Text>
+            <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm }]}>
+              YOUR NAME
+            </Text>
+            <TextInput
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Enter your name"
+              placeholderTextColor={colors.outlineMuted}
+              style={[
+                styles.profileNameInput,
+                {
+                  backgroundColor: colors.surfaceContainerLow,
+                  color: colors.onSurface,
+                  borderColor: colors.outlineVariant,
+                },
+              ]}
+              autoCapitalize="words"
+              maxLength={30}
+            />
+            <Text style={[Typography.labelLarge, { color: colors.outline, marginTop: Spacing.lg, marginBottom: Spacing.sm }]}>
+              AVATAR
+            </Text>
+            <View style={styles.profileAvatarGrid}>
+              {AVATAR_OPTIONS.map((av) => {
+                const isActive = editAvatar === av.id;
+                return (
+                  <Pressable
+                    key={av.id}
+                    onPress={() => setEditAvatar(av.id)}
+                    style={[
+                      styles.profileAvatarOption,
+                      {
+                        backgroundColor: isActive ? colors.primaryMuted : colors.surfaceContainerLow,
+                        borderColor: isActive ? colors.primary : 'transparent',
+                        borderWidth: 2,
+                      },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isActive }}
+                  >
+                    <MaterialCommunityIcons
+                      name={av.icon}
+                      size={28}
+                      color={isActive ? colors.primary : colors.outline}
+                    />
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Pressable
+              onPress={() => {
+                app.setDisplayName(editName.trim());
+                app.setAvatarId(editAvatar);
+                setShowProfileModal(false);
+              }}
+              style={[styles.profileSaveBtn, { backgroundColor: colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel="Save profile"
+            >
+              <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Save</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -701,5 +806,42 @@ const styles = StyleSheet.create({
     height: 2,
     width: 40,
     borderRadius: Radius.full,
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileNameInput: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 16,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 14,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+  },
+  profileAvatarGrid: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    flexWrap: 'wrap',
+  },
+  profileAvatarOption: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileSaveBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: Radius.full,
+    marginTop: Spacing.xl,
   },
 });
