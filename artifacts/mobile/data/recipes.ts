@@ -2471,7 +2471,7 @@ export const recipes: Recipe[] = [
     culturalNote: 'Tom Kha Gai showcases the Thai principle of balancing flavors: the richness of coconut, the sour of lime, the salty of fish sauce, and the heat of chili.',
   },
   {
-    id: 'mo-9',
+    id: 'ma-9',
     countryId: 'morocco',
     title: 'Zaalouk',
     image: 'https://images.unsplash.com/photo-1511690743698-d9d18f7e20f1?w=600&h=400&fit=crop',
@@ -2498,7 +2498,7 @@ export const recipes: Recipe[] = [
     culturalNote: 'Zaalouk is one of Morocco\'s most popular salads, served at nearly every meal. Each family has their own variation of spicing.',
   },
   {
-    id: 'mo-10',
+    id: 'ma-10',
     countryId: 'morocco',
     title: 'Rfissa',
     image: 'https://images.unsplash.com/photo-1540914124281-342587941389?w=600&h=400&fit=crop',
@@ -2526,7 +2526,7 @@ export const recipes: Recipe[] = [
     culturalNote: 'Rfissa is traditionally prepared for new mothers and celebrations. The fenugreek is believed to have healing properties. It is always shared from a single large platter.',
   },
   {
-    id: 'mo-11',
+    id: 'ma-11',
     countryId: 'morocco',
     title: 'Chebakia',
     image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=600&h=400&fit=crop',
@@ -2554,7 +2554,7 @@ export const recipes: Recipe[] = [
     culturalNote: 'Chebakia is the essential Ramadan pastry. Families spend entire days making batches together, and the flower-shaped cookies are offered to guests throughout the holy month.',
   },
   {
-    id: 'mo-12',
+    id: 'ma-12',
     countryId: 'morocco',
     title: 'Kefta Tagine',
     image: 'https://images.unsplash.com/photo-1511690743698-d9d18f7e20f1?w=600&h=400&fit=crop',
@@ -2666,7 +2666,7 @@ export const recipes: Recipe[] = [
     culturalNote: 'Masala Dosa is South India\'s greatest culinary gift. The art lies in the paper-thin, perfectly crispy crepe. Fermentation gives it its distinctive tang.',
   },
   {
-    id: 'sp-11',
+    id: 'es-11',
     countryId: 'spain',
     title: 'Crema Catalana',
     image: 'https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?w=600&h=400&fit=crop',
@@ -2693,7 +2693,7 @@ export const recipes: Recipe[] = [
     culturalNote: 'Crema Catalana predates French cr\u00e8me br\u00fbl\u00e9e by centuries and is traditionally served on Saint Joseph\'s Day. It is flavored with citrus and cinnamon rather than vanilla.',
   },
   {
-    id: 'sp-12',
+    id: 'es-12',
     countryId: 'spain',
     title: 'Pulpo a la Gallega',
     image: 'https://images.unsplash.com/photo-1515443961218-a51367888e4b?w=600&h=400&fit=crop',
