@@ -114,38 +114,40 @@ function MealCard({
             transition={300}
             accessible={false}
           />
-          <View style={styles.imageActions}>
-            {onSwap && (
+          {onSwap && (
+            <View style={styles.imageActionLeft}>
               <Pressable
                 onPress={(e) => { e.stopPropagation(); onSwap(); }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 accessibilityRole="button"
                 accessibilityLabel="Swap recipe"
               >
-                <GlassView style={styles.imageActionBtn}>
-                  <MaterialCommunityIcons name="swap-horizontal" size={14} color={colors.primary} />
-                  <Text style={{ fontSize: 9, color: colors.primary, fontWeight: '600' }}>Swap</Text>
-                </GlassView>
+                <View style={[styles.imageActionBtn, { backgroundColor: 'rgba(30, 25, 20, 0.85)' }]}>
+                  <MaterialCommunityIcons name="swap-horizontal" size={16} color="#FFFFFF" />
+                  <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>Swap</Text>
+                </View>
               </Pressable>
-            )}
-            {onRemove && (
+            </View>
+          )}
+          {onRemove && (
+            <View style={styles.imageActionRight}>
               <Pressable
                 onPress={(e) => { e.stopPropagation(); onRemove(); }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 accessibilityRole="button"
                 accessibilityLabel="Remove recipe"
               >
-                <GlassView style={styles.imageActionBtn}>
-                  <MaterialCommunityIcons name="close" size={14} color={colors.error} />
-                  <Text style={{ fontSize: 9, color: colors.error, fontWeight: '600' }}>Remove</Text>
-                </GlassView>
+                <View style={[styles.imageActionBtn, { backgroundColor: 'rgba(30, 25, 20, 0.85)' }]}>
+                  <MaterialCommunityIcons name="close" size={16} color="#FFFFFF" />
+                  <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>Remove</Text>
+                </View>
               </Pressable>
-            )}
-          </View>
+            </View>
+          )}
           <View style={styles.recipeBadge}>
-            <GlassView style={styles.recipeBadgePill}>
-              <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700' }]}>{badgeLabel}</Text>
-            </GlassView>
+            <View style={[styles.recipeBadgePill, { backgroundColor: 'rgba(30, 25, 20, 0.85)' }]}>
+              <Text style={[Typography.labelSmall, { color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.5 }]}>{badgeLabel}</Text>
+            </View>
           </View>
         </View>
         <View style={styles.mealContent}>
@@ -1147,26 +1149,32 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 176,
   },
-  imageActions: {
+  imageActionLeft: {
     position: 'absolute',
     top: Spacing.sm,
     left: Spacing.sm,
-    flexDirection: 'row',
-    gap: Spacing.sm,
+    zIndex: 10,
+  },
+  imageActionRight: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
     zIndex: 10,
   },
   imageActionBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 1,
+    gap: 4,
   },
   recipeBadge: {
     position: 'absolute',
     top: Spacing.sm,
-    right: Spacing.sm,
+    left: '50%',
+    transform: [{ translateX: '-50%' }],
   },
   recipeBadgePill: {
     paddingHorizontal: Spacing.sm,

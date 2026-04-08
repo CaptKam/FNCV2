@@ -405,14 +405,16 @@ export default function RecipeDetailScreen() {
                             accessibilityRole="button"
                             accessibilityLabel={`Substitutions for ${ing.name}`}
                           >
-                            <MaterialCommunityIcons
-                              name={isSubExpanded ? 'swap-horizontal-circle' : 'swap-horizontal-circle-outline'}
-                              size={16}
-                              color={isSubExpanded ? colors.primary : colors.outline}
-                            />
-                            <Text style={[Typography.labelSmall, { color: isSubExpanded ? colors.primary : colors.outline, fontSize: 10 }]}>
-                              Swap
-                            </Text>
+                            <View style={[styles.subButtonPill, { backgroundColor: isSubExpanded ? colors.primary : 'rgba(30, 25, 20, 0.75)' }]}>
+                              <MaterialCommunityIcons
+                                name="swap-horizontal"
+                                size={14}
+                                color="#FFFFFF"
+                              />
+                              <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>
+                                Swap
+                              </Text>
+                            </View>
                           </Pressable>
                         )}
                       </Pressable>
@@ -643,12 +645,15 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
   },
   subButton: {
+    marginLeft: Spacing.sm,
+  },
+  subButtonPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
-    marginLeft: Spacing.sm,
-    paddingHorizontal: 4,
-    paddingVertical: 2,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: Radius.full,
   },
   substitutionHint: {
     flexDirection: 'row',
