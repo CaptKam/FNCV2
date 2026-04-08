@@ -142,7 +142,7 @@ export default function BookmarksScreen() {
         {savedRecipes.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}>
-              <MaterialCommunityIcons name="heart-outline" size={40} color={colors.primary} />
+              <MaterialCommunityIcons name="heart-outline" size={28} color={colors.outlineVariant} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
               Your collection is empty

@@ -205,7 +205,7 @@ export default function SearchScreen() {
         {query.trim().length > 0 && filteredRecipes.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="magnify" size={28} color={colors.onSurfaceVariant} />
+              <MaterialCommunityIcons name="magnify" size={28} color={colors.outlineVariant} />
             </View>
             <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
               No matches found

@@ -9,7 +9,6 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
-import { GlassView } from '@/components/GlassView';
 import { useApp } from '@/context/AppContext';
 import { DinnerParty, DinnerGuest, DietaryConflict } from '@/types/dinnerParty';
 import { countries } from '@/data/countries';
@@ -260,9 +259,9 @@ export default function DinnerSetupScreen() {
         {/* Header */}
         <View style={styles.headerRow}>
           <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back">
-            <GlassView style={styles.backBtn}>
-              <MaterialCommunityIcons name="arrow-left" size={20} color={colors.onSurface} />
-            </GlassView>
+            <View style={[styles.backBtn, { backgroundColor: 'rgba(30,25,20,0.85)' }]}>
+              <MaterialCommunityIcons name="arrow-left" size={20} color="#FFFFFF" />
+            </View>
           </Pressable>
         </View>
         <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>

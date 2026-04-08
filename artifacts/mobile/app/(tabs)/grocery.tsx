@@ -222,7 +222,7 @@ export default function GroceryScreen() {
         <HeaderBar />
         <View style={styles.emptyRoot}>
           <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
-            <MaterialCommunityIcons name="cart-outline" size={40} color={colors.primary} />
+            <MaterialCommunityIcons name="cart-outline" size={28} color={colors.outlineVariant} />
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
             No ingredients yet

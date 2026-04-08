@@ -23,7 +23,7 @@ export function HeaderBar({ transparent = false, showBack = false, rightAction }
 
   const titleColor = transparent ? '#FFFFFF' : colors.onSurface;
   const iconColor = transparent ? '#FFFFFF' : colors.primary;
-  const glassBg = transparent ? 'rgba(255,255,255,0.2)' : colors.surfaceContainerHigh;
+  const glassBg = transparent ? 'rgba(30,25,20,0.85)' : colors.surfaceContainerHigh;
 
   const content = (
     <View style={[styles.inner, { paddingTop: insets.top + 8 }]}>

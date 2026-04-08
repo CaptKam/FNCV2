@@ -116,7 +116,7 @@ export default function CookingScheduleScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.surface }]}>
         <View style={[styles.emptyState, { paddingTop: insets.top + 80 }]}>
-          <MaterialCommunityIcons name="calendar-blank" size={40} color={colors.outlineVariant} />
+          <MaterialCommunityIcons name="calendar-blank" size={28} color={colors.outlineVariant} />
           <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
             No schedule yet
           </Text>
@@ -156,7 +156,7 @@ export default function CookingScheduleScreen() {
           accessibilityRole="button"
           accessibilityLabel="Close"
         >
-          <MaterialCommunityIcons name="arrow-left" size={20} color={colors.onSurface} />
+          <MaterialCommunityIcons name="arrow-left" size={20} color="#FFFFFF" />
         </Pressable>
         <View style={styles.headerCenter}>
           <Text style={[Typography.display, { color: colors.onSurface, fontSize: 22 }]}>
@@ -238,6 +238,8 @@ const styles = StyleSheet.create({
   closeBtn: {
     width: 44,
     height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(30,25,20,0.85)',
     alignItems: 'center',
     justifyContent: 'center',
   },

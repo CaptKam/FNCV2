@@ -148,7 +148,7 @@ export default function CookScreen() {
           <View style={[styles.emptyHero, { marginHorizontal: Spacing.page }]}>
             <View style={[styles.emptyHeroInner, { borderColor: colors.outlineVariant }]}>
               <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
-                <MaterialCommunityIcons name="weather-sunset" size={40} color={colors.primary} />
+                <MaterialCommunityIcons name="weather-sunset" size={28} color={colors.outlineVariant} />
               </View>
               <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
                 Ready when you are
