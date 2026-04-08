@@ -645,16 +645,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       const dietaryFiltered = allRecipes.filter(isCompatible);
 
-      // ── Cooking level filtering ──
-      const LEVEL_DIFFICULTIES: Record<string, string[]> = {
-        beginner: ['Easy'],
-        home_cook: ['Easy', 'Medium'],
-        chef: ['Easy', 'Medium', 'Hard'],
-      };
-      const allowedDifficulties = LEVEL_DIFFICULTIES[cookingLevel] ?? ['Easy', 'Medium', 'Hard'];
-      const levelFiltered = dietaryFiltered.filter((r) => allowedDifficulties.includes(r.difficulty));
-      // Fallback: if too few recipes after level filter, use full dietary pool
-      const afterLevelFilter = levelFiltered.length >= selectedDates.length ? levelFiltered : dietaryFiltered;
+      // All difficulty levels available to all users
+      const afterLevelFilter = dietaryFiltered;
 
       // ── Recency filtering (avoid recipes from current + previous 2 weeks) ──
       const recentRecipeIds = new Set<string>();
@@ -733,7 +725,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return days;
       });
     },
-    [findOrCreateDay, addToGrocery, dietaryFlags, cookingLevel, itinerary]
+    [findOrCreateDay, addToGrocery, dietaryFlags, itinerary]
   );
 
   const restoreItinerary = useCallback((snapshot: ItineraryDay[]) => {
