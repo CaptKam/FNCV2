@@ -118,8 +118,9 @@ export default function DiscoverScreen() {
     AsyncStorage.setItem(`@fork_compass_tonight_dismissed_${todayDate}`, 'true');
   }, [todayDate]);
 
-  // Featured country rotates daily
-  const featuredCountry = countries[getDayOfYear() % countries.length];
+  // Featured country — starts with daily rotation, tappable dots cycle through all
+  const [heroIndex, setHeroIndex] = useState(() => getDayOfYear() % countries.length);
+  const featuredCountry = countries[heroIndex];
   const featuredRecipeCount = recipes.filter((r) => r.countryId === featuredCountry.id).length;
 
   // Filtered recipe grid
@@ -277,8 +278,16 @@ export default function DiscoverScreen() {
                   <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700' }]}>Let's Go</Text>
                 </Pressable>
                 <View style={styles.heroDots}>
-                  {countries.slice(0, 3).map((c, i) => (
-                    <View key={c.id} style={[styles.heroDot, { backgroundColor: c.id === featuredCountry.id ? '#FFFFFF' : 'rgba(255,255,255,0.3)' }]} />
+                  {countries.map((c, i) => (
+                    <Pressable
+                      key={c.id}
+                      onPress={(e) => { e.stopPropagation(); setHeroIndex(i); }}
+                      hitSlop={6}
+                      accessibilityRole="button"
+                      accessibilityLabel={c.name}
+                    >
+                      <View style={[styles.heroDot, { backgroundColor: i === heroIndex ? '#FFFFFF' : 'rgba(255,255,255,0.3)' }]} />
+                    </Pressable>
                   ))}
                 </View>
               </View>
