@@ -17,3 +17,9 @@ id = "Up35_iuxXSUCSjJgSW8oO"
 uri = "file://artifacts/mobile/BUILD_STATUS.md"
 type = "text"
 title = "Fork & Compass — What We've Built"
+
+[[outputs]]
+id = "PtLtPMr8EKADcREFoZ9UQ"
+uri = "file://.local/conditional-feature-rules.md"
+type = "text"
+title = "Conditional Feature Rules"
