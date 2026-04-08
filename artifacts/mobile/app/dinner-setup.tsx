@@ -53,6 +53,8 @@ export default function DinnerSetupScreen() {
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
+  const [guestDietary, setGuestDietary] = useState<string[]>([]);
+  const [guestAllergens, setGuestAllergens] = useState('');
 
   useEffect(() => {
     if (!date) return;
@@ -130,17 +132,22 @@ export default function DinnerSetupScreen() {
 
   const handleAddGuest = () => {
     if (!partyId || !guestName.trim()) return;
+    const allergenList = guestAllergens.trim()
+      ? guestAllergens.split(',').map((a) => a.trim()).filter(Boolean)
+      : [];
     app.addGuest(partyId, {
       name: guestName.trim(),
       phone: guestPhone.trim() || undefined,
       email: guestEmail.trim() || undefined,
-      dietaryRestrictions: [],
-      allergens: [],
+      dietaryRestrictions: guestDietary,
+      allergens: allergenList,
     });
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     setGuestName('');
     setGuestPhone('');
     setGuestEmail('');
+    setGuestDietary([]);
+    setGuestAllergens('');
     setShowAddGuest(false);
   };
 
@@ -393,6 +400,37 @@ export default function DinnerSetupScreen() {
               style={[styles.input, { backgroundColor: colors.surfaceContainerLow, color: colors.onSurface }]}
             />
 
+            <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>DIETARY PREFERENCES</Text>
+            <View style={styles.dietaryChips}>
+              {['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Halal'].map((diet) => {
+                const key = diet.toLowerCase();
+                const selected = guestDietary.includes(key);
+                return (
+                  <Pressable
+                    key={key}
+                    onPress={() => setGuestDietary((prev) => selected ? prev.filter((d) => d !== key) : [...prev, key])}
+                    style={[
+                      styles.dietaryChip,
+                      { backgroundColor: selected ? `${colors.primary}18` : colors.surfaceContainerLow, borderColor: selected ? colors.primary : 'transparent', borderWidth: 1.5 },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                  >
+                    <Text style={[Typography.caption, { color: selected ? colors.primary : colors.onSurface }]}>{diet}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>ALLERGENS (optional)</Text>
+            <TextInput
+              value={guestAllergens}
+              onChangeText={setGuestAllergens}
+              placeholder="e.g. peanuts, shellfish"
+              placeholderTextColor={colors.outline}
+              style={[styles.input, { backgroundColor: colors.surfaceContainerLow, color: colors.onSurface }]}
+            />
+
             <Pressable
               onPress={handleAddGuest}
               style={[styles.sheetCTA, { backgroundColor: colors.primary, opacity: guestName.trim() ? 1 : 0.5 }]}
@@ -553,6 +591,16 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: Radius.md,
     fontSize: 16,
+  },
+  dietaryChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  dietaryChip: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
   },
   sheetCTA: {
     height: 52,
