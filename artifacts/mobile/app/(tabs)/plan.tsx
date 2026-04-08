@@ -150,6 +150,7 @@ export default function PlanScreen() {
   const todayISO = getTodayISO();
   const [weekStartDate, setWeekStartDate] = useState(() => toISO(getMonday(new Date())));
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showQuickGen, setShowQuickGen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<WeekOption>('this-week');
   const [isDailyView, setIsDailyView] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(() => {
@@ -746,25 +747,70 @@ export default function PlanScreen() {
         const viewDay = isDailyView ? selectedDay : weekDays.find((d) => d.date === new Date().toISOString().split('T')[0]);
         const cookBarVisible = viewDay && (viewDay.courses.appetizer || viewDay.courses.main || viewDay.courses.dessert);
 
+        const handleQuickGen = (dayCount: number) => {
+          const emptyDates = weekDays
+            .filter((d) => !d.courses.main)
+            .map((d) => d.date)
+            .slice(0, dayCount);
+          if (emptyDates.length > 0) {
+            app.autoGenerateWeek(emptyDates, app.coursePreference);
+            try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+          }
+          setShowQuickGen(false);
+        };
+
         return (
-          <View style={[styles.fabContainer, { bottom: cookBarVisible ? 160 : 100, right: Spacing.page }]}>
-            <Pressable
-              onPress={() => {
-                const emptyDates = weekDays
-                  .filter((d) => !d.courses.main)
-                  .map((d) => d.date);
-                if (emptyDates.length > 0) {
-                  app.autoGenerateWeek(emptyDates, app.coursePreference);
-                  try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
-                }
-              }}
-              style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
-              accessibilityRole="button"
-              accessibilityLabel={`Auto-generate meals for ${emptyDayCount} empty days`}
-            >
-              <MaterialCommunityIcons name="auto-fix" size={22} color={colors.onPrimary} />
-            </Pressable>
-          </View>
+          <>
+            <View style={[styles.fabContainer, { bottom: cookBarVisible ? 160 : 100, right: Spacing.page }]}>
+              <Pressable
+                onPress={() => handleQuickGen(emptyDayCount)}
+                onLongPress={() => {
+                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+                  setShowQuickGen(true);
+                }}
+                delayLongPress={400}
+                style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
+                accessibilityRole="button"
+                accessibilityLabel={`Auto-generate meals. Tap for all ${emptyDayCount} days, hold for options.`}
+              >
+                <MaterialCommunityIcons name="auto-fix" size={22} color={colors.onPrimary} />
+              </Pressable>
+            </View>
+
+            {/* Quick-gen popup on long press */}
+            <Modal visible={showQuickGen} transparent animationType="fade" onRequestClose={() => setShowQuickGen(false)}>
+              <Pressable style={styles.quickGenOverlay} onPress={() => setShowQuickGen(false)}>
+                <View style={[styles.quickGenSheet, {
+                  backgroundColor: colors.isDark ? 'rgba(30,28,25,0.95)' : 'rgba(255,255,255,0.92)',
+                  shadowColor: colors.shadow,
+                  bottom: cookBarVisible ? 220 : 160,
+                  right: Spacing.page,
+                }]}>
+                  <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm }]}>
+                    QUICK FILL
+                  </Text>
+                  {[3, 5, 7].map((n) => {
+                    const available = Math.min(n, emptyDayCount);
+                    if (available === 0) return null;
+                    return (
+                      <Pressable
+                        key={n}
+                        onPress={() => handleQuickGen(available)}
+                        style={[styles.quickGenOption, { backgroundColor: colors.surfaceContainerLow }]}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Generate ${available} days`}
+                      >
+                        <Text style={[Typography.titleMedium, { color: colors.primary }]}>{available}</Text>
+                        <Text style={[Typography.bodySmall, { color: colors.onSurface }]}>
+                          {available === emptyDayCount ? 'All empty days' : `${available} days`}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </Pressable>
+            </Modal>
+          </>
         );
       })()}
 
@@ -1125,6 +1171,28 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
+  },
+  quickGenOverlay: {
+    flex: 1,
+  },
+  quickGenSheet: {
+    position: 'absolute',
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    gap: Spacing.xs,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 12,
+    minWidth: 160,
+  },
+  quickGenOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.md,
   },
   dropdownOverlay: {
     flex: 1,
