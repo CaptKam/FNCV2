@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { GlassView } from '@/components/GlassView';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
@@ -36,6 +37,26 @@ function formatDateShort(dateStr: string): string {
   const d = new Date(dateStr);
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+interface AddToPlanButtonProps {
+  onPress: () => void;
+  recipeName: string;
+}
+
+export function AddToPlanButton({ onPress, recipeName }: AddToPlanButtonProps) {
+  const colors = useThemeColors();
+  return (
+    <Pressable
+      onPress={(e) => { e.stopPropagation(); onPress(); }}
+      style={[styles.triggerBtn, { backgroundColor: colors.primarySubtle }]}
+      accessibilityRole="button"
+      accessibilityLabel={`Add ${recipeName} to meal plan`}
+      hitSlop={4}
+    >
+      <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+    </Pressable>
+  );
 }
 
 interface AddToPlanSheetProps {
@@ -86,87 +107,89 @@ export function AddToPlanSheet({ visible, recipeName, onClose, onAdd }: AddToPla
     >
       <Pressable style={styles.overlay} onPress={handleClose}>
         <Pressable
-          style={[styles.sheet, { backgroundColor: colors.surface }]}
           onPress={(e) => e.stopPropagation()}
+          style={styles.sheetOuter}
         >
-          <View style={[styles.handle, { backgroundColor: colors.handleBar }]} />
+          <GlassView style={styles.sheet}>
+            <View style={[styles.handle, { backgroundColor: colors.handleBar }]} />
 
-          {!showDayPicker ? (
-            <>
-              <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: 4 }]}>
-                Add to Plan
-              </Text>
-              <Text style={[Typography.bodySmall, { color: colors.outline, marginBottom: Spacing.lg }]} numberOfLines={1}>
-                {recipeName}
-              </Text>
-
-              <Pressable
-                onPress={handleTonight}
-                style={[styles.optionRow, { backgroundColor: colors.surfaceContainerLow }]}
-                accessibilityRole="button"
-                accessibilityLabel="Add to tonight's plan"
-              >
-                <View style={[styles.optionIcon, { backgroundColor: colors.primarySubtle }]}>
-                  <MaterialCommunityIcons name="weather-night" size={20} color={colors.primary} />
-                </View>
-                <View style={styles.optionText}>
-                  <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Tonight</Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>Add to today's meal plan</Text>
-                </View>
-                <MaterialCommunityIcons name="chevron-right" size={20} color={colors.outline} />
-              </Pressable>
-
-              <Pressable
-                onPress={() => setShowDayPicker(true)}
-                style={[styles.optionRow, { backgroundColor: colors.surfaceContainerLow }]}
-                accessibilityRole="button"
-                accessibilityLabel="Pick a day to add recipe"
-              >
-                <View style={[styles.optionIcon, { backgroundColor: colors.primarySubtle }]}>
-                  <MaterialCommunityIcons name="calendar-plus" size={20} color={colors.primary} />
-                </View>
-                <View style={styles.optionText}>
-                  <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Pick a Day</Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>Choose from the next 14 days</Text>
-                </View>
-                <MaterialCommunityIcons name="chevron-right" size={20} color={colors.outline} />
-              </Pressable>
-            </>
-          ) : (
-            <>
-              <View style={styles.dayPickerHeader}>
-                <Pressable onPress={() => setShowDayPicker(false)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Back">
-                  <MaterialCommunityIcons name="arrow-left" size={20} color={colors.onSurface} />
-                </Pressable>
-                <Text style={[Typography.headline, { color: colors.onSurface, flex: 1 }]}>
-                  Pick a Day
+            {!showDayPicker ? (
+              <>
+                <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: 4 }]}>
+                  Add to Plan
                 </Text>
-              </View>
-              <Text style={[Typography.bodySmall, { color: colors.outline, marginBottom: Spacing.md }]} numberOfLines={1}>
-                {recipeName}
-              </Text>
-              <FlatList
-                data={planDays}
-                keyExtractor={(item) => item.date}
-                showsVerticalScrollIndicator={false}
-                style={{ maxHeight: 360 }}
-                renderItem={({ item }) => (
-                  <Pressable
-                    onPress={() => handlePickDay(item.date)}
-                    style={[styles.dayRow, { backgroundColor: colors.surfaceContainerLow }]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${item.label}, ${item.short}`}
-                  >
-                    <View>
-                      <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
-                      <Text style={[Typography.caption, { color: colors.outline }]}>{item.short}</Text>
-                    </View>
-                    <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+                <Text style={[Typography.bodySmall, { color: colors.outline, marginBottom: Spacing.lg }]} numberOfLines={1}>
+                  {recipeName}
+                </Text>
+
+                <Pressable
+                  onPress={handleTonight}
+                  style={[styles.optionRow, { backgroundColor: colors.surfaceContainerLow }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Add to tonight's plan"
+                >
+                  <View style={[styles.optionIcon, { backgroundColor: colors.primarySubtle }]}>
+                    <MaterialCommunityIcons name="weather-night" size={20} color={colors.primary} />
+                  </View>
+                  <View style={styles.optionText}>
+                    <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Tonight</Text>
+                    <Text style={[Typography.caption, { color: colors.outline }]}>Add to today's meal plan</Text>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" size={20} color={colors.outline} />
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setShowDayPicker(true)}
+                  style={[styles.optionRow, { backgroundColor: colors.surfaceContainerLow }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Pick a day to add recipe"
+                >
+                  <View style={[styles.optionIcon, { backgroundColor: colors.primarySubtle }]}>
+                    <MaterialCommunityIcons name="calendar-plus" size={20} color={colors.primary} />
+                  </View>
+                  <View style={styles.optionText}>
+                    <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Pick a Day</Text>
+                    <Text style={[Typography.caption, { color: colors.outline }]}>Choose from the next 14 days</Text>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" size={20} color={colors.outline} />
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <View style={styles.dayPickerHeader}>
+                  <Pressable onPress={() => setShowDayPicker(false)} hitSlop={12} accessibilityRole="button" accessibilityLabel="Back">
+                    <MaterialCommunityIcons name="arrow-left" size={20} color={colors.onSurface} />
                   </Pressable>
-                )}
-              />
-            </>
-          )}
+                  <Text style={[Typography.headline, { color: colors.onSurface, flex: 1 }]}>
+                    Pick a Day
+                  </Text>
+                </View>
+                <Text style={[Typography.bodySmall, { color: colors.outline, marginBottom: Spacing.md }]} numberOfLines={1}>
+                  {recipeName}
+                </Text>
+                <FlatList
+                  data={planDays}
+                  keyExtractor={(item) => item.date}
+                  showsVerticalScrollIndicator={false}
+                  style={{ maxHeight: 360 }}
+                  renderItem={({ item }) => (
+                    <Pressable
+                      onPress={() => handlePickDay(item.date)}
+                      style={[styles.dayRow, { backgroundColor: colors.surfaceContainerLow }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${item.label}, ${item.short}`}
+                    >
+                      <View>
+                        <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
+                        <Text style={[Typography.caption, { color: colors.outline }]}>{item.short}</Text>
+                      </View>
+                      <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+                    </Pressable>
+                  )}
+                />
+              </>
+            )}
+          </GlassView>
         </Pressable>
       </Pressable>
     </Modal>
@@ -174,14 +197,24 @@ export function AddToPlanSheet({ visible, recipeName, onClose, onAdd }: AddToPla
 }
 
 const styles = StyleSheet.create({
+  triggerBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'flex-end',
   },
-  sheet: {
+  sheetOuter: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    overflow: 'hidden',
+  },
+  sheet: {
     paddingHorizontal: Spacing.page,
     paddingBottom: 40,
     paddingTop: Spacing.sm,

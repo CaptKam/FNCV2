@@ -14,6 +14,7 @@ import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allerg
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { AnimatedHeart } from './AnimatedHeart';
+import { AddToPlanButton } from './AddToPlanSheet';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -127,16 +128,9 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
           </View>
         )}
         {onAdd && (
-          <Pressable
-            onPress={(e) => { e.stopPropagation(); onAdd(); }}
-            style={[styles.addBtn, { backgroundColor: colors.primarySubtle }]}
-            accessibilityRole="button"
-            accessibilityLabel={`Add ${recipe.title} to meal plan`}
-            hitSlop={4}
-          >
-            <MaterialCommunityIcons name="plus" size={16} color={colors.primary} />
-            <Text style={[Typography.labelSmall, { color: colors.primary }]}>Add to Plan</Text>
-          </Pressable>
+          <View style={styles.addBtnRow}>
+            <AddToPlanButton onPress={onAdd} recipeName={recipe.title} />
+          </View>
         )}
       </View>
     </Pressable>
@@ -202,13 +196,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: Radius.full,
   },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.full,
+  addBtnRow: {
+    alignItems: 'flex-end',
     marginTop: 2,
   },
 });

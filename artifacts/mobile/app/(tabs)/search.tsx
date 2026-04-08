@@ -27,7 +27,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
-import { AddToPlanSheet } from '@/components/AddToPlanSheet';
+import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
@@ -260,15 +260,9 @@ export default function SearchScreen() {
                   <Text style={[Typography.labelSmall, { color: colors.outline }]}>
                     {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
                   </Text>
-                  <Pressable
-                    onPress={(e) => { e.stopPropagation(); setAddSheetRecipe(recipe); }}
-                    style={[styles.addButton, { backgroundColor: colors.primarySubtle }]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Add ${recipe.title} to meal plan`}
-                  >
-                    <MaterialCommunityIcons name="plus" size={16} color={colors.primary} />
-                    <Text style={[Typography.labelSmall, { color: colors.primary }]}>Add to Plan</Text>
-                  </Pressable>
+                  <View style={styles.addButton}>
+                    <AddToPlanButton onPress={() => setAddSheetRecipe(recipe)} recipeName={recipe.title} />
+                  </View>
                 </View>
                 <Pressable
                   onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
@@ -363,12 +357,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.full,
+    alignItems: 'flex-end',
     marginTop: 4,
   },
   heartBtn: {
