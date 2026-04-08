@@ -85,7 +85,7 @@ export default function CountryDetailScreen() {
 
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            CULINARY HERITAGE
+            ABOUT THE FOOD
           </Text>
           <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.md }]}>
             {country.cuisineLabel}
@@ -157,10 +157,10 @@ export default function CountryDetailScreen() {
         {/* Signature Recipes */}
         <View style={{ paddingHorizontal: Spacing.page }}>
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            SIGNATURE RECIPES
+            RECIPES
           </Text>
           <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.md }]}>
-            {selectedRegion ? `${selectedRegion} Recipes` : 'Signature Recipes'}
+            {selectedRegion ? `${selectedRegion} Recipes` : 'Recipes'}
           </Text>
 
           {/* Region filter pill */}

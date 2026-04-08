@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -59,6 +60,27 @@ export default function CookScreen() {
 
   const checks = app.kitchenChecks;
   const setChecks = (next: boolean[]) => app.setKitchenChecks(next);
+
+  // First-time cook hint
+  const [showCookHint, setShowCookHint] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem('@fork_compass_hint_cook_seen').then((val) => {
+      if (val !== 'true') setShowCookHint(true);
+    });
+  }, []);
+
+  // Auto-dismiss after first cook session starts
+  useEffect(() => {
+    if (showCookHint && hasActiveSession) {
+      setShowCookHint(false);
+      AsyncStorage.setItem('@fork_compass_hint_cook_seen', 'true');
+    }
+  }, [hasActiveSession, showCookHint]);
+
+  const dismissCookHint = useCallback(() => {
+    setShowCookHint(false);
+    AsyncStorage.setItem('@fork_compass_hint_cook_seen', 'true');
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -138,6 +160,20 @@ export default function CookScreen() {
           </View>
         )}
 
+        {/* First-time cook hint */}
+        {showCookHint && hasTodayPlan && !hasActiveSession && (
+          <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
+            <View style={[styles.onboardingHint, { backgroundColor: colors.surfaceContainerLow }]}>
+              <Text style={[Typography.body, { color: colors.onSurface, flex: 1 }]}>
+                When you're ready, tap Start Cooking and we'll guide you through every step.
+              </Text>
+              <Pressable onPress={dismissCookHint} hitSlop={8} accessibilityRole="button" accessibilityLabel="Dismiss hint">
+                <MaterialCommunityIcons name="close" size={18} color={colors.onSurfaceVariant} />
+              </Pressable>
+            </View>
+          </View>
+        )}
+
         <View style={styles.bentoRow}>
           {heroRecipe && heroCountry && (
             <View style={[styles.dinnerPartyCard, { backgroundColor: colors.surfaceContainerLow }]}>
@@ -179,7 +215,7 @@ export default function CookScreen() {
           <View style={[styles.kitchenCheckCard, { backgroundColor: colors.surfaceContainerHighest }]}>
             <View style={styles.checkHeader}>
               <MaterialCommunityIcons name="clipboard-check-outline" size={20} color={colors.primary} />
-              <Text style={[Typography.title, { color: colors.onSurface }]}>Kitchen Check</Text>
+              <Text style={[Typography.title, { color: colors.onSurface }]}>Your Progress</Text>
             </View>
             {KITCHEN_CHECKS.map((item, idx) => (
               <Pressable
@@ -236,10 +272,10 @@ export default function CookScreen() {
               }}
               style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
               accessibilityRole="button"
-              accessibilityLabel={hasActiveSession ? 'Resume cooking' : 'Begin cooking'}
+              accessibilityLabel={hasActiveSession ? 'Continue cooking' : 'Start cooking'}
             >
               <Text style={[Typography.titleMedium, { color: colors.onPrimary, letterSpacing: -0.3 }]}>
-                {hasActiveSession ? 'Resume the Journey' : 'Begin the Journey'}
+                {hasActiveSession ? 'Continue Cooking' : 'Start Cooking'}
               </Text>
               <MaterialCommunityIcons name="arrow-right" size={22} color={colors.onPrimary} />
             </Pressable>
@@ -250,7 +286,7 @@ export default function CookScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Review dinner party"
               >
-                <Text style={[Typography.titleSmall, { color: colors.primary }]}>Review Party</Text>
+                <Text style={[Typography.titleSmall, { color: colors.primary }]}>Review Party Details</Text>
               </Pressable>
             )}
             <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant, opacity: 0.6 }]}>
@@ -277,7 +313,7 @@ export default function CookScreen() {
 
         <View style={styles.levelSection}>
           <View style={styles.levelHeader}>
-            <Text style={[Typography.labelLarge, { color: colors.outline }]}>Your Cooking Journey</Text>
+            <Text style={[Typography.labelLarge, { color: colors.outline }]}>Your Progress</Text>
             <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{xp} points</Text>
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface }]}>{levelName}</Text>
@@ -287,12 +323,15 @@ export default function CookScreen() {
               <View style={[styles.progressFill, { backgroundColor: colors.primary, width: `${progress * 100}%` }]} />
             </View>
           </View>
+          <Text style={[Typography.caption, { color: colors.onSurfaceVariant, marginTop: Spacing.xs }]}>
+            Cook recipes to earn points and level up
+          </Text>
         </View>
 
         <View style={styles.techSection}>
           <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
-            <Text style={[Typography.labelLarge, { color: colors.outline }]}>TECHNIQUE LIBRARY</Text>
-            <Text style={[Typography.headline, { color: colors.onSurface }]}>Sharpen Your Craft</Text>
+            <Text style={[Typography.labelLarge, { color: colors.outline }]}>COOKING TIPS</Text>
+            <Text style={[Typography.headline, { color: colors.onSurface }]}>Improve Your Skills</Text>
           </View>
           <ScrollView
             horizontal
@@ -560,5 +599,12 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  onboardingHint: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: Radius.lg,
   },
 });

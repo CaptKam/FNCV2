@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
 import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -100,6 +101,18 @@ export default function GroceryScreen() {
 
   const [activeTab, setActiveTab] = useState<'online' | 'instore'>('online');
   const [manualItemName, setManualItemName] = useState('');
+  const [showMealPlanHint, setShowMealPlanHint] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem('@fork_compass_hint_grocery_seen').then((val) => {
+      if (val !== 'true') setShowMealPlanHint(true);
+    });
+  }, []);
+
+  const dismissMealPlanHint = useCallback(() => {
+    setShowMealPlanHint(false);
+    AsyncStorage.setItem('@fork_compass_hint_grocery_seen', 'true');
+  }, []);
 
   const [servingsOverrides, setServingsOverrides] = useState<Record<string, number>>({});
 
@@ -258,7 +271,7 @@ export default function GroceryScreen() {
       >
         <View style={styles.titleSection}>
           <Text style={[Typography.labelLarge, { color: colors.outline, textAlign: 'center', marginBottom: Spacing.xs }]}>
-            WEEKLY PROVISIONS
+            SHOPPING LIST
           </Text>
           <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center' }]}>
             My Groceries
@@ -420,6 +433,28 @@ export default function GroceryScreen() {
             </ScrollView>
           </View>
         )}
+
+        {/* Meal plan hint — shown once */}
+        {showMealPlanHint && recipeCards.length > 0 && (
+          <View style={[styles.mealPlanHint, { paddingHorizontal: Spacing.page }]}>
+            <View style={[styles.mealPlanHintInner, { backgroundColor: colors.surfaceContainerLow }]}>
+              <MaterialCommunityIcons name="information-outline" size={16} color={colors.onSurfaceVariant} />
+              <Text style={[Typography.caption, { color: colors.onSurfaceVariant, flex: 1 }]}>
+                These ingredients were added from your meal plan
+              </Text>
+              <Pressable onPress={dismissMealPlanHint} hitSlop={8} accessibilityRole="button" accessibilityLabel="Dismiss hint">
+                <MaterialCommunityIcons name="close" size={16} color={colors.onSurfaceVariant} />
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {/* Toggle helper text */}
+        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
+          <Text style={[Typography.caption, { color: colors.onSurfaceVariant, textAlign: 'center' }]}>
+            {activeTab === 'online' ? 'Order ingredients from your favorite store' : 'Check items off as you shop'}
+          </Text>
+        </View>
 
         {activeTab === 'online' && (
           <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
@@ -847,5 +882,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: 6,
     borderRadius: Radius.full,
+  },
+  mealPlanHint: {
+    marginBottom: Spacing.md,
+  },
+  mealPlanHintInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.md,
   },
 });

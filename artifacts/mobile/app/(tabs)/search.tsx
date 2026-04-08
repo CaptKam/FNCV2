@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
+import * as Haptics from 'expo-haptics';
 import {
   View,
   Text,
@@ -35,10 +36,22 @@ export default function SearchScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { allergens: userAllergens } = useApp();
+  const app = useApp();
+  const { allergens: userAllergens } = app;
   const [query, setQuery] = useState('');
   const [activeMood, setActiveMood] = useState('All Moods');
   const [excludedAllergens, setExcludedAllergens] = useState<AllergenType[]>([]);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleAddToToday = useCallback((recipe: typeof recipes[0]) => {
+    const todayDate = new Date().toISOString().split('T')[0];
+    app.addCourseToDay(todayDate, 'main', recipe);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    setToastMessage(`Added ${recipe.title} to today's plan`);
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    toastTimeout.current = setTimeout(() => setToastMessage(null), 2500);
+  }, [app]);
 
   const toggleAllergenFilter = useCallback((a: AllergenType) => {
     setExcludedAllergens((prev) =>
@@ -235,10 +248,10 @@ export default function SearchScreen() {
                   {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
                 </Text>
                 <Pressable
-                  onPress={() => router.push(`/recipe/${recipe.id}`)}
+                  onPress={(e) => { e.stopPropagation(); handleAddToToday(recipe); }}
                   style={styles.addButton}
                   accessibilityRole="button"
-                  accessibilityLabel={`Add ${recipe.title}`}
+                  accessibilityLabel={`Add ${recipe.title} to today's plan`}
                 >
                   <Text style={[Typography.titleSmall, { color: colors.primary }]}>ADD +</Text>
                 </Pressable>
@@ -253,6 +266,14 @@ export default function SearchScreen() {
         </View>
         )}
       </ScrollView>
+
+      {/* Toast notification */}
+      {toastMessage && (
+        <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
+          <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
+          <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>{toastMessage}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -335,5 +356,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.md,
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 100,
+    left: Spacing.page,
+    right: Spacing.page,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 14,
+    borderRadius: Radius.full,
   },
 });
