@@ -223,7 +223,7 @@ export default function GroceryScreen() {
         <HeaderBar />
         <View style={styles.emptyRoot}>
           <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
-            <MaterialCommunityIcons name="cart-outline" size={48} color={colors.primary} />
+            <MaterialCommunityIcons name="cart-outline" size={28} color={colors.outlineVariant} />
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
             No ingredients yet
@@ -386,7 +386,7 @@ export default function GroceryScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={`Remove ${recipe.title} from grocery list`}
                       >
-                        <MaterialCommunityIcons name="close" size={14} color={colors.textOnImage} />
+                        <MaterialCommunityIcons name="close" size={16} color={colors.textOnImage} />
                       </Pressable>
                     </View>
                     <View style={styles.recipeCardContent}>
@@ -401,10 +401,10 @@ export default function GroceryScreen() {
                           accessibilityRole="button"
                           accessibilityLabel={`Decrease servings for ${recipe.title}`}
                         >
-                          <MaterialCommunityIcons name="minus" size={14} color={colors.primary} />
+                          <MaterialCommunityIcons name="minus" size={16} color={colors.primary} />
                         </Pressable>
                         <View style={styles.stepperCount}>
-                          <MaterialCommunityIcons name="account-outline" size={12} color={colors.outline} />
+                          <MaterialCommunityIcons name="account-outline" size={16} color={colors.outline} />
                           <Text style={[Typography.caption, { color: colors.onSurface }]}>
                             {currentServings}
                           </Text>
@@ -415,7 +415,7 @@ export default function GroceryScreen() {
                           accessibilityRole="button"
                           accessibilityLabel={`Increase servings for ${recipe.title}`}
                         >
-                          <MaterialCommunityIcons name="plus" size={14} color={colors.primary} />
+                          <MaterialCommunityIcons name="plus" size={16} color={colors.primary} />
                         </Pressable>
                       </View>
                       <Pressable
@@ -526,7 +526,7 @@ export default function GroceryScreen() {
           <View key={group.key} style={styles.categorySection}>
             <View style={styles.categoryHeader}>
               <View style={[styles.categoryIconCircle, { backgroundColor: `${group.color}20` }]}>
-                <MaterialCommunityIcons name={group.icon} size={18} color={group.color} />
+                <MaterialCommunityIcons name={group.icon} size={20} color={group.color} />
               </View>
               <Text style={[Typography.headline, { color: colors.onSurface, flex: 1 }]}>
                 {group.label}

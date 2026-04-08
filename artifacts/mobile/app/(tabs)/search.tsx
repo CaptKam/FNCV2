@@ -10,7 +10,6 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -27,6 +26,8 @@ import { ALLERGEN_INFO, AllergenType } from '@/utils/allergens';
 import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { AnimatedListItem } from '@/components/AnimatedListItem';
+import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
@@ -111,7 +112,7 @@ export default function SearchScreen() {
 
         <View style={[styles.searchContainer, { paddingHorizontal: Spacing.page }]}>
           <View style={[styles.searchInput, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Feather name="search" size={20} color={colors.outline} />
+            <MaterialCommunityIcons name="magnify" size={20} color={colors.outline} />
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -184,7 +185,7 @@ export default function SearchScreen() {
                   >
                     <MaterialCommunityIcons
                       name={isActive ? 'close-circle' : info.icon}
-                      size={14}
+                      size={16}
                       color={isActive ? colors.error : colors.onSurfaceVariant}
                     />
                     <Text style={[Typography.caption, { color: isActive ? colors.error : colors.onSurfaceVariant }]}>
@@ -209,7 +210,7 @@ export default function SearchScreen() {
         {query.trim().length > 0 && filteredRecipes.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="magnify" size={32} color={colors.onSurfaceVariant} />
+              <MaterialCommunityIcons name="magnify" size={28} color={colors.outlineVariant} />
             </View>
             <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
               No matches found
@@ -228,53 +229,57 @@ export default function SearchScreen() {
           </View>
         ) : (
         <View style={styles.grid}>
-          {filteredRecipes.map((recipe) => (
-            <Pressable
-              key={recipe.id}
-              onPress={() => router.push(`/recipe/${recipe.id}`)}
-              style={[styles.card, { width: CARD_WIDTH }]}
-              accessibilityRole="button"
-              accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
-            >
-              <Image
-                source={{ uri: recipe.image }}
-                style={styles.cardImage}
-                contentFit="cover"
-                transition={300}
-                accessibilityLabel={recipe.title}
-              />
-              <View style={styles.cardContent}>
-                <Text style={[Typography.title, { color: colors.onSurface }]} numberOfLines={2}>
-                  {recipe.title}
-                </Text>
-                <Text style={[Typography.labelSmall, { color: colors.outline }]}>
-                  {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
-                </Text>
-                <Pressable
-                  onPress={(e) => { e.stopPropagation(); handleAddToToday(recipe); }}
-                  style={styles.addButton}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Add ${recipe.title} to today's plan`}
-                >
-                  <Text style={[Typography.titleSmall, { color: colors.primary }]}>ADD +</Text>
-                </Pressable>
-              </View>
+          {filteredRecipes.map((recipe, index) => (
+            <AnimatedListItem key={recipe.id} index={index}>
               <Pressable
-                onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
-                style={styles.heartBtn}
-                hitSlop={8}
+                onPress={() => router.push(`/recipe/${recipe.id}`)}
+                style={[styles.card, { width: CARD_WIDTH }]}
                 accessibilityRole="button"
-                accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from saved` : `Save ${recipe.title}`}
+                accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
               >
-                <View style={styles.heartGlass}>
-                  <MaterialCommunityIcons
-                    name={isBookmarked(recipe.id) ? 'heart' : 'heart-outline'}
-                    size={OVERLAY_BUTTON.iconSize}
-                    color={isBookmarked(recipe.id) ? colors.primary : OVERLAY_BUTTON.iconColor}
-                  />
+                <Image
+                  source={{ uri: recipe.image }}
+                  style={styles.cardImage}
+                  contentFit="cover"
+                  transition={300}
+                  accessibilityLabel={recipe.title}
+                />
+                <View style={styles.cardContent}>
+                  <Text style={[Typography.title, { color: colors.onSurface }]} numberOfLines={2}>
+                    {recipe.title}
+                  </Text>
+                  <Text style={[Typography.labelSmall, { color: colors.outline }]}>
+                    {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
+                  </Text>
+                  <Pressable
+                    onPress={(e) => { e.stopPropagation(); handleAddToToday(recipe); }}
+                    style={styles.addButton}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add ${recipe.title} to today's plan`}
+                  >
+                    <Text style={[Typography.titleSmall, { color: colors.primary }]}>ADD +</Text>
+                  </Pressable>
                 </View>
+                <Pressable
+                  onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+                  style={styles.heartBtn}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+                >
+                  <GlassView style={styles.heartGlass}>
+                    <AnimatedHeart
+                      filled={isBookmarked(recipe.id)}
+                      onToggle={() => toggleBookmark(recipe.id)}
+                      size={16}
+                      filledColor={colors.error}
+                      outlineColor={colors.textOnImage}
+                      hitSlop={0}
+                    />
+                  </GlassView>
+                </Pressable>
               </Pressable>
-            </Pressable>
+            </AnimatedListItem>
           ))}
         </View>
         )}

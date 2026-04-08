@@ -61,21 +61,6 @@ const COURSE_SLOTS: CourseSlot[] = [
   { label: 'Dessert', icon: 'ice-cream', placeholder: 'Sweet finish...', courseType: 'dessert' },
 ];
 
-function getDayNutrition(day: ItineraryDay): NutritionInfo | null {
-  const meals = [day.courses.appetizer, day.courses.main, day.courses.dessert].filter(Boolean) as PlannedMeal[];
-  if (meals.length === 0) return null;
-  const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
-  for (const meal of meals) {
-    const recipe = allRecipes.find((r) => r.id === meal.recipeId);
-    if (recipe?.nutrition) {
-      totals.calories += recipe.nutrition.calories;
-      totals.protein += recipe.nutrition.protein;
-      totals.carbs += recipe.nutrition.carbs;
-      totals.fat += recipe.nutrition.fat;
-    }
-  }
-  return totals;
-}
 
 type WeekOption = 'this-week' | 'next-week' | 'past';
 
@@ -156,7 +141,7 @@ function MealCard({
             {meal.recipeName}
           </Text>
           <View style={styles.mealMeta}>
-            <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
+            <MaterialCommunityIcons name="clock-outline" size={16} color={colors.outline} />
             <Text style={[Typography.caption, { color: colors.outline }]}>
               {formatCookTime(meal.cookTime)}
             </Text>
@@ -282,7 +267,7 @@ export default function PlanScreen() {
   const renderGroceryBanner = () => (
     <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
       <View style={[styles.groceryBanner, { backgroundColor: colors.primaryTint }]}>
-        <MaterialCommunityIcons name="basket" size={22} color={colors.primary} />
+        <MaterialCommunityIcons name="basket" size={20} color={colors.primary} />
         <View style={styles.groceryTextWrap}>
           <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>
             Grocery List Update
@@ -346,7 +331,7 @@ export default function PlanScreen() {
                 {isDailyView && selectedDate === todayISO && (
                   <Text style={[Typography.title, { color: colors.primary }]}> · Today</Text>
                 )}
-                <MaterialCommunityIcons name="chevron-down" size={18} color={colors.primary} />
+                <MaterialCommunityIcons name="chevron-down" size={20} color={colors.primary} />
               </View>
               {isDailyView ? (
                 <Text style={[Typography.caption, { color: colors.primary, marginTop: Spacing.xs }]}>
@@ -429,7 +414,7 @@ export default function PlanScreen() {
             <Pressable onPress={() => setMultipleMeals(!multipleMeals)} accessibilityRole="switch" accessibilityLabel="Multiple meals" accessibilityState={{ checked: multipleMeals }}>
               <MaterialCommunityIcons
                 name={multipleMeals ? 'toggle-switch' : 'toggle-switch-off-outline'}
-                size={36}
+                size={40}
                 color={multipleMeals ? colors.primary : colors.outlineVariant}
               />
             </Pressable>
@@ -446,7 +431,7 @@ export default function PlanScreen() {
                 </Text>
               </View>
               <Pressable onPress={dismissPlanHint} hitSlop={8} accessibilityRole="button" accessibilityLabel="Dismiss hint">
-                <MaterialCommunityIcons name="close" size={18} color={colors.onSurfaceVariant} />
+                <MaterialCommunityIcons name="close" size={20} color={colors.onSurfaceVariant} />
               </Pressable>
             </View>
           </View>
@@ -548,7 +533,7 @@ export default function PlanScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={selectedDay?.hasDinnerParty ? 'Disable dinner party' : 'Enable dinner party'}
                       >
-                        <MaterialCommunityIcons name="account-group" size={14} color={colors.primary} />
+                        <MaterialCommunityIcons name="account-group" size={16} color={colors.primary} />
                         <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.3 }]}>
                           Dinner Party
                         </Text>
@@ -635,7 +620,7 @@ export default function PlanScreen() {
                                 accessibilityRole="button"
                                 accessibilityLabel={`Add ${course.label}`}
                               >
-                                <MaterialCommunityIcons name="plus" size={18} color={colors.primary} />
+                                <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
                               </Pressable>
                             </View>
                           </View>
@@ -767,33 +752,6 @@ export default function PlanScreen() {
                         </Pressable>
                       </View>
                     )}
-                    {(() => {
-                      const dayNutrition = getDayNutrition(day);
-                      if (!dayNutrition) return null;
-                      return (
-                        <View style={[styles.dayNutritionRow, { backgroundColor: colors.surfaceContainerLow }]}>
-                          <View style={styles.dayNutritionItem}>
-                            <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{dayNutrition.calories}</Text>
-                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>kcal</Text>
-                          </View>
-                          <View style={[styles.dayNutritionDot, { backgroundColor: colors.outlineVariant }]} />
-                          <View style={styles.dayNutritionItem}>
-                            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{dayNutrition.protein}g</Text>
-                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>P</Text>
-                          </View>
-                          <View style={[styles.dayNutritionDot, { backgroundColor: colors.outlineVariant }]} />
-                          <View style={styles.dayNutritionItem}>
-                            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{dayNutrition.carbs}g</Text>
-                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>C</Text>
-                          </View>
-                          <View style={[styles.dayNutritionDot, { backgroundColor: colors.outlineVariant }]} />
-                          <View style={styles.dayNutritionItem}>
-                            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{dayNutrition.fat}g</Text>
-                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>F</Text>
-                          </View>
-                        </View>
-                      );
-                    })()}
                   </View>
                 </View>
               );
@@ -869,7 +827,7 @@ export default function PlanScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Auto-plan meals for empty days`}
               >
-                <MaterialCommunityIcons name="auto-fix" size={22} color={colors.onPrimary} />
+                <MaterialCommunityIcons name="auto-fix" size={20} color={colors.onPrimary} />
                 <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontSize: 9, fontWeight: '700', marginTop: 1 }]}>Auto</Text>
               </Pressable>
             </View>
@@ -953,7 +911,7 @@ export default function PlanScreen() {
                       {weekLabels[option]}
                     </Text>
                     {isActive && (
-                      <MaterialCommunityIcons name="check" size={18} color={colors.primary} />
+                      <MaterialCommunityIcons name="check" size={20} color={colors.primary} />
                     )}
                   </Pressable>
                 );
@@ -976,7 +934,7 @@ export default function PlanScreen() {
                 </Text>
                 <MaterialCommunityIcons
                   name={!isDailyView ? 'toggle-switch' : 'toggle-switch-off-outline'}
-                  size={32}
+                  size={40}
                   color={!isDailyView ? colors.primary : colors.outlineVariant}
                 />
               </Pressable>
@@ -996,7 +954,7 @@ export default function PlanScreen() {
                 </Text>
                 <MaterialCommunityIcons
                   name={isDailyView ? 'toggle-switch' : 'toggle-switch-off-outline'}
-                  size={32}
+                  size={40}
                   color={isDailyView ? colors.primary : colors.outlineVariant}
                 />
               </Pressable>

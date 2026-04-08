@@ -260,7 +260,7 @@ export default function DinnerSetupScreen() {
         {/* Header */}
         <View style={styles.headerRow}>
           <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back">
-            <View style={styles.backBtn}>
+            <View style={[styles.backBtn, { backgroundColor: OVERLAY_BUTTON.background, borderWidth: OVERLAY_BUTTON.borderWidth, borderColor: OVERLAY_BUTTON.borderColor }]}>
               <MaterialCommunityIcons name="arrow-left" size={OVERLAY_BUTTON.iconSize} color={OVERLAY_BUTTON.iconColor} />
             </View>
           </Pressable>
@@ -281,7 +281,7 @@ export default function DinnerSetupScreen() {
               return (
                 <View key={courseType} style={[styles.menuRow, { backgroundColor: colors.surfaceContainerLow }]}>
                   <View style={[styles.menuImagePlaceholder, { backgroundColor: colors.surfaceContainerHigh }]}>
-                    <MaterialCommunityIcons name="silverware-variant" size={24} color={colors.outlineVariant} />
+                    <MaterialCommunityIcons name="silverware-variant" size={28} color={colors.outlineVariant} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[Typography.labelSmall, { color: colors.outline }]}>{courseType.toUpperCase()}</Text>
@@ -330,7 +330,7 @@ export default function DinnerSetupScreen() {
 
           <View style={[styles.timeCard, { backgroundColor: colors.surfaceContainerHigh }]}>
             <Pressable onPress={() => adjustTime(-15)} style={styles.timeBtn} accessibilityRole="button" accessibilityLabel="Earlier">
-              <MaterialCommunityIcons name="minus" size={22} color={colors.primary} />
+              <MaterialCommunityIcons name="minus" size={20} color={colors.primary} />
             </Pressable>
             <View style={styles.timeDisplay}>
               <Text style={[Typography.displayMedium, { color: colors.onSurface, fontSize: 32 }]}>
@@ -338,7 +338,7 @@ export default function DinnerSetupScreen() {
               </Text>
             </View>
             <Pressable onPress={() => adjustTime(15)} style={styles.timeBtn} accessibilityRole="button" accessibilityLabel="Later">
-              <MaterialCommunityIcons name="plus" size={22} color={colors.primary} />
+              <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
             </Pressable>
           </View>
           <Text style={[Typography.body, { color: colors.primary, textAlign: 'center', marginTop: Spacing.md }]}>
@@ -391,7 +391,7 @@ export default function DinnerSetupScreen() {
             accessibilityRole="button"
             accessibilityLabel="Add guest"
           >
-            <MaterialCommunityIcons name="account-plus" size={18} color={colors.primary} />
+            <MaterialCommunityIcons name="account-plus" size={20} color={colors.primary} />
             <Text style={[Typography.titleSmall, { color: colors.primary }]}>Add Guest</Text>
           </Pressable>
 

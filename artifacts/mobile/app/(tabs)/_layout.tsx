@@ -1,18 +1,70 @@
 import { Tabs } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useMemo } from "react";
-import { Platform, StyleSheet, View, useWindowDimensions } from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { StyleSheet, View } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  useReducedMotion,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassView } from "@/components/GlassView";
 import { useThemeColors } from "@/hooks/useThemeColors";
 import { Radius } from "@/constants/radius";
-import { Shadows } from "@/constants/shadows";
 import { useApp } from "@/context/AppContext";
 
 const TAB_BAR_HEIGHT = 64;
+const ICON_SPRING = { damping: 16, stiffness: 260, mass: 0.6 };
+
+function AnimatedIcon({
+  name,
+  color,
+  focused,
+  colors,
+}: {
+  name: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  color: string;
+  focused: boolean;
+  colors: ReturnType<typeof useThemeColors>;
+}) {
+  const scale = useSharedValue(focused ? 1.1 : 1);
+  const bgOpacity = useSharedValue(focused ? 1 : 0);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (reduceMotion) {
+      scale.value = focused ? 1.1 : 1;
+      bgOpacity.value = focused ? 1 : 0;
+      return;
+    }
+    scale.value = withSpring(focused ? 1.1 : 1, ICON_SPRING);
+    bgOpacity.value = withSpring(focused ? 1 : 0, ICON_SPRING);
+  }, [focused]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const bgStyle = useAnimatedStyle(() => ({
+    opacity: bgOpacity.value,
+  }));
+
+  return (
+    <Animated.View style={[styles.iconWrap, animStyle]}>
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: colors.primaryMuted, borderRadius: Radius.full },
+          bgStyle,
+        ]}
+      />
+      <MaterialCommunityIcons name={name} size={24} color={color} />
+    </Animated.View>
+  );
+}
 
 export default function TabLayout() {
-  const { width: SCREEN_WIDTH } = useWindowDimensions();
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const app = useApp();
@@ -45,9 +97,7 @@ export default function TabLayout() {
           elevation: 0,
         },
         tabBarBackground: () => (
-          <GlassView
-            style={StyleSheet.absoluteFill}
-          />
+          <GlassView style={StyleSheet.absoluteFill} />
         ),
         tabBarItemStyle: {
           paddingTop: 6,
@@ -60,14 +110,7 @@ export default function TabLayout() {
           title: "Discover",
           tabBarAccessibilityLabel: "Discover tab",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="compass-outline" size={24} color={color} />
-            </View>
+            <AnimatedIcon name="compass-outline" color={color} focused={focused} colors={colors} />
           ),
         }}
       />
@@ -77,14 +120,7 @@ export default function TabLayout() {
           title: "Search",
           tabBarAccessibilityLabel: "Search tab",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="magnify" size={24} color={color} />
-            </View>
+            <AnimatedIcon name="magnify" color={color} focused={focused} colors={colors} />
           ),
         }}
       />
@@ -94,14 +130,7 @@ export default function TabLayout() {
           title: "Plan",
           tabBarAccessibilityLabel: "Plan tab",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="calendar-month-outline" size={24} color={color} />
-            </View>
+            <AnimatedIcon name="calendar-month-outline" color={color} focused={focused} colors={colors} />
           ),
         }}
       />
@@ -113,14 +142,7 @@ export default function TabLayout() {
           tabBarBadge: groceryBadgeCount > 0 ? groceryBadgeCount : undefined,
           tabBarBadgeStyle: { backgroundColor: colors.primary, color: colors.onPrimary, fontSize: 10 },
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="cart-outline" size={24} color={color} />
-            </View>
+            <AnimatedIcon name="cart-outline" color={color} focused={focused} colors={colors} />
           ),
         }}
       />
@@ -130,14 +152,7 @@ export default function TabLayout() {
           title: "Cook",
           tabBarAccessibilityLabel: "Cook tab",
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={[
-                styles.iconWrap,
-                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
-              ]}
-            >
-              <MaterialCommunityIcons name="chef-hat" size={24} color={color} />
-            </View>
+            <AnimatedIcon name="chef-hat" color={color} focused={focused} colors={colors} />
           ),
         }}
       />

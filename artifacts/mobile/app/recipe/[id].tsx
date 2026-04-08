@@ -2,10 +2,10 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal, FlatList } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
@@ -98,14 +98,6 @@ export default function RecipeDetailScreen() {
   }
 
   const currentServings = servings;
-  const scaledNutrition = recipe.nutrition
-    ? {
-        calories: Math.round(recipe.nutrition.calories * currentServings),
-        protein: Math.round(recipe.nutrition.protein * currentServings),
-        carbs: Math.round(recipe.nutrition.carbs * currentServings),
-        fat: Math.round(recipe.nutrition.fat * currentServings),
-      }
-    : null;
   const recipeAllergens = recipe.allergens as AllergenType[];
   const dietaryConflicts = useMemo(
     () => getDietaryConflicts(recipeAllergens, app.dietaryFlags),
@@ -155,27 +147,17 @@ export default function RecipeDetailScreen() {
         transparent
         showBack
         rightAction={
-          <Pressable
-            onPress={() => toggleBookmark(recipe.id)}
-            style={{
-              width: OVERLAY_BUTTON.size,
-              height: OVERLAY_BUTTON.size,
-              borderRadius: 20,
-              backgroundColor: OVERLAY_BUTTON.background,
-              borderWidth: OVERLAY_BUTTON.borderWidth,
-              borderColor: OVERLAY_BUTTON.borderColor,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-          >
-            <MaterialCommunityIcons
-              name={isSaved ? 'heart' : 'heart-outline'}
-              size={20}
-              color={isSaved ? colors.error : OVERLAY_BUTTON.iconColor}
+          <View style={{ width: OVERLAY_BUTTON.size, height: OVERLAY_BUTTON.size, borderRadius: 20, backgroundColor: OVERLAY_BUTTON.background, borderWidth: OVERLAY_BUTTON.borderWidth, borderColor: OVERLAY_BUTTON.borderColor, alignItems: 'center', justifyContent: 'center' }}>
+            <AnimatedHeart
+              filled={isSaved}
+              onToggle={() => toggleBookmark(recipe.id)}
+              size={OVERLAY_BUTTON.iconSize}
+              filledColor={colors.error}
+              outlineColor={OVERLAY_BUTTON.iconColor}
+              accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+              hitSlop={12}
             />
-          </Pressable>
+          </View>
         }
       />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
@@ -203,81 +185,69 @@ export default function RecipeDetailScreen() {
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.lg }}>
           <View style={styles.statsRow}>
             <View style={styles.stat}>
-              <Feather name="clock" size={16} color={colors.outline} />
+              <MaterialCommunityIcons name="clock-outline" size={16} color={colors.outline} />
               <Text style={[Typography.caption, { color: colors.outline }]}>Prep {formatCookTime(recipe.prepTime)}</Text>
             </View>
             <View style={styles.stat}>
-              <Feather name="thermometer" size={16} color={colors.outline} />
+              <MaterialCommunityIcons name="thermometer" size={16} color={colors.outline} />
               <Text style={[Typography.caption, { color: colors.outline }]}>Cook {formatCookTime(recipe.cookTime)}</Text>
             </View>
             <View style={styles.stat}>
-              <Feather name="bar-chart-2" size={16} color={colors.outline} />
+              <MaterialCommunityIcons name="chart-bar" size={16} color={colors.outline} />
               <Text style={[Typography.caption, { color: colors.outline }]}>{recipe.difficulty}</Text>
             </View>
             <View style={styles.stat}>
-              <Feather name="users" size={16} color={colors.outline} />
+              <MaterialCommunityIcons name="account-group-outline" size={16} color={colors.outline} />
               <Text style={[Typography.caption, { color: colors.outline }]}>{currentServings}</Text>
             </View>
           </View>
 
+          {recipe.nutrition && (
+            <View style={[styles.nutritionRow, { backgroundColor: colors.surfaceContainerLow }]}>
+              <View style={styles.nutritionItem}>
+                <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{recipe.nutrition.calories}</Text>
+                <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>kcal</Text>
+              </View>
+              <View style={[styles.nutritionDot, { backgroundColor: colors.outlineVariant }]} />
+              <View style={styles.nutritionItem}>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{recipe.nutrition.protein}g</Text>
+                <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>P</Text>
+              </View>
+              <View style={[styles.nutritionDot, { backgroundColor: colors.outlineVariant }]} />
+              <View style={styles.nutritionItem}>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{recipe.nutrition.carbs}g</Text>
+                <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>C</Text>
+              </View>
+              <View style={[styles.nutritionDot, { backgroundColor: colors.outlineVariant }]} />
+              <View style={styles.nutritionItem}>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{recipe.nutrition.fat}g</Text>
+                <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>F</Text>
+              </View>
+            </View>
+          )}
+
           <View style={styles.servingsAdjuster}>
             <Pressable
               onPress={() => { if (currentServings > 1) setServings(currentServings - 1); }}
-              style={[styles.servingBtn, { borderColor: colors.primary, opacity: currentServings <= 1 ? 0.3 : 1 }]}
+              style={[styles.servingBtn, { backgroundColor: 'rgba(30,25,20,0.85)', opacity: currentServings <= 1 ? 0.3 : 1 }]}
               accessibilityRole="button"
               accessibilityLabel="Decrease servings"
             >
-              <Feather name="minus" size={18} color={colors.primary} />
+              <MaterialCommunityIcons name="minus" size={20} color="#FFFFFF" />
             </Pressable>
             <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
               {currentServings} servings
             </Text>
             <Pressable
               onPress={() => setServings(currentServings + 1)}
-              style={[styles.servingBtn, { borderColor: colors.primary }]}
+              style={[styles.servingBtn, { backgroundColor: 'rgba(30,25,20,0.85)' }]}
               accessibilityRole="button"
               accessibilityLabel="Increase servings"
             >
-              <Feather name="plus" size={18} color={colors.primary} />
+              <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
             </Pressable>
           </View>
 
-          {scaledNutrition && (
-            <View style={[styles.nutritionPanel, { backgroundColor: colors.surfaceContainerLow }]}>
-              <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1, marginBottom: Spacing.sm }]}>
-                NUTRITION · {currentServings} {currentServings === 1 ? 'SERVING' : 'SERVINGS'}
-              </Text>
-              <View style={styles.nutritionRow}>
-                <View style={styles.nutritionItem}>
-                  <Text style={[Typography.headlineLarge, { color: colors.primary, fontSize: 22 }]}>
-                    {scaledNutrition.calories}
-                  </Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>kcal</Text>
-                </View>
-                <View style={[styles.nutritionDivider, { backgroundColor: colors.outlineVariant }]} />
-                <View style={styles.nutritionItem}>
-                  <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
-                    {scaledNutrition.protein}g
-                  </Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>protein</Text>
-                </View>
-                <View style={[styles.nutritionDivider, { backgroundColor: colors.outlineVariant }]} />
-                <View style={styles.nutritionItem}>
-                  <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
-                    {scaledNutrition.carbs}g
-                  </Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>carbs</Text>
-                </View>
-                <View style={[styles.nutritionDivider, { backgroundColor: colors.outlineVariant }]} />
-                <View style={styles.nutritionItem}>
-                  <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
-                    {scaledNutrition.fat}g
-                  </Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>fat</Text>
-                </View>
-              </View>
-            </View>
-          )}
 
           {recipeAllergens.length > 0 && (
             <View style={styles.allergenSection}>
@@ -302,7 +272,7 @@ export default function RecipeDetailScreen() {
                     >
                       <MaterialCommunityIcons
                         name={info.icon}
-                        size={14}
+                        size={16}
                         color={isUserAllergen ? colors.error : colors.onSurfaceVariant}
                       />
                       <Text
@@ -335,7 +305,7 @@ export default function RecipeDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Add to meal plan"
           >
-            <MaterialCommunityIcons name="calendar-plus" size={18} color={colors.onPrimary} />
+            <MaterialCommunityIcons name="calendar-plus" size={20} color={colors.onPrimary} />
             <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Add to Plan</Text>
           </Pressable>
 
@@ -411,7 +381,7 @@ export default function RecipeDetailScreen() {
                             <View style={[styles.subButtonPill, { backgroundColor: isSubExpanded ? colors.primary : 'rgba(30, 25, 20, 0.75)' }]}>
                               <MaterialCommunityIcons
                                 name="swap-horizontal"
-                                size={14}
+                                size={16}
                                 color="#FFFFFF"
                               />
                               <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>
@@ -423,7 +393,7 @@ export default function RecipeDetailScreen() {
                       </Pressable>
                       {subs && subs.length > 0 && isSubExpanded && (
                         <View style={[styles.substitutionHint, { backgroundColor: colors.surfaceContainerLow }]}>
-                          <MaterialCommunityIcons name="swap-horizontal" size={14} color={colors.primary} />
+                          <MaterialCommunityIcons name="swap-horizontal" size={16} color={colors.primary} />
                           <View style={{ flex: 1 }}>
                             {subs.map((sub, si) => (
                               <Text key={si} style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
@@ -477,7 +447,7 @@ export default function RecipeDetailScreen() {
                   </Text>
                   {step.duration && (
                     <View style={styles.timerRow}>
-                      <Feather name="clock" size={12} color={colors.outline} />
+                      <MaterialCommunityIcons name="clock-outline" size={16} color={colors.outline} />
                       <Text style={[Typography.caption, { color: colors.outline }]}>
                         {step.duration} min
                       </Text>
@@ -515,7 +485,7 @@ export default function RecipeDetailScreen() {
           accessibilityRole="button"
           accessibilityLabel={`Start cooking ${recipe.title}`}
         >
-          <Feather name="play" size={20} color={colors.onPrimary} />
+          <MaterialCommunityIcons name="play" size={20} color={colors.onPrimary} />
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
         </Pressable>
       </GlassView>
@@ -619,6 +589,25 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   stat: { alignItems: 'center', gap: 4 },
+  nutritionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.md,
+    marginBottom: Spacing.md,
+  },
+  nutritionItem: {
+    alignItems: 'center',
+    gap: 1,
+  },
+  nutritionDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+  },
   servingsAdjuster: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -629,7 +618,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: Radius.full,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -712,25 +700,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
     borderRadius: Radius.full,
-  },
-  nutritionPanel: {
-    marginTop: Spacing.lg,
-    padding: Spacing.md,
-    borderRadius: Radius.lg,
-  },
-  nutritionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-  },
-  nutritionItem: {
-    alignItems: 'center',
-    gap: 2,
-    flex: 1,
-  },
-  nutritionDivider: {
-    width: 1,
-    height: 32,
   },
   allergenSection: {
     marginTop: Spacing.md,

@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -17,6 +17,7 @@ import { recipes } from '@/data/recipes';
 import { REGION_IMAGES, RECIPE_REGION_MAP } from '@/data/maps';
 import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
+import { AnimatedListItem } from '@/components/AnimatedListItem';
 
 export default function CountryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -188,40 +189,41 @@ export default function CountryDetailScreen() {
               </Pressable>
             </View>
           ) : (
-            filteredRecipes.map((recipe) => (
-              <Pressable
-                key={recipe.id}
-                onPress={() => router.push(`/recipe/${recipe.id}`)}
-                style={[styles.recipeRow, { backgroundColor: colors.surfaceContainerLow }]}
-                accessibilityRole="button"
-                accessibilityLabel={`${recipe.title}, ${recipe.cookTime} minutes, ${recipe.difficulty}`}
-              >
-                <Image
-                  source={{ uri: recipe.image }}
-                  style={styles.recipeThumb}
-                  contentFit="cover"
-                  transition={300}
-                  accessibilityLabel={recipe.title}
-                />
-                <View style={styles.recipeInfo}>
-                  <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 17 }]} numberOfLines={1}>
-                    {recipe.title}
-                  </Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>
-                    {formatCookTime(recipe.cookTime)} {'\u00B7'} {recipe.difficulty}
-                    {RECIPE_REGION_MAP[recipe.id] ? ` · ${RECIPE_REGION_MAP[recipe.id]}` : ''}
-                  </Text>
-                </View>
+            filteredRecipes.map((recipe, index) => (
+              <AnimatedListItem key={recipe.id} index={index}>
                 <Pressable
-                  onPress={(e) => { e.stopPropagation(); handleQuickAdd(recipe); }}
-                  hitSlop={4}
-                  style={[styles.addBtn, { backgroundColor: colors.surfaceContainerHigh }]}
+                  onPress={() => router.push(`/recipe/${recipe.id}`)}
+                  style={[styles.recipeRow, { backgroundColor: colors.surfaceContainerLow }]}
                   accessibilityRole="button"
-                  accessibilityLabel={`Add ${recipe.title} to today's plan`}
+                  accessibilityLabel={`${recipe.title}, ${recipe.cookTime} minutes, ${recipe.difficulty}`}
                 >
-                  <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+                  <Image
+                    source={{ uri: recipe.image }}
+                    style={styles.recipeThumb}
+                    contentFit="cover"
+                    transition={300}
+                    accessibilityLabel={recipe.title}
+                  />
+                  <View style={styles.recipeInfo}>
+                    <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 17 }]} numberOfLines={1}>
+                      {recipe.title}
+                    </Text>
+                    <Text style={[Typography.caption, { color: colors.outline }]}>
+                      {formatCookTime(recipe.cookTime)} {'\u00B7'} {recipe.difficulty}
+                      {RECIPE_REGION_MAP[recipe.id] ? ` · ${RECIPE_REGION_MAP[recipe.id]}` : ''}
+                    </Text>
+                  </View>
+                  <Pressable
+                    onPress={(e) => { e.stopPropagation(); handleQuickAdd(recipe); }}
+                    hitSlop={4}
+                    style={[styles.addBtn, { backgroundColor: colors.surfaceContainerHigh }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add ${recipe.title} to today's plan`}
+                  >
+                    <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+                  </Pressable>
                 </Pressable>
-              </Pressable>
+              </AnimatedListItem>
             ))
           )}
         </View>

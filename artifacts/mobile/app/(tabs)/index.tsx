@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
@@ -26,6 +26,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { SectionHeader } from '@/components/SectionHeader';
 import { RecipeCard } from '@/components/RecipeCard';
 import { DestinationCard } from '@/components/DestinationCard';
+import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { countries } from '@/data/countries';
 import { recipes, Recipe } from '@/data/recipes';
 import { useApp } from '@/context/AppContext';
@@ -234,7 +235,7 @@ export default function DiscoverScreen() {
                     <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>
                       Explore {item.name}
                     </Text>
-                    <Feather name="arrow-right" size={18} color={colors.onPrimary} />
+                    <MaterialCommunityIcons name="arrow-right" size={20} color={colors.onPrimary} />
                   </Pressable>
                 </View>
               </View>
@@ -297,7 +298,7 @@ export default function DiscoverScreen() {
           <View style={{ paddingHorizontal: Spacing.page, marginTop: -Spacing.xxl }}>
             <GlassView style={[styles.tonightCard, { ...Shadows.ambient }]}>
               <View style={[styles.tonightImage, { backgroundColor: colors.surfaceContainerHigh, alignItems: 'center', justifyContent: 'center' }]}>
-                <Feather name="calendar" size={24} color={colors.outlineVariant} />
+                <MaterialCommunityIcons name="calendar-blank" size={24} color={colors.outlineVariant} />
               </View>
               <View style={styles.tonightContent}>
                 <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
@@ -325,8 +326,8 @@ export default function DiscoverScreen() {
         <View style={{ marginTop: Spacing.xl }}>
           <SectionHeader label="POPULAR RECIPES" title="Popular Recipes" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
           <View style={styles.grid}>
-            {trendingRecipes.map((recipe) => (
-              <View key={recipe.id}>
+            {trendingRecipes.map((recipe, index) => (
+              <AnimatedListItem key={recipe.id} index={index}>
                 <RecipeCard recipe={recipe} />
                 <View style={styles.quickActions}>
                   <Pressable
@@ -335,7 +336,7 @@ export default function DiscoverScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`Add ${recipe.title} to tonight`}
                   >
-                    <MaterialCommunityIcons name="weather-night" size={14} color={colors.primary} />
+                    <MaterialCommunityIcons name="weather-night" size={16} color={colors.primary} />
                     <Text style={[Typography.labelSmall, { color: colors.primary }]}>Tonight</Text>
                   </Pressable>
                   <Pressable
@@ -344,11 +345,11 @@ export default function DiscoverScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`Add ${recipe.title} to weekly plan`}
                   >
-                    <MaterialCommunityIcons name="calendar-plus" size={14} color={colors.primary} />
+                    <MaterialCommunityIcons name="calendar-plus" size={16} color={colors.primary} />
                     <Text style={[Typography.labelSmall, { color: colors.primary }]}>Week</Text>
                   </Pressable>
                 </View>
-              </View>
+              </AnimatedListItem>
             ))}
           </View>
         </View>

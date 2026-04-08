@@ -8,7 +8,6 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
-import { GlassView } from '@/components/GlassView';
 import { RecipeCard } from '@/components/RecipeCard';
 import { TECHNIQUES } from '@/data/techniques';
 import { recipes } from '@/data/recipes';
@@ -67,9 +66,9 @@ export default function TechniqueDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <GlassView style={styles.backBtnGlass}>
-              <MaterialCommunityIcons name="arrow-left" size={20} color={colors.textOnImage} />
-            </GlassView>
+            <View style={[styles.backBtnGlass, { backgroundColor: 'rgba(30,25,20,0.85)' }]}>
+              <MaterialCommunityIcons name="arrow-left" size={20} color="#FFFFFF" />
+            </View>
           </Pressable>
         </View>
 
@@ -90,11 +89,11 @@ export default function TechniqueDetailScreen() {
               </Text>
             </View>
             <View style={[styles.badge, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
+              <MaterialCommunityIcons name="clock-outline" size={16} color={colors.outline} />
               <Text style={[Typography.labelSmall, { color: colors.outline }]}>{technique.duration}</Text>
             </View>
             <View style={[styles.badge, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name={(CATEGORY_ICONS[technique.category] ?? 'food-variant') as any} size={14} color={colors.outline} />
+              <MaterialCommunityIcons name={(CATEGORY_ICONS[technique.category] ?? 'food-variant') as any} size={16} color={colors.outline} />
               <Text style={[Typography.labelSmall, { color: colors.outline }]}>{technique.category}</Text>
             </View>
           </View>

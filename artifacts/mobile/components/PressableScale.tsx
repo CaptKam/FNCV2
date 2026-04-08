@@ -3,13 +3,15 @@ import { Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
-  Easing,
+  withSpring,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useReducedMotion } from 'react-native-reanimated';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+const PRESS_SPRING = { damping: 15, stiffness: 300, mass: 0.8 };
+const RELEASE_SPRING = { damping: 20, stiffness: 400, mass: 0.8 };
 
 interface PressableScaleProps extends PressableProps {
   scaleValue?: number;
@@ -17,14 +19,9 @@ interface PressableScaleProps extends PressableProps {
   style?: StyleProp<ViewStyle>;
 }
 
-/**
- * A Pressable that scales down on press for tactile feedback.
- * Uses Reanimated for 60fps UI-thread animation.
- * Respects reduceMotion — disables animation if user prefers.
- */
 export function PressableScale({
   children,
-  scaleValue = 0.97,
+  scaleValue = 0.96,
   haptic = false,
   style,
   onPressIn,
@@ -33,32 +30,28 @@ export function PressableScale({
   ...rest
 }: PressableScaleProps) {
   const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
   const reduceMotion = useReducedMotion();
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: opacity.value,
   }));
 
   const handlePressIn = useCallback(
     (e: any) => {
       if (!reduceMotion) {
-        scale.value = withTiming(scaleValue, { duration: 150, easing: Easing.in(Easing.ease) });
-        opacity.value = withTiming(0.85, { duration: 150 });
+        scale.value = withSpring(scaleValue, PRESS_SPRING);
       }
       onPressIn?.(e);
     },
-    [reduceMotion, scaleValue, onPressIn, scale, opacity]
+    [reduceMotion, scaleValue, onPressIn, scale]
   );
 
   const handlePressOut = useCallback(
     (e: any) => {
-      scale.value = withTiming(1, { duration: 150, easing: Easing.out(Easing.ease) });
-      opacity.value = withTiming(1, { duration: 150 });
+      scale.value = withSpring(1, RELEASE_SPRING);
       onPressOut?.(e);
     },
-    [onPressOut, scale, opacity]
+    [onPressOut, scale]
   );
 
   const handlePress = useCallback(

@@ -333,7 +333,7 @@ export default function CookModeScreen() {
 
         {step.duration && step.duration > 0 && (
           <View style={styles.stepDurationBadge}>
-            <MaterialCommunityIcons name="clock-outline" size={14} color={t.durationIcon} />
+            <MaterialCommunityIcons name="clock-outline" size={16} color={t.durationIcon} />
             <Text style={[styles.stepDurationText, { color: t.durationText }]}>
               {step.duration} min for this step
             </Text>

@@ -13,6 +13,8 @@ import { countries } from '@/data/countries';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { formatCookTime } from '@/data/helpers';
 import { HeaderBar } from '@/components/HeaderBar';
+import { AnimatedHeart } from '@/components/AnimatedHeart';
+import { AnimatedListItem } from '@/components/AnimatedListItem';
 
 const FILTERS = ['All', 'Main', 'Appetizer', 'Dessert'];
 
@@ -122,7 +124,7 @@ export default function BookmarksScreen() {
                 >
                   <MaterialCommunityIcons
                     name={opt.icon}
-                    size={14}
+                    size={16}
                     color={isActive ? colors.primary : colors.outline}
                   />
                   <Text
@@ -142,7 +144,7 @@ export default function BookmarksScreen() {
         {savedRecipes.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}>
-              <MaterialCommunityIcons name="heart-outline" size={48} color={colors.primary} />
+              <MaterialCommunityIcons name="heart-outline" size={28} color={colors.outlineVariant} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
               Your collection is empty
@@ -170,9 +172,9 @@ export default function BookmarksScreen() {
               </Text>
             </View>
             <View style={styles.listGroup}>
-              {savedRecipes.map((recipe) => (
+              {savedRecipes.map((recipe, index) => (
+                <AnimatedListItem key={recipe.id} index={index}>
                 <Pressable
-                  key={recipe.id}
                   onPress={() => router.push(`/recipe/${recipe.id}`)}
                   style={styles.itemRow}
                   accessibilityRole="button"
@@ -198,19 +200,17 @@ export default function BookmarksScreen() {
                       {recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}
                     </Text>
                   </View>
-                  <Pressable
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      toggleBookmark(recipe.id);
-                    }}
-                    hitSlop={8}
+                  <AnimatedHeart
+                    filled={true}
+                    onToggle={() => toggleBookmark(recipe.id)}
+                    size={20}
+                    filledColor={colors.primary}
+                    outlineColor={colors.outline}
                     style={styles.heartBtn}
-                    accessibilityRole="button"
                     accessibilityLabel={`Remove ${recipe.title} from bookmarks`}
-                  >
-                    <MaterialCommunityIcons name="heart" size={24} color={colors.primary} />
-                  </Pressable>
+                  />
                 </Pressable>
+                </AnimatedListItem>
               ))}
             </View>
           </View>
