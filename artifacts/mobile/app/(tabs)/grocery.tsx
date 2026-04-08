@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert, Linking } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -33,15 +33,16 @@ const CATEGORY_ORDER: CategoryDef[] = [
 ];
 
 interface Retailer {
+  id: 'instacart' | 'walmart' | 'amazon_fresh';
   name: string;
   icon: IconName;
+  url: string;
 }
 
 const RETAILERS: Retailer[] = [
-  { name: 'Walmart', icon: 'store' },
-  { name: 'Amazon Fresh', icon: 'truck-delivery' },
-  { name: 'Instacart', icon: 'cart' },
-  { name: 'Target', icon: 'bullseye' },
+  { id: 'instacart', name: 'Instacart', icon: 'cart', url: 'https://www.instacart.com/store' },
+  { id: 'walmart', name: 'Walmart', icon: 'store', url: 'https://www.walmart.com/grocery' },
+  { id: 'amazon_fresh', name: 'Amazon Fresh', icon: 'truck-delivery', url: 'https://www.amazon.com/alm/storefront' },
 ];
 
 export default function GroceryScreen() {
@@ -51,8 +52,6 @@ export default function GroceryScreen() {
   const app = useApp();
 
   const [activeTab, setActiveTab] = useState<'online' | 'instore'>('online');
-  const [selectedRetailer, setSelectedRetailer] = useState(2);
-  const [zipCode, setZipCode] = useState('10001');
 
   // Per-recipe serving overrides (local display state)
   const [servingsOverrides, setServingsOverrides] = useState<Record<string, number>>({});
@@ -337,70 +336,74 @@ export default function GroceryScreen() {
 
         {activeTab === 'online' && (
           <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
-            <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center', marginBottom: Spacing.md }]}>
-              Select Retailer
-            </Text>
             <View style={[styles.zipInputContainer, { backgroundColor: colors.surfaceContainerLow, borderRadius: Radius.md }]}>
               <MaterialCommunityIcons name="map-marker-outline" size={20} color={colors.outline} />
               <TextInput
-                value={zipCode}
-                onChangeText={setZipCode}
+                value={app.zipCode}
+                onChangeText={(text) => app.setZipCode(text)}
                 style={[Typography.body, { flex: 1, color: colors.onSurface, paddingVertical: Spacing.sm }]}
-                placeholder="Enter zip code"
+                placeholder="Enter your zip code"
                 placeholderTextColor={colors.outline}
                 keyboardType="number-pad"
                 accessibilityLabel="Enter zip code"
               />
-              <MaterialCommunityIcons name="magnify" size={20} color={colors.primary} />
+              {app.zipCode.length > 0 && (
+                <MaterialCommunityIcons name="check-circle" size={20} color={colors.success} />
+              )}
             </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.retailerRow}
             >
-              {RETAILERS.map((retailer, index) => (
-                <Pressable
-                  key={retailer.name}
-                  onPress={() => setSelectedRetailer(index)}
-                  style={styles.retailerItem}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Select ${retailer.name}`}
-                  accessibilityState={{ selected: selectedRetailer === index }}
-                >
-                  <View
-                    style={[
-                      styles.retailerCircle,
-                      {
-                        backgroundColor: selectedRetailer === index
-                          ? colors.primaryMuted
-                          : colors.surfaceContainerLow,
-                      },
-                      selectedRetailer === index && {
-                        ...Shadows.subtle,
-                      },
-                    ]}
+              {RETAILERS.map((retailer) => {
+                const isSelected = app.groceryPartner === retailer.id;
+                return (
+                  <Pressable
+                    key={retailer.id}
+                    onPress={() => app.setGroceryPartner(retailer.id)}
+                    style={styles.retailerItem}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select ${retailer.name}`}
+                    accessibilityState={{ selected: isSelected }}
                   >
-                    <MaterialCommunityIcons
-                      name={retailer.icon}
-                      size={28}
-                      color={selectedRetailer === index ? colors.primary : colors.outline}
-                    />
-                  </View>
-                  <Text
-                    style={[
-                      Typography.caption,
-                      {
-                        color: selectedRetailer === index ? colors.primary : colors.outline,
-                        textAlign: 'center',
-                        marginTop: Spacing.xs,
-                      },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {retailer.name}
-                  </Text>
-                </Pressable>
-              ))}
+                    <View
+                      style={[
+                        styles.retailerCircle,
+                        {
+                          backgroundColor: isSelected
+                            ? colors.surfaceContainerLowest ?? colors.surfaceContainerLow
+                            : colors.surfaceContainer,
+                          borderWidth: isSelected ? 2 : 1,
+                          borderColor: isSelected ? colors.primary : colors.outlineVariant,
+                        },
+                      ]}
+                    >
+                      <MaterialCommunityIcons
+                        name={retailer.icon}
+                        size={28}
+                        color={isSelected ? colors.primary : colors.outline}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        Typography.caption,
+                        {
+                          color: isSelected ? colors.primary : colors.outline,
+                          textAlign: 'center',
+                          marginTop: Spacing.xs,
+                        },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {retailer.name}
+                    </Text>
+                    {isSelected && (
+                      <Text style={[Typography.caption, { color: colors.success, fontSize: 10 }]}>Available</Text>
+                    )}
+                  </Pressable>
+                );
+              })}
             </ScrollView>
           </View>
         )}
@@ -519,29 +522,48 @@ export default function GroceryScreen() {
       {/* Sticky bottom order bar */}
       <View style={[styles.stickyBottom, { bottom: 80, paddingHorizontal: Spacing.page }]}>
         <GlassView style={[styles.stickyBottomInner, { borderRadius: Radius.lg }]}>
-          <View style={[styles.ecoBanner, { backgroundColor: `${colors.success}12` }]}>
-            <MaterialCommunityIcons name="leaf" size={16} color={colors.success} />
-            <Text style={[Typography.caption, { color: colors.success, flex: 1 }]}>
-              Shopping locally saves ~2.4 lbs of CO₂ per trip
-            </Text>
-          </View>
-          <View style={styles.orderSection}>
-            <View style={styles.orderStats}>
-              <Text style={[Typography.caption, { color: colors.outline }]}>
-                {checkedCount}/{totalCount} items  •  {uncheckedCount} remaining
+          {activeTab === 'online' ? (
+            <View style={styles.orderSection}>
+              <View style={styles.orderStats}>
+                <Text style={[Typography.caption, { color: colors.outline }]}>
+                  {uncheckedCount} items  •  {RETAILERS.find((r) => r.id === app.groceryPartner)?.name ?? 'Instacart'}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  const retailer = RETAILERS.find((r) => r.id === app.groceryPartner);
+                  if (retailer) Linking.openURL(retailer.url);
+                }}
+                style={[styles.orderButton, { backgroundColor: colors.primary }]}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${RETAILERS.find((r) => r.id === app.groceryPartner)?.name}`}
+              >
+                <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
+                  Open {RETAILERS.find((r) => r.id === app.groceryPartner)?.name ?? 'Instacart'}
+                </Text>
+                <MaterialCommunityIcons name="open-in-new" size={16} color={colors.onPrimary} />
+              </Pressable>
+              <Text style={[Typography.caption, { color: colors.onSurfaceVariant, textAlign: 'center', marginTop: Spacing.xs }]}>
+                Your grocery list will stay open — switch back anytime
               </Text>
             </View>
-            <Pressable
-              style={[styles.orderButton, { backgroundColor: colors.primary }]}
-              accessibilityRole="button"
-              accessibilityLabel={`Order from ${RETAILERS[selectedRetailer].name}`}
-            >
-              <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
-                Order from {RETAILERS[selectedRetailer].name}  •  {uncheckedCount} items
-              </Text>
-              <MaterialCommunityIcons name="arrow-right" size={18} color={colors.onPrimary} />
-            </Pressable>
-          </View>
+          ) : (
+            <>
+              <View style={[styles.ecoBanner, { backgroundColor: `${colors.success}12` }]}>
+                <MaterialCommunityIcons name="leaf" size={16} color={colors.success} />
+                <Text style={[Typography.caption, { color: colors.success, flex: 1 }]}>
+                  Shopping locally saves ~2.4 lbs of CO₂ per trip
+                </Text>
+              </View>
+              <View style={styles.orderSection}>
+                <View style={styles.orderStats}>
+                  <Text style={[Typography.caption, { color: colors.outline }]}>
+                    {checkedCount}/{totalCount} items  •  {uncheckedCount} remaining
+                  </Text>
+                </View>
+              </View>
+            </>
+          )}
         </GlassView>
       </View>
     </View>
