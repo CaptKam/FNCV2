@@ -228,22 +228,22 @@ export default function RecipeDetailScreen() {
           <View style={styles.servingsAdjuster}>
             <Pressable
               onPress={() => { if (currentServings > 1) setServings(currentServings - 1); }}
-              style={[styles.servingBtn, { borderColor: colors.primary, opacity: currentServings <= 1 ? 0.3 : 1 }]}
+              style={[styles.servingBtn, { backgroundColor: 'rgba(30,25,20,0.85)', opacity: currentServings <= 1 ? 0.3 : 1 }]}
               accessibilityRole="button"
               accessibilityLabel="Decrease servings"
             >
-              <MaterialCommunityIcons name="minus" size={20} color={colors.primary} />
+              <MaterialCommunityIcons name="minus" size={20} color="#FFFFFF" />
             </Pressable>
             <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
               {currentServings} servings
             </Text>
             <Pressable
               onPress={() => setServings(currentServings + 1)}
-              style={[styles.servingBtn, { borderColor: colors.primary }]}
+              style={[styles.servingBtn, { backgroundColor: 'rgba(30,25,20,0.85)' }]}
               accessibilityRole="button"
               accessibilityLabel="Increase servings"
             >
-              <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+              <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
             </Pressable>
           </View>
 
@@ -617,7 +617,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: Radius.full,
-    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
