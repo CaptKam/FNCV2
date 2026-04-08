@@ -151,7 +151,7 @@ export default function RecipeDetailScreen() {
               width: 40,
               height: 40,
               borderRadius: 20,
-              backgroundColor: 'rgba(255,255,255,0.2)',
+              backgroundColor: 'rgba(30,25,20,0.85)',
               alignItems: 'center',
               justifyContent: 'center',
             }}

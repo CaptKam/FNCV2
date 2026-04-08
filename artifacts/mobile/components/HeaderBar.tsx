@@ -57,7 +57,7 @@ export function HeaderBar({ transparent = false, showBack = false, rightAction }
         <Pressable
           hitSlop={12}
           onPress={() => router.push('/bookmarks')}
-          style={[styles.iconBtn, { backgroundColor: transparent ? 'rgba(255,255,255,0.2)' : 'transparent' }]}
+          style={[styles.iconBtn, { backgroundColor: transparent ? 'rgba(30,25,20,0.85)' : 'transparent' }]}
           accessibilityRole="button"
           accessibilityLabel="Saved recipes"
         >
