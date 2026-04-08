@@ -39,6 +39,7 @@ function RootLayoutNav() {
       <Stack.Screen name="country/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="recipe/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="cooking-schedule" options={{ headerShown: false }} />
+      <Stack.Screen name="dinner-setup" options={{ headerShown: false }} />
       <Stack.Screen
         name="cook-mode/[id]"
         options={{ headerShown: false, presentation: 'fullScreenModal' }}
