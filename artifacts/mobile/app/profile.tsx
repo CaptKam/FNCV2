@@ -41,6 +41,7 @@ const DIETARY_OPTIONS = [
 ];
 
 const AVATAR_OPTIONS = [
+  { id: 'initials', icon: null },
   { id: 'chef', icon: 'chef-hat' as const },
   { id: 'globe', icon: 'earth' as const },
   { id: 'fire', icon: 'fire' as const },
@@ -628,11 +629,17 @@ export default function ProfileScreen() {
                     accessibilityRole="button"
                     accessibilityState={{ selected: isActive }}
                   >
-                    <MaterialCommunityIcons
-                      name={av.icon}
-                      size={28}
-                      color={isActive ? colors.primary : colors.outline}
-                    />
+                    {av.icon ? (
+                      <MaterialCommunityIcons
+                        name={av.icon}
+                        size={28}
+                        color={isActive ? colors.primary : colors.outline}
+                      />
+                    ) : (
+                      <Text style={{ fontSize: 20, fontWeight: '700', color: isActive ? colors.primary : colors.outline }}>
+                        {(editName || displayName || 'A').charAt(0).toUpperCase()}
+                      </Text>
+                    )}
                   </Pressable>
                 );
               })}

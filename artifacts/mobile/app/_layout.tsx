@@ -16,6 +16,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -46,8 +47,20 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
     }
   }, [hasCompletedOnboarding, isHydrated, segments]);
 
+  if (!isHydrated) {
+    return (
+      <View style={hydrationStyles.container}>
+        <ActivityIndicator size="large" color="#9A4100" />
+      </View>
+    );
+  }
+
   return <>{children}</>;
 }
+
+const hydrationStyles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FEF9F3' },
+});
 
 function RootLayoutNav() {
   return (
