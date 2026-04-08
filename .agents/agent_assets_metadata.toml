@@ -29,3 +29,9 @@ id = "rW0FHaG_E3iPcA80T4vX7"
 uri = "file://.local/mvp-audit.md"
 type = "text"
 title = "Fork & Compass — Complete MVP Audit Report"
+
+[[outputs]]
+id = "kRDOD5UFGcU_U6A3JhsOa"
+uri = "file://grandma-audit.md"
+type = "text"
+title = "Fork & Compass — Grandma Audit Report"
