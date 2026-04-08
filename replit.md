@@ -41,11 +41,14 @@ Premium culinary travel Expo React Native app. Tagline: "Pick a country, cook a 
 
 ### Data
 - All local mock data: 8 countries, 97 recipes with ingredients, steps, cultural notes
+- Nutrition data: per-serving calories/protein/carbs/fat for all 97 recipes (data/nutrition.ts)
+- Allergen detection: auto-scans ingredients for top-9 allergens (utils/allergens.ts)
 - No backend required
 
 ### Key Files
 - `artifacts/mobile/constants/` — colors, typography, spacing, radius, shadows, glass tokens
-- `artifacts/mobile/data/` — countries.ts, recipes.ts
+- `artifacts/mobile/data/` — countries.ts, recipes.ts, nutrition.ts
+- `artifacts/mobile/utils/allergens.ts` — allergen detection from ingredients, dietary conflict checking
 - `artifacts/mobile/context/BookmarksContext.tsx` — shared bookmarks state with AsyncStorage persistence
 - `artifacts/mobile/context/ThemeContext.tsx` — theme preference (system/light/dark) with AsyncStorage persistence
 - `artifacts/mobile/components/` — GlassView, SectionHeader, RecipeCard, DestinationCard

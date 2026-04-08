@@ -13,6 +13,8 @@ import { GlassView } from '@/components/GlassView';
 import { countries } from '@/data/countries';
 import { recipes, Step } from '@/data/recipes';
 import { convertAmount, formatCookTime } from '@/data/helpers';
+import { getPerServingNutrition } from '@/data/nutrition';
+import { detectAllergensWithCache, ALLERGEN_INFO, getDietaryConflicts } from '@/utils/allergens';
 import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
@@ -93,6 +95,21 @@ export default function RecipeDetailScreen() {
   }
 
   const currentServings = servings;
+  const perServingNutrition = getPerServingNutrition(recipe.id);
+  const scaledNutrition = perServingNutrition
+    ? {
+        calories: Math.round(perServingNutrition.calories * currentServings),
+        protein: Math.round(perServingNutrition.protein * currentServings),
+        carbs: Math.round(perServingNutrition.carbs * currentServings),
+        fat: Math.round(perServingNutrition.fat * currentServings),
+      }
+    : null;
+  const recipeAllergens = useMemo(() => detectAllergensWithCache(recipe.ingredients, recipe.id), [recipe.id]);
+  const dietaryConflicts = useMemo(
+    () => getDietaryConflicts(recipeAllergens, app.dietaryFlags),
+    [recipeAllergens, app.dietaryFlags]
+  );
+
   const ingredientGroups = recipe.ingredients.reduce(
     (acc, ing) => {
       if (!acc[ing.category]) acc[ing.category] = [];
@@ -202,6 +219,92 @@ export default function RecipeDetailScreen() {
               <Feather name="plus" size={18} color={colors.primary} />
             </Pressable>
           </View>
+
+          {scaledNutrition && (
+            <View style={[styles.nutritionPanel, { backgroundColor: colors.surfaceContainerLow }]}>
+              <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1, marginBottom: Spacing.sm }]}>
+                NUTRITION · {currentServings} {currentServings === 1 ? 'SERVING' : 'SERVINGS'}
+              </Text>
+              <View style={styles.nutritionRow}>
+                <View style={styles.nutritionItem}>
+                  <Text style={[Typography.headlineLarge, { color: colors.primary, fontSize: 22 }]}>
+                    {scaledNutrition.calories}
+                  </Text>
+                  <Text style={[Typography.caption, { color: colors.outline }]}>kcal</Text>
+                </View>
+                <View style={[styles.nutritionDivider, { backgroundColor: colors.outlineVariant }]} />
+                <View style={styles.nutritionItem}>
+                  <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
+                    {scaledNutrition.protein}g
+                  </Text>
+                  <Text style={[Typography.caption, { color: colors.outline }]}>protein</Text>
+                </View>
+                <View style={[styles.nutritionDivider, { backgroundColor: colors.outlineVariant }]} />
+                <View style={styles.nutritionItem}>
+                  <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
+                    {scaledNutrition.carbs}g
+                  </Text>
+                  <Text style={[Typography.caption, { color: colors.outline }]}>carbs</Text>
+                </View>
+                <View style={[styles.nutritionDivider, { backgroundColor: colors.outlineVariant }]} />
+                <View style={styles.nutritionItem}>
+                  <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
+                    {scaledNutrition.fat}g
+                  </Text>
+                  <Text style={[Typography.caption, { color: colors.outline }]}>fat</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {recipeAllergens.length > 0 && (
+            <View style={styles.allergenSection}>
+              <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1, marginBottom: Spacing.sm }]}>
+                ALLERGENS
+              </Text>
+              <View style={styles.allergenRow}>
+                {recipeAllergens.map((a) => {
+                  const info = ALLERGEN_INFO[a];
+                  const isUserAllergen = app.allergens.includes(a);
+                  return (
+                    <View
+                      key={a}
+                      style={[
+                        styles.allergenPill,
+                        {
+                          backgroundColor: isUserAllergen ? `${colors.error}18` : colors.surfaceContainerHigh,
+                          borderWidth: isUserAllergen ? 1 : 0,
+                          borderColor: isUserAllergen ? colors.error : 'transparent',
+                        },
+                      ]}
+                    >
+                      <MaterialCommunityIcons
+                        name={info.icon as any}
+                        size={14}
+                        color={isUserAllergen ? colors.error : colors.onSurfaceVariant}
+                      />
+                      <Text
+                        style={[
+                          Typography.caption,
+                          { color: isUserAllergen ? colors.error : colors.onSurfaceVariant, fontWeight: isUserAllergen ? '700' : '500' },
+                        ]}
+                      >
+                        {info.label}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+              {dietaryConflicts.length > 0 && (
+                <View style={[styles.warningBanner, { backgroundColor: `${colors.warning}15` }]}>
+                  <MaterialCommunityIcons name="alert-outline" size={16} color={colors.warning} />
+                  <Text style={[Typography.caption, { color: colors.warning, flex: 1 }]}>
+                    Contains ingredients that conflict with your {dietaryConflicts.map((c) => c.flag).join(', ')} preferences
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
           {/* Add to Plan button */}
           <Pressable
@@ -490,6 +593,49 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
     borderRadius: Radius.full,
+  },
+  nutritionPanel: {
+    marginTop: Spacing.lg,
+    padding: Spacing.md,
+    borderRadius: Radius.lg,
+  },
+  nutritionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  nutritionItem: {
+    alignItems: 'center',
+    gap: 2,
+    flex: 1,
+  },
+  nutritionDivider: {
+    width: 1,
+    height: 32,
+  },
+  allergenSection: {
+    marginTop: Spacing.md,
+  },
+  allergenRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  allergenPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.full,
+  },
+  warningBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.sm,
+    borderRadius: Radius.md,
+    marginTop: Spacing.sm,
   },
   sheetOverlay: {
     flex: 1,

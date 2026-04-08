@@ -10,7 +10,9 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { GlassView } from './GlassView';
 import { Recipe } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
+import { detectAllergensWithCache } from '@/utils/allergens';
 import { useBookmarks } from '@/context/BookmarksContext';
+import { useApp } from '@/context/AppContext';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -22,7 +24,10 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   const colors = useThemeColors();
   const router = useRouter();
   const { isBookmarked, toggleBookmark } = useBookmarks();
+  const { allergens: userAllergens } = useApp();
   const isFav = isBookmarked(recipe.id);
+  const recipeAllergens = detectAllergensWithCache(recipe.ingredients, recipe.id);
+  const hasConflict = userAllergens.length > 0 && recipeAllergens.some((a) => userAllergens.includes(a));
 
   return (
     <Pressable
@@ -59,11 +64,19 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={2}>
           {recipe.title}
         </Text>
-        <View style={[styles.timeBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
-          <Feather name="clock" size={10} color={colors.outline} />
-          <Text style={[Typography.caption, { color: colors.outline }]}>
-            {formatCookTime(recipe.prepTime + recipe.cookTime)}
-          </Text>
+        <View style={styles.badgeRow}>
+          <View style={[styles.timeBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
+            <Feather name="clock" size={10} color={colors.outline} />
+            <Text style={[Typography.caption, { color: colors.outline }]}>
+              {formatCookTime(recipe.prepTime + recipe.cookTime)}
+            </Text>
+          </View>
+          {hasConflict && (
+            <View style={[styles.allergenBadge, { backgroundColor: `${colors.error}18` }]}>
+              <MaterialCommunityIcons name="alert-circle" size={10} color={colors.error} />
+              <Text style={[Typography.caption, { color: colors.error, fontSize: 10 }]}>Allergen</Text>
+            </View>
+          )}
         </View>
       </View>
     </Pressable>
@@ -100,11 +113,24 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     gap: Spacing.sm,
   },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    flexWrap: 'wrap',
+  },
   timeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.full,
+  },
+  allergenBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: Radius.full,

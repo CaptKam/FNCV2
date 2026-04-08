@@ -17,6 +17,7 @@ import { SmartCookBar } from '@/components/SmartCookBar';
 import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
+import { getPerServingNutrition, NutritionInfo } from '@/data/nutrition';
 import { calculateCookReadiness } from '@/utils/cookReadiness';
 
 // ─── Helpers ───
@@ -57,6 +58,22 @@ const COURSE_SLOTS: CourseSlot[] = [
   { label: 'Appetizer', icon: 'food-variant', placeholder: 'Add an Appetizer...', courseType: 'appetizer' },
   { label: 'Dessert', icon: 'ice-cream', placeholder: 'Sweet finish...', courseType: 'dessert' },
 ];
+
+function getDayNutrition(day: ItineraryDay): NutritionInfo | null {
+  const meals = [day.courses.appetizer, day.courses.main, day.courses.dessert].filter(Boolean) as PlannedMeal[];
+  if (meals.length === 0) return null;
+  const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+  for (const meal of meals) {
+    const n = getPerServingNutrition(meal.recipeId);
+    if (n) {
+      totals.calories += n.calories;
+      totals.protein += n.protein;
+      totals.carbs += n.carbs;
+      totals.fat += n.fat;
+    }
+  }
+  return totals;
+}
 
 type WeekOption = 'this-week' | 'next-week' | 'past';
 
@@ -695,6 +712,33 @@ export default function PlanScreen() {
                         </Pressable>
                       </View>
                     )}
+                    {(() => {
+                      const dayNutrition = getDayNutrition(day);
+                      if (!dayNutrition) return null;
+                      return (
+                        <View style={[styles.dayNutritionRow, { backgroundColor: colors.surfaceContainerLow }]}>
+                          <View style={styles.dayNutritionItem}>
+                            <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{dayNutrition.calories}</Text>
+                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>kcal</Text>
+                          </View>
+                          <View style={[styles.dayNutritionDot, { backgroundColor: colors.outlineVariant }]} />
+                          <View style={styles.dayNutritionItem}>
+                            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{dayNutrition.protein}g</Text>
+                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>P</Text>
+                          </View>
+                          <View style={[styles.dayNutritionDot, { backgroundColor: colors.outlineVariant }]} />
+                          <View style={styles.dayNutritionItem}>
+                            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{dayNutrition.carbs}g</Text>
+                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>C</Text>
+                          </View>
+                          <View style={[styles.dayNutritionDot, { backgroundColor: colors.outlineVariant }]} />
+                          <View style={styles.dayNutritionItem}>
+                            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{dayNutrition.fat}g</Text>
+                            <Text style={[Typography.caption, { color: colors.outline, fontSize: 10 }]}>F</Text>
+                          </View>
+                        </View>
+                      );
+                    })()}
                   </View>
                 </View>
               );
@@ -1194,5 +1238,24 @@ const styles = StyleSheet.create({
     height: 1,
     marginVertical: Spacing.xs,
     marginHorizontal: Spacing.sm,
+  },
+  dayNutritionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.md,
+    marginTop: Spacing.sm,
+  },
+  dayNutritionItem: {
+    alignItems: 'center',
+    gap: 1,
+  },
+  dayNutritionDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
   },
 });

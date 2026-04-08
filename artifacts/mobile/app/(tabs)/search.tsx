@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -22,9 +22,12 @@ import { DestinationCard } from '@/components/DestinationCard';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
+import { detectAllergensWithCache, ALLERGEN_INFO, AllergenType } from '@/utils/allergens';
+import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
+const ALLERGEN_FILTERS: AllergenType[] = ['milk', 'egg', 'wheat', 'peanuts', 'tree_nuts', 'fish', 'shellfish', 'soy', 'sesame'];
 
 export default function SearchScreen() {
   const { width } = useWindowDimensions();
@@ -32,8 +35,16 @@ export default function SearchScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { allergens: userAllergens } = useApp();
   const [query, setQuery] = useState('');
   const [activeMood, setActiveMood] = useState('All Moods');
+  const [excludedAllergens, setExcludedAllergens] = useState<AllergenType[]>([]);
+
+  const toggleAllergenFilter = useCallback((a: AllergenType) => {
+    setExcludedAllergens((prev) =>
+      prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
+    );
+  }, []);
 
   const filteredRecipes = useMemo(() => {
     let results = recipes;
@@ -51,6 +62,13 @@ export default function SearchScreen() {
       if (filter) results = results.filter(filter);
     }
 
+    if (excludedAllergens.length > 0) {
+      results = results.filter((r) => {
+        const ra = detectAllergensWithCache(r.ingredients, r.id);
+        return !excludedAllergens.some((a) => ra.includes(a));
+      });
+    }
+
     if (query.trim()) {
       const q = query.toLowerCase();
       results = results.filter(
@@ -61,7 +79,7 @@ export default function SearchScreen() {
     }
 
     return results;
-  }, [query, activeMood]);
+  }, [query, activeMood, excludedAllergens]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -123,6 +141,45 @@ export default function SearchScreen() {
             </Pressable>
           ))}
         </ScrollView>
+
+        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
+            <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1, marginBottom: Spacing.sm }]}>
+              EXCLUDE ALLERGENS
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.sm }}>
+              {ALLERGEN_FILTERS.map((a) => {
+                const info = ALLERGEN_INFO[a];
+                const isActive = excludedAllergens.includes(a);
+                const isUserAllergen = userAllergens.includes(a);
+                return (
+                  <Pressable
+                    key={a}
+                    onPress={() => toggleAllergenFilter(a)}
+                    style={[
+                      styles.allergenChip,
+                      {
+                        backgroundColor: isActive ? `${colors.error}20` : colors.surfaceContainerHigh,
+                        borderWidth: isActive ? 1 : isUserAllergen ? 1 : 0,
+                        borderColor: isActive ? colors.error : isUserAllergen ? colors.primary : 'transparent',
+                      },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${isActive ? 'Include' : 'Exclude'} ${info.label}`}
+                    accessibilityState={{ selected: isActive }}
+                  >
+                    <MaterialCommunityIcons
+                      name={isActive ? 'close-circle' : (info.icon as any)}
+                      size={14}
+                      color={isActive ? colors.error : colors.onSurfaceVariant}
+                    />
+                    <Text style={[Typography.caption, { color: isActive ? colors.error : colors.onSurfaceVariant }]}>
+                      {info.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
 
         {/* Result count */}
         {query.trim().length > 0 && filteredRecipes.length > 0 && (
@@ -222,6 +279,14 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
     marginRight: Spacing.sm,
+  },
+  allergenChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.full,
   },
   grid: {
     flexDirection: 'row',
