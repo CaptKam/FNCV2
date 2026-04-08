@@ -229,7 +229,7 @@ export default function PlanScreen() {
   // ─── Grocery banner ───
   const renderGroceryBanner = () => (
     <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
-      <View style={[styles.groceryBanner, { backgroundColor: `${colors.primary}10` }]}>
+      <View style={[styles.groceryBanner, { backgroundColor: colors.primaryTint }]}>
         <MaterialCommunityIcons name="basket" size={22} color={colors.primary} />
         <View style={styles.groceryTextWrap}>
           <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>
@@ -347,8 +347,8 @@ export default function PlanScreen() {
                     style={[
                       styles.dayCircle,
                       isActive && { backgroundColor: colors.primary },
-                      !isActive && hasRecipe && { backgroundColor: `${colors.primary}15` },
-                      !isActive && isToday && { borderWidth: 2, borderColor: colors.primary, backgroundColor: `${colors.primary}10` },
+                      !isActive && hasRecipe && { backgroundColor: colors.primaryMuted },
+                      !isActive && isToday && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryTint },
                     ]}
                     accessibilityRole="button"
                     accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
@@ -394,7 +394,7 @@ export default function PlanScreen() {
             /* ── Daily: multiple meals timeline ── */
             <>
               <View style={styles.timeline}>
-                <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
+                <View style={[styles.timelineLine, { backgroundColor: colors.primarySoft }]} />
                 {dailyMeals.map((slot, idx) => {
                   const meal = slot.meal;
                   return (
@@ -460,7 +460,7 @@ export default function PlanScreen() {
             /* ── Daily: single meal (primary dinner) + course slots ── */
             <>
               <View style={styles.timeline}>
-                <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
+                <View style={[styles.timelineLine, { backgroundColor: colors.primarySoft }]} />
 
                 <View style={styles.dayRow}>
                   <View style={styles.dayLeft}>
@@ -475,7 +475,7 @@ export default function PlanScreen() {
                         onPress={() => app.toggleDinnerParty(selectedDate)}
                         style={[
                           styles.dinnerPartyBadge,
-                          { backgroundColor: selectedDay?.hasDinnerParty ? `${colors.primary}30` : `${colors.primary}15` },
+                          { backgroundColor: selectedDay?.hasDinnerParty ? colors.primarySoft : colors.primaryMuted },
                         ]}
                         accessibilityRole="button"
                         accessibilityLabel={selectedDay?.hasDinnerParty ? 'Disable dinner party' : 'Enable dinner party'}
@@ -524,7 +524,7 @@ export default function PlanScreen() {
                   return (
                     <View key={course.label} style={styles.dayRow}>
                       <View style={styles.dayLeft}>
-                        <View style={[styles.timelineNodeSmall, { backgroundColor: `${colors.primary}40` }]} />
+                        <View style={[styles.timelineNodeSmall, { backgroundColor: colors.primarySoft }]} />
                       </View>
                       <View style={styles.dayRight}>
                         <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm, letterSpacing: 1 }]}>
@@ -581,7 +581,7 @@ export default function PlanScreen() {
         ) : (
           /* ═══ WEEKLY VIEW ═══ */
           <View style={styles.timeline}>
-            <View style={[styles.timelineLine, { backgroundColor: `${colors.primary}33` }]} />
+            <View style={[styles.timelineLine, { backgroundColor: colors.primarySoft }]} />
             {weekDays.map((day) => {
               const mainMeal = day.courses.main;
               const isToday = day.date === todayISO;
@@ -595,7 +595,7 @@ export default function PlanScreen() {
                         {
                           backgroundColor: mainMeal ? colors.primary : colors.surfaceContainerHigh,
                         },
-                        isToday && !mainMeal && { borderWidth: 2, borderColor: colors.primary, backgroundColor: `${colors.primary}15`, width: 14, height: 14 },
+                        isToday && !mainMeal && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryMuted, width: 14, height: 14 },
                         isToday && mainMeal && { width: 14, height: 14 },
                       ]}
                     />
@@ -737,7 +737,7 @@ export default function PlanScreen() {
                     }}
                     style={[
                       styles.dropdownItem,
-                      isActive && { backgroundColor: `${colors.primary}15` },
+                      isActive && { backgroundColor: colors.primaryMuted },
                     ]}
                   >
                     <Text style={[
@@ -759,7 +759,7 @@ export default function PlanScreen() {
               <Pressable
                 style={[
                   styles.dropdownItem,
-                  !isDailyView && { backgroundColor: `${colors.primary}08` },
+                  !isDailyView && { backgroundColor: colors.primaryTint },
                 ]}
                 onPress={() => {
                   setIsDailyView(false);
@@ -779,7 +779,7 @@ export default function PlanScreen() {
               <Pressable
                 style={[
                   styles.dropdownItem,
-                  isDailyView && { backgroundColor: `${colors.primary}08` },
+                  isDailyView && { backgroundColor: colors.primaryTint },
                 ]}
                 onPress={() => {
                   setIsDailyView(true);

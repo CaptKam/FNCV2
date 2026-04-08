@@ -68,7 +68,7 @@ function SettingRow({ icon, label, subtitle, onPress, trailing, colors }: Settin
       accessibilityRole="button"
       accessibilityLabel={subtitle ? `${label}, ${subtitle}` : label}
     >
-      <View style={[styles.settingIcon, { backgroundColor: `${colors.primary}15` }]}>
+      <View style={[styles.settingIcon, { backgroundColor: colors.primaryMuted }]}>
         <MaterialCommunityIcons name={icon as any} size={20} color={colors.primary} />
       </View>
       <View style={styles.settingText}>
@@ -136,8 +136,12 @@ export default function ProfileScreen() {
 
         {/* Profile card — wired to AppContext XP/level */}
         <View style={[styles.profileCard, { paddingHorizontal: Spacing.page }]}>
+          <View style={{ height: Spacing.xl }} />
+          <View style={[styles.profileAccent, { backgroundColor: colors.primarySubtle }]}>
+            <View style={[styles.profileAccentLine, { backgroundColor: colors.primary }]} />
+          </View>
           <View style={{ height: Spacing.lg }} />
-          <View style={[styles.avatarLarge, { backgroundColor: `${colors.primary}12` }]}>
+          <View style={[styles.avatarLarge, { backgroundColor: colors.primarySubtle }]}>
             <Feather name="user" size={40} color={colors.primary} />
           </View>
           <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center' }]}>
@@ -187,9 +191,9 @@ export default function ProfileScreen() {
         {/* Dietary preferences — wired to AppContext */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            DIETARY PREFERENCES
+            DIETARY
           </Text>
-          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
+          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
             Dietary Preferences
           </Text>
           <View style={styles.dietaryGrid}>
@@ -202,7 +206,7 @@ export default function ProfileScreen() {
                   style={[
                     styles.dietaryChip,
                     {
-                      backgroundColor: isSelected ? `${colors.primary}18` : colors.surfaceContainerLow,
+                      backgroundColor: isSelected ? colors.primaryMuted : colors.surfaceContainerLow,
                       borderColor: isSelected ? colors.primary : 'transparent',
                       borderWidth: 1,
                     },
@@ -229,9 +233,9 @@ export default function ProfileScreen() {
         {/* Cooking settings — wired to AppContext */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            COOKING SETTINGS
+            COOKING
           </Text>
-          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
+          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
             Cooking Settings
           </Text>
           <View style={styles.settingsGroup}>
@@ -315,7 +319,7 @@ export default function ProfileScreen() {
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
             GENERAL
           </Text>
-          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
+          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
             General
           </Text>
           <View style={styles.settingsGroup}>
@@ -404,7 +408,7 @@ export default function ProfileScreen() {
                   style={[
                     styles.themeOption,
                     {
-                      backgroundColor: isActive ? `${colors.primary}15` : colors.surfaceContainerLow,
+                      backgroundColor: isActive ? colors.primaryMuted : colors.surfaceContainerLow,
                       borderColor: isActive ? colors.primary : 'transparent',
                       borderWidth: 1,
                     },
@@ -413,7 +417,7 @@ export default function ProfileScreen() {
                   accessibilityLabel={`${option.label} theme, ${option.desc}`}
                   accessibilityState={{ selected: isActive }}
                 >
-                  <View style={[styles.themeIconWrap, { backgroundColor: isActive ? `${colors.primary}20` : colors.surfaceContainerHigh }]}>
+                  <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerHigh }]}>
                     <MaterialCommunityIcons
                       name={option.icon as any}
                       size={22}
@@ -507,7 +511,7 @@ export default function ProfileScreen() {
                   style={[
                     styles.themeOption,
                     {
-                      backgroundColor: isActive ? `${colors.primary}15` : colors.surfaceContainerLow,
+                      backgroundColor: isActive ? colors.primaryMuted : colors.surfaceContainerLow,
                       borderColor: isActive ? colors.primary : 'transparent',
                       borderWidth: 1,
                     },
@@ -516,7 +520,7 @@ export default function ProfileScreen() {
                   accessibilityLabel={partner.label}
                   accessibilityState={{ selected: isActive }}
                 >
-                  <View style={[styles.themeIconWrap, { backgroundColor: isActive ? `${colors.primary}20` : colors.surfaceContainerHigh }]}>
+                  <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerHigh }]}>
                     <MaterialCommunityIcons
                       name={partner.icon as any}
                       size={22}
@@ -562,7 +566,7 @@ const styles = StyleSheet.create({
   levelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: Spacing.xs,
   },
   progressBar: {
     height: 8,
@@ -596,9 +600,9 @@ const styles = StyleSheet.create({
   dietaryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: Spacing.xs,
     paddingHorizontal: Spacing.md,
-    paddingVertical: 10,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
   },
   settingsGroup: {
@@ -608,7 +612,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
-    paddingVertical: 14,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.md,
     gap: Spacing.md,
   },
@@ -625,7 +629,7 @@ const styles = StyleSheet.create({
   },
   unitToggle: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
+    paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
   },
   signOutBtn: {
@@ -633,7 +637,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,
-    paddingVertical: 14,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.full,
     borderWidth: 1,
   },
@@ -643,10 +647,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalSheet: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: Radius.lg,
+    borderTopRightRadius: Radius.lg,
     paddingHorizontal: Spacing.page,
-    paddingBottom: 40,
+    paddingBottom: Spacing.xxl,
     paddingTop: Spacing.md,
   },
   modalHandle: {
@@ -683,5 +687,19 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  profileAccent: {
+    height: Spacing.xs,
+    borderRadius: Radius.full,
+    alignSelf: 'center',
+    width: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  profileAccentLine: {
+    height: 2,
+    width: 40,
+    borderRadius: Radius.full,
   },
 });

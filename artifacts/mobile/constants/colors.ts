@@ -36,6 +36,12 @@ const colors = {
     categorySpice: '#FF8A65',
     categoryPantry: '#A1887F',
 
+    primaryTint: 'rgba(154, 65, 0, 0.07)',
+    primarySubtle: 'rgba(154, 65, 0, 0.09)',
+    primaryMuted: 'rgba(154, 65, 0, 0.12)',
+    primaryFaded: 'rgba(154, 65, 0, 0.20)',
+    primarySoft: 'rgba(154, 65, 0, 0.30)',
+
     text: '#1D1B18',
     tint: '#9A4100',
     background: '#FEF9F3',
@@ -89,6 +95,12 @@ const colors = {
     categoryDairy: '#FFD54F',
     categorySpice: '#FF8A65',
     categoryPantry: '#A1887F',
+
+    primaryTint: 'rgba(154, 65, 0, 0.10)',
+    primarySubtle: 'rgba(154, 65, 0, 0.12)',
+    primaryMuted: 'rgba(154, 65, 0, 0.15)',
+    primaryFaded: 'rgba(154, 65, 0, 0.25)',
+    primarySoft: 'rgba(154, 65, 0, 0.35)',
 
     text: '#F0ECE6',
     tint: '#9A4100',

@@ -117,7 +117,7 @@ export default function CookScreen() {
         ) : (
           <View style={[styles.emptyHero, { marginHorizontal: Spacing.page }]}>
             <View style={[styles.emptyHeroInner, { borderColor: colors.outlineVariant }]}>
-              <View style={[styles.emptyIconCircle, { backgroundColor: `${colors.primary}12` }]}>
+              <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
                 <MaterialCommunityIcons name="weather-sunset" size={44} color={colors.primary} />
               </View>
               <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
@@ -140,7 +140,7 @@ export default function CookScreen() {
                     A {heroCountry.name} Night
                   </Text>
                 </View>
-                <View style={[styles.cardIconBg, { backgroundColor: `${colors.primary}18` }]}>
+                <View style={[styles.cardIconBg, { backgroundColor: colors.primaryMuted }]}>
                   <MaterialCommunityIcons name="party-popper" size={22} color={colors.primary} />
                 </View>
               </View>
@@ -186,7 +186,7 @@ export default function CookScreen() {
                     styles.checkBox,
                     checks[idx]
                       ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                      : { borderColor: `${colors.primary}50` },
+                      : { borderColor: colors.primarySoft },
                   ]}
                 >
                   {checks[idx] && (

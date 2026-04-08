@@ -286,7 +286,7 @@ export default function CookModeScreen() {
                 }
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }}
-              style={[styles.timerActionBtn, { backgroundColor: `${colors.primary}25` }]}
+              style={[styles.timerActionBtn, { backgroundColor: colors.primaryFaded }]}
               accessibilityRole="button"
               accessibilityLabel={timerRunning ? 'Pause timer' : timerSeconds > 0 ? 'Resume timer' : 'Start timer'}
             >

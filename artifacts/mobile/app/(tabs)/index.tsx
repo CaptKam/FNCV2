@@ -271,7 +271,7 @@ export default function DiscoverScreen() {
                 <View style={styles.quickActions}>
                   <Pressable
                     onPress={() => handleAddTonight(recipe)}
-                    style={[styles.quickBtn, { backgroundColor: `${colors.primary}12` }]}
+                    style={[styles.quickBtn, { backgroundColor: colors.primarySubtle }]}
                     accessibilityRole="button"
                     accessibilityLabel={`Add ${recipe.title} to tonight`}
                   >
@@ -280,7 +280,7 @@ export default function DiscoverScreen() {
                   </Pressable>
                   <Pressable
                     onPress={() => handleOpenDayPicker(recipe)}
-                    style={[styles.quickBtn, { backgroundColor: `${colors.primary}12` }]}
+                    style={[styles.quickBtn, { backgroundColor: colors.primarySubtle }]}
                     accessibilityRole="button"
                     accessibilityLabel={`Add ${recipe.title} to weekly plan`}
                   >

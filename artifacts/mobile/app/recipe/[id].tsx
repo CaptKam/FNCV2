@@ -215,7 +215,7 @@ export default function RecipeDetailScreen() {
           </Pressable>
 
           <View style={{ marginTop: Spacing.xl }}>
-            <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 4 }]}>
+            <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
               WHAT YOU NEED
             </Text>
             <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
@@ -239,8 +239,8 @@ export default function RecipeDetailScreen() {
             ))}
           </View>
 
-          <View style={{ marginTop: Spacing.lg }}>
-            <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 4 }]}>
+          <View style={{ marginTop: Spacing.xl }}>
+            <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
               STEP BY STEP
             </Text>
             <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
@@ -284,7 +284,7 @@ export default function RecipeDetailScreen() {
               },
             ]}
           >
-            <Text style={[Typography.labelLarge, { color: colors.primary, marginBottom: 4 }]}>
+            <Text style={[Typography.labelLarge, { color: colors.primary, marginBottom: Spacing.xs }]}>
               CULTURAL NOTE
             </Text>
             <Text style={[Typography.body, { color: colors.onSurfaceVariant, fontSize: 15 }]}>
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,
-    paddingVertical: 12,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.full,
     marginTop: Spacing.md,
   },
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,
-    paddingVertical: 16,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.full,
   },
   sheetOverlay: {
@@ -464,10 +464,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheetContainer: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: Radius.lg,
+    borderTopRightRadius: Radius.lg,
     paddingHorizontal: Spacing.page,
-    paddingBottom: 40,
+    paddingBottom: Spacing.xxl,
     paddingTop: Spacing.sm,
   },
   sheetHandle: {

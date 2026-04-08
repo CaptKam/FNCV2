@@ -79,7 +79,7 @@ export default function BookmarksScreen() {
 
         {savedRecipes.length === 0 ? (
           <View style={styles.emptyState}>
-            <View style={[styles.emptyIcon, { backgroundColor: `${colors.primary}12` }]}>
+            <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}>
               <MaterialCommunityIcons name="bookmark-outline" size={48} color={colors.primary} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
@@ -219,13 +219,13 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     paddingHorizontal: Spacing.page,
-    gap: 10,
+    gap: Spacing.sm,
     marginBottom: Spacing.xl,
     paddingBottom: 2,
   },
   filterPill: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
   },
   filterText: {
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   exploreBtn: {
     paddingHorizontal: Spacing.xl,
-    paddingVertical: 14,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.full,
     marginTop: Spacing.md,
   },
@@ -289,15 +289,15 @@ const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 16,
+    gap: Spacing.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: Radius.md,
   },
   itemThumb: {
     width: 76,
     height: 76,
-    borderRadius: 14,
+    borderRadius: Radius.md,
     overflow: 'hidden',
   },
   itemImage: {
