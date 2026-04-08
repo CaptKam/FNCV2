@@ -17,7 +17,7 @@ import { SmartCookBar } from '@/components/SmartCookBar';
 import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
-import { getPerServingNutrition, NutritionInfo } from '@/data/nutrition';
+import { NutritionInfo } from '@/data/nutrition';
 import { calculateCookReadiness } from '@/utils/cookReadiness';
 
 // ─── Helpers ───
@@ -64,12 +64,12 @@ function getDayNutrition(day: ItineraryDay): NutritionInfo | null {
   if (meals.length === 0) return null;
   const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
   for (const meal of meals) {
-    const n = getPerServingNutrition(meal.recipeId);
-    if (n) {
-      totals.calories += n.calories;
-      totals.protein += n.protein;
-      totals.carbs += n.carbs;
-      totals.fat += n.fat;
+    const recipe = allRecipes.find((r) => r.id === meal.recipeId);
+    if (recipe?.nutrition) {
+      totals.calories += recipe.nutrition.calories;
+      totals.protein += recipe.nutrition.protein;
+      totals.carbs += recipe.nutrition.carbs;
+      totals.fat += recipe.nutrition.fat;
     }
   }
   return totals;

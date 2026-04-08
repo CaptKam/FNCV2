@@ -13,7 +13,6 @@ import { GlassView } from '@/components/GlassView';
 import { countries } from '@/data/countries';
 import { recipes, Step } from '@/data/recipes';
 import { convertAmount, formatCookTime } from '@/data/helpers';
-import { getPerServingNutrition } from '@/data/nutrition';
 import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allergens';
 import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useBookmarks } from '@/context/BookmarksContext';
@@ -95,13 +94,12 @@ export default function RecipeDetailScreen() {
   }
 
   const currentServings = servings;
-  const perServingNutrition = getPerServingNutrition(recipe.id);
-  const scaledNutrition = perServingNutrition
+  const scaledNutrition = recipe.nutrition
     ? {
-        calories: Math.round(perServingNutrition.calories * currentServings),
-        protein: Math.round(perServingNutrition.protein * currentServings),
-        carbs: Math.round(perServingNutrition.carbs * currentServings),
-        fat: Math.round(perServingNutrition.fat * currentServings),
+        calories: Math.round(recipe.nutrition.calories * currentServings),
+        protein: Math.round(recipe.nutrition.protein * currentServings),
+        carbs: Math.round(recipe.nutrition.carbs * currentServings),
+        fat: Math.round(recipe.nutrition.fat * currentServings),
       }
     : null;
   const recipeAllergens = recipe.allergens as AllergenType[];
