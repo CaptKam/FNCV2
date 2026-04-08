@@ -330,7 +330,7 @@ export default function DinnerSetupScreen() {
 
           <View style={[styles.timeCard, { backgroundColor: colors.surfaceContainerHigh }]}>
             <Pressable onPress={() => adjustTime(-15)} style={styles.timeBtn} accessibilityRole="button" accessibilityLabel="Earlier">
-              <MaterialCommunityIcons name="minus" size={22} color={colors.primary} />
+              <MaterialCommunityIcons name="minus" size={20} color={colors.primary} />
             </Pressable>
             <View style={styles.timeDisplay}>
               <Text style={[Typography.displayMedium, { color: colors.onSurface, fontSize: 32 }]}>
@@ -338,7 +338,7 @@ export default function DinnerSetupScreen() {
               </Text>
             </View>
             <Pressable onPress={() => adjustTime(15)} style={styles.timeBtn} accessibilityRole="button" accessibilityLabel="Later">
-              <MaterialCommunityIcons name="plus" size={22} color={colors.primary} />
+              <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
             </Pressable>
           </View>
           <Text style={[Typography.body, { color: colors.primary, textAlign: 'center', marginTop: Spacing.md }]}>
@@ -391,7 +391,7 @@ export default function DinnerSetupScreen() {
             accessibilityRole="button"
             accessibilityLabel="Add guest"
           >
-            <MaterialCommunityIcons name="account-plus" size={18} color={colors.primary} />
+            <MaterialCommunityIcons name="account-plus" size={20} color={colors.primary} />
             <Text style={[Typography.titleSmall, { color: colors.primary }]}>Add Guest</Text>
           </Pressable>
 

@@ -77,7 +77,7 @@ function EventCard({ event, colors }: { event: TimelineEvent; colors: ReturnType
         ) : null}
         {isPassive && (
           <View style={[styles.passiveBadge, { backgroundColor: `${colors.outline}15` }]}>
-            <MaterialCommunityIcons name="timer-sand" size={12} color={colors.outline} />
+            <MaterialCommunityIcons name="timer-sand" size={16} color={colors.outline} />
             <Text style={[Typography.labelSmall, { color: colors.outline }]}>Hands-off</Text>
           </View>
         )}
@@ -116,7 +116,7 @@ export default function CookingScheduleScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.surface }]}>
         <View style={[styles.emptyState, { paddingTop: insets.top + 80 }]}>
-          <MaterialCommunityIcons name="calendar-blank" size={48} color={colors.outlineVariant} />
+          <MaterialCommunityIcons name="calendar-blank" size={40} color={colors.outlineVariant} />
           <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
             No schedule yet
           </Text>
@@ -156,7 +156,7 @@ export default function CookingScheduleScreen() {
           accessibilityRole="button"
           accessibilityLabel="Close"
         >
-          <MaterialCommunityIcons name="arrow-left" size={22} color={colors.onSurface} />
+          <MaterialCommunityIcons name="arrow-left" size={20} color={colors.onSurface} />
         </Pressable>
         <View style={styles.headerCenter}>
           <Text style={[Typography.display, { color: colors.onSurface, fontSize: 22 }]}>

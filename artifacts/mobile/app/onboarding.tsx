@@ -111,7 +111,7 @@ export default function OnboardingScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <MaterialCommunityIcons name="arrow-left" size={22} color={colors.onSurface} />
+            <MaterialCommunityIcons name="arrow-left" size={20} color={colors.onSurface} />
           </Pressable>
         )}
         <Pressable
@@ -134,7 +134,7 @@ export default function OnboardingScreen() {
         {step === 0 && (
           <>
             <View style={[styles.iconCircle, { backgroundColor: colors.primarySubtle }]}>
-              <MaterialCommunityIcons name="compass-outline" size={48} color={colors.primary} />
+              <MaterialCommunityIcons name="compass-outline" size={40} color={colors.primary} />
             </View>
             <Text style={[styles.title, { color: colors.onSurface }]}>
               Welcome to{'\n'}Fork & Compass
@@ -212,7 +212,7 @@ export default function OnboardingScreen() {
         {step === 1 && (
           <>
             <View style={[styles.iconCircle, { backgroundColor: colors.primarySubtle }]}>
-              <MaterialCommunityIcons name="food-apple-outline" size={48} color={colors.primary} />
+              <MaterialCommunityIcons name="food-apple-outline" size={40} color={colors.primary} />
             </View>
             <Text style={[styles.title, { color: colors.onSurface }]}>
               Any dietary{'\n'}preferences?
@@ -249,7 +249,7 @@ export default function OnboardingScreen() {
                       {option.label}
                     </Text>
                     {isSelected && (
-                      <MaterialCommunityIcons name="check-circle" size={18} color={colors.primary} />
+                      <MaterialCommunityIcons name="check-circle" size={20} color={colors.primary} />
                     )}
                   </Pressable>
                 );
@@ -261,7 +261,7 @@ export default function OnboardingScreen() {
         {step === 2 && (
           <>
             <View style={[styles.iconCircle, { backgroundColor: colors.primarySubtle }]}>
-              <MaterialCommunityIcons name="chef-hat" size={48} color={colors.primary} />
+              <MaterialCommunityIcons name="chef-hat" size={40} color={colors.primary} />
             </View>
             <Text style={[styles.title, { color: colors.onSurface }]}>
               What's your{'\n'}cooking level?
@@ -306,7 +306,7 @@ export default function OnboardingScreen() {
                     </Text>
                   </View>
                   {isActive && (
-                    <MaterialCommunityIcons name="check-circle" size={22} color={colors.primary} />
+                    <MaterialCommunityIcons name="check-circle" size={20} color={colors.primary} />
                   )}
                 </Pressable>
               );

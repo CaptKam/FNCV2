@@ -236,7 +236,7 @@ export default function CookModeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Close cook mode"
         >
-          <MaterialCommunityIcons name="close" size={22} color={t.headerIcon} />
+          <MaterialCommunityIcons name="close" size={20} color={t.headerIcon} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: t.headerTitle }]}>
           {isDinnerMode && dinnerEvent?.recipeName ? `${dinnerEvent.recipeName} · ` : ''}Step {currentStep + 1} of {totalSteps}
@@ -253,7 +253,7 @@ export default function CookModeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Timer"
         >
-          <MaterialCommunityIcons name="timer-outline" size={22} color={t.headerIcon} />
+          <MaterialCommunityIcons name="timer-outline" size={20} color={t.headerIcon} />
         </Pressable>
       </View>
 
@@ -332,7 +332,7 @@ export default function CookModeScreen() {
 
         {step.duration && step.duration > 0 && (
           <View style={styles.stepDurationBadge}>
-            <MaterialCommunityIcons name="clock-outline" size={14} color={t.durationIcon} />
+            <MaterialCommunityIcons name="clock-outline" size={16} color={t.durationIcon} />
             <Text style={[styles.stepDurationText, { color: t.durationText }]}>
               {step.duration} min for this step
             </Text>

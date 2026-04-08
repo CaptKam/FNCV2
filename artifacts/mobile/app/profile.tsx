@@ -10,7 +10,7 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -91,7 +91,7 @@ function SettingRow({ icon, label, subtitle, onPress, trailing, colors }: Settin
         )}
       </View>
       {trailing || (
-        <Feather name="chevron-right" size={18} color={colors.outline} />
+        <MaterialCommunityIcons name="chevron-right" size={20} color={colors.outline} />
       )}
     </Pressable>
   );
@@ -178,7 +178,7 @@ export default function ProfileScreen() {
               </Text>
             )}
             <View style={[styles.editBadge, { backgroundColor: colors.primary }]}>
-              <Feather name="edit-2" size={10} color={colors.onPrimary} />
+              <MaterialCommunityIcons name="pencil" size={16} color={colors.onPrimary} />
             </View>
           </Pressable>
           <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center' }]}>
@@ -410,7 +410,7 @@ export default function ProfileScreen() {
             accessibilityRole="button"
             accessibilityLabel="Sign out"
           >
-            <MaterialCommunityIcons name="logout" size={18} color={colors.error} />
+            <MaterialCommunityIcons name="logout" size={20} color={colors.error} />
             <Text style={[Typography.titleSmall, { color: colors.error }]}>Sign Out</Text>
           </Pressable>
         </View>
@@ -457,7 +457,7 @@ export default function ProfileScreen() {
                   <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerHigh }]}>
                     <MaterialCommunityIcons
                       name={option.icon}
-                      size={22}
+                      size={20}
                       color={isActive ? colors.primary : colors.outline}
                     />
                   </View>
@@ -470,7 +470,7 @@ export default function ProfileScreen() {
                     </Text>
                   </View>
                   {isActive && (
-                    <MaterialCommunityIcons name="check-circle" size={22} color={colors.primary} />
+                    <MaterialCommunityIcons name="check-circle" size={20} color={colors.primary} />
                   )}
                 </Pressable>
               );
@@ -560,7 +560,7 @@ export default function ProfileScreen() {
                   <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerHigh }]}>
                     <MaterialCommunityIcons
                       name={partner.icon}
-                      size={22}
+                      size={20}
                       color={isActive ? colors.primary : colors.outline}
                     />
                   </View>
@@ -568,7 +568,7 @@ export default function ProfileScreen() {
                     {partner.label}
                   </Text>
                   {isActive && (
-                    <MaterialCommunityIcons name="check-circle" size={22} color={colors.primary} />
+                    <MaterialCommunityIcons name="check-circle" size={20} color={colors.primary} />
                   )}
                 </Pressable>
               );

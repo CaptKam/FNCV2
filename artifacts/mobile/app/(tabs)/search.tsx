@@ -10,7 +10,6 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -108,7 +107,7 @@ export default function SearchScreen() {
 
         <View style={[styles.searchContainer, { paddingHorizontal: Spacing.page }]}>
           <View style={[styles.searchInput, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Feather name="search" size={20} color={colors.outline} />
+            <MaterialCommunityIcons name="magnify" size={20} color={colors.outline} />
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -181,7 +180,7 @@ export default function SearchScreen() {
                   >
                     <MaterialCommunityIcons
                       name={isActive ? 'close-circle' : info.icon}
-                      size={14}
+                      size={16}
                       color={isActive ? colors.error : colors.onSurfaceVariant}
                     />
                     <Text style={[Typography.caption, { color: isActive ? colors.error : colors.onSurfaceVariant }]}>
@@ -206,7 +205,7 @@ export default function SearchScreen() {
         {query.trim().length > 0 && filteredRecipes.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="magnify" size={32} color={colors.onSurfaceVariant} />
+              <MaterialCommunityIcons name="magnify" size={28} color={colors.onSurfaceVariant} />
             </View>
             <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
               No matches found
@@ -258,7 +257,7 @@ export default function SearchScreen() {
               </View>
               <Pressable style={styles.heartBtn} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Save ${recipe.title} to bookmarks`}>
                 <GlassView style={styles.heartGlass}>
-                  <Feather name="heart" size={14} color={colors.textOnImage} />
+                  <MaterialCommunityIcons name="heart-outline" size={16} color={colors.textOnImage} />
                 </GlassView>
               </Pressable>
             </Pressable>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
@@ -68,14 +68,14 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         </Text>
         <View style={styles.badgeRow}>
           <View style={[styles.timeBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
-            <Feather name="clock" size={10} color={colors.outline} />
+            <MaterialCommunityIcons name="clock-outline" size={16} color={colors.outline} />
             <Text style={[Typography.caption, { color: colors.outline }]}>
               {formatCookTime(recipe.prepTime + recipe.cookTime)}
             </Text>
           </View>
           {hasConflict && (
             <View style={[styles.allergenBadge, { backgroundColor: `${colors.error}18` }]}>
-              <MaterialCommunityIcons name="alert-circle" size={10} color={colors.error} />
+              <MaterialCommunityIcons name="alert-circle" size={16} color={colors.error} />
               <Text style={[Typography.caption, { color: colors.error, fontSize: 10 }]}>Allergen</Text>
             </View>
           )}
@@ -98,7 +98,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                 >
                   <MaterialCommunityIcons
                     name={info.icon}
-                    size={10}
+                    size={16}
                     color={isConflict ? colors.error : colors.outline}
                   />
                   <Text style={[Typography.caption, { fontSize: 9, color: isConflict ? colors.error : colors.outline }]}>

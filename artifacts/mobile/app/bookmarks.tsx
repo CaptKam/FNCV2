@@ -122,7 +122,7 @@ export default function BookmarksScreen() {
                 >
                   <MaterialCommunityIcons
                     name={opt.icon}
-                    size={14}
+                    size={16}
                     color={isActive ? colors.primary : colors.outline}
                   />
                   <Text
@@ -142,7 +142,7 @@ export default function BookmarksScreen() {
         {savedRecipes.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={[styles.emptyIcon, { backgroundColor: colors.primarySubtle }]}>
-              <MaterialCommunityIcons name="heart-outline" size={48} color={colors.primary} />
+              <MaterialCommunityIcons name="heart-outline" size={40} color={colors.primary} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
               Your collection is empty
@@ -208,7 +208,7 @@ export default function BookmarksScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`Remove ${recipe.title} from bookmarks`}
                   >
-                    <MaterialCommunityIcons name="heart" size={22} color={colors.primary} />
+                    <MaterialCommunityIcons name="heart" size={20} color={colors.primary} />
                   </Pressable>
                 </Pressable>
               ))}

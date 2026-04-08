@@ -121,21 +121,21 @@ export default function CookScreen() {
 
                 <View style={styles.statsRow}>
                   <View style={styles.statItem}>
-                    <MaterialCommunityIcons name="clock-outline" size={18} color={colors.primary} />
+                    <MaterialCommunityIcons name="clock-outline" size={20} color={colors.primary} />
                     <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
                       {formatCookTime(heroRecipe.prepTime + heroRecipe.cookTime)}
                     </Text>
                   </View>
                   <View style={[styles.statDivider, { backgroundColor: colors.outlineVariant }]} />
                   <View style={styles.statItem}>
-                    <MaterialCommunityIcons name="account-group-outline" size={18} color={colors.primary} />
+                    <MaterialCommunityIcons name="account-group-outline" size={20} color={colors.primary} />
                     <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
                       {heroRecipe.servings} Servings
                     </Text>
                   </View>
                   <View style={[styles.statDivider, { backgroundColor: colors.outlineVariant }]} />
                   <View style={styles.statItem}>
-                    <MaterialCommunityIcons name="star-outline" size={18} color={colors.primary} />
+                    <MaterialCommunityIcons name="star-outline" size={20} color={colors.primary} />
                     <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
                       {heroRecipe.difficulty}
                     </Text>
@@ -148,7 +148,7 @@ export default function CookScreen() {
           <View style={[styles.emptyHero, { marginHorizontal: Spacing.page }]}>
             <View style={[styles.emptyHeroInner, { borderColor: colors.outlineVariant }]}>
               <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
-                <MaterialCommunityIcons name="weather-sunset" size={44} color={colors.primary} />
+                <MaterialCommunityIcons name="weather-sunset" size={40} color={colors.primary} />
               </View>
               <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
                 Ready when you are
@@ -168,7 +168,7 @@ export default function CookScreen() {
                 When you're ready, tap Start Cooking and we'll guide you through every step.
               </Text>
               <Pressable onPress={dismissCookHint} hitSlop={8} accessibilityRole="button" accessibilityLabel="Dismiss hint">
-                <MaterialCommunityIcons name="close" size={18} color={colors.onSurfaceVariant} />
+                <MaterialCommunityIcons name="close" size={20} color={colors.onSurfaceVariant} />
               </Pressable>
             </View>
           </View>
@@ -185,7 +185,7 @@ export default function CookScreen() {
                   </Text>
                 </View>
                 <View style={[styles.cardIconBg, { backgroundColor: colors.primaryMuted }]}>
-                  <MaterialCommunityIcons name="party-popper" size={22} color={colors.primary} />
+                  <MaterialCommunityIcons name="party-popper" size={20} color={colors.primary} />
                 </View>
               </View>
               <View style={[styles.guestRow, { backgroundColor: colors.surface, borderTopColor: colors.glassOverlay }]}>
@@ -239,7 +239,7 @@ export default function CookScreen() {
                   ]}
                 >
                   {checks[idx] && (
-                    <MaterialCommunityIcons name="check" size={14} color={colors.onPrimary} />
+                    <MaterialCommunityIcons name="check" size={16} color={colors.onPrimary} />
                   )}
                 </View>
                 <Text
@@ -277,7 +277,7 @@ export default function CookScreen() {
               <Text style={[Typography.titleMedium, { color: colors.onPrimary, letterSpacing: -0.3 }]}>
                 {hasActiveSession ? 'Continue Cooking' : 'Start Cooking'}
               </Text>
-              <MaterialCommunityIcons name="arrow-right" size={22} color={colors.onPrimary} />
+              <MaterialCommunityIcons name="arrow-right" size={20} color={colors.onPrimary} />
             </Pressable>
             {hasDinnerParty && !hasActiveSession && todayParty && (
               <Pressable
@@ -306,7 +306,7 @@ export default function CookScreen() {
               accessibilityLabel="Plan a meal"
             >
               <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Plan a Meal</Text>
-              <MaterialCommunityIcons name="arrow-right" size={22} color={colors.onPrimary} />
+              <MaterialCommunityIcons name="arrow-right" size={20} color={colors.onPrimary} />
             </Pressable>
           </View>
         )}
@@ -352,7 +352,7 @@ export default function CookScreen() {
                 />
                 <View style={styles.techBadge}>
                   <GlassView style={styles.techBadgeInner}>
-                    <MaterialCommunityIcons name="clock-outline" size={10} color={colors.textOnImage} />
+                    <MaterialCommunityIcons name="clock-outline" size={16} color={colors.textOnImage} />
                     <Text style={[Typography.labelSmall, { color: colors.textOnImage }]}>{tech.duration}</Text>
                   </GlassView>
                 </View>

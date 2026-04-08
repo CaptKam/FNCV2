@@ -61,7 +61,7 @@ export function HeaderBar({ transparent = false, showBack = false, rightAction }
           accessibilityRole="button"
           accessibilityLabel="Saved recipes"
         >
-          <MaterialCommunityIcons name="heart-outline" size={22} color={iconColor} />
+          <MaterialCommunityIcons name="heart-outline" size={24} color={iconColor} />
         </Pressable>
       </View>
     </View>

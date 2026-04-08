@@ -2,7 +2,6 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal, FlatList } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -192,19 +191,19 @@ export default function RecipeDetailScreen() {
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.lg }}>
           <View style={styles.statsRow}>
             <View style={styles.stat}>
-              <Feather name="clock" size={16} color={colors.outline} />
+              <MaterialCommunityIcons name="clock-outline" size={16} color={colors.outline} />
               <Text style={[Typography.caption, { color: colors.outline }]}>Prep {formatCookTime(recipe.prepTime)}</Text>
             </View>
             <View style={styles.stat}>
-              <Feather name="thermometer" size={16} color={colors.outline} />
+              <MaterialCommunityIcons name="thermometer" size={16} color={colors.outline} />
               <Text style={[Typography.caption, { color: colors.outline }]}>Cook {formatCookTime(recipe.cookTime)}</Text>
             </View>
             <View style={styles.stat}>
-              <Feather name="bar-chart-2" size={16} color={colors.outline} />
+              <MaterialCommunityIcons name="chart-bar" size={16} color={colors.outline} />
               <Text style={[Typography.caption, { color: colors.outline }]}>{recipe.difficulty}</Text>
             </View>
             <View style={styles.stat}>
-              <Feather name="users" size={16} color={colors.outline} />
+              <MaterialCommunityIcons name="account-group-outline" size={16} color={colors.outline} />
               <Text style={[Typography.caption, { color: colors.outline }]}>{currentServings}</Text>
             </View>
           </View>
@@ -216,7 +215,7 @@ export default function RecipeDetailScreen() {
               accessibilityRole="button"
               accessibilityLabel="Decrease servings"
             >
-              <Feather name="minus" size={18} color={colors.primary} />
+              <MaterialCommunityIcons name="minus" size={20} color={colors.primary} />
             </Pressable>
             <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
               {currentServings} servings
@@ -227,7 +226,7 @@ export default function RecipeDetailScreen() {
               accessibilityRole="button"
               accessibilityLabel="Increase servings"
             >
-              <Feather name="plus" size={18} color={colors.primary} />
+              <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
             </Pressable>
           </View>
 
@@ -255,7 +254,7 @@ export default function RecipeDetailScreen() {
                     >
                       <MaterialCommunityIcons
                         name={info.icon}
-                        size={14}
+                        size={16}
                         color={isUserAllergen ? colors.error : colors.onSurfaceVariant}
                       />
                       <Text
@@ -288,7 +287,7 @@ export default function RecipeDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Add to meal plan"
           >
-            <MaterialCommunityIcons name="calendar-plus" size={18} color={colors.onPrimary} />
+            <MaterialCommunityIcons name="calendar-plus" size={20} color={colors.onPrimary} />
             <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Add to Plan</Text>
           </Pressable>
 
@@ -364,7 +363,7 @@ export default function RecipeDetailScreen() {
                             <View style={[styles.subButtonPill, { backgroundColor: isSubExpanded ? colors.primary : 'rgba(30, 25, 20, 0.75)' }]}>
                               <MaterialCommunityIcons
                                 name="swap-horizontal"
-                                size={14}
+                                size={16}
                                 color="#FFFFFF"
                               />
                               <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>
@@ -376,7 +375,7 @@ export default function RecipeDetailScreen() {
                       </Pressable>
                       {subs && subs.length > 0 && isSubExpanded && (
                         <View style={[styles.substitutionHint, { backgroundColor: colors.surfaceContainerLow }]}>
-                          <MaterialCommunityIcons name="swap-horizontal" size={14} color={colors.primary} />
+                          <MaterialCommunityIcons name="swap-horizontal" size={16} color={colors.primary} />
                           <View style={{ flex: 1 }}>
                             {subs.map((sub, si) => (
                               <Text key={si} style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
@@ -430,7 +429,7 @@ export default function RecipeDetailScreen() {
                   </Text>
                   {step.duration && (
                     <View style={styles.timerRow}>
-                      <Feather name="clock" size={12} color={colors.outline} />
+                      <MaterialCommunityIcons name="clock-outline" size={16} color={colors.outline} />
                       <Text style={[Typography.caption, { color: colors.outline }]}>
                         {step.duration} min
                       </Text>
@@ -468,7 +467,7 @@ export default function RecipeDetailScreen() {
           accessibilityRole="button"
           accessibilityLabel={`Start cooking ${recipe.title}`}
         >
-          <Feather name="play" size={20} color={colors.onPrimary} />
+          <MaterialCommunityIcons name="play" size={20} color={colors.onPrimary} />
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
         </Pressable>
       </GlassView>

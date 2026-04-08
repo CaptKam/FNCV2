@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, Modal, Pressable, FlatList, TextInput, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
@@ -60,12 +60,12 @@ export function RecipePickerSheet({ visible, onDismiss, onSelect }: RecipePicker
               accessibilityRole="button"
               accessibilityLabel="Close"
             >
-              <Feather name="x" size={24} color={colors.outline} />
+              <MaterialCommunityIcons name="close" size={24} color={colors.outline} />
             </Pressable>
           </View>
 
           <View style={[styles.searchRow, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Feather name="search" size={18} color={colors.outline} />
+            <MaterialCommunityIcons name="magnify" size={20} color={colors.outline} />
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -104,7 +104,7 @@ export function RecipePickerSheet({ visible, onDismiss, onSelect }: RecipePicker
                       {country?.flag} {country?.name} {'\u00B7'} {formatCookTime(item.cookTime)} {'\u00B7'} {item.difficulty}
                     </Text>
                   </View>
-                  <Feather name="plus" size={20} color={colors.primary} />
+                  <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
                 </Pressable>
               );
             }}
