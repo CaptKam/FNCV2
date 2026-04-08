@@ -11,7 +11,7 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { countries } from '@/data/countries';
-import { recipes, Step, Ingredient } from '@/data/recipes';
+import { recipes, Step } from '@/data/recipes';
 import { convertAmount, formatCookTime } from '@/data/helpers';
 import { getSubstitutions } from '@/data/substitutions';
 import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allergens';
