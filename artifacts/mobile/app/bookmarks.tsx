@@ -162,58 +162,93 @@ export default function BookmarksScreen() {
             </Pressable>
           </View>
         ) : (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
-                {sortMode === 'cuisine' ? 'By Cuisine' : sortMode === 'difficulty' ? 'By Difficulty' : 'Saved Recipes'}
-              </Text>
-              <Text style={[styles.sectionBadge, { color: colors.primary }]}>
-                {savedRecipes.length} recipe{savedRecipes.length !== 1 ? 's' : ''}
-              </Text>
-            </View>
-            <View style={styles.listGroup}>
-              {savedRecipes.map((recipe, index) => (
-                <AnimatedListItem key={recipe.id} index={index}>
-                <Pressable
-                  onPress={() => router.push(`/recipe/${recipe.id}`)}
-                  style={styles.itemRow}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}
-                >
-                  <View style={[styles.itemThumb, { backgroundColor: colors.surfaceContainer }]}>
-                    <Image
-                      source={{ uri: recipe.image }}
-                      style={styles.itemImage}
-                      contentFit="cover"
-                      transition={200}
-                      accessibilityLabel={recipe.title}
-                    />
-                  </View>
-                  <View style={styles.itemContent}>
-                    <Text style={[styles.itemCategory, { color: colors.primary }]}>
-                      {getCountryName(recipe.countryId)}
-                    </Text>
-                    <Text style={[styles.itemTitle, { color: colors.onSurface }]} numberOfLines={1}>
-                      {recipe.title}
-                    </Text>
-                    <Text style={[styles.itemMeta, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
-                      {recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}
-                    </Text>
-                  </View>
-                  <AnimatedHeart
-                    filled={true}
-                    onToggle={() => toggleBookmark(recipe.id)}
-                    size={20}
-                    filledColor={colors.primary}
-                    outlineColor={colors.outline}
-                    style={styles.heartBtn}
-                    accessibilityLabel={`Remove ${recipe.title} from bookmarks`}
-                  />
-                </Pressable>
-                </AnimatedListItem>
-              ))}
-            </View>
-          </View>
+          <>
+            {/* Recently Saved section (first 3, only in default sort) */}
+            {sortMode === 'date' && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Recently Saved</Text>
+                  <Text style={[styles.sectionBadge, { color: colors.primary }]}>
+                    {savedRecipes.length} recipe{savedRecipes.length !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+                <View style={styles.listGroup}>
+                  {savedRecipes.slice(0, 3).map((recipe, index) => (
+                    <AnimatedListItem key={recipe.id} index={index}>
+                    <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)} style={styles.itemRow} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}>
+                      <View style={[styles.itemThumb, { backgroundColor: colors.surfaceContainer }]}>
+                        <Image source={{ uri: recipe.image }} style={styles.itemImage} contentFit="cover" transition={200} accessibilityLabel={recipe.title} />
+                      </View>
+                      <View style={styles.itemContent}>
+                        <Text style={[styles.itemCategory, { color: colors.primary }]}>{getCountryName(recipe.countryId)}</Text>
+                        <Text style={[styles.itemTitle, { color: colors.onSurface }]} numberOfLines={1}>{recipe.title}</Text>
+                        <Text style={[styles.itemMeta, { color: colors.onSurfaceVariant }]} numberOfLines={1}>{recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}</Text>
+                      </View>
+                      <AnimatedHeart filled={true} onToggle={() => toggleBookmark(recipe.id)} size={20} filledColor={colors.primary} outlineColor={colors.outline} style={styles.heartBtn} accessibilityLabel={`Remove ${recipe.title} from bookmarks`} />
+                    </Pressable>
+                    </AnimatedListItem>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* From the Archives section (items 4+, only in default sort when >3 items) */}
+            {sortMode === 'date' && savedRecipes.length > 3 && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>From the Archives</Text>
+                </View>
+                <View style={styles.listGroup}>
+                  {savedRecipes.slice(3).map((recipe, index) => (
+                    <AnimatedListItem key={recipe.id} index={index}>
+                    <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)} style={styles.itemRow} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}>
+                      <View style={[styles.itemThumb, { backgroundColor: colors.surfaceContainer }]}>
+                        <Image source={{ uri: recipe.image }} style={styles.itemImage} contentFit="cover" transition={200} accessibilityLabel={recipe.title} />
+                      </View>
+                      <View style={styles.itemContent}>
+                        <Text style={[styles.itemCategory, { color: colors.primary }]}>{getCountryName(recipe.countryId)}</Text>
+                        <Text style={[styles.itemTitle, { color: colors.onSurface }]} numberOfLines={1}>{recipe.title}</Text>
+                        <Text style={[styles.itemMeta, { color: colors.onSurfaceVariant }]} numberOfLines={1}>{recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}</Text>
+                      </View>
+                      <AnimatedHeart filled={true} onToggle={() => toggleBookmark(recipe.id)} size={20} filledColor={colors.primary} outlineColor={colors.outline} style={styles.heartBtn} accessibilityLabel={`Remove ${recipe.title} from bookmarks`} />
+                    </Pressable>
+                    </AnimatedListItem>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Sorted view (cuisine/difficulty — single flat section) */}
+            {sortMode !== 'date' && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
+                    {sortMode === 'cuisine' ? 'By Cuisine' : 'By Difficulty'}
+                  </Text>
+                  <Text style={[styles.sectionBadge, { color: colors.primary }]}>
+                    {savedRecipes.length} recipe{savedRecipes.length !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+                <View style={styles.listGroup}>
+                  {savedRecipes.map((recipe, index) => (
+                    <AnimatedListItem key={recipe.id} index={index}>
+                    <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)} style={styles.itemRow} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}>
+                      <View style={[styles.itemThumb, { backgroundColor: colors.surfaceContainer }]}>
+                        <Image source={{ uri: recipe.image }} style={styles.itemImage} contentFit="cover" transition={200} accessibilityLabel={recipe.title} />
+                      </View>
+                      <View style={styles.itemContent}>
+                        <Text style={[styles.itemCategory, { color: colors.primary }]}>{getCountryName(recipe.countryId)}</Text>
+                        <Text style={[styles.itemTitle, { color: colors.onSurface }]} numberOfLines={1}>{recipe.title}</Text>
+                        <Text style={[styles.itemMeta, { color: colors.onSurfaceVariant }]} numberOfLines={1}>{recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}</Text>
+                      </View>
+                      <AnimatedHeart filled={true} onToggle={() => toggleBookmark(recipe.id)} size={20} filledColor={colors.primary} outlineColor={colors.outline} style={styles.heartBtn} accessibilityLabel={`Remove ${recipe.title} from bookmarks`} />
+                    </Pressable>
+                    </AnimatedListItem>
+                  ))}
+                </View>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
     </View>
