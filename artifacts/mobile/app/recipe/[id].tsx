@@ -243,9 +243,21 @@ export default function RecipeDetailScreen() {
             <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
               STEP BY STEP
             </Text>
-            <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
+            <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.md }]}>
               Instructions
             </Text>
+
+            {/* Cooking level indicator */}
+            {app.cookingLevel !== 'home_cook' && recipe.steps.some((s) =>
+              (app.cookingLevel === 'beginner' && (s as any).instructionFirstSteps) ||
+              (app.cookingLevel === 'chef' && (s as any).instructionChefsTable)
+            ) && (
+              <View style={[styles.levelPill, { backgroundColor: colors.surfaceContainerHigh }]}>
+                <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
+                  {app.cookingLevel === 'beginner' ? '🌱 Showing beginner-friendly instructions' : '👨‍🍳 Showing professional instructions'}
+                </Text>
+              </View>
+            )}
 
             {recipe.steps.map((step, idx) => (
               <View key={idx} style={styles.stepRow}>
@@ -419,6 +431,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: Spacing.sm,
+  },
+  levelPill: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+    marginBottom: Spacing.lg,
   },
   stepRow: {
     flexDirection: 'row',

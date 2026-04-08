@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -13,6 +13,7 @@ import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { countries } from '@/data/countries';
 import { recipes } from '@/data/recipes';
+import { REGION_IMAGES, RECIPE_REGION_MAP } from '@/data/maps';
 
 export default function CountryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,8 +21,16 @@ export default function CountryDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+
   const country = countries.find((c) => c.id === id);
   const countryRecipes = recipes.filter((r) => r.countryId === id);
+  const regions = id ? REGION_IMAGES[id] ?? [] : [];
+
+  const filteredRecipes = useMemo(() => {
+    if (!selectedRegion) return countryRecipes;
+    return countryRecipes.filter((r) => RECIPE_REGION_MAP[r.id] === selectedRegion);
+  }, [countryRecipes, selectedRegion]);
 
   if (!country) {
     return (
@@ -60,49 +69,138 @@ export default function CountryDetailScreen() {
         </View>
 
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xl }}>
-          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 4 }]}>
+          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
             CULINARY HERITAGE
           </Text>
           <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.md }]}>
             {country.cuisineLabel}
           </Text>
-          <Text style={[Typography.body, { color: colors.onSurfaceVariant, marginBottom: Spacing.xl }]}>
+          <Text style={[Typography.body, { color: colors.onSurfaceVariant, marginBottom: Spacing.xl, lineHeight: 26 }]}>
             {country.description}
           </Text>
+        </View>
 
-          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: 4 }]}>
+        {/* Regions Section */}
+        {regions.length > 0 && (
+          <View style={{ marginBottom: Spacing.xl }}>
+            <View style={{ paddingHorizontal: Spacing.page }}>
+              <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
+                EXPLORE REGIONS
+              </Text>
+              <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
+                Discover {country.name}
+              </Text>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: Spacing.page, gap: Spacing.md }}
+            >
+              {regions.map((region) => {
+                const isSelected = selectedRegion === region.name;
+                const recipeCount = countryRecipes.filter((r) => RECIPE_REGION_MAP[r.id] === region.name).length;
+                return (
+                  <Pressable
+                    key={region.name}
+                    onPress={() => setSelectedRegion(isSelected ? null : region.name)}
+                    style={[
+                      styles.regionCard,
+                      { backgroundColor: colors.surfaceContainerHigh },
+                      isSelected && { borderWidth: 2, borderColor: colors.primary },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${region.name}, ${region.subtitle}`}
+                  >
+                    {region.image ? (
+                      <>
+                        <Image source={{ uri: region.image }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
+                        <LinearGradient colors={['transparent', 'rgba(0,0,0,0.7)']} style={StyleSheet.absoluteFill} />
+                        <View style={styles.regionContent}>
+                          <Text style={[Typography.titleMedium, { color: colors.textOnImage }]}>{region.name}</Text>
+                          <Text style={[Typography.caption, { color: 'rgba(255,255,255,0.7)' }]}>{region.subtitle}</Text>
+                        </View>
+                      </>
+                    ) : (
+                      <View style={styles.regionContentNoImage}>
+                        <Text style={{ fontSize: 36 }}>{country.flag}</Text>
+                        <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>{region.name}</Text>
+                        <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]} numberOfLines={2}>{region.subtitle}</Text>
+                        {recipeCount > 0 && (
+                          <Text style={[Typography.caption, { color: colors.primary, marginTop: Spacing.xs }]}>
+                            {recipeCount} recipe{recipeCount !== 1 ? 's' : ''}
+                          </Text>
+                        )}
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Signature Recipes */}
+        <View style={{ paddingHorizontal: Spacing.page }}>
+          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
             SIGNATURE RECIPES
           </Text>
-          <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
-            Signature Recipes
+          <Text style={[Typography.headlineLarge, { color: colors.onSurface, marginBottom: Spacing.md }]}>
+            {selectedRegion ? `${selectedRegion} Recipes` : 'Signature Recipes'}
           </Text>
 
-          {countryRecipes.map((recipe) => (
+          {/* Region filter pill */}
+          {selectedRegion && (
             <Pressable
-              key={recipe.id}
-              onPress={() => router.push(`/recipe/${recipe.id}`)}
-              style={[styles.recipeRow, { backgroundColor: colors.surfaceContainerLow }]}
+              onPress={() => setSelectedRegion(null)}
+              style={[styles.filterPill, { backgroundColor: `${colors.primary}15` }]}
               accessibilityRole="button"
-              accessibilityLabel={`${recipe.title}, ${recipe.cookTime} minutes, ${recipe.difficulty}`}
+              accessibilityLabel={`Clear ${selectedRegion} filter`}
             >
-              <Image
-                source={{ uri: recipe.image }}
-                style={styles.recipeThumb}
-                contentFit="cover"
-                transition={300}
-                accessibilityLabel={recipe.title}
-              />
-              <View style={styles.recipeInfo}>
-                <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 17 }]} numberOfLines={1}>
-                  {recipe.title}
-                </Text>
-                <Text style={[Typography.caption, { color: colors.outline }]}>
-                  {recipe.cookTime} min {'\u00B7'} {recipe.difficulty}
-                </Text>
-              </View>
-              <Feather name="chevron-right" size={20} color={colors.outline} />
+              <Text style={[Typography.titleSmall, { color: colors.primary }]}>
+                Showing {selectedRegion} recipes
+              </Text>
+              <MaterialCommunityIcons name="close-circle" size={16} color={colors.primary} />
             </Pressable>
-          ))}
+          )}
+
+          {filteredRecipes.length === 0 ? (
+            <View style={styles.emptyRegion}>
+              <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center' }]}>
+                No recipes mapped to this region yet.
+              </Text>
+              <Pressable onPress={() => setSelectedRegion(null)}>
+                <Text style={[Typography.titleSmall, { color: colors.primary, marginTop: Spacing.sm }]}>Show all recipes</Text>
+              </Pressable>
+            </View>
+          ) : (
+            filteredRecipes.map((recipe) => (
+              <Pressable
+                key={recipe.id}
+                onPress={() => router.push(`/recipe/${recipe.id}`)}
+                style={[styles.recipeRow, { backgroundColor: colors.surfaceContainerLow }]}
+                accessibilityRole="button"
+                accessibilityLabel={`${recipe.title}, ${recipe.cookTime} minutes, ${recipe.difficulty}`}
+              >
+                <Image
+                  source={{ uri: recipe.image }}
+                  style={styles.recipeThumb}
+                  contentFit="cover"
+                  transition={300}
+                  accessibilityLabel={recipe.title}
+                />
+                <View style={styles.recipeInfo}>
+                  <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 17 }]} numberOfLines={1}>
+                    {recipe.title}
+                  </Text>
+                  <Text style={[Typography.caption, { color: colors.outline }]}>
+                    {recipe.cookTime} min {'\u00B7'} {recipe.difficulty}
+                    {RECIPE_REGION_MAP[recipe.id] ? ` · ${RECIPE_REGION_MAP[recipe.id]}` : ''}
+                  </Text>
+                </View>
+                <Feather name="chevron-right" size={20} color={colors.outline} />
+              </Pressable>
+            ))
+          )}
         </View>
       </ScrollView>
     </View>
@@ -130,6 +228,40 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: Radius.full,
+  },
+  regionCard: {
+    width: 160,
+    height: 200,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+  },
+  regionContent: {
+    position: 'absolute',
+    bottom: Spacing.md,
+    left: Spacing.md,
+    right: Spacing.md,
+    gap: 2,
+  },
+  regionContentNoImage: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    gap: Spacing.xs,
+  },
+  filterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+    marginBottom: Spacing.lg,
+  },
+  emptyRegion: {
+    paddingVertical: Spacing.xxl,
+    alignItems: 'center',
   },
   recipeRow: {
     flexDirection: 'row',

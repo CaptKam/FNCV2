@@ -15,12 +15,7 @@ import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { useApp } from '@/context/AppContext';
 
-const TECHNIQUES = [
-  { title: 'Knife Skills', duration: '12 min', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop', desc: 'Master the julienne and chiffonade' },
-  { title: 'Sauce Making', duration: '15 min', image: 'https://images.unsplash.com/photo-1607116667981-27db83911e34?w=400&h=300&fit=crop', desc: 'The five French mother sauces' },
-  { title: 'Bread Baking', duration: '20 min', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop', desc: 'Artisan sourdough fundamentals' },
-  { title: 'Wok Technique', duration: '10 min', image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&h=300&fit=crop', desc: 'High-heat stir-fry mastery' },
-];
+import { TECHNIQUES } from '@/data/techniques';
 
 const KITCHEN_CHECKS = [
   { label: 'Ingredients Prepped', icon: 'basket-outline' as const },
@@ -304,7 +299,7 @@ export default function CookScreen() {
             contentContainerStyle={{ paddingHorizontal: Spacing.page, gap: Spacing.md }}
           >
             {TECHNIQUES.map((tech) => (
-              <Pressable key={tech.title} style={styles.techCard} accessibilityRole="button" accessibilityLabel={`${tech.title}, ${tech.duration}`}>
+              <Pressable key={tech.id} onPress={() => router.push(`/technique/${tech.id}`)} style={styles.techCard} accessibilityRole="button" accessibilityLabel={`${tech.title}, ${tech.duration}`}>
                 <Image
                   source={{ uri: tech.image }}
                   style={StyleSheet.absoluteFill}
@@ -317,7 +312,7 @@ export default function CookScreen() {
                 />
                 <View style={styles.techBadge}>
                   <GlassView style={styles.techBadgeInner}>
-                    <MaterialCommunityIcons name="play" size={10} color={colors.textOnImage} />
+                    <MaterialCommunityIcons name="clock-outline" size={10} color={colors.textOnImage} />
                     <Text style={[Typography.labelSmall, { color: colors.textOnImage }]}>{tech.duration}</Text>
                   </GlassView>
                 </View>
@@ -326,7 +321,7 @@ export default function CookScreen() {
                     {tech.title}
                   </Text>
                   <Text style={[Typography.caption, { color: colors.textOnImage, opacity: 0.7 }]}>
-                    {tech.desc}
+                    {tech.subtitle}
                   </Text>
                 </View>
               </Pressable>

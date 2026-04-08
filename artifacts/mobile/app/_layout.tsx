@@ -38,6 +38,7 @@ function RootLayoutNav() {
       <Stack.Screen name="bookmarks" options={{ headerShown: false }} />
       <Stack.Screen name="country/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="recipe/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="technique/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="cooking-schedule" options={{ headerShown: false }} />
       <Stack.Screen name="dinner-setup" options={{ headerShown: false }} />
       <Stack.Screen name="dinner-complete" options={{ headerShown: false }} />

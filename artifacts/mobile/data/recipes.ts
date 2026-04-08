@@ -6,6 +6,8 @@ export interface Ingredient {
 
 export interface Step {
   instruction: string;
+  instructionFirstSteps?: string;
+  instructionChefsTable?: string;
   duration?: number;
 }
 
@@ -42,9 +44,9 @@ export const recipes: Recipe[] = [
       { name: 'Pasta water', amount: 'reserved', category: 'Other' },
     ],
     steps: [
-      { instruction: 'Bring a large pot of salted water to a boil. Cook the tonnarelli until just shy of al dente.', duration: 8 },
-      { instruction: 'While pasta cooks, toast the black pepper in a dry skillet over medium heat until fragrant.', duration: 2 },
-      { instruction: 'Add a ladle of pasta water to the pepper and let it reduce slightly.' },
+      { instruction: 'Bring a large pot of salted water to a boil. Cook the tonnarelli until just shy of al dente.', instructionFirstSteps: 'Fill your biggest pot with water and add a generous pinch of salt. Turn the heat to high and wait for big bubbles. Add the pasta and cook it for about 1 minute less than the package says — it should still be slightly firm when you bite it.', instructionChefsTable: 'Bring heavily salted water (like the sea) to a rolling boil. Cook tonnarelli to 80% — the pasta should have a visible white core when snapped. Reserve 2 cups of starchy cooking water before draining.', duration: 8 },
+      { instruction: 'While pasta cooks, toast the black pepper in a dry skillet over medium heat until fragrant.', instructionFirstSteps: 'Put the black pepper in a dry pan (no oil!) over medium heat. Shake the pan gently for about 2 minutes until you can smell the pepper — it should smell warm and slightly spicy. Be careful not to burn it.', instructionChefsTable: 'Bloom cracked Tellicherry peppercorns in a cold pan brought to medium heat. Toast until the volatile oils release — approximately 90 seconds. The aroma should shift from raw to warm and complex.', duration: 2 },
+      { instruction: 'Add a ladle of pasta water to the pepper and let it reduce slightly.', instructionFirstSteps: 'Use a ladle or measuring cup to scoop about half a cup of the starchy pasta water and pour it into the pan with the pepper. Let it bubble gently for about 30 seconds — this creates the base of your sauce.', instructionChefsTable: 'Deglaze with 120ml of pasta water at full starch concentration. Reduce by one-third to create a pepper-infused fond. The liquid should coat the back of a spoon.' },
       { instruction: 'Transfer the pasta directly to the skillet. Remove from heat.' },
       { instruction: 'Add the Pecorino in batches, tossing vigorously and adding pasta water as needed to create a creamy emulsion.' },
       { instruction: 'Serve immediately with extra pepper and Pecorino on top.' },
@@ -217,9 +219,9 @@ export const recipes: Recipe[] = [
       { name: 'Tare (soy sauce base)', amount: '4 tbsp', category: 'Pantry' },
     ],
     steps: [
-      { instruction: 'Blanch pork bones, drain, and clean. Return to pot with fresh water.', duration: 10 },
-      { instruction: 'Add garlic and ginger. Boil vigorously for 12 hours, adding water as needed.', duration: 720 },
-      { instruction: 'Braise pork belly in soy, mirin, and sake until tender. Slice for chashu.', duration: 90 },
+      { instruction: 'Blanch pork bones, drain, and clean. Return to pot with fresh water.', instructionFirstSteps: 'Put the pork bones in a large pot, cover with cold water, and bring to a boil. You\'ll see foamy scum rise to the top — that\'s normal. After 10 minutes, drain everything, rinse the bones under cold water, and scrub off any dark bits. Put them back in the pot with fresh clean water.', instructionChefsTable: 'Blanch trotters and neck bones at a hard boil for 10 minutes. Drain, shock in ice water, and scrub each bone clean of coagulated proteins. This step is non-negotiable for a clean-flavored tonkotsu.', duration: 10 },
+      { instruction: 'Add garlic and ginger. Boil vigorously for 12 hours, adding water as needed.', instructionFirstSteps: 'Crush the whole head of garlic (just smash each clove with the flat of a knife, no need to peel) and slice the ginger into thick coins. Add both to the pot. Turn the heat to high and keep it at a strong, rolling boil — not a gentle simmer. This is what makes the broth creamy and white. Check every 2 hours and add more water if the level drops below the bones.', instructionChefsTable: 'Add smashed garlic and coin-cut ginger. Maintain an aggressive rolling boil — the emulsification of collagen into the broth requires sustained high heat and agitation. Top up with boiling water only. Target 12-18 hours for maximum extraction.', duration: 720 },
+      { instruction: 'Braise pork belly in soy, mirin, and sake until tender. Slice for chashu.', instructionFirstSteps: 'In a separate pot, place the pork belly skin-side down. Add enough soy sauce to come halfway up the meat, plus a splash of mirin (sweet rice wine) and sake. Bring to a boil, then turn the heat to low, cover with a lid, and let it cook gently for about 90 minutes until you can easily pierce it with a fork. Let it cool in the liquid, then slice into round pieces about 1cm thick.', instructionChefsTable: 'Roll and tie the belly. Sear hard on all sides. Braise in a 2:1:1 ratio of dashi:soy:mirin with sake at 150°C/300°F for 90 minutes. Rest in braising liquid overnight for maximum flavor penetration. Slice 8mm thick for service.', duration: 90 },
       { instruction: 'Marinate soft-boiled eggs in tare mixture.' },
       { instruction: 'Strain broth. It should be milky white and rich.' },
       { instruction: 'Assemble: tare in bowl, broth over top, noodles, then toppings.' },
@@ -278,9 +280,9 @@ export const recipes: Recipe[] = [
       { name: 'Cinnamon stick', amount: '1', category: 'Spices' },
     ],
     steps: [
-      { instruction: 'Toast dried chiles on a dry skillet. Soak in hot water until softened.', duration: 20 },
-      { instruction: 'Toast sesame seeds, peanuts, and spices until fragrant.', duration: 5 },
-      { instruction: 'Char onion and garlic. Blend with chiles, nuts, and spices until smooth.' },
+      { instruction: 'Toast dried chiles on a dry skillet. Soak in hot water until softened.', instructionFirstSteps: 'Place the dried chiles flat in a dry pan (no oil) over medium heat. Press them down with a spatula and flip them after 30 seconds — they should darken slightly and smell smoky. Put the toasted chiles in a bowl, cover with very hot water, and let them sit for 20 minutes until they\'re soft and pliable. Save the soaking water — you\'ll use it later.', instructionChefsTable: 'Toast chiles in a dry cast iron until blistered and pliable — 30-45 seconds per side. Avoid carbonization. Hydrate in 82°C/180°F water for exactly 20 minutes. Reserve soaking liquor for the blend.', duration: 20 },
+      { instruction: 'Toast sesame seeds, peanuts, and spices until fragrant.', instructionFirstSteps: 'In the same dry pan, add the sesame seeds and peanuts. Keep the heat at medium and stir constantly — they burn easily. After about 3-4 minutes, when the sesame seeds turn golden and you can smell a nutty aroma, take them off the heat and put them in a bowl. Then add the cinnamon stick to the pan for 1 minute until it smells warm and spicy.', instructionChefsTable: 'Toast each element separately for precise control: sesame to deep gold (3 min), peanuts to mahogany with oil beading (4 min), whole spices until volatile oils bloom. Grind spices to powder in a molcajete or spice grinder.', duration: 5 },
+      { instruction: 'Char onion and garlic. Blend with chiles, nuts, and spices until smooth.', instructionFirstSteps: 'Cut the onion into quarters and put it in the pan with the unpeeled garlic cloves. Let them cook without moving until the cut sides are deeply browned — almost black in spots (about 5-8 minutes). This charring adds a special smoky sweetness to the mole. Peel the garlic, then put everything in a blender: the charred onion, garlic, softened chiles, toasted seeds and nuts, and about 1 cup of the chile soaking water. Blend on high until completely smooth — this may take 2-3 minutes.', instructionChefsTable: 'Char the alliums directly over open flame or under a broiler until 60% blackened. Combine all toasted and hydrated elements in a high-speed blender with minimal soaking liquor. Process for 3-4 minutes until the paste is silky with zero granularity.' },
       { instruction: 'Fry the mole paste in lard or oil, stirring constantly.', duration: 10 },
       { instruction: 'Add chicken broth and chocolate. Simmer until thick and complex.', duration: 60 },
       { instruction: 'Poach or grill chicken. Serve smothered in mole, garnished with sesame seeds.' },
