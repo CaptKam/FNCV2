@@ -122,7 +122,8 @@ function MealCard({
                 accessibilityLabel="Swap recipe"
               >
                 <GlassView style={styles.imageActionBtn}>
-                  <MaterialCommunityIcons name="swap-horizontal" size={16} color={colors.primary} />
+                  <MaterialCommunityIcons name="swap-horizontal" size={14} color={colors.primary} />
+                  <Text style={{ fontSize: 9, color: colors.primary, fontWeight: '600' }}>Swap</Text>
                 </GlassView>
               </Pressable>
             )}
@@ -134,7 +135,8 @@ function MealCard({
                 accessibilityLabel="Remove recipe"
               >
                 <GlassView style={styles.imageActionBtn}>
-                  <MaterialCommunityIcons name="close" size={16} color={colors.error} />
+                  <MaterialCommunityIcons name="close" size={14} color={colors.error} />
+                  <Text style={{ fontSize: 9, color: colors.error, fontWeight: '600' }}>Remove</Text>
                 </GlassView>
               </Pressable>
             )}
@@ -306,7 +308,7 @@ export default function PlanScreen() {
             </Pressable>
             <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
               <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-                CURRENT PLANNING
+                YOUR MEAL PLAN
               </Text>
               <View style={styles.weekTitleRow}>
                 <Text style={[Typography.title, { color: colors.onSurface }]}>
@@ -1085,11 +1087,12 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   imageActionBtn: {
-    width: 32,
-    height: 32,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 1,
   },
   recipeBadge: {
     position: 'absolute',

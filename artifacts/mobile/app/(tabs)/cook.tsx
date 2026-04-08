@@ -256,7 +256,7 @@ export default function CookScreen() {
             <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant, opacity: 0.6 }]}>
               {hasActiveSession
                 ? `Step ${activeCookSession!.currentStepIndex + 1} of ${activeCookSession!.totalSteps}`
-                : hasDinnerParty ? `${partyGuestCount?.accepted ?? 0} guests confirmed` : 'Ready to initiate kitchen lab sequence'}
+                : hasDinnerParty ? `${partyGuestCount?.accepted ?? 0} guests confirmed` : 'Pick a recipe to get started'}
             </Text>
           </View>
         )}
@@ -277,12 +277,12 @@ export default function CookScreen() {
 
         <View style={styles.levelSection}>
           <View style={styles.levelHeader}>
-            <Text style={[Typography.labelLarge, { color: colors.outline }]}>Kitchen Reputation</Text>
-            <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{xp} XP</Text>
+            <Text style={[Typography.labelLarge, { color: colors.outline }]}>Your Cooking Journey</Text>
+            <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{xp} points</Text>
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface }]}>{levelName}</Text>
           <View style={styles.levelBarRow}>
-            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>Lvl {level}</Text>
+            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>Level {level}</Text>
             <View style={[styles.progressBar, { backgroundColor: colors.surfaceContainerHigh }]}>
               <View style={[styles.progressFill, { backgroundColor: colors.primary, width: `${progress * 100}%` }]} />
             </View>

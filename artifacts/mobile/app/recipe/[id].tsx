@@ -401,15 +401,18 @@ export default function RecipeDetailScreen() {
                               toggleSub(ingKey);
                             }}
                             hitSlop={8}
-                            style={{ marginLeft: Spacing.sm }}
+                            style={styles.subButton}
                             accessibilityRole="button"
                             accessibilityLabel={`Substitutions for ${ing.name}`}
                           >
                             <MaterialCommunityIcons
                               name={isSubExpanded ? 'swap-horizontal-circle' : 'swap-horizontal-circle-outline'}
-                              size={18}
-                              color={isSubExpanded ? colors.primary : colors.outlineVariant}
+                              size={16}
+                              color={isSubExpanded ? colors.primary : colors.outline}
                             />
+                            <Text style={[Typography.labelSmall, { color: isSubExpanded ? colors.primary : colors.outline, fontSize: 10 }]}>
+                              Swap
+                            </Text>
                           </Pressable>
                         )}
                       </Pressable>
@@ -638,6 +641,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: Spacing.sm,
+  },
+  subButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    marginLeft: Spacing.sm,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
   },
   substitutionHint: {
     flexDirection: 'row',

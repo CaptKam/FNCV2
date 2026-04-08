@@ -35,13 +35,13 @@ const COOKING_LEVELS = [
 ];
 
 const AVATAR_OPTIONS = [
-  { id: 'initials', icon: null },
-  { id: 'chef', icon: 'chef-hat' as const },
-  { id: 'globe', icon: 'earth' as const },
-  { id: 'fire', icon: 'fire' as const },
-  { id: 'heart', icon: 'heart' as const },
-  { id: 'star', icon: 'star' as const },
-  { id: 'compass', icon: 'compass' as const },
+  { id: 'initials', icon: null, label: 'Initials' },
+  { id: 'chef', icon: 'chef-hat' as const, label: 'Chef' },
+  { id: 'globe', icon: 'earth' as const, label: 'Globe' },
+  { id: 'fire', icon: 'fire' as const, label: 'Fire' },
+  { id: 'heart', icon: 'heart' as const, label: 'Heart' },
+  { id: 'star', icon: 'star' as const, label: 'Star' },
+  { id: 'compass', icon: 'compass' as const, label: 'Compass' },
 ];
 
 export default function OnboardingScreen() {
@@ -186,18 +186,22 @@ export default function OnboardingScreen() {
                     ]}
                     accessibilityRole="button"
                     accessibilityState={{ selected: isActive }}
+                    accessibilityLabel={`${av.label} avatar`}
                   >
                     {av.icon ? (
                       <MaterialCommunityIcons
                         name={av.icon}
-                        size={28}
+                        size={24}
                         color={isActive ? colors.primary : colors.outline}
                       />
                     ) : (
-                      <Text style={{ fontSize: 20, fontWeight: '700', color: isActive ? colors.primary : colors.outline }}>
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: isActive ? colors.primary : colors.outline }}>
                         {(name || 'A').charAt(0).toUpperCase()}
                       </Text>
                     )}
+                    <Text style={{ fontSize: 10, color: isActive ? colors.primary : colors.outline, marginTop: 2 }}>
+                      {av.label}
+                    </Text>
                   </Pressable>
                 );
               })}

@@ -19,7 +19,7 @@ const FILTERS = ['All', 'Main', 'Appetizer', 'Dessert'];
 type SortMode = 'date' | 'cuisine' | 'difficulty';
 type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 const SORT_OPTIONS: { id: SortMode; label: string; icon: MCIconName }[] = [
-  { id: 'date', label: 'Date Saved', icon: 'clock-outline' },
+  { id: 'date', label: 'Newest First', icon: 'clock-outline' },
   { id: 'cuisine', label: 'Cuisine', icon: 'earth' },
   { id: 'difficulty', label: 'Difficulty', icon: 'signal' },
 ];

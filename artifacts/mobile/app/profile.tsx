@@ -41,13 +41,13 @@ const DIETARY_OPTIONS = [
 ];
 
 const AVATAR_OPTIONS = [
-  { id: 'initials', icon: null },
-  { id: 'chef', icon: 'chef-hat' as const },
-  { id: 'globe', icon: 'earth' as const },
-  { id: 'fire', icon: 'fire' as const },
-  { id: 'heart', icon: 'heart' as const },
-  { id: 'star', icon: 'star' as const },
-  { id: 'compass', icon: 'compass' as const },
+  { id: 'initials', icon: null, label: 'Initials' },
+  { id: 'chef', icon: 'chef-hat' as const, label: 'Chef' },
+  { id: 'globe', icon: 'earth' as const, label: 'Globe' },
+  { id: 'fire', icon: 'fire' as const, label: 'Fire' },
+  { id: 'heart', icon: 'heart' as const, label: 'Heart' },
+  { id: 'star', icon: 'star' as const, label: 'Star' },
+  { id: 'compass', icon: 'compass' as const, label: 'Compass' },
 ];
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
@@ -329,7 +329,7 @@ export default function ProfileScreen() {
                   accessibilityLabel={`Switch to ${useMetric ? 'imperial' : 'metric'} units`}
                 >
                   <Text style={[Typography.labelSmall, { color: colors.primary }]}>
-                    {useMetric ? 'METRIC' : 'IMPERIAL'}
+                    {useMetric ? 'g, ml, °C' : 'oz, cups, °F'}
                   </Text>
                 </Pressable>
               }
@@ -627,19 +627,23 @@ export default function ProfileScreen() {
                       },
                     ]}
                     accessibilityRole="button"
+                    accessibilityLabel={`${av.label} avatar`}
                     accessibilityState={{ selected: isActive }}
                   >
                     {av.icon ? (
                       <MaterialCommunityIcons
                         name={av.icon}
-                        size={28}
+                        size={24}
                         color={isActive ? colors.primary : colors.outline}
                       />
                     ) : (
-                      <Text style={{ fontSize: 20, fontWeight: '700', color: isActive ? colors.primary : colors.outline }}>
+                      <Text style={{ fontSize: 18, fontWeight: '700', color: isActive ? colors.primary : colors.outline }}>
                         {(editName || displayName || 'A').charAt(0).toUpperCase()}
                       </Text>
                     )}
+                    <Text style={{ fontSize: 10, color: isActive ? colors.primary : colors.outline, marginTop: 2 }}>
+                      {av.label}
+                    </Text>
                   </Pressable>
                 );
               })}
