@@ -257,76 +257,85 @@ export default function DiscoverScreen() {
           </Animated.View>
         )}
 
-        {/* ═══ ROW 3: HERO DESTINATION + XP/STATS ═══ */}
-        <View style={[styles.bentoRow, { paddingHorizontal: GRID_PAD, gap: GRID_GAP }]}>
-          {/* LEFT: Featured Country */}
-          <Animated.View entering={enterDelay(60)}>
+        {/* ═══ ROW 3: HERO DESTINATION (full width) ═══ */}
+        <Animated.View entering={enterDelay(60)} style={{ paddingHorizontal: GRID_PAD, marginBottom: GRID_GAP }}>
+          <Pressable
+            onPress={() => router.push(`/country/${featuredCountry.id}`)}
+            style={[styles.heroCountry, { height: 300 }]}
+            accessibilityRole="button"
+            accessibilityLabel={`Explore ${featuredCountry.name}`}
+          >
+            <Image
+              source={{ uri: featuredCountry.heroImage }}
+              style={StyleSheet.absoluteFill}
+              contentFit="cover"
+              transition={300}
+              accessible={false}
+            />
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.75)']}
+              locations={[0, 0.4, 1]}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={styles.heroCountryContent}>
+              <View style={styles.heroBadgeRow}>
+                <Text style={{ fontSize: 20 }}>{featuredCountry.flag}</Text>
+                <View style={[styles.heroBadge, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                  <Text style={[Typography.labelSmall, { color: '#FFFFFF', letterSpacing: 1.5 }]}>FEATURED DESTINATION</Text>
+                </View>
+              </View>
+              <Text style={[Typography.displayMedium, { color: '#FFFFFF', letterSpacing: -0.5 }]}>{featuredCountry.name}</Text>
+              <View style={styles.heroBottomRow}>
+                <Pressable
+                  style={[styles.heroExploreBtn, { backgroundColor: colors.primary }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Explore ${featuredCountry.name}`}
+                >
+                  <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700' }]}>Let's Go</Text>
+                </Pressable>
+                <View style={styles.heroDots}>
+                  {countries.slice(0, 3).map((c, i) => (
+                    <View key={c.id} style={[styles.heroDot, { backgroundColor: c.id === featuredCountry.id ? '#FFFFFF' : 'rgba(255,255,255,0.3)' }]} />
+                  ))}
+                </View>
+              </View>
+            </View>
+          </Pressable>
+        </Animated.View>
+
+        {/* ═══ ROW 3B: XP + STATS (2-column row) ═══ */}
+        <View style={[styles.bentoRow, { paddingHorizontal: GRID_PAD, gap: GRID_GAP, marginBottom: GRID_GAP }]}>
+          {/* XP Card */}
+          <Animated.View entering={enterDelay(120)} style={{ flex: 1 }}>
             <Pressable
-              onPress={() => router.push(`/country/${featuredCountry.id}`)}
-              style={[styles.heroCountry, { width: CELL_WIDTH, height: HERO_HEIGHT }]}
+              onPress={() => router.push('/profile')}
+              style={[styles.xpCard, { backgroundColor: colors.surfaceContainerLow }]}
               accessibilityRole="button"
-              accessibilityLabel={`Explore ${featuredCountry.name}`}
+              accessibilityLabel={`Level ${level}, ${xp} XP`}
             >
-              <Image
-                source={{ uri: featuredCountry.heroImage }}
-                style={StyleSheet.absoluteFill}
-                contentFit="cover"
-                transition={300}
-                accessible={false}
-              />
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.7)']}
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={styles.heroCountryContent}>
-                <Text style={{ fontSize: 24 }}>{featuredCountry.flag}</Text>
-                <Text style={[Typography.headline, { color: '#FFFFFF' }]}>{featuredCountry.name}</Text>
-                <Text style={[Typography.caption, { color: 'rgba(255,255,255,0.7)' }]}>{featuredRecipeCount} recipes</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: Spacing.xs }}>
+                <Text style={[Typography.labelSmall, { color: colors.warning, letterSpacing: 1 }]}>LEVEL {level}</Text>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{xp % 300} XP</Text>
+              </View>
+              <View style={[styles.xpBarTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
+                <View style={[styles.xpBarFill, { backgroundColor: colors.warning, width: `${progress * 100}%` }]} />
               </View>
             </Pressable>
           </Animated.View>
 
-          {/* RIGHT: Stacked XP + Stats */}
-          <View style={{ width: CELL_WIDTH, gap: GRID_GAP }}>
-            {/* XP Card */}
-            <Animated.View entering={enterDelay(120)}>
-              <Pressable
-                onPress={() => router.push('/profile')}
-                style={[styles.xpCard, { backgroundColor: colors.surfaceContainerLow, height: (HERO_HEIGHT - GRID_GAP) / 2 }]}
-                accessibilityRole="button"
-                accessibilityLabel={`Level ${level}, ${xp} XP`}
-              >
-                <Text style={[Typography.labelSmall, { color: colors.warning, letterSpacing: 1 }]}>LEVEL {level}</Text>
-                <Text style={[Typography.titleSmall, { color: colors.onSurface, fontFamily: 'NotoSerif_600SemiBold' }]}>{levelName}</Text>
-                <View style={styles.xpBarContainer}>
-                  <View style={[styles.xpBarTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
-                    <View style={[styles.xpBarFill, { backgroundColor: colors.warning, width: `${progress * 100}%` }]} />
-                  </View>
-                </View>
-                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{xp % 300} / 300</Text>
-              </Pressable>
-            </Animated.View>
-
-            {/* Stats Card */}
-            <Animated.View entering={enterDelay(180)}>
-              <Pressable
-                onPress={() => router.push('/profile')}
-                style={[styles.statsCard, { backgroundColor: colors.surfaceContainerLow, height: (HERO_HEIGHT - GRID_GAP) / 2 }]}
-                accessibilityRole="button"
-                accessibilityLabel={`${totalRecipesCooked} recipes cooked`}
-              >
-                <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{totalRecipesCooked} recipes cooked</Text>
-                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{exploredCountries} countries explored</Text>
-                {stampFlags.length > 0 && (
-                  <View style={styles.stampRow}>
-                    {stampFlags.map((flag, i) => (
-                      <Text key={i} style={{ fontSize: 16 }}>{flag}</Text>
-                    ))}
-                  </View>
-                )}
-              </Pressable>
-            </Animated.View>
-          </View>
+          {/* Stats/Streak Card */}
+          <Animated.View entering={enterDelay(180)} style={{ flex: 1 }}>
+            <Pressable
+              onPress={() => router.push('/profile')}
+              style={[styles.streakCard, { backgroundColor: colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel={`${totalRecipesCooked} recipes cooked`}
+            >
+              <MaterialCommunityIcons name="fire" size={24} color="#FFFFFF" />
+              <Text style={[Typography.headline, { color: '#FFFFFF', fontSize: 20 }]}>{totalRecipesCooked} cooked</Text>
+              <Text style={[Typography.caption, { color: 'rgba(255,255,255,0.7)', letterSpacing: 1 }]}>{exploredCountries} COUNTRIES</Text>
+            </Pressable>
+          </Animated.View>
         </View>
 
         {/* ═══ ROW 4: CUISINE FILTER CHIPS ═══ */}
@@ -520,10 +529,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Row 3: Bento
+  // Row 3: Hero + XP
   bentoRow: {
     flexDirection: 'row',
-    marginBottom: Spacing.md,
   },
   heroCountry: {
     borderRadius: Radius.xl,
@@ -531,38 +539,63 @@ const styles = StyleSheet.create({
   },
   heroCountryContent: {
     position: 'absolute',
-    bottom: Spacing.md,
-    left: Spacing.md,
-    gap: 2,
+    bottom: Spacing.lg,
+    left: Spacing.lg,
+    right: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  heroBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  heroBadge: {
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: 4,
+    borderRadius: Radius.full,
+  },
+  heroBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: Spacing.xs,
+  },
+  heroExploreBtn: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: Radius.full,
+  },
+  heroDots: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  heroDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   xpCard: {
     borderRadius: Radius.xl,
     padding: Spacing.md,
     justifyContent: 'center',
-    gap: 4,
-  },
-  xpBarContainer: {
-    marginTop: 4,
+    height: 100,
   },
   xpBarTrack: {
-    height: 4,
-    borderRadius: 2,
+    height: 8,
+    borderRadius: 4,
     overflow: 'hidden',
   },
   xpBarFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 4,
   },
-  statsCard: {
+  streakCard: {
     borderRadius: Radius.xl,
     padding: Spacing.md,
     justifyContent: 'center',
-    gap: 4,
-  },
-  stampRow: {
-    flexDirection: 'row',
-    gap: 4,
-    marginTop: 2,
+    alignItems: 'center',
+    height: 100,
+    gap: 2,
   },
 
   // Row 4: Chips
