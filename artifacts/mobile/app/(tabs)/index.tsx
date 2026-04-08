@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Pressable,
   FlatList,
-  Modal,
   NativeScrollEvent,
   NativeSyntheticEvent,
   useWindowDimensions,
@@ -28,6 +27,7 @@ import { SectionHeader } from '@/components/SectionHeader';
 import { RecipeCard } from '@/components/RecipeCard';
 import { DestinationCard } from '@/components/DestinationCard';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
+import { AddToPlanSheet } from '@/components/AddToPlanSheet';
 import { countries } from '@/data/countries';
 import { recipes, Recipe } from '@/data/recipes';
 import { useApp } from '@/context/AppContext';
@@ -102,9 +102,7 @@ export default function DiscoverScreen() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Day picker state
-  const [dayPickerVisible, setDayPickerVisible] = useState(false);
-  const [dayPickerRecipe, setDayPickerRecipe] = useState<Recipe | null>(null);
+  const [addSheetRecipe, setAddSheetRecipe] = useState<Recipe | null>(null);
 
   const heroCountries = countries.slice(0, 5);
   const curatedCountries = countries.slice(0, 4);
@@ -131,40 +129,20 @@ export default function DiscoverScreen() {
     AsyncStorage.setItem(`@fork_compass_tonight_dismissed_${todayDate}`, 'true');
   }, [todayDate]);
 
-  // Day list for picker (next 14 days)
-  const planDays = useMemo(() => {
-    const start = toISO(new Date());
-    return Array.from({ length: 14 }, (_, i) => {
-      const date = addDays(start, i);
-      return { date, label: getDayLabel(date), short: formatDateShort(date) };
-    });
-  }, []);
-
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
     if (toastTimeout.current) clearTimeout(toastTimeout.current);
     toastTimeout.current = setTimeout(() => setToastMessage(null), 2500);
   }, []);
 
-  const handleAddTonight = useCallback((recipe: Recipe) => {
-    app.addCourseToDay(todayDate, 'main', recipe);
+  const handleAddToPlan = useCallback((date: string) => {
+    if (!addSheetRecipe) return;
+    app.addCourseToDay(date, 'main', addSheetRecipe);
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
-    showToast(`Added to tonight's plan.`);
-  }, [app, todayDate, showToast]);
-
-  const handleOpenDayPicker = useCallback((recipe: Recipe) => {
-    setDayPickerRecipe(recipe);
-    setDayPickerVisible(true);
-  }, []);
-
-  const handlePickDay = useCallback((date: string) => {
-    if (dayPickerRecipe) {
-      app.addCourseToDay(date, 'main', dayPickerRecipe);
-      showToast(`Added to ${getDayLabel(date)}'s plan.`);
-    }
-    setDayPickerVisible(false);
-    setDayPickerRecipe(null);
-  }, [dayPickerRecipe, app, showToast]);
+    const label = date === todayDate ? "tonight's" : getDayLabel(date) + "'s";
+    showToast(`Added to ${label} plan.`);
+    setAddSheetRecipe(null);
+  }, [addSheetRecipe, app, todayDate, showToast]);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
@@ -347,40 +325,19 @@ export default function DiscoverScreen() {
           </View>
         </View>
 
-        {/* Popular Recipes — with Tonight/Week quick-add buttons */}
+        {/* Popular Recipes */}
         <View style={{ marginTop: Spacing.xl }}>
           <SectionHeader label="POPULAR RECIPES" title="Popular Recipes" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
           <View style={styles.grid}>
             {trendingRecipes.map((recipe, index) => (
               <AnimatedListItem key={recipe.id} index={index}>
-                <RecipeCard recipe={recipe} />
-                <View style={styles.quickActions}>
-                  <Pressable
-                    onPress={() => handleAddTonight(recipe)}
-                    style={[styles.quickBtn, { backgroundColor: colors.primarySubtle }]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Add ${recipe.title} to tonight`}
-                  >
-                    <MaterialCommunityIcons name="weather-night" size={16} color={colors.primary} />
-                    <Text style={[Typography.labelSmall, { color: colors.primary }]}>Tonight</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => handleOpenDayPicker(recipe)}
-                    style={[styles.quickBtn, { backgroundColor: colors.primarySubtle }]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Add ${recipe.title} to weekly plan`}
-                  >
-                    <MaterialCommunityIcons name="calendar-plus" size={16} color={colors.primary} />
-                    <Text style={[Typography.labelSmall, { color: colors.primary }]}>Week</Text>
-                  </Pressable>
-                </View>
+                <RecipeCard recipe={recipe} onAdd={() => setAddSheetRecipe(recipe)} />
               </AnimatedListItem>
             ))}
           </View>
         </View>
       </ScrollView>
 
-      {/* Toast notification */}
       {toastMessage && (
         <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
           <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
@@ -388,50 +345,12 @@ export default function DiscoverScreen() {
         </View>
       )}
 
-      {/* Day picker bottom sheet */}
-      <Modal
-        visible={dayPickerVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setDayPickerVisible(false)}
-      >
-        <Pressable style={styles.sheetOverlay} onPress={() => setDayPickerVisible(false)}>
-          <Pressable
-            style={[styles.sheetContainer, { backgroundColor: colors.surface }]}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={[styles.sheetHandle, { backgroundColor: colors.handleBar }]} />
-            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.sm }]}>
-              Pick a Day
-            </Text>
-            {dayPickerRecipe && (
-              <Text style={[Typography.bodySmall, { color: colors.outline, marginBottom: Spacing.md }]}>
-                Adding {dayPickerRecipe.title}
-              </Text>
-            )}
-            <FlatList
-              data={planDays}
-              keyExtractor={(item) => item.date}
-              showsVerticalScrollIndicator={false}
-              style={{ maxHeight: 360 }}
-              renderItem={({ item }) => (
-                <Pressable
-                  onPress={() => handlePickDay(item.date)}
-                  style={[styles.dayPickerRow, { backgroundColor: colors.surfaceContainerLow }]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${item.label}, ${item.short}`}
-                >
-                  <View>
-                    <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
-                    <Text style={[Typography.caption, { color: colors.outline }]}>{item.short}</Text>
-                  </View>
-                  <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
-                </Pressable>
-              )}
-            />
-          </Pressable>
-        </Pressable>
-      </Modal>
+      <AddToPlanSheet
+        visible={!!addSheetRecipe}
+        recipeName={addSheetRecipe?.title ?? ''}
+        onClose={() => setAddSheetRecipe(null)}
+        onAdd={handleAddToPlan}
+      />
     </View>
   );
 }
@@ -534,21 +453,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.page,
   },
-  quickActions: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    marginTop: -Spacing.sm,
-    marginBottom: Spacing.md,
-    paddingHorizontal: 2,
-  },
-  quickBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.full,
-  },
   toast: {
     position: 'absolute',
     bottom: 100,
@@ -561,32 +465,5 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: Radius.full,
     alignSelf: 'center',
-  },
-  sheetOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheetContainer: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: Spacing.page,
-    paddingBottom: 40,
-    paddingTop: Spacing.sm,
-  },
-  sheetHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: Spacing.lg,
-  },
-  dayPickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.md,
-    borderRadius: Radius.md,
-    marginBottom: Spacing.sm,
   },
 });

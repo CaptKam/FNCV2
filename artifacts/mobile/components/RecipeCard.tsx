@@ -17,9 +17,10 @@ import { AnimatedHeart } from './AnimatedHeart';
 
 interface RecipeCardProps {
   recipe: Recipe;
+  onAdd?: () => void;
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
   const { width } = useWindowDimensions();
   const CARD_WIDTH = (width - Spacing.page * 2 - Spacing.md) / 2;
   const colors = useThemeColors();
@@ -125,6 +126,18 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             )}
           </View>
         )}
+        {onAdd && (
+          <Pressable
+            onPress={(e) => { e.stopPropagation(); onAdd(); }}
+            style={[styles.addBtn, { backgroundColor: colors.primarySubtle }]}
+            accessibilityRole="button"
+            accessibilityLabel={`Add ${recipe.title} to meal plan`}
+            hitSlop={4}
+          >
+            <MaterialCommunityIcons name="plus" size={16} color={colors.primary} />
+            <Text style={[Typography.labelSmall, { color: colors.primary }]}>Add to Plan</Text>
+          </Pressable>
+        )}
       </View>
     </Pressable>
   );
@@ -188,5 +201,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: Radius.full,
+  },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+    marginTop: 2,
   },
 });

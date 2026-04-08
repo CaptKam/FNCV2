@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import * as Haptics from 'expo-haptics';
 import {
   View,
@@ -27,6 +27,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
+import { AddToPlanSheet } from '@/components/AddToPlanSheet';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
@@ -45,16 +46,25 @@ export default function SearchScreen() {
   const [activeMood, setActiveMood] = useState('All Moods');
   const [excludedAllergens, setExcludedAllergens] = useState<AllergenType[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [addSheetRecipe, setAddSheetRecipe] = useState<typeof recipes[0] | null>(null);
 
-  const handleAddToToday = useCallback((recipe: typeof recipes[0]) => {
+  const showToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => setToastMessage(null), 2500);
+  }, []);
+
+  const handleAddToPlan = useCallback((date: string) => {
+    if (!addSheetRecipe) return;
+    app.addCourseToDay(date, 'main', addSheetRecipe);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
     const todayDate = new Date().toISOString().split('T')[0];
-    app.addCourseToDay(todayDate, 'main', recipe);
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-    setToastMessage(`Added ${recipe.title} to today's plan`);
-    if (toastTimeout.current) clearTimeout(toastTimeout.current);
-    toastTimeout.current = setTimeout(() => setToastMessage(null), 2500);
-  }, [app]);
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const label = date === todayDate ? "tonight's" : days[new Date(date).getDay()] + "'s";
+    showToast(`Added to ${label} plan.`);
+    setAddSheetRecipe(null);
+  }, [addSheetRecipe, app, showToast]);
 
   const toggleAllergenFilter = useCallback((a: AllergenType) => {
     setExcludedAllergens((prev) =>
@@ -251,12 +261,13 @@ export default function SearchScreen() {
                     {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
                   </Text>
                   <Pressable
-                    onPress={(e) => { e.stopPropagation(); handleAddToToday(recipe); }}
-                    style={styles.addButton}
+                    onPress={(e) => { e.stopPropagation(); setAddSheetRecipe(recipe); }}
+                    style={[styles.addButton, { backgroundColor: colors.primarySubtle }]}
                     accessibilityRole="button"
-                    accessibilityLabel={`Add ${recipe.title} to today's plan`}
+                    accessibilityLabel={`Add ${recipe.title} to meal plan`}
                   >
-                    <Text style={[Typography.titleSmall, { color: colors.primary }]}>ADD +</Text>
+                    <MaterialCommunityIcons name="plus" size={16} color={colors.primary} />
+                    <Text style={[Typography.labelSmall, { color: colors.primary }]}>Add to Plan</Text>
                   </Pressable>
                 </View>
                 <Pressable
@@ -284,13 +295,19 @@ export default function SearchScreen() {
         )}
       </ScrollView>
 
-      {/* Toast notification */}
       {toastMessage && (
         <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
           <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
           <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>{toastMessage}</Text>
         </View>
       )}
+
+      <AddToPlanSheet
+        visible={!!addSheetRecipe}
+        recipeName={addSheetRecipe?.title ?? ''}
+        onClose={() => setAddSheetRecipe(null)}
+        onAdd={handleAddToPlan}
+      />
     </View>
   );
 }
@@ -346,6 +363,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.full,
     marginTop: 4,
   },
   heartBtn: {
