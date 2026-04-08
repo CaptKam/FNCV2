@@ -16,7 +16,6 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
-import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { DestinationCard } from '@/components/DestinationCard';
 import { recipes } from '@/data/recipes';
@@ -267,16 +266,16 @@ export default function SearchScreen() {
                   accessibilityRole="button"
                   accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
                 >
-                  <GlassView style={styles.heartGlass}>
+                  <View style={styles.heartGlass}>
                     <AnimatedHeart
                       filled={isBookmarked(recipe.id)}
                       onToggle={() => toggleBookmark(recipe.id)}
-                      size={16}
-                      filledColor={colors.error}
-                      outlineColor={colors.textOnImage}
+                      size={20}
+                      filledColor={colors.primary}
+                      outlineColor={OVERLAY_BUTTON.iconColor}
                       hitSlop={0}
                     />
-                  </GlassView>
+                  </View>
                 </Pressable>
               </Pressable>
             </AnimatedListItem>

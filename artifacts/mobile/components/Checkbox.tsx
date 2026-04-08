@@ -8,13 +8,13 @@ import { Radius } from '@/constants/radius';
 interface CheckboxProps {
   checked: boolean;
   onToggle: () => void;
-  size?: 'default' | 'large';
+  size?: 'sm' | 'default' | 'large';
 }
 
 export function Checkbox({ checked, onToggle, size = 'default' }: CheckboxProps) {
   const colors = useThemeColors();
-  const dim = size === 'large' ? 32 : 24;
-  const iconSize = size === 'large' ? 18 : 14;
+  const dim = size === 'large' ? 32 : size === 'sm' ? 20 : 24;
+  const iconSize = size === 'large' ? 18 : size === 'sm' ? 12 : 14;
 
   const handlePress = () => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}

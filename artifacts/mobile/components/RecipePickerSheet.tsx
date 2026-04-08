@@ -60,7 +60,7 @@ export function RecipePickerSheet({ visible, onDismiss, onSelect }: RecipePicker
               accessibilityRole="button"
               accessibilityLabel="Close"
             >
-              <MaterialCommunityIcons name="close" size={24} color={colors.outline} />
+              <MaterialCommunityIcons name="close" size={20} color={colors.outline} />
             </Pressable>
           </View>
 

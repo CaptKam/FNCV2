@@ -20,6 +20,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { HeaderBar } from '@/components/HeaderBar';
+import { Checkbox } from '@/components/Checkbox';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 
 // ─── Helpers ───
@@ -152,7 +153,7 @@ export default function RecipeDetailScreen() {
               filled={isSaved}
               onToggle={() => toggleBookmark(recipe.id)}
               size={OVERLAY_BUTTON.iconSize}
-              filledColor={colors.error}
+              filledColor={colors.primary}
               outlineColor={OVERLAY_BUTTON.iconColor}
               accessibilityLabel={isSaved ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
               hitSlop={12}
@@ -229,22 +230,22 @@ export default function RecipeDetailScreen() {
           <View style={styles.servingsAdjuster}>
             <Pressable
               onPress={() => { if (currentServings > 1) setServings(currentServings - 1); }}
-              style={[styles.servingBtn, { backgroundColor: 'rgba(30,25,20,0.85)', opacity: currentServings <= 1 ? 0.3 : 1 }]}
+              style={[styles.servingBtn, { backgroundColor: OVERLAY_BUTTON.background, opacity: currentServings <= 1 ? 0.3 : 1 }]}
               accessibilityRole="button"
               accessibilityLabel="Decrease servings"
             >
-              <MaterialCommunityIcons name="minus" size={20} color="#FFFFFF" />
+              <MaterialCommunityIcons name="minus" size={20} color={OVERLAY_BUTTON.iconColor} />
             </Pressable>
             <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
               {currentServings} servings
             </Text>
             <Pressable
               onPress={() => setServings(currentServings + 1)}
-              style={[styles.servingBtn, { backgroundColor: 'rgba(30,25,20,0.85)' }]}
+              style={[styles.servingBtn, { backgroundColor: OVERLAY_BUTTON.background }]}
               accessibilityRole="button"
               accessibilityLabel="Increase servings"
             >
-              <MaterialCommunityIcons name="plus" size={20} color="#FFFFFF" />
+              <MaterialCommunityIcons name="plus" size={20} color={OVERLAY_BUTTON.iconColor} />
             </Pressable>
           </View>
 
@@ -336,12 +337,9 @@ export default function RecipeDetailScreen() {
                         accessibilityState={{ checked: isChecked }}
                         accessibilityLabel={`${ing.name}, ${convertAmount(ing.amount, app.useMetric)}`}
                       >
-                        <MaterialCommunityIcons
-                          name={isChecked ? 'checkbox-marked-circle' : 'checkbox-blank-circle-outline'}
-                          size={20}
-                          color={isChecked ? colors.primary : colors.outlineVariant}
-                          style={{ marginRight: Spacing.sm }}
-                        />
+                        <View style={{ marginRight: Spacing.sm }}>
+                          <Checkbox checked={isChecked} onToggle={() => toggleIngredient(ingKey)} size="sm" />
+                        </View>
                         <Text
                           style={[
                             Typography.body,
@@ -378,11 +376,11 @@ export default function RecipeDetailScreen() {
                             accessibilityRole="button"
                             accessibilityLabel={`Substitutions for ${ing.name}`}
                           >
-                            <View style={[styles.subButtonPill, { backgroundColor: isSubExpanded ? colors.primary : 'rgba(30, 25, 20, 0.75)' }]}>
+                            <View style={[styles.subButtonPill, { backgroundColor: isSubExpanded ? colors.primary : OVERLAY_BUTTON.background }]}>
                               <MaterialCommunityIcons
                                 name="swap-horizontal"
                                 size={16}
-                                color="#FFFFFF"
+                                color={OVERLAY_BUTTON.iconColor}
                               />
                               <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>
                                 Swap

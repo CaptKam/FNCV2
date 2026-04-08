@@ -11,6 +11,7 @@ import { Radius } from '@/constants/radius';
 import { RecipeCard } from '@/components/RecipeCard';
 import { TECHNIQUES } from '@/data/techniques';
 import { recipes } from '@/data/recipes';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 
 const DIFFICULTY_COLORS = {
   beginner: '#2D6A4F',
@@ -66,8 +67,8 @@ export default function TechniqueDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <View style={[styles.backBtnGlass, { backgroundColor: 'rgba(30,25,20,0.85)' }]}>
-              <MaterialCommunityIcons name="arrow-left" size={20} color="#FFFFFF" />
+            <View style={[styles.backBtnGlass, { backgroundColor: OVERLAY_BUTTON.background, borderWidth: OVERLAY_BUTTON.borderWidth, borderColor: OVERLAY_BUTTON.borderColor }]}>
+              <MaterialCommunityIcons name="arrow-left" size={20} color={OVERLAY_BUTTON.iconColor} />
             </View>
           </Pressable>
         </View>
