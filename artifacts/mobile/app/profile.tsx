@@ -74,7 +74,7 @@ function SettingRow({ icon, label, subtitle, onPress, trailing, colors }: Settin
       <View style={styles.settingText}>
         <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{label}</Text>
         {subtitle && (
-          <Text style={[Typography.bodySmall, { color: colors.outline, fontSize: 12 }]}>{subtitle}</Text>
+          <Text style={[Typography.caption, { color: colors.outline }]}>{subtitle}</Text>
         )}
       </View>
       {trailing || (
@@ -175,15 +175,15 @@ export default function ProfileScreen() {
         {/* Stats — wired to AppContext */}
         <View style={[styles.statsRow, { paddingHorizontal: Spacing.page }]}>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Text style={[Typography.display, { color: colors.primary, fontSize: 32 }]}>{totalRecipesCooked}</Text>
+            <Text style={[Typography.headlineLarge, { color: colors.primary }]}>{totalRecipesCooked}</Text>
             <Text style={[Typography.caption, { color: colors.outline }]}>Recipes{'\n'}Cooked</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Text style={[Typography.display, { color: colors.primary, fontSize: 32 }]}>{countriesExplored}</Text>
+            <Text style={[Typography.headlineLarge, { color: colors.primary }]}>{countriesExplored}</Text>
             <Text style={[Typography.caption, { color: colors.outline }]}>Countries{'\n'}Explored</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Text style={[Typography.display, { color: colors.primary, fontSize: 32 }]}>{bookmarkCount}</Text>
+            <Text style={[Typography.headlineLarge, { color: colors.primary }]}>{bookmarkCount}</Text>
             <Text style={[Typography.caption, { color: colors.outline }]}>Recipes{'\n'}Saved</Text>
           </View>
         </View>
@@ -219,7 +219,7 @@ export default function ProfileScreen() {
                   <Text
                     style={[
                       Typography.titleSmall,
-                      { color: isSelected ? colors.primary : colors.onSurface, fontSize: 13 },
+                      { color: isSelected ? colors.primary : colors.onSurface },
                     ]}
                   >
                     {option.label}
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.lg,
     borderRadius: Radius.lg,
-    gap: 4,
+    gap: Spacing.xs,
   },
   section: {
     marginBottom: Spacing.lg,
@@ -625,7 +625,7 @@ const styles = StyleSheet.create({
   },
   settingText: {
     flex: 1,
-    gap: 2,
+    gap: Spacing.xs,
   },
   unitToggle: {
     paddingHorizontal: Spacing.md,

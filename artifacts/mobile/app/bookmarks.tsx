@@ -230,12 +230,11 @@ const styles = StyleSheet.create({
   },
   filterText: {
     ...Typography.titleSmall,
-    fontSize: 13,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 120,
+    paddingTop: Spacing.xxxl * 2 + Spacing.lg,
     gap: Spacing.md,
     paddingHorizontal: Spacing.page,
   },
@@ -306,11 +305,10 @@ const styles = StyleSheet.create({
   },
   itemContent: {
     flex: 1,
-    gap: 3,
+    gap: Spacing.xs,
   },
   itemCategory: {
     ...Typography.labelSmall,
-    fontSize: 10,
   },
   itemTitle: {
     ...Typography.titleMedium,
@@ -318,10 +316,9 @@ const styles = StyleSheet.create({
   },
   itemMeta: {
     ...Typography.bodySmall,
-    fontSize: 13,
-    marginTop: 2,
+    marginTop: Spacing.xs,
   },
   heartBtn: {
-    padding: 8,
+    padding: Spacing.sm,
   },
 });

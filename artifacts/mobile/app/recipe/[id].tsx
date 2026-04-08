@@ -134,7 +134,7 @@ export default function RecipeDetailScreen() {
             <MaterialCommunityIcons
               name={isSaved ? 'heart' : 'heart-outline'}
               size={20}
-              color={isSaved ? colors.error : '#FFFFFF'}
+              color={isSaved ? colors.error : colors.textOnImage}
             />
           </Pressable>
         }
@@ -287,7 +287,7 @@ export default function RecipeDetailScreen() {
             <Text style={[Typography.labelLarge, { color: colors.primary, marginBottom: Spacing.xs }]}>
               CULTURAL NOTE
             </Text>
-            <Text style={[Typography.body, { color: colors.onSurfaceVariant, fontSize: 15 }]}>
+            <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
               {recipe.culturalNote}
             </Text>
           </View>
