@@ -113,8 +113,8 @@ function MealCard({
             transition={300}
             accessible={false}
           />
-          <View style={styles.imageActions}>
-            {onSwap && (
+          {onSwap && (
+            <View style={styles.imageActionLeft}>
               <Pressable
                 onPress={(e) => { e.stopPropagation(); onSwap(); }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -126,8 +126,10 @@ function MealCard({
                   <Text style={{ fontSize: 9, color: colors.primary, fontWeight: '600' }}>Swap</Text>
                 </GlassView>
               </Pressable>
-            )}
-            {onRemove && (
+            </View>
+          )}
+          {onRemove && (
+            <View style={styles.imageActionRight}>
               <Pressable
                 onPress={(e) => { e.stopPropagation(); onRemove(); }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -139,8 +141,8 @@ function MealCard({
                   <Text style={{ fontSize: 9, color: colors.error, fontWeight: '600' }}>Remove</Text>
                 </GlassView>
               </Pressable>
-            )}
-          </View>
+            </View>
+          )}
           <View style={styles.recipeBadge}>
             <GlassView style={styles.recipeBadgePill}>
               <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700' }]}>{badgeLabel}</Text>
@@ -1078,12 +1080,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 176,
   },
-  imageActions: {
+  imageActionLeft: {
     position: 'absolute',
     top: Spacing.sm,
     left: Spacing.sm,
-    flexDirection: 'row',
-    gap: Spacing.sm,
+    zIndex: 10,
+  },
+  imageActionRight: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
     zIndex: 10,
   },
   imageActionBtn: {
@@ -1096,8 +1102,9 @@ const styles = StyleSheet.create({
   },
   recipeBadge: {
     position: 'absolute',
-    top: Spacing.sm,
-    right: Spacing.sm,
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
   },
   recipeBadgePill: {
     paddingHorizontal: Spacing.sm,
