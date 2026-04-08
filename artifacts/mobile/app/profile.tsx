@@ -136,8 +136,9 @@ export default function ProfileScreen() {
 
         {/* Profile card — wired to AppContext XP/level */}
         <View style={[styles.profileCard, { paddingHorizontal: Spacing.page }]}>
-          <View style={[styles.avatarLarge, { backgroundColor: colors.surfaceContainerHigh }]}>
-            <Feather name="user" size={40} color={colors.outline} />
+          <View style={{ height: Spacing.lg }} />
+          <View style={[styles.avatarLarge, { backgroundColor: `${colors.primary}12` }]}>
+            <Feather name="user" size={40} color={colors.primary} />
           </View>
           <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center' }]}>
             {levelName}
@@ -203,7 +204,7 @@ export default function ProfileScreen() {
                     {
                       backgroundColor: isSelected ? `${colors.primary}18` : colors.surfaceContainerLow,
                       borderColor: isSelected ? colors.primary : 'transparent',
-                      borderWidth: 1.5,
+                      borderWidth: 1,
                     },
                   ]}
                   accessibilityRole="button"
@@ -405,7 +406,7 @@ export default function ProfileScreen() {
                     {
                       backgroundColor: isActive ? `${colors.primary}15` : colors.surfaceContainerLow,
                       borderColor: isActive ? colors.primary : 'transparent',
-                      borderWidth: 1.5,
+                      borderWidth: 1,
                     },
                   ]}
                   accessibilityRole="button"
@@ -508,7 +509,7 @@ export default function ProfileScreen() {
                     {
                       backgroundColor: isActive ? `${colors.primary}15` : colors.surfaceContainerLow,
                       borderColor: isActive ? colors.primary : 'transparent',
-                      borderWidth: 1.5,
+                      borderWidth: 1,
                     },
                   ]}
                   accessibilityRole="button"
@@ -634,7 +635,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: 14,
     borderRadius: Radius.full,
-    borderWidth: 1.5,
+    borderWidth: 1,
   },
   modalOverlay: {
     flex: 1,

@@ -117,7 +117,9 @@ export default function CookScreen() {
         ) : (
           <View style={[styles.emptyHero, { marginHorizontal: Spacing.page }]}>
             <View style={[styles.emptyHeroInner, { borderColor: colors.outlineVariant }]}>
-              <MaterialCommunityIcons name="weather-sunset" size={44} color={colors.outlineVariant} />
+              <View style={[styles.emptyIconCircle, { backgroundColor: `${colors.primary}12` }]}>
+                <MaterialCommunityIcons name="weather-sunset" size={44} color={colors.primary} />
+              </View>
               <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
                 Ready when you are
               </Text>
@@ -368,7 +370,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   emptyHeroInner: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.xl,
     paddingVertical: Spacing.xxxl + Spacing.sm,
@@ -516,5 +518,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.lg,
     borderRadius: Radius.lg,
+  },
+  emptyIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

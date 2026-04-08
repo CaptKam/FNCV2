@@ -67,7 +67,7 @@ export default function SearchScreen() {
         contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 76 }}
       >
         <View style={{ paddingHorizontal: Spacing.page }}>
-          <Text style={[Typography.displayLarge, { color: colors.onSurface, fontSize: 42 }]}>
+          <Text style={[Typography.displayMedium, { color: colors.onSurface }]}>
             Search
           </Text>
         </View>
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: 14,
-    borderRadius: Radius.sm,
+    borderRadius: Radius.full,
   },
   chipContainer: {
     paddingHorizontal: Spacing.page,

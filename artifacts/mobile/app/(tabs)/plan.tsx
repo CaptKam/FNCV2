@@ -972,7 +972,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   emptyCard: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
     paddingVertical: Spacing.xl,
@@ -992,7 +992,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   courseCard: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
     paddingVertical: Spacing.lg,

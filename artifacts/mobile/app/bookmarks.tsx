@@ -79,8 +79,8 @@ export default function BookmarksScreen() {
 
         {savedRecipes.length === 0 ? (
           <View style={styles.emptyState}>
-            <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="bookmark-outline" size={48} color={colors.outline} />
+            <View style={[styles.emptyIcon, { backgroundColor: `${colors.primary}12` }]}>
+              <MaterialCommunityIcons name="bookmark-outline" size={48} color={colors.primary} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
               Your collection is empty
@@ -229,8 +229,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   filterText: {
+    ...Typography.titleSmall,
     fontSize: 13,
-    fontWeight: '500',
   },
   emptyState: {
     alignItems: 'center',
@@ -248,13 +248,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   emptyTitle: {
-    fontFamily: 'NotoSerif_700Bold',
-    fontSize: 20,
-    fontWeight: '700',
+    ...Typography.headline,
     textAlign: 'center',
   },
   emptyBody: {
-    fontSize: 14,
+    ...Typography.bodySmall,
     lineHeight: 22,
     textAlign: 'center',
     paddingHorizontal: Spacing.xl,
@@ -266,8 +264,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
   },
   exploreBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
+    ...Typography.titleSmall,
   },
   section: {
     marginBottom: Spacing.xl,
@@ -280,16 +277,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   sectionTitle: {
-    fontFamily: 'NotoSerif_700Bold',
-    fontSize: 22,
-    fontWeight: '700',
+    ...Typography.headline,
     letterSpacing: -0.5,
   },
   sectionBadge: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+    ...Typography.labelSmall,
   },
   listGroup: {
     paddingHorizontal: Spacing.page,
@@ -317,20 +309,16 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   itemCategory: {
+    ...Typography.labelSmall,
     fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
   },
   itemTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 17,
-    fontWeight: '700',
+    ...Typography.titleMedium,
     letterSpacing: -0.3,
   },
   itemMeta: {
+    ...Typography.bodySmall,
     fontSize: 13,
-    fontWeight: '400',
     marginTop: 2,
   },
   heartBtn: {

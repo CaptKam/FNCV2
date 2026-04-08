@@ -30,7 +30,7 @@ export default function TabLayout() {
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontFamily: "Inter_500Medium",
-          fontSize: 12,
+          fontSize: 10,
           marginTop: 2,
         },
         tabBarStyle: {
@@ -147,8 +147,8 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   iconWrap: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
     borderRadius: Radius.full,
     alignItems: "center",
     justifyContent: "center",

@@ -134,7 +134,7 @@ export default function RecipeDetailScreen() {
             <MaterialCommunityIcons
               name={isSaved ? 'heart' : 'heart-outline'}
               size={20}
-              color={isSaved ? '#FF6B6B' : '#FFFFFF'}
+              color={isSaved ? colors.error : '#FFFFFF'}
             />
           </Pressable>
         }
@@ -206,12 +206,12 @@ export default function RecipeDetailScreen() {
           {/* Add to Plan button */}
           <Pressable
             onPress={() => setShowPlanSheet(true)}
-            style={[styles.addToPlanBtn, { borderColor: colors.primary }]}
+            style={[styles.addToPlanBtn, { backgroundColor: colors.primary }]}
             accessibilityRole="button"
             accessibilityLabel="Add to meal plan"
           >
-            <MaterialCommunityIcons name="calendar-plus" size={18} color={colors.primary} />
-            <Text style={[Typography.titleSmall, { color: colors.primary }]}>Add to Plan</Text>
+            <MaterialCommunityIcons name="calendar-plus" size={18} color={colors.onPrimary} />
+            <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Add to Plan</Text>
           </Pressable>
 
           <View style={{ marginTop: Spacing.xl }}>
@@ -295,7 +295,7 @@ export default function RecipeDetailScreen() {
       </ScrollView>
 
       {/* Bottom CTA: Start Cooking */}
-      <View style={[styles.cookCTA, { bottom: insets.bottom + 16, paddingHorizontal: Spacing.page }]}>
+      <GlassView style={[styles.cookCTA, { bottom: 0, paddingBottom: insets.bottom + 16, paddingTop: Spacing.md, paddingHorizontal: Spacing.page }]}>
         <Pressable
           onPress={handleStartCooking}
           style={[styles.cookButton, { backgroundColor: colors.primary }]}
@@ -305,7 +305,7 @@ export default function RecipeDetailScreen() {
           <Feather name="play" size={20} color={colors.onPrimary} />
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
         </Pressable>
-      </View>
+      </GlassView>
 
       {/* Add to Plan bottom sheet */}
       <Modal
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: Radius.full,
-    borderWidth: 1.5,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -413,7 +413,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: 12,
     borderRadius: Radius.full,
-    borderWidth: 1.5,
     marginTop: Spacing.md,
   },
   ingredientRow: {

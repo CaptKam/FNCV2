@@ -164,8 +164,8 @@ export default function GroceryScreen() {
       <View style={[styles.container, { backgroundColor: colors.surface }]}>
         <HeaderBar />
         <View style={styles.emptyRoot}>
-          <View style={[styles.emptyIconCircle, { backgroundColor: colors.surfaceContainerHigh }]}>
-            <MaterialCommunityIcons name="cart-outline" size={48} color={colors.outline} />
+          <View style={[styles.emptyIconCircle, { backgroundColor: `${colors.primary}12` }]}>
+            <MaterialCommunityIcons name="cart-outline" size={48} color={colors.primary} />
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
             No ingredients yet
