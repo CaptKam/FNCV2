@@ -97,14 +97,6 @@ export default function RecipeDetailScreen() {
   }
 
   const currentServings = servings;
-  const scaledNutrition = recipe.nutrition
-    ? {
-        calories: Math.round(recipe.nutrition.calories * currentServings),
-        protein: Math.round(recipe.nutrition.protein * currentServings),
-        carbs: Math.round(recipe.nutrition.carbs * currentServings),
-        fat: Math.round(recipe.nutrition.fat * currentServings),
-      }
-    : null;
   const recipeAllergens = recipe.allergens as AllergenType[];
   const dietaryConflicts = useMemo(
     () => getDietaryConflicts(recipeAllergens, app.dietaryFlags),
@@ -239,42 +231,6 @@ export default function RecipeDetailScreen() {
             </Pressable>
           </View>
 
-          {scaledNutrition && (
-            <View style={[styles.nutritionPanel, { backgroundColor: colors.surfaceContainerLow }]}>
-              <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1, marginBottom: Spacing.sm }]}>
-                NUTRITION · {currentServings} {currentServings === 1 ? 'SERVING' : 'SERVINGS'}
-              </Text>
-              <View style={styles.nutritionRow}>
-                <View style={styles.nutritionItem}>
-                  <Text style={[Typography.headlineLarge, { color: colors.primary, fontSize: 22 }]}>
-                    {scaledNutrition.calories}
-                  </Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>kcal</Text>
-                </View>
-                <View style={[styles.nutritionDivider, { backgroundColor: colors.outlineVariant }]} />
-                <View style={styles.nutritionItem}>
-                  <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
-                    {scaledNutrition.protein}g
-                  </Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>protein</Text>
-                </View>
-                <View style={[styles.nutritionDivider, { backgroundColor: colors.outlineVariant }]} />
-                <View style={styles.nutritionItem}>
-                  <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
-                    {scaledNutrition.carbs}g
-                  </Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>carbs</Text>
-                </View>
-                <View style={[styles.nutritionDivider, { backgroundColor: colors.outlineVariant }]} />
-                <View style={styles.nutritionItem}>
-                  <Text style={[Typography.titleMedium, { color: colors.onSurface }]}>
-                    {scaledNutrition.fat}g
-                  </Text>
-                  <Text style={[Typography.caption, { color: colors.outline }]}>fat</Text>
-                </View>
-              </View>
-            </View>
-          )}
 
           {recipeAllergens.length > 0 && (
             <View style={styles.allergenSection}>
@@ -709,25 +665,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
     borderRadius: Radius.full,
-  },
-  nutritionPanel: {
-    marginTop: Spacing.lg,
-    padding: Spacing.md,
-    borderRadius: Radius.lg,
-  },
-  nutritionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-  },
-  nutritionItem: {
-    alignItems: 'center',
-    gap: 2,
-    flex: 1,
-  },
-  nutritionDivider: {
-    width: 1,
-    height: 32,
   },
   allergenSection: {
     marginTop: Spacing.md,
