@@ -23,3 +23,9 @@ id = "PtLtPMr8EKADcREFoZ9UQ"
 uri = "file://.local/conditional-feature-rules.md"
 type = "text"
 title = "Conditional Feature Rules (updated with Party Planning)"
+
+[[outputs]]
+id = "rW0FHaG_E3iPcA80T4vX7"
+uri = "file://.local/mvp-audit.md"
+type = "text"
+title = "Fork & Compass — Complete MVP Audit Report"
