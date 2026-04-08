@@ -259,7 +259,13 @@ export default function SearchScreen() {
                     <Text style={[Typography.titleSmall, { color: colors.primary }]}>ADD +</Text>
                   </Pressable>
                 </View>
-                <View style={styles.heartBtn}>
+                <Pressable
+                  onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+                  style={styles.heartBtn}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+                >
                   <GlassView style={styles.heartGlass}>
                     <AnimatedHeart
                       filled={isBookmarked(recipe.id)}
@@ -267,11 +273,10 @@ export default function SearchScreen() {
                       size={16}
                       filledColor={colors.error}
                       outlineColor={colors.textOnImage}
-                      accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-                      hitSlop={4}
+                      hitSlop={0}
                     />
                   </GlassView>
-                </View>
+                </Pressable>
               </Pressable>
             </AnimatedListItem>
           ))}

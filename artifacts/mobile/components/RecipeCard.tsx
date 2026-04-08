@@ -13,6 +13,7 @@ import { formatCookTime } from '@/data/helpers';
 import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allergens';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
+import { AnimatedHeart } from './AnimatedHeart';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -54,10 +55,13 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           accessibilityLabel={isFav ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
         >
           <GlassView style={styles.heartGlass}>
-            <MaterialCommunityIcons
-              name={isFav ? 'heart' : 'heart-outline'}
+            <AnimatedHeart
+              filled={isFav}
+              onToggle={() => toggleBookmark(recipe.id)}
               size={16}
-              color={isFav ? colors.primary : colors.textOnImage}
+              filledColor={colors.primary}
+              outlineColor={colors.textOnImage}
+              hitSlop={0}
             />
           </GlassView>
         </Pressable>
