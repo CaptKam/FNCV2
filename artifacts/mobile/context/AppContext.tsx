@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { Storage } from '@/utils/storage';
 import { Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
+import { DinnerPlan } from '@/types/kitchen';
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -113,6 +114,10 @@ interface AppContextValue {
   awardXP: (amount: number) => void;
   addPassportStamp: (countryId: string) => void;
   getCookingLevelName: () => string;
+
+  // Dinner plan
+  pendingDinnerPlan: DinnerPlan | null;
+  setPendingDinnerPlan: (plan: DinnerPlan | null) => void;
 }
 
 // ═══════════════════════════════════════════
@@ -229,6 +234,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [xp, setXp] = useState(defaultHistory.xp);
   const [level, setLevel] = useState(defaultHistory.level);
   const [passportStamps, setPassportStamps] = useState<Record<string, number>>(defaultHistory.passportStamps);
+  const [pendingDinnerPlan, setPendingDinnerPlan] = useState<DinnerPlan | null>(null);
 
   const hydrated = useRef(false);
 
@@ -732,6 +738,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     awardXP,
     addPassportStamp,
     getCookingLevelName,
+
+    pendingDinnerPlan,
+    setPendingDinnerPlan,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
