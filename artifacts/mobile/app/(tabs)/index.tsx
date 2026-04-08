@@ -6,6 +6,9 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
+  FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   useWindowDimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -85,6 +88,10 @@ export default function DiscoverScreen() {
   const HERO_HEIGHT = SCREEN_WIDTH < 375 ? 200 : SCREEN_WIDTH > 414 ? 280 : 240;
   const CARD_IMG_HEIGHT = SCREEN_WIDTH < 375 ? 140 : 160;
 
+  // Hero carousel ref
+  const heroListRef = useRef<FlatList>(null);
+  const HERO_CARD_WIDTH = SCREEN_WIDTH - GRID_PAD * 2;
+
   // Toast state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -118,10 +125,20 @@ export default function DiscoverScreen() {
     AsyncStorage.setItem(`@fork_compass_tonight_dismissed_${todayDate}`, 'true');
   }, [todayDate]);
 
-  // Featured country — starts with daily rotation, tappable dots cycle through all
+  // Featured country — swipeable, tappable dots, starts with daily rotation
   const [heroIndex, setHeroIndex] = useState(() => getDayOfYear() % countries.length);
   const featuredCountry = countries[heroIndex];
   const featuredRecipeCount = recipes.filter((r) => r.countryId === featuredCountry.id).length;
+
+  const handleHeroScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - GRID_PAD * 2));
+    if (idx >= 0 && idx < countries.length) setHeroIndex(idx);
+  }, [SCREEN_WIDTH]);
+
+  const scrollToHero = useCallback((idx: number) => {
+    setHeroIndex(idx);
+    heroListRef.current?.scrollToIndex({ index: idx, animated: true });
+  }, []);
 
   // Filtered recipe grid
   const gridRecipes = useMemo(() => {
@@ -258,58 +275,75 @@ export default function DiscoverScreen() {
           </Animated.View>
         )}
 
-        {/* ═══ ROW 3: HERO DESTINATION (full width) ═══ */}
-        <Animated.View entering={enterDelay(60)} style={{ paddingHorizontal: GRID_PAD, marginBottom: GRID_GAP }}>
-          <Pressable
-            onPress={() => router.push(`/country/${featuredCountry.id}`)}
-            style={[styles.heroCountry, { height: 300 }]}
-            accessibilityRole="button"
-            accessibilityLabel={`Explore ${featuredCountry.name}`}
-          >
-            <Image
-              source={{ uri: featuredCountry.heroImage }}
-              style={StyleSheet.absoluteFill}
-              contentFit="cover"
-              transition={300}
-              accessible={false}
-            />
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.75)']}
-              locations={[0, 0.4, 1]}
-              style={StyleSheet.absoluteFill}
-            />
-            <View style={styles.heroCountryContent}>
-              <View style={styles.heroBadgeRow}>
-                <Text style={{ fontSize: 20 }}>{featuredCountry.flag}</Text>
-                <View style={[styles.heroBadge, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-                  <Text style={[Typography.labelSmall, { color: '#FFFFFF', letterSpacing: 1.5 }]}>FEATURED DESTINATION</Text>
-                </View>
-              </View>
-              <Text style={[Typography.displayMedium, { color: '#FFFFFF', letterSpacing: -0.5 }]}>{featuredCountry.name}</Text>
-              <View style={styles.heroBottomRow}>
+        {/* ═══ ROW 3: HERO DESTINATION (swipeable) ═══ */}
+        <Animated.View entering={enterDelay(60)} style={{ marginBottom: GRID_GAP }}>
+          <View style={[styles.heroCarousel, { marginHorizontal: GRID_PAD, height: 300 }]}>
+            <FlatList
+              ref={heroListRef}
+              data={countries}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={handleHeroScroll}
+              scrollEventThrottle={16}
+              initialScrollIndex={heroIndex}
+              getItemLayout={(_, index) => ({ length: HERO_CARD_WIDTH, offset: HERO_CARD_WIDTH * index, index })}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
                 <Pressable
-                  style={[styles.heroExploreBtn, { backgroundColor: colors.primary }]}
+                  onPress={() => router.push(`/country/${item.id}`)}
+                  style={{ width: HERO_CARD_WIDTH, height: 300 }}
                   accessibilityRole="button"
-                  accessibilityLabel={`Explore ${featuredCountry.name}`}
+                  accessibilityLabel={`Explore ${item.name}`}
                 >
-                  <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700' }]}>Let's Go</Text>
+                  <Image
+                    source={{ uri: item.heroImage }}
+                    style={StyleSheet.absoluteFill}
+                    contentFit="cover"
+                    transition={300}
+                    accessible={false}
+                  />
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.75)']}
+                    locations={[0, 0.4, 1]}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <View style={styles.heroCountryContent}>
+                    <View style={styles.heroBadgeRow}>
+                      <Text style={{ fontSize: 20 }}>{item.flag}</Text>
+                      <View style={[styles.heroBadge, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                        <Text style={[Typography.labelSmall, { color: '#FFFFFF', letterSpacing: 1.5 }]}>FEATURED DESTINATION</Text>
+                      </View>
+                    </View>
+                    <Text style={[Typography.displayMedium, { color: '#FFFFFF', letterSpacing: -0.5 }]}>{item.name}</Text>
+                    <View style={styles.heroBottomRow}>
+                      <Pressable
+                        onPress={() => router.push(`/country/${item.id}`)}
+                        style={[styles.heroExploreBtn, { backgroundColor: colors.primary }]}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Explore ${item.name}`}
+                      >
+                        <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700' }]}>Let's Go</Text>
+                      </Pressable>
+                      <View style={styles.heroDots}>
+                        {countries.map((c, di) => (
+                          <Pressable
+                            key={c.id}
+                            onPress={(e) => { e.stopPropagation(); scrollToHero(di); }}
+                            hitSlop={6}
+                            accessibilityRole="button"
+                            accessibilityLabel={c.name}
+                          >
+                            <View style={[styles.heroDot, { backgroundColor: di === heroIndex ? '#FFFFFF' : 'rgba(255,255,255,0.3)' }]} />
+                          </Pressable>
+                        ))}
+                      </View>
+                    </View>
+                  </View>
                 </Pressable>
-                <View style={styles.heroDots}>
-                  {countries.map((c, i) => (
-                    <Pressable
-                      key={c.id}
-                      onPress={(e) => { e.stopPropagation(); setHeroIndex(i); }}
-                      hitSlop={6}
-                      accessibilityRole="button"
-                      accessibilityLabel={c.name}
-                    >
-                      <View style={[styles.heroDot, { backgroundColor: i === heroIndex ? '#FFFFFF' : 'rgba(255,255,255,0.3)' }]} />
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-            </View>
-          </Pressable>
+              )}
+            />
+          </View>
         </Animated.View>
 
         {/* ═══ ROW 3B: XP + STATS (2-column row) ═══ */}
@@ -541,6 +575,10 @@ const styles = StyleSheet.create({
   // Row 3: Hero + XP
   bentoRow: {
     flexDirection: 'row',
+  },
+  heroCarousel: {
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
   },
   heroCountry: {
     borderRadius: Radius.xl,
