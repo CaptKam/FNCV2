@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
 import {
   View,
@@ -12,6 +12,7 @@ import {
   NativeSyntheticEvent,
   useWindowDimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -114,6 +115,21 @@ export default function DiscoverScreen() {
   const todayDate = toISO(new Date());
   const tonightMeal = todaysMeals.length > 0 ? todaysMeals[0] : null;
   const tonightRecipe = tonightMeal ? recipes.find((r) => r.id === tonightMeal.recipeId) : null;
+
+  // Tonight strip: only show after noon + dismissible per day
+  const isAfterNoon = new Date().getHours() >= 12;
+  const [tonightDismissed, setTonightDismissed] = useState(true); // default hidden to avoid flash
+  useEffect(() => {
+    const key = `@fork_compass_tonight_dismissed_${todayDate}`;
+    AsyncStorage.getItem(key).then((val) => {
+      setTonightDismissed(val === 'true');
+    });
+  }, [todayDate]);
+  const showTonightStrip = tonightRecipe != null && isAfterNoon && !tonightDismissed;
+  const dismissTonightStrip = useCallback(() => {
+    setTonightDismissed(true);
+    AsyncStorage.setItem(`@fork_compass_tonight_dismissed_${todayDate}`, 'true');
+  }, [todayDate]);
 
   // Day list for picker (next 14 days)
   const planDays = useMemo(() => {
@@ -255,8 +271,8 @@ export default function DiscoverScreen() {
           </View>
         </View>
 
-        {/* Tonight's Plan Strip — reads from AppContext */}
-        {tonightRecipe && tonightMeal ? (
+        {/* Tonight's Plan Strip — visible after noon, dismissible per day */}
+        {showTonightStrip && tonightMeal ? (
           <View style={{ paddingHorizontal: Spacing.page, marginTop: -Spacing.xxl }}>
             <GlassView style={[styles.tonightCard, { ...Shadows.ambient }]}>
               <Image
@@ -292,9 +308,18 @@ export default function DiscoverScreen() {
                   );
                 })()}
               </View>
+              <Pressable
+                onPress={dismissTonightStrip}
+                style={styles.tonightDismiss}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Dismiss tonight's plan"
+              >
+                <MaterialCommunityIcons name="close" size={16} color={colors.onSurfaceVariant} />
+              </Pressable>
             </GlassView>
           </View>
-        ) : (
+        ) : !showTonightStrip && !tonightRecipe ? (
           <View style={{ paddingHorizontal: Spacing.page, marginTop: -Spacing.xxl }}>
             <GlassView style={[styles.tonightCard, { ...Shadows.ambient }]}>
               <View style={[styles.tonightImage, { backgroundColor: colors.surfaceContainerHigh, alignItems: 'center', justifyContent: 'center' }]}>
@@ -310,7 +335,7 @@ export default function DiscoverScreen() {
               </View>
             </GlassView>
           </View>
-        )}
+        ) : null}
 
         {/* Explore Cuisines */}
         <View style={{ marginTop: Spacing.xxl }}>
@@ -479,6 +504,12 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.4)',
     borderRadius: Radius.full,
+  },
+  tonightDismiss: {
+    position: 'absolute',
+    top: Spacing.xs,
+    right: Spacing.xs,
+    padding: Spacing.xs,
   },
   tonightCard: {
     flexDirection: 'row',
