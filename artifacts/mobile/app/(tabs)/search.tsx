@@ -55,13 +55,17 @@ export default function SearchScreen() {
     toastTimeoutRef.current = setTimeout(() => setToastMessage(null), 2500);
   }, []);
 
+  React.useEffect(() => {
+    return () => { if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current); };
+  }, []);
+
   const handleAddToPlan = useCallback((date: string) => {
     if (!addSheetRecipe) return;
     app.addCourseToDay(date, 'main', addSheetRecipe);
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
     const todayDate = new Date().toISOString().split('T')[0];
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const label = date === todayDate ? "tonight's" : days[new Date(date).getDay()] + "'s";
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const label = date === todayDate ? "tonight's" : dayNames[new Date(date).getDay()] + "'s";
     showToast(`Added to ${label} plan.`);
     setAddSheetRecipe(null);
   }, [addSheetRecipe, app, showToast]);
