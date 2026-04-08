@@ -81,14 +81,18 @@ type WeekOption = 'this-week' | 'next-week' | 'past';
 
 function MealCard({
   meal,
+  imageStyle,
   badgeLabel,
+  headlineFontSize,
   onPress,
   onSwap,
   onRemove,
   colors,
 }: {
   meal: PlannedMeal;
+  imageStyle: object;
   badgeLabel: string;
+  headlineFontSize?: number;
   onPress: () => void;
   onSwap?: () => void;
   onRemove?: () => void;
@@ -101,56 +105,58 @@ function MealCard({
       accessibilityLabel={`${meal.recipeName}, ${meal.cookTime} minutes`}
     >
       <GlassView style={styles.mealCard}>
-        <View style={styles.mealCardRow}>
-          {onSwap && (
-            <Pressable
-              onPress={(e) => { e.stopPropagation(); onSwap(); }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              accessibilityRole="button"
-              accessibilityLabel="Swap recipe"
-              style={[styles.mealActionBtn, { borderColor: colors.border }]}
-            >
-              <MaterialCommunityIcons name="swap-horizontal" size={16} color={colors.primary} />
-              <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '600' }}>Swap</Text>
-            </Pressable>
-          )}
-          <View style={styles.mealCardCenter}>
-            <View style={styles.mealCardImageWrap}>
-              <Image
-                source={{ uri: meal.recipeImage }}
-                style={styles.mealCardThumb}
-                contentFit="cover"
-                transition={300}
-                accessible={false}
-              />
-              <View style={styles.recipeBadge}>
-                <GlassView style={styles.recipeBadgePill}>
-                  <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700' }]}>{badgeLabel}</Text>
+        <View>
+          <Image
+            source={{ uri: meal.recipeImage }}
+            style={imageStyle}
+            contentFit="cover"
+            transition={300}
+            accessible={false}
+          />
+          <View style={styles.imageActions}>
+            {onSwap && (
+              <Pressable
+                onPress={(e) => { e.stopPropagation(); onSwap(); }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel="Swap recipe"
+              >
+                <GlassView style={styles.imageActionBtn}>
+                  <MaterialCommunityIcons name="swap-horizontal" size={14} color={colors.primary} />
+                  <Text style={{ fontSize: 9, color: colors.primary, fontWeight: '600' }}>Swap</Text>
                 </GlassView>
-              </View>
-            </View>
-            <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]} numberOfLines={2}>
-              {meal.recipeName}
-            </Text>
-            <View style={styles.mealMeta}>
-              <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
-              <Text style={[Typography.caption, { color: colors.outline }]}>
-                {formatCookTime(meal.cookTime)}
-              </Text>
-            </View>
+              </Pressable>
+            )}
+            {onRemove && (
+              <Pressable
+                onPress={(e) => { e.stopPropagation(); onRemove(); }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel="Remove recipe"
+              >
+                <GlassView style={styles.imageActionBtn}>
+                  <MaterialCommunityIcons name="close" size={14} color={colors.error} />
+                  <Text style={{ fontSize: 9, color: colors.error, fontWeight: '600' }}>Remove</Text>
+                </GlassView>
+              </Pressable>
+            )}
           </View>
-          {onRemove && (
-            <Pressable
-              onPress={(e) => { e.stopPropagation(); onRemove(); }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              accessibilityRole="button"
-              accessibilityLabel="Remove recipe"
-              style={[styles.mealActionBtn, { borderColor: colors.border }]}
-            >
-              <MaterialCommunityIcons name="close" size={16} color={colors.error} />
-              <Text style={{ fontSize: 10, color: colors.error, fontWeight: '600' }}>Remove</Text>
-            </Pressable>
-          )}
+          <View style={styles.recipeBadge}>
+            <GlassView style={styles.recipeBadgePill}>
+              <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700' }]}>{badgeLabel}</Text>
+            </GlassView>
+          </View>
+        </View>
+        <View style={styles.mealContent}>
+          <Text style={[Typography.headline, { color: colors.onSurface }]} numberOfLines={1}>
+            {meal.recipeName}
+          </Text>
+          <View style={styles.mealMeta}>
+            <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
+            <Text style={[Typography.caption, { color: colors.outline }]}>
+              {formatCookTime(meal.cookTime)}
+            </Text>
+          </View>
         </View>
       </GlassView>
     </Pressable>
@@ -433,7 +439,9 @@ export default function PlanScreen() {
                         {meal ? (
                           <MealCard
                             meal={meal}
+                            imageStyle={styles.mealImage}
                             badgeLabel={slot.label.toUpperCase()}
+                            headlineFontSize={22}
                             onPress={() => router.push(`/recipe/${meal.recipeId}`)}
                             onSwap={() => openPicker(selectedDate, slot.courseType)}
                             onRemove={() => handleRemoveCourse(selectedDate, slot.courseType)}
@@ -504,7 +512,9 @@ export default function PlanScreen() {
                     {primaryMeal ? (
                       <MealCard
                         meal={primaryMeal}
+                        imageStyle={styles.mealImageTall}
                         badgeLabel="DINNER"
+                        headlineFontSize={24}
                         onPress={() => router.push(`/recipe/${primaryMeal.recipeId}`)}
                         onSwap={() => openPicker(selectedDate, 'main')}
                         onRemove={() => handleRemoveCourse(selectedDate, 'main')}
@@ -548,7 +558,9 @@ export default function PlanScreen() {
                         {courseMeal ? (
                           <MealCard
                             meal={courseMeal}
+                            imageStyle={styles.mealImage}
                             badgeLabel={course.label.toUpperCase()}
+                            headlineFontSize={20}
                             onPress={() => router.push(`/recipe/${courseMeal.recipeId}`)}
                             onSwap={() => openPicker(selectedDate, course.courseType)}
                             onRemove={() => handleRemoveCourse(selectedDate, course.courseType)}
@@ -672,7 +684,9 @@ export default function PlanScreen() {
                     {mainMeal ? (
                       <MealCard
                         meal={mainMeal}
+                        imageStyle={styles.mealImage}
                         badgeLabel="DINNER"
+                        headlineFontSize={22}
                         onPress={() => router.push(`/recipe/${mainMeal.recipeId}`)}
                         onSwap={() => openPicker(day.date, 'main')}
                         onRemove={() => handleRemoveCourse(day.date, 'main')}
@@ -1064,45 +1078,35 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 176,
   },
-  mealCardRow: {
+  imageActions: {
+    position: 'absolute',
+    top: Spacing.sm,
+    left: Spacing.sm,
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.md,
-    gap: Spacing.md,
+    gap: Spacing.sm,
+    zIndex: 10,
   },
-  mealActionBtn: {
+  imageActionBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: Radius.md,
-    borderWidth: 1,
-  },
-  mealCardCenter: {
-    flex: 1,
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  mealCardImageWrap: {
-    width: '100%',
-    aspectRatio: 16 / 9,
-    borderRadius: Radius.md,
-    overflow: 'hidden',
-  },
-  mealCardThumb: {
-    width: '100%',
-    height: '100%',
+    gap: 1,
   },
   recipeBadge: {
     position: 'absolute',
-    top: Spacing.xs,
-    right: Spacing.xs,
+    top: Spacing.sm,
+    right: Spacing.sm,
   },
   recipeBadgePill: {
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
+  },
+  mealContent: {
+    padding: Spacing.md,
+    gap: Spacing.xs,
   },
   mealMeta: {
     flexDirection: 'row',
