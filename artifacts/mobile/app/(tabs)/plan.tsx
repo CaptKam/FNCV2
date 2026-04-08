@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -190,6 +190,36 @@ export default function PlanScreen() {
     setShowPlanHint(false);
     AsyncStorage.setItem('@fork_compass_hint_plan_seen', 'true');
   }, []);
+
+  // ─── Toast + Undo state ───
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showUndo, setShowUndo] = useState(false);
+  const undoSnapshot = useRef<{ itinerary: any; grocery: any } | null>(null);
+  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((msg: string, withUndo = false) => {
+    setToastMessage(msg);
+    setShowUndo(withUndo);
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    toastTimeout.current = setTimeout(() => {
+      setToastMessage(null);
+      setShowUndo(false);
+      undoSnapshot.current = null;
+    }, withUndo ? 5000 : 3000);
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    if (undoSnapshot.current) {
+      app.restoreItinerary(undoSnapshot.current.itinerary);
+      app.restoreGrocery(undoSnapshot.current.grocery);
+      undoSnapshot.current = null;
+      setShowUndo(false);
+      setToastMessage(null);
+      if (toastTimeout.current) clearTimeout(toastTimeout.current);
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+      showToast('Meal plan undone');
+    }
+  }, [app, showToast]);
 
   // ─── Week data from AppContext ───
   const weekDays: ItineraryDay[] = app.getWeek(weekStartDate);
@@ -781,8 +811,15 @@ export default function PlanScreen() {
           setShowQuickGen(false);
 
           const doGenerate = () => {
+            // Snapshot for undo
+            undoSnapshot.current = {
+              itinerary: JSON.parse(JSON.stringify(app.itinerary)),
+              grocery: JSON.parse(JSON.stringify(app.groceryItems)),
+            };
             app.autoGenerateWeek(emptyDates, app.coursePreference);
             try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+            const weekLabel = selectedWeek === 'next-week' ? 'next week' : 'this week';
+            showToast(`Planned ${emptyDates.length} meals for ${weekLabel}`, true);
           };
 
           if (!hasSeenAutoGen) {
@@ -969,6 +1006,19 @@ export default function PlanScreen() {
         onDismiss={() => setPickerVisible(false)}
         onSelect={handlePickRecipe}
       />
+
+      {/* Toast with optional undo */}
+      {toastMessage && (
+        <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
+          <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
+          <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface, flex: 1 }]}>{toastMessage}</Text>
+          {showUndo && (
+            <Pressable onPress={handleUndo} hitSlop={8} accessibilityRole="button" accessibilityLabel="Undo meal plan">
+              <Text style={[Typography.titleSmall, { color: colors.inversePrimary, fontWeight: '700' }]}>Undo</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
     </View>
   );
 }
@@ -1321,6 +1371,18 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 100,
+    left: Spacing.page,
+    right: Spacing.page,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 14,
     borderRadius: Radius.full,
   },
 });

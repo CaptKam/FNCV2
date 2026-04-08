@@ -72,6 +72,8 @@ interface AppContextValue {
   removeCourseFromDay: (date: string, courseType: CourseType) => void;
   toggleDinnerParty: (date: string) => void;
   autoGenerateWeek: (selectedDates: string[], coursePreference: CoursePreference) => void;
+  restoreItinerary: (snapshot: ItineraryDay[]) => void;
+  restoreGrocery: (snapshot: GroceryItem[]) => void;
   clearDay: (date: string) => void;
   getWeek: (startDate: string) => ItineraryDay[];
   getTodaysMeals: () => PlannedMeal[];
@@ -600,6 +602,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     (selectedDates: string[], pref: CoursePreference) => {
       const allRecipes: Recipe[] = require('@/data/recipes').recipes;
 
+      // ── Dietary filtering ──
       const MEAT_TERMS = ['chicken', 'beef', 'pork', 'lamb', 'duck', 'veal', 'bacon', 'prosciutto', 'pancetta', 'sausage', 'steak', 'meatball', 'ground meat', 'chorizo', 'ham', 'turkey', 'oxtail', 'bone marrow', 'lard'];
       const FISH_TERMS = ['fish', 'salmon', 'tuna', 'shrimp', 'prawn', 'crab', 'lobster', 'squid', 'calamari', 'clam', 'mussel', 'oyster', 'anchovy', 'sardine', 'cod', 'sea bass', 'mahi', 'scallop', 'octopus', 'bonito', 'dashi'];
       const DAIRY_TERMS = ['cheese', 'cream', 'butter', 'milk', 'yogurt', 'ghee', 'paneer', 'mascarpone', 'ricotta', 'mozzarella', 'parmesan', 'pecorino', 'gruyère', 'crème'];
@@ -640,7 +643,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return true;
       };
 
-      const eligible = allRecipes.filter(isCompatible);
+      const dietaryFiltered = allRecipes.filter(isCompatible);
+
+      // All difficulty levels available to all users
+      const afterLevelFilter = dietaryFiltered;
+
+      // ── Recency filtering (avoid recipes from current + previous 2 weeks) ──
+      const recentRecipeIds = new Set<string>();
+      itinerary.forEach((day) => {
+        if (day.courses.main) recentRecipeIds.add(day.courses.main.recipeId);
+        if (day.courses.appetizer) recentRecipeIds.add(day.courses.appetizer.recipeId);
+        if (day.courses.dessert) recentRecipeIds.add(day.courses.dessert.recipeId);
+      });
+      const afterRecencyFilter = afterLevelFilter.filter((r) => !recentRecipeIds.has(r.id));
+      // Fallback: if too few recipes, use pre-recency pool
+      const eligible = afterRecencyFilter.length >= selectedDates.length ? afterRecencyFilter : afterLevelFilter;
+
       const shuffled = [...eligible].sort(() => Math.random() - 0.5);
       const usedIds = new Set<string>();
       const usedCountries = new Set<string>();
@@ -707,8 +725,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return days;
       });
     },
-    [findOrCreateDay, addToGrocery, dietaryFlags]
+    [findOrCreateDay, addToGrocery, dietaryFlags, itinerary]
   );
+
+  const restoreItinerary = useCallback((snapshot: ItineraryDay[]) => {
+    setItinerary(snapshot);
+  }, []);
+
+  const restoreGrocery = useCallback((snapshot: GroceryItem[]) => {
+    setGroceryItems(snapshot);
+  }, []);
 
   const clearDay = useCallback(
     (date: string) => {
@@ -1135,6 +1161,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     removeCourseFromDay,
     toggleDinnerParty,
     autoGenerateWeek,
+    restoreItinerary,
+    restoreGrocery,
     clearDay,
     getWeek,
     getTodaysMeals,
