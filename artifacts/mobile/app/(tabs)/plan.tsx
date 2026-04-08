@@ -673,9 +673,10 @@ export default function PlanScreen() {
                             accessibilityRole="button"
                             accessibilityLabel="Plan dinner party"
                           >
-                            <View style={[styles.partyPill, { backgroundColor: colors.surfaceContainerHigh }]}>
-                              <MaterialCommunityIcons name="silverware-fork-knife" size={14} color={colors.outline} />
-                              <Text style={[Typography.caption, { color: colors.outline }]}>Host a dinner</Text>
+                            <View style={[styles.hostDinnerBtn, { backgroundColor: colors.primary }]}>
+                              <MaterialCommunityIcons name="candelabra-fire" size={16} color="#FFFFFF" />
+                              <Text style={{ fontSize: 12, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>Host a Dinner</Text>
+                              <MaterialCommunityIcons name="chevron-right" size={16} color="rgba(255,255,255,0.7)" />
                             </View>
                           </Pressable>
                         );
@@ -984,6 +985,14 @@ const styles = StyleSheet.create({
   todayBadge: {
     paddingHorizontal: Spacing.xs,
     paddingVertical: Spacing.xs,
+    borderRadius: Radius.full,
+  },
+  hostDinnerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: Radius.full,
   },
   partyPill: {
