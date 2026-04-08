@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import * as Haptics from 'expo-haptics';
 import {
   View,
@@ -27,6 +27,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
+import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
@@ -45,16 +46,29 @@ export default function SearchScreen() {
   const [activeMood, setActiveMood] = useState('All Moods');
   const [excludedAllergens, setExcludedAllergens] = useState<AllergenType[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [addSheetRecipe, setAddSheetRecipe] = useState<typeof recipes[0] | null>(null);
 
-  const handleAddToToday = useCallback((recipe: typeof recipes[0]) => {
+  const showToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => setToastMessage(null), 2500);
+  }, []);
+
+  React.useEffect(() => {
+    return () => { if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current); };
+  }, []);
+
+  const handleAddToPlan = useCallback((date: string) => {
+    if (!addSheetRecipe) return;
+    app.addCourseToDay(date, 'main', addSheetRecipe);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
     const todayDate = new Date().toISOString().split('T')[0];
-    app.addCourseToDay(todayDate, 'main', recipe);
-    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-    setToastMessage(`Added ${recipe.title} to today's plan`);
-    if (toastTimeout.current) clearTimeout(toastTimeout.current);
-    toastTimeout.current = setTimeout(() => setToastMessage(null), 2500);
-  }, [app]);
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const label = date === todayDate ? "tonight's" : dayNames[new Date(date).getDay()] + "'s";
+    showToast(`Added to ${label} plan.`);
+    setAddSheetRecipe(null);
+  }, [addSheetRecipe, app, showToast]);
 
   const toggleAllergenFilter = useCallback((a: AllergenType) => {
     setExcludedAllergens((prev) =>
@@ -236,13 +250,36 @@ export default function SearchScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
               >
-                <Image
-                  source={{ uri: recipe.image }}
-                  style={styles.cardImage}
-                  contentFit="cover"
-                  transition={300}
-                  accessibilityLabel={recipe.title}
-                />
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={{ uri: recipe.image }}
+                    style={styles.cardImage}
+                    contentFit="cover"
+                    transition={300}
+                    accessibilityLabel={recipe.title}
+                  />
+                  <Pressable
+                    onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+                    style={styles.heartBtn}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
+                  >
+                    <View style={styles.heartGlass}>
+                      <AnimatedHeart
+                        filled={isBookmarked(recipe.id)}
+                        onToggle={() => toggleBookmark(recipe.id)}
+                        size={20}
+                        filledColor={colors.primary}
+                        outlineColor={OVERLAY_BUTTON.iconColor}
+                        hitSlop={0}
+                      />
+                    </View>
+                  </Pressable>
+                  <View style={styles.addOverlay}>
+                    <AddToPlanButton onPress={() => setAddSheetRecipe(recipe)} recipeName={recipe.title} variant="overlay" />
+                  </View>
+                </View>
                 <View style={styles.cardContent}>
                   <Text style={[Typography.title, { color: colors.onSurface }]} numberOfLines={2}>
                     {recipe.title}
@@ -250,33 +287,7 @@ export default function SearchScreen() {
                   <Text style={[Typography.labelSmall, { color: colors.outline }]}>
                     {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
                   </Text>
-                  <Pressable
-                    onPress={(e) => { e.stopPropagation(); handleAddToToday(recipe); }}
-                    style={styles.addButton}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Add ${recipe.title} to today's plan`}
-                  >
-                    <Text style={[Typography.titleSmall, { color: colors.primary }]}>ADD +</Text>
-                  </Pressable>
                 </View>
-                <Pressable
-                  onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
-                  style={styles.heartBtn}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-                >
-                  <View style={styles.heartGlass}>
-                    <AnimatedHeart
-                      filled={isBookmarked(recipe.id)}
-                      onToggle={() => toggleBookmark(recipe.id)}
-                      size={20}
-                      filledColor={colors.primary}
-                      outlineColor={OVERLAY_BUTTON.iconColor}
-                      hitSlop={0}
-                    />
-                  </View>
-                </Pressable>
               </Pressable>
             </AnimatedListItem>
           ))}
@@ -284,13 +295,19 @@ export default function SearchScreen() {
         )}
       </ScrollView>
 
-      {/* Toast notification */}
       {toastMessage && (
         <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
           <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
           <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>{toastMessage}</Text>
         </View>
       )}
+
+      <AddToPlanSheet
+        visible={!!addSheetRecipe}
+        recipeName={addSheetRecipe?.title ?? ''}
+        onClose={() => setAddSheetRecipe(null)}
+        onAdd={handleAddToPlan}
+      />
     </View>
   );
 }
@@ -345,13 +362,18 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     gap: 6,
   },
-  addButton: {
-    marginTop: 4,
+  imageWrapper: {
+    position: 'relative',
+  },
+  addOverlay: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
   },
   heartBtn: {
     position: 'absolute',
     top: Spacing.sm,
-    right: Spacing.sm,
+    left: Spacing.sm,
   },
   heartGlass: {
     width: OVERLAY_BUTTON.size,

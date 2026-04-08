@@ -14,12 +14,14 @@ import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allerg
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { AnimatedHeart } from './AnimatedHeart';
+import { AddToPlanButton } from './AddToPlanSheet';
 
 interface RecipeCardProps {
   recipe: Recipe;
+  onAdd?: () => void;
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
   const { width } = useWindowDimensions();
   const CARD_WIDTH = (width - Spacing.page * 2 - Spacing.md) / 2;
   const colors = useThemeColors();
@@ -72,6 +74,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             hitSlop={0}
           />
         </Pressable>
+        {onAdd && (
+          <View style={styles.addOverlay}>
+            <AddToPlanButton onPress={onAdd} recipeName={recipe.title} variant="overlay" />
+          </View>
+        )}
       </View>
       <View style={styles.content}>
         <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={2}>
@@ -145,6 +152,11 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   heartButton: {
+    position: 'absolute',
+    top: Spacing.sm,
+    left: Spacing.sm,
+  },
+  addOverlay: {
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,

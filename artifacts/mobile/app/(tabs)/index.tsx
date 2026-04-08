@@ -6,8 +6,6 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
-  FlatList,
-  Modal,
   useWindowDimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,6 +23,7 @@ import { OVERLAY_BUTTON } from '@/constants/icons';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
+import { AddToPlanSheet } from '@/components/AddToPlanSheet';
 import { countries } from '@/data/countries';
 import { recipes, Recipe } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
@@ -90,9 +89,8 @@ export default function DiscoverScreen() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Day picker state
-  const [dayPickerVisible, setDayPickerVisible] = useState(false);
-  const [dayPickerRecipe, setDayPickerRecipe] = useState<Recipe | null>(null);
+  // Add to plan sheet state
+  const [addSheetRecipe, setAddSheetRecipe] = useState<Recipe | null>(null);
 
   // Country filter
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -142,15 +140,6 @@ export default function DiscoverScreen() {
     .slice(0, 3)
     .map((cid) => countries.find((c) => c.id === cid)?.flag ?? '🌍');
 
-  // Day picker days
-  const planDays = useMemo(() => {
-    const start = toISO(new Date());
-    return Array.from({ length: 14 }, (_, i) => {
-      const date = addDays(start, i);
-      return { date, label: getDayLabel(date), short: formatDateShort(date) };
-    });
-  }, []);
-
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
     if (toastTimeout.current) clearTimeout(toastTimeout.current);
@@ -163,14 +152,14 @@ export default function DiscoverScreen() {
     showToast(`Added to tonight's plan.`);
   }, [app, todayDate, showToast]);
 
-  const handlePickDay = useCallback((date: string) => {
-    if (dayPickerRecipe) {
-      app.addCourseToDay(date, 'main', dayPickerRecipe);
-      showToast(`Added to ${getDayLabel(date)}'s plan.`);
-    }
-    setDayPickerVisible(false);
-    setDayPickerRecipe(null);
-  }, [dayPickerRecipe, app, showToast]);
+  const handleAddToPlan = useCallback((date: string) => {
+    if (!addSheetRecipe) return;
+    app.addCourseToDay(date, 'main', addSheetRecipe);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+    const label = date === todayDate ? "tonight's" : getDayLabel(date) + "'s";
+    showToast(`Added to ${label} plan.`);
+    setAddSheetRecipe(null);
+  }, [addSheetRecipe, app, todayDate, showToast]);
 
   const handleCookTonight = useCallback(() => {
     if (!tonightRecipe) return;
@@ -452,48 +441,12 @@ export default function DiscoverScreen() {
         </View>
       )}
 
-      {/* Day picker bottom sheet */}
-      <Modal
-        visible={dayPickerVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setDayPickerVisible(false)}
-      >
-        <Pressable style={styles.sheetOverlay} onPress={() => setDayPickerVisible(false)}>
-          <Pressable
-            style={[styles.sheetContainer, { backgroundColor: colors.surface }]}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={[styles.sheetHandle, { backgroundColor: colors.handleBar }]} />
-            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.sm }]}>Pick a Day</Text>
-            {dayPickerRecipe && (
-              <Text style={[Typography.bodySmall, { color: colors.outline, marginBottom: Spacing.md }]}>
-                Adding {dayPickerRecipe.title}
-              </Text>
-            )}
-            <FlatList
-              data={planDays}
-              keyExtractor={(item) => item.date}
-              showsVerticalScrollIndicator={false}
-              style={{ maxHeight: 360 }}
-              renderItem={({ item }) => (
-                <Pressable
-                  onPress={() => handlePickDay(item.date)}
-                  style={[styles.dayPickerRow, { backgroundColor: colors.surfaceContainerLow }]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${item.label}, ${item.short}`}
-                >
-                  <View>
-                    <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
-                    <Text style={[Typography.caption, { color: colors.outline }]}>{item.short}</Text>
-                  </View>
-                  <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
-                </Pressable>
-              )}
-            />
-          </Pressable>
-        </Pressable>
-      </Modal>
+      <AddToPlanSheet
+        visible={!!addSheetRecipe}
+        recipeName={addSheetRecipe?.title ?? ''}
+        onClose={() => setAddSheetRecipe(null)}
+        onAdd={handleAddToPlan}
+      />
     </View>
   );
 }
@@ -685,32 +638,4 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
 
-  // Day picker sheet
-  sheetOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheetContainer: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: Spacing.page,
-    paddingBottom: 40,
-    paddingTop: Spacing.sm,
-  },
-  sheetHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: Spacing.lg,
-  },
-  dayPickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.md,
-    borderRadius: Radius.md,
-    marginBottom: Spacing.sm,
-  },
 });
