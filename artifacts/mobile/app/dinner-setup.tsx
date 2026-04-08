@@ -357,7 +357,8 @@ export default function DinnerSetupScreen() {
 
           {party.guests.map((guest) => {
             const rsvp = RSVP_CONFIG[guest.rsvpStatus];
-            const rsvpColor = rsvp.color === 'outline' ? colors.outline : (colors as any)[rsvp.color] ?? colors.outline;
+            const colorMap: Record<string, string> = { outline: colors.outline, success: colors.success, warning: colors.warning, error: colors.error };
+            const rsvpColor = colorMap[rsvp.color] ?? colors.outline;
             return (
               <Pressable key={guest.id} onLongPress={() => handleRemoveGuest(guest.id, guest.name)} style={[styles.guestCard, { backgroundColor: colors.surfaceContainerLow }]}>
                 <View style={[styles.guestAvatar, { backgroundColor: colors.surfaceContainerHigh }]}>

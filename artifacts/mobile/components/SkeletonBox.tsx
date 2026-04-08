@@ -48,7 +48,7 @@ export function SkeletonBox({ width, height, borderRadius = Radius.md, style }: 
     <View
       style={[
         {
-          width: width as any,
+          width,
           height,
           borderRadius,
           backgroundColor: colors.surfaceContainerHigh,

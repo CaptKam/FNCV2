@@ -55,7 +55,8 @@ function getTodayISO(): string {
   return toISO(new Date());
 }
 
-type CourseSlot = { label: string; icon: string; placeholder: string; courseType: 'appetizer' | 'dessert' };
+type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+type CourseSlot = { label: string; icon: MCIconName; placeholder: string; courseType: 'appetizer' | 'dessert' };
 const COURSE_SLOTS: CourseSlot[] = [
   { label: 'Appetizer', icon: 'food-variant', placeholder: 'Add an Appetizer...', courseType: 'appetizer' },
   { label: 'Dessert', icon: 'ice-cream', placeholder: 'Sweet finish...', courseType: 'dessert' },
@@ -634,7 +635,7 @@ export default function PlanScreen() {
                             <View style={styles.courseCardInner}>
                               <View style={styles.emptyCardRow}>
                                 <MaterialCommunityIcons
-                                  name={course.icon as any}
+                                  name={course.icon}
                                   size={20}
                                   color={colors.outlineMuted}
                                 />
