@@ -8,15 +8,62 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
-import { Shadows } from '@/constants/shadows';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
+import { PressableScale } from '@/components/PressableScale';
 import { useApp, GroceryItem } from '@/context/AppContext';
 import { recipes as allRecipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
 import { computeScaledAmount } from '@/utils/groceryScaling';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+
+function parseAmountForDisplay(amount: string): { qty: number; unit: string } | null {
+  const match = amount.trim().match(/^([\d./]+)\s*(.*)/);
+  if (!match) return null;
+  const fracMatch = match[1].match(/^(\d+)\/(\d+)$/);
+  const qty = fracMatch
+    ? parseInt(fracMatch[1], 10) / parseInt(fracMatch[2], 10)
+    : parseFloat(match[1]);
+  if (isNaN(qty)) return null;
+  return { qty, unit: match[2].trim().toLowerCase() };
+}
+
+function normalizeDisplayUnit(u: string): string {
+  const map: Record<string, string> = {
+    g: 'g', gram: 'g', grams: 'g', kg: 'kg',
+    ml: 'ml', l: 'l', cup: 'cup', cups: 'cup',
+    tbsp: 'tbsp', tsp: 'tsp', oz: 'oz', lb: 'lb', lbs: 'lb',
+    piece: 'piece', pieces: 'piece', clove: 'clove', cloves: 'clove',
+  };
+  return map[u] ?? u;
+}
+
+function fmtQty(n: number): string {
+  const r = Math.round(n * 10) / 10;
+  return r === Math.floor(r) ? String(Math.floor(r)) : r.toFixed(1);
+}
+
+function aggregateDisplayAmounts(a: string, b: string): string {
+  const pa = parseAmountForDisplay(a);
+  const pb = parseAmountForDisplay(b);
+  if (!pa || !pb) return a + ', ' + b;
+  const uA = normalizeDisplayUnit(pa.unit);
+  const uB = normalizeDisplayUnit(pb.unit);
+  if (uA === uB) {
+    const displayUnit = pa.unit || pb.unit;
+    return `${fmtQty(pa.qty + pb.qty)}${displayUnit ? (displayUnit.match(/^[a-zA-Z]/) ? ' ' : '') + displayUnit : ''}`;
+  }
+  if ((uA === 'g' && uB === 'kg') || (uA === 'kg' && uB === 'g')) {
+    const totalG = (uA === 'kg' ? pa.qty * 1000 : pa.qty) + (uB === 'kg' ? pb.qty * 1000 : pb.qty);
+    return totalG >= 1000 ? `${fmtQty(totalG / 1000)}kg` : `${fmtQty(totalG)}g`;
+  }
+  if ((uA === 'ml' && uB === 'l') || (uA === 'l' && uB === 'ml')) {
+    const totalMl = (uA === 'l' ? pa.qty * 1000 : pa.qty) + (uB === 'l' ? pb.qty * 1000 : pb.qty);
+    return totalMl >= 1000 ? `${fmtQty(totalMl / 1000)}l` : `${fmtQty(totalMl)}ml`;
+  }
+  return a + ', ' + b;
+}
 
 interface CategoryDef {
   icon: IconName;
@@ -52,8 +99,8 @@ export default function GroceryScreen() {
   const app = useApp();
 
   const [activeTab, setActiveTab] = useState<'online' | 'instore'>('online');
+  const [manualItemName, setManualItemName] = useState('');
 
-  // Per-recipe serving overrides (local display state)
   const [servingsOverrides, setServingsOverrides] = useState<Record<string, number>>({});
 
   const setRecipeServings = useCallback((recipeId: string, servings: number) => {
@@ -99,28 +146,20 @@ export default function GroceryScreen() {
     return map;
   }, [recipeCards, servingsOverrides]);
 
-  // Compute scaled amount for a grocery item (may come from multiple recipes)
   const getScaledAmount = useCallback(
     (item: GroceryItem): string => {
-      // If the item has a single recipe source, scale directly
-      if (item.recipeNames.length === 1) {
-        const info = recipeServingsMap[item.recipeNames[0]];
-        if (info) {
-          const scaled = computeScaledAmount(item.amount, info.base, info.target);
-          return convertAmount(scaled, app.useMetric);
-        }
-      }
-      // For multi-recipe items, the amount is already concatenated ("400g, 200g")
-      // Scale each segment if possible
-      if (item.recipeNames.length > 1 && item.amount.includes(', ')) {
-        const segments = item.amount.split(', ');
-        const scaledSegments = segments.map((seg, idx) => {
-          const recipeName = item.recipeNames[idx];
-          const info = recipeName ? recipeServingsMap[recipeName] : undefined;
-          if (info) return computeScaledAmount(seg, info.base, info.target);
-          return seg;
+      if (!item.amount) return '';
+      const sources = item.sourceAmounts ?? {};
+      if (Object.keys(sources).length > 0) {
+        const scaledParts = Object.entries(sources).map(([recipeName, amt]) => {
+          const info = recipeServingsMap[recipeName];
+          if (info) return computeScaledAmount(amt, info.base, info.target);
+          return amt;
         });
-        return convertAmount(scaledSegments.join(', '), app.useMetric);
+        const aggregated = scaledParts.length > 1
+          ? scaledParts.reduce((a, b) => aggregateDisplayAmounts(a, b))
+          : scaledParts[0];
+        return convertAmount(aggregated, app.useMetric);
       }
       return convertAmount(item.amount, app.useMetric);
     },
@@ -138,6 +177,13 @@ export default function GroceryScreen() {
       })
       .filter((group) => group.items.length > 0);
   }, [groceryItems, colors]);
+
+  const handleAddManualItem = useCallback(() => {
+    if (!manualItemName.trim()) return;
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    app.addManualGroceryItem(manualItemName.trim());
+    setManualItemName('');
+  }, [manualItemName, app]);
 
   const handleClearChecked = () => {
     app.clearCheckedItems();
@@ -157,7 +203,6 @@ export default function GroceryScreen() {
     );
   };
 
-  // Empty state
   if (groceryItems.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -170,8 +215,27 @@ export default function GroceryScreen() {
             No ingredients yet
           </Text>
           <Text style={[Typography.body, { color: colors.outline, textAlign: 'center', paddingHorizontal: Spacing.xl }]}>
-            Plan some meals and we'll build your shopping list automatically.
+            Plan some meals or add items manually.
           </Text>
+          <View style={[styles.manualInputWrap, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, marginHorizontal: Spacing.xl, marginTop: Spacing.md }]}>
+            <MaterialCommunityIcons name="plus-circle-outline" size={20} color={colors.outline} />
+            <TextInput
+              value={manualItemName}
+              onChangeText={setManualItemName}
+              placeholder="Add item (eggs, bread...)"
+              placeholderTextColor={colors.outline}
+              style={[Typography.body, { flex: 1, color: colors.onSurface, padding: 0 }]}
+              returnKeyType="done"
+              onSubmitEditing={handleAddManualItem}
+            />
+            {manualItemName.trim().length > 0 && (
+              <Pressable onPress={handleAddManualItem} accessibilityRole="button" accessibilityLabel="Add item">
+                <View style={[styles.addBtn, { backgroundColor: colors.primary }]}>
+                  <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Add</Text>
+                </View>
+              </Pressable>
+            )}
+          </View>
           <Pressable
             onPress={() => router.push('/(tabs)')}
             style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
@@ -200,7 +264,7 @@ export default function GroceryScreen() {
             My Groceries
           </Text>
           <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', marginTop: Spacing.xs }]}>
-            {recipeCards.length} Recipes  •  {totalCount} Items
+            {recipeCards.length > 0 ? `${recipeCards.length} Recipes  •  ` : ''}{totalCount} Items
           </Text>
         </View>
 
@@ -253,6 +317,29 @@ export default function GroceryScreen() {
               In-Store
             </Text>
           </Pressable>
+        </View>
+
+        {/* Manual item entry */}
+        <View style={[styles.manualEntryRow, { paddingHorizontal: Spacing.page }]}>
+          <View style={[styles.manualInputWrap, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+            <MaterialCommunityIcons name="plus-circle-outline" size={20} color={colors.outline} />
+            <TextInput
+              value={manualItemName}
+              onChangeText={setManualItemName}
+              placeholder="Add item (eggs, bread, paper towels...)"
+              placeholderTextColor={colors.outline}
+              style={[Typography.body, { flex: 1, color: colors.onSurface, padding: 0 }]}
+              returnKeyType="done"
+              onSubmitEditing={handleAddManualItem}
+            />
+            {manualItemName.trim().length > 0 && (
+              <Pressable onPress={handleAddManualItem} accessibilityRole="button" accessibilityLabel="Add item">
+                <View style={[styles.addBtn, { backgroundColor: colors.primary }]}>
+                  <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Add</Text>
+                </View>
+              </Pressable>
+            )}
+          </View>
         </View>
 
         {/* Recipe source strip with serving stepper */}
@@ -416,11 +503,12 @@ export default function GroceryScreen() {
 
             {group.items.map((item) => {
               const scaledAmount = getScaledAmount(item);
+              const isManual = item.recipeNames.length === 0;
               return (
-                <Pressable
+                <PressableScale
                   key={item.id}
+                  haptic="light"
                   onPress={() => {
-                    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
                     app.toggleGroceryItem(item.id);
                   }}
                   style={[
@@ -431,7 +519,7 @@ export default function GroceryScreen() {
                     },
                   ]}
                   accessibilityRole="checkbox"
-                  accessibilityLabel={`${item.name}, ${scaledAmount}`}
+                  accessibilityLabel={`${item.name}${scaledAmount ? ', ' + scaledAmount : ''}`}
                   accessibilityState={{ checked: item.checked }}
                 >
                   <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
@@ -450,9 +538,18 @@ export default function GroceryScreen() {
                       {item.name}
                     </Text>
                     <View style={styles.itemMetaRow}>
-                      <Text style={[Typography.bodySmall, { color: colors.outline }]}>
-                        {scaledAmount}
-                      </Text>
+                      {scaledAmount ? (
+                        <Text style={[Typography.bodySmall, { color: colors.outline }]}>
+                          {scaledAmount}
+                        </Text>
+                      ) : null}
+                      {isManual && (
+                        <View style={[styles.recipeCountBadge, { backgroundColor: `${colors.outline}18` }]}>
+                          <Text style={[Typography.labelSmall, { color: colors.outline }]}>
+                            Added manually
+                          </Text>
+                        </View>
+                      )}
                       {item.recipeNames.length > 1 && (
                         <View style={[styles.recipeCountBadge, { backgroundColor: colors.primaryMuted }]}>
                           <Text style={[Typography.labelSmall, { color: colors.primary }]}>
@@ -462,6 +559,16 @@ export default function GroceryScreen() {
                       )}
                     </View>
                   </View>
+                  {isManual && (
+                    <Pressable
+                      onPress={() => app.removeGroceryItem(item.id)}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove ${item.name}`}
+                    >
+                      <MaterialCommunityIcons name="close-circle-outline" size={20} color={colors.outline} />
+                    </Pressable>
+                  )}
                   <View
                     style={[
                       styles.checkbox,
@@ -475,7 +582,7 @@ export default function GroceryScreen() {
                       <MaterialCommunityIcons name="check" size={14} color={colors.textOnImage} />
                     )}
                   </View>
-                </Pressable>
+                </PressableScale>
               );
             })}
           </View>
@@ -724,5 +831,22 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 9999,
     marginTop: Spacing.md,
+  },
+  manualEntryRow: {
+    marginBottom: Spacing.lg,
+  },
+  manualInputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 10,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+  },
+  addBtn: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
   },
 });

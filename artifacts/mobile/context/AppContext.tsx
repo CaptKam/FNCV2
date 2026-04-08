@@ -37,6 +37,7 @@ export interface GroceryItem {
   unit: string;
   category: 'produce' | 'protein' | 'dairy' | 'pantry' | 'spice';
   recipeNames: string[];
+  sourceAmounts: Record<string, string>;
   checked: boolean;
   excluded: boolean;
 }
@@ -78,7 +79,9 @@ interface AppContextValue {
   // Grocery
   groceryItems: GroceryItem[];
   addToGrocery: (recipe: Recipe) => void;
+  addManualGroceryItem: (name: string, category?: GroceryItem['category']) => void;
   removeGroceryItemsByRecipe: (recipeName: string) => void;
+  removeGroceryItem: (id: string) => void;
   toggleGroceryItem: (id: string) => void;
   clearCheckedItems: () => void;
   clearAllGroceryItems: () => void;
@@ -193,6 +196,64 @@ function categorizeIngredient(name: string): GroceryItem['category'] {
 
 function ingredientStableId(name: string): string {
   return 'ingredient-' + name.toLowerCase().trim();
+}
+
+function parseAmountParts(amount: string): { qty: number; unit: string } | null {
+  const match = amount.trim().match(/^([\d./]+)\s*(.*)/);
+  if (!match) return null;
+  const fracMatch = match[1].match(/^(\d+)\/(\d+)$/);
+  const qty = fracMatch
+    ? parseInt(fracMatch[1], 10) / parseInt(fracMatch[2], 10)
+    : parseFloat(match[1]);
+  if (isNaN(qty)) return null;
+  return { qty, unit: match[2].trim().toLowerCase() };
+}
+
+function normalizeUnit(u: string): string {
+  const map: Record<string, string> = {
+    g: 'g', gram: 'g', grams: 'g',
+    kg: 'kg', kilogram: 'kg', kilograms: 'kg',
+    ml: 'ml', milliliter: 'ml', milliliters: 'ml',
+    l: 'l', liter: 'l', liters: 'l',
+    cup: 'cup', cups: 'cup',
+    tbsp: 'tbsp', tablespoon: 'tbsp', tablespoons: 'tbsp',
+    tsp: 'tsp', teaspoon: 'tsp', teaspoons: 'tsp',
+    oz: 'oz', ounce: 'oz', ounces: 'oz',
+    lb: 'lb', lbs: 'lb', pound: 'lb', pounds: 'lb',
+    piece: 'piece', pieces: 'piece',
+    clove: 'clove', cloves: 'clove',
+    bunch: 'bunch', bunches: 'bunch',
+    sprig: 'sprig', sprigs: 'sprig',
+    slice: 'slice', slices: 'slice',
+    can: 'can', cans: 'can',
+  };
+  return map[u] ?? u;
+}
+
+function formatQty(n: number): string {
+  const r = Math.round(n * 10) / 10;
+  return r === Math.floor(r) ? String(Math.floor(r)) : r.toFixed(1);
+}
+
+function aggregateAmounts(existingAmount: string, newAmount: string): string {
+  const a = parseAmountParts(existingAmount);
+  const b = parseAmountParts(newAmount);
+  if (!a || !b) return existingAmount + ', ' + newAmount;
+  const uA = normalizeUnit(a.unit);
+  const uB = normalizeUnit(b.unit);
+  if (uA === uB) {
+    const displayUnit = a.unit || b.unit;
+    return `${formatQty(a.qty + b.qty)}${displayUnit ? (displayUnit.match(/^[a-zA-Z]/) ? ' ' : '') + displayUnit : ''}`;
+  }
+  if ((uA === 'g' && uB === 'kg') || (uA === 'kg' && uB === 'g')) {
+    const totalG = (uA === 'kg' ? a.qty * 1000 : a.qty) + (uB === 'kg' ? b.qty * 1000 : b.qty);
+    return totalG >= 1000 ? `${formatQty(totalG / 1000)}kg` : `${formatQty(totalG)}g`;
+  }
+  if ((uA === 'ml' && uB === 'l') || (uA === 'l' && uB === 'ml')) {
+    const totalMl = (uA === 'l' ? a.qty * 1000 : a.qty) + (uB === 'l' ? b.qty * 1000 : b.qty);
+    return totalMl >= 1000 ? `${formatQty(totalMl / 1000)}l` : `${formatQty(totalMl)}ml`;
+  }
+  return existingAmount + ', ' + newAmount;
 }
 
 function recipeToPlannedMeal(recipe: Recipe): PlannedMeal {
@@ -371,7 +432,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (!existing.recipeNames.includes(recipe.title)) {
             existing.recipeNames = [...existing.recipeNames, recipe.title];
           }
-          existing.amount = existing.amount + ', ' + ing.amount;
+          const newSources = { ...existing.sourceAmounts, [recipe.title]: ing.amount };
+          existing.sourceAmounts = newSources;
+          const allAmounts = Object.values(newSources);
+          existing.amount = allAmounts.length > 1
+            ? allAmounts.reduce((a, b) => aggregateAmounts(a, b))
+            : allAmounts[0];
         } else {
           next.push({
             id: sid,
@@ -380,6 +446,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             unit: '',
             category: categorizeIngredient(ing.name),
             recipeNames: [recipe.title],
+            sourceAmounts: { [recipe.title]: ing.amount },
             checked: false,
             excluded: false,
           });
@@ -389,14 +456,50 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const addManualGroceryItem = useCallback((name: string, category?: GroceryItem['category']) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setGroceryItems((prev) => {
+      const sid = 'manual-' + trimmed.toLowerCase();
+      if (prev.some((g) => g.id === sid)) return prev;
+      return [
+        ...prev,
+        {
+          id: sid,
+          name: trimmed,
+          amount: '',
+          unit: '',
+          category: category ?? categorizeIngredient(trimmed),
+          recipeNames: [],
+          sourceAmounts: {},
+          checked: false,
+          excluded: false,
+        },
+      ];
+    });
+  }, []);
+
+  const removeGroceryItem = useCallback((id: string) => {
+    setGroceryItems((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
   const removeGroceryItemsByRecipe = useCallback((recipeName: string) => {
     setGroceryItems((prev) =>
       prev
-        .map((item) => ({
-          ...item,
-          recipeNames: item.recipeNames.filter((n) => n !== recipeName),
-        }))
-        .filter((item) => item.recipeNames.length > 0)
+        .map((item) => {
+          if (!item.recipeNames.includes(recipeName)) return item;
+          const newRecipeNames = item.recipeNames.filter((n) => n !== recipeName);
+          const newSources = { ...(item.sourceAmounts ?? {}) };
+          delete newSources[recipeName];
+          const allAmounts = Object.values(newSources);
+          const newAmount = allAmounts.length > 1
+            ? allAmounts.reduce((a, b) => aggregateAmounts(a, b))
+            : allAmounts.length === 1
+              ? allAmounts[0]
+              : '';
+          return { ...item, recipeNames: newRecipeNames, sourceAmounts: newSources, amount: newAmount };
+        })
+        .filter((item) => item.recipeNames.length > 0 || item.id.startsWith('manual-'))
     );
   }, []);
 
@@ -1017,7 +1120,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     groceryItems,
     addToGrocery,
+    addManualGroceryItem,
     removeGroceryItemsByRecipe,
+    removeGroceryItem,
     toggleGroceryItem,
     clearCheckedItems,
     clearAllGroceryItems,
