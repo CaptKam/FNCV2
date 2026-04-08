@@ -9,6 +9,7 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { recipes, Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
+import { formatCookTime } from '@/data/helpers';
 
 interface RecipePickerSheetProps {
   visible: boolean;
@@ -100,7 +101,7 @@ export function RecipePickerSheet({ visible, onDismiss, onSelect }: RecipePicker
                       {item.title}
                     </Text>
                     <Text style={[Typography.caption, { color: colors.outline }]}>
-                      {country?.flag} {country?.name} {'\u00B7'} {item.cookTime}m {'\u00B7'} {item.difficulty}
+                      {country?.flag} {country?.name} {'\u00B7'} {formatCookTime(item.cookTime)} {'\u00B7'} {item.difficulty}
                     </Text>
                   </View>
                   <Feather name="plus" size={20} color={colors.primary} />

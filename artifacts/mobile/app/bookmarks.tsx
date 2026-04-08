@@ -11,6 +11,7 @@ import { Radius } from '@/constants/radius';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { useBookmarks } from '@/context/BookmarksContext';
+import { formatCookTime } from '@/data/helpers';
 import { HeaderBar } from '@/components/HeaderBar';
 
 const FILTERS = ['All', 'Main', 'Appetizer', 'Dessert'];
@@ -133,7 +134,7 @@ export default function BookmarksScreen() {
                           {recipe.title}
                         </Text>
                         <Text style={[styles.itemMeta, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
-                          {recipe.difficulty} · {recipe.prepTime + recipe.cookTime} min · {recipe.category}
+                          {recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}
                         </Text>
                       </View>
                       <Pressable
@@ -186,7 +187,7 @@ export default function BookmarksScreen() {
                           {recipe.title}
                         </Text>
                         <Text style={[styles.itemMeta, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
-                          {recipe.difficulty} · {recipe.prepTime + recipe.cookTime} min · {recipe.category}
+                          {recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}
                         </Text>
                       </View>
                       <Pressable

@@ -21,6 +21,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { DestinationCard } from '@/components/DestinationCard';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
+import { formatCookTime } from '@/data/helpers';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
@@ -175,7 +176,7 @@ export default function SearchScreen() {
                   {recipe.title}
                 </Text>
                 <Text style={[Typography.labelSmall, { color: colors.outline }]}>
-                  {recipe.difficulty} {'\u00B7'} {recipe.prepTime + recipe.cookTime} min
+                  {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
                 </Text>
                 <Pressable
                   onPress={() => router.push(`/recipe/${recipe.id}`)}

@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -14,6 +15,8 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { countries } from '@/data/countries';
 import { recipes } from '@/data/recipes';
 import { REGION_IMAGES, RECIPE_REGION_MAP } from '@/data/maps';
+import { formatCookTime } from '@/data/helpers';
+import { useApp } from '@/context/AppContext';
 
 export default function CountryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,6 +25,18 @@ export default function CountryDetailScreen() {
   const router = useRouter();
 
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const app = useApp();
+
+  const handleQuickAdd = useCallback((recipe: typeof recipes[0]) => {
+    const todayDate = new Date().toISOString().split('T')[0];
+    app.addCourseToDay(todayDate, 'main', recipe);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    setToastMsg(`Added ${recipe.title} to today's plan`);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToastMsg(null), 2500);
+  }, [app]);
 
   const country = countries.find((c) => c.id === id);
   const countryRecipes = recipes.filter((r) => r.countryId === id);
@@ -193,16 +208,32 @@ export default function CountryDetailScreen() {
                     {recipe.title}
                   </Text>
                   <Text style={[Typography.caption, { color: colors.outline }]}>
-                    {recipe.cookTime} min {'\u00B7'} {recipe.difficulty}
+                    {formatCookTime(recipe.cookTime)} {'\u00B7'} {recipe.difficulty}
                     {RECIPE_REGION_MAP[recipe.id] ? ` · ${RECIPE_REGION_MAP[recipe.id]}` : ''}
                   </Text>
                 </View>
-                <Feather name="chevron-right" size={20} color={colors.outline} />
+                <Pressable
+                  onPress={(e) => { e.stopPropagation(); handleQuickAdd(recipe); }}
+                  hitSlop={4}
+                  style={[styles.addBtn, { backgroundColor: colors.surfaceContainerHigh }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Add ${recipe.title} to today's plan`}
+                >
+                  <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+                </Pressable>
               </Pressable>
             ))
           )}
         </View>
       </ScrollView>
+
+      {/* Toast */}
+      {toastMsg && (
+        <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
+          <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
+          <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface }]}>{toastMsg}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -280,5 +311,24 @@ const styles = StyleSheet.create({
   recipeInfo: {
     flex: 1,
     gap: 4,
+  },
+  addBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 100,
+    left: Spacing.page,
+    right: Spacing.page,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 14,
+    borderRadius: Radius.full,
   },
 });
