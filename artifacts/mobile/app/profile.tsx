@@ -191,7 +191,7 @@ export default function ProfileScreen() {
         {/* Dietary preferences — wired to AppContext */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            DIETARY
+            DIETARY PREFERENCES
           </Text>
           <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
             Dietary Preferences
@@ -233,7 +233,7 @@ export default function ProfileScreen() {
         {/* Cooking settings — wired to AppContext */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
           <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            COOKING
+            COOKING SETTINGS
           </Text>
           <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
             Cooking Settings
