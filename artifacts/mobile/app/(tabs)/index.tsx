@@ -6,9 +6,6 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
-  FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   useWindowDimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,49 +13,24 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { FadeIn, FadeInDown, useReducedMotion } from 'react-native-reanimated';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
-import { Shadows } from '@/constants/shadows';
-import { GlassView } from '@/components/GlassView';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 import { HeaderBar } from '@/components/HeaderBar';
-import { SectionHeader } from '@/components/SectionHeader';
-import { RecipeCard } from '@/components/RecipeCard';
-import { DestinationCard } from '@/components/DestinationCard';
+import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { AddToPlanSheet } from '@/components/AddToPlanSheet';
 import { countries } from '@/data/countries';
 import { recipes, Recipe } from '@/data/recipes';
+import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
-
-const HERO_HEIGHT = 480;
-
-type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
-
-const AVATAR_ICON_MAP: Record<string, MCIconName> = {
-  chef: 'chef-hat',
-  globe: 'earth',
-  fire: 'fire',
-  heart: 'heart',
-  star: 'star',
-  compass: 'compass',
-};
-
-function getInitials(name: string): string {
-  return name.trim().charAt(0).toUpperCase() || '?';
-}
+import { useBookmarks } from '@/context/BookmarksContext';
 
 // ─── Helpers ───
-
-function getMonday(d: Date): Date {
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const m = new Date(d);
-  m.setDate(diff);
-  m.setHours(0, 0, 0, 0);
-  return m;
-}
 
 function toISO(d: Date): string {
   return d.toISOString().split('T')[0];
@@ -81,34 +53,52 @@ function formatDateShort(dateStr: string): string {
   return `${months[d.getMonth()]} ${d.getDate()}`;
 }
 
-function getGreeting(name?: string): string {
+function getGreeting(): string {
   const hour = new Date().getHours();
-  const suffix = name ? `, ${name}` : '';
-  if (hour < 12) return `Good morning${suffix}`;
-  if (hour < 17) return `Good afternoon${suffix}`;
-  if (hour < 21) return `Good evening${suffix}`;
-  return name ? `Late night cravings, ${name}?` : 'Late night cravings?';
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  if (hour < 21) return 'Good evening';
+  return 'Late night cravings?';
 }
+
+function getDayOfYear(): number {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  return Math.floor((now.getTime() - start.getTime()) / 86400000);
+}
+
+// ─── Constants ───
+
+const GRID_PAD = Spacing.md; // 16px
+const GRID_GAP = Spacing.sm + 4; // 12px
 
 export default function DiscoverScreen() {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const colors = useThemeColors();
   const router = useRouter();
   const app = useApp();
-  const [activeHero, setActiveHero] = useState(0);
-  const flatListRef = useRef<FlatList>(null);
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const reduceMotion = useReducedMotion();
+
+  const CELL_WIDTH = (SCREEN_WIDTH - GRID_PAD * 2 - GRID_GAP) / 2;
+  const HERO_HEIGHT = SCREEN_WIDTH < 375 ? 200 : SCREEN_WIDTH > 414 ? 280 : 240;
+  const CARD_IMG_HEIGHT = SCREEN_WIDTH < 375 ? 140 : 160;
 
   // Toast state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Add to plan sheet state
   const [addSheetRecipe, setAddSheetRecipe] = useState<Recipe | null>(null);
 
-  const heroCountries = countries.slice(0, 5);
-  const curatedCountries = countries.slice(0, 4);
-  const trendingRecipes = recipes.slice(0, 6);
+  // Country filter
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
-  // Tonight's plan from AppContext
+  // Recipe pagination
+  const [visibleCount, setVisibleCount] = useState(8);
+
+  // Tonight's plan
   const todaysMeals = app.getTodaysMeals();
   const todayDate = toISO(new Date());
   const tonightMeal = todaysMeals.length > 0 ? todaysMeals[0] : null;
@@ -116,10 +106,9 @@ export default function DiscoverScreen() {
 
   // Tonight strip: only show after noon + dismissible per day
   const isAfterNoon = new Date().getHours() >= 12;
-  const [tonightDismissed, setTonightDismissed] = useState(true); // default hidden to avoid flash
+  const [tonightDismissed, setTonightDismissed] = useState(true);
   useEffect(() => {
-    const key = `@fork_compass_tonight_dismissed_${todayDate}`;
-    AsyncStorage.getItem(key).then((val) => {
+    AsyncStorage.getItem(`@fork_compass_tonight_dismissed_${todayDate}`).then((val) => {
       setTonightDismissed(val === 'true');
     });
   }, [todayDate]);
@@ -129,11 +118,39 @@ export default function DiscoverScreen() {
     AsyncStorage.setItem(`@fork_compass_tonight_dismissed_${todayDate}`, 'true');
   }, [todayDate]);
 
+  // Featured country rotates daily
+  const featuredCountry = countries[getDayOfYear() % countries.length];
+  const featuredRecipeCount = recipes.filter((r) => r.countryId === featuredCountry.id).length;
+
+  // Filtered recipe grid
+  const gridRecipes = useMemo(() => {
+    const pool = selectedCountry
+      ? recipes.filter((r) => r.countryId === selectedCountry)
+      : [...recipes].sort(() => Math.random() - 0.5);
+    return pool;
+  }, [selectedCountry]);
+
+  // XP/Level data
+  const { xp, level, totalRecipesCooked, passportStamps } = app;
+  const levelName = app.getCookingLevelName();
+  const progress = (xp % 300) / 300;
+  const xpToNext = 300 - (xp % 300);
+  const exploredCountries = Object.keys(passportStamps).length;
+  const stampFlags = Object.keys(passportStamps)
+    .slice(0, 3)
+    .map((cid) => countries.find((c) => c.id === cid)?.flag ?? '🌍');
+
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
     if (toastTimeout.current) clearTimeout(toastTimeout.current);
     toastTimeout.current = setTimeout(() => setToastMessage(null), 2500);
   }, []);
+
+  const handleAddTonight = useCallback((recipe: Recipe) => {
+    app.addCourseToDay(todayDate, 'main', recipe);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+    showToast(`Added to tonight's plan.`);
+  }, [app, todayDate, showToast]);
 
   const handleAddToPlan = useCallback((date: string) => {
     if (!addSheetRecipe) return;
@@ -144,11 +161,6 @@ export default function DiscoverScreen() {
     setAddSheetRecipe(null);
   }, [addSheetRecipe, app, todayDate, showToast]);
 
-  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-    setActiveHero(idx);
-  };
-
   const handleCookTonight = useCallback(() => {
     if (!tonightRecipe) return;
     if (!app.activeCookSession || app.activeCookSession.recipeId !== tonightRecipe.id) {
@@ -157,187 +169,271 @@ export default function DiscoverScreen() {
     router.push(`/cook-mode/${tonightRecipe.id}`);
   }, [tonightRecipe, app, router]);
 
+  const handleScroll = useCallback((e: any) => {
+    const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+    if (contentOffset.y + layoutMeasurement.height > contentSize.height - 300) {
+      setVisibleCount((prev) => Math.min(prev + 8, gridRecipes.length));
+    }
+  }, [gridRecipes.length]);
+
+  const enterDelay = (ms: number) => reduceMotion ? undefined : FadeInDown.delay(ms).duration(300).springify();
+
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <HeaderBar transparent />
+      <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140 }}
+        onScroll={handleScroll}
+        scrollEventThrottle={200}
+        contentContainerStyle={{ paddingTop: insets.top + 76, paddingBottom: 120 }}
       >
-
-        {/* Hero Carousel */}
-        <View style={styles.heroContainer}>
-          <FlatList
-            ref={flatListRef}
-            data={heroCountries}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
-            keyExtractor={(item) => item.id}
-            accessibilityRole="adjustable"
-            accessibilityLabel={`Country carousel, showing ${heroCountries[activeHero]?.name ?? ''}`}
-            renderItem={({ item }) => (
-              <View style={{ width: SCREEN_WIDTH, height: HERO_HEIGHT }}>
-                <Image
-                  source={{ uri: item.heroImage }}
-                  style={StyleSheet.absoluteFill}
-                  contentFit="cover"
-                  transition={300}
-                  accessible={false}
-                />
-                <LinearGradient
-                  colors={['rgba(0,0,0,0.2)', 'transparent', 'rgba(0,0,0,0.6)']}
-                  locations={[0, 0.4, 1]}
-                  style={StyleSheet.absoluteFill}
-                />
-                <View style={styles.heroContent}>
-                  <View style={styles.greetingRow}>
-                    {app.displayName ? (
-                      <View style={styles.greetingAvatar}>
-                        {AVATAR_ICON_MAP[app.avatarId] ? (
-                          <MaterialCommunityIcons
-                            name={AVATAR_ICON_MAP[app.avatarId]}
-                            size={16}
-                            color="#FFFFFF"
-                          />
-                        ) : (
-                          <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}>
-                            {getInitials(app.displayName)}
-                          </Text>
-                        )}
-                      </View>
-                    ) : null}
-                    <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', flex: 1 }]}>
-                      {getGreeting(app.displayName || undefined)}
-                    </Text>
-                  </View>
-                  <GlassView style={styles.flagBadge}>
-                    <Text style={{ fontSize: 14 }}>{item.flag}</Text>
-                    <Text style={[Typography.caption, { color: colors.textOnImage }]}>{item.region}</Text>
-                  </GlassView>
-                  <Text style={[Typography.displayMedium, styles.heroTitle, { color: colors.textOnImage }]}>
-                    {item.name}
-                  </Text>
-                  <Pressable
-                    onPress={() => router.push(`/country/${item.id}`)}
-                    style={[styles.exploreCTA, { backgroundColor: colors.primary }]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Explore ${item.name}`}
-                  >
-                    <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>
-                      Explore {item.name}
-                    </Text>
-                    <MaterialCommunityIcons name="arrow-right" size={20} color={colors.onPrimary} />
-                  </Pressable>
-                </View>
-              </View>
+        {/* ═══ ROW 1: GREETING + PROFILE ═══ */}
+        <View style={[styles.greetingRow, { paddingHorizontal: GRID_PAD }]}>
+          <Text style={[Typography.title, { color: colors.onSurfaceVariant, fontStyle: 'italic' }]}>
+            {getGreeting()}
+          </Text>
+          <Pressable
+            onPress={() => router.push('/profile')}
+            style={[styles.profileBtn, { backgroundColor: colors.surfaceContainerHigh }]}
+            accessibilityRole="button"
+            accessibilityLabel="Profile"
+          >
+            <MaterialCommunityIcons name="account-outline" size={20} color={colors.onSurfaceVariant} />
+            {app.getUncheckedCount() > 0 && (
+              <View style={[styles.notifDot, { backgroundColor: colors.primary }]} />
             )}
-          />
-          {/* Vertical Pagination Dots */}
-          <View style={styles.paginationDots}>
-            {heroCountries.map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.dot,
-                  i === activeHero ? [styles.dotActive, { backgroundColor: colors.textOnImage }] : styles.dotInactive,
-                ]}
-              />
-            ))}
-          </View>
+          </Pressable>
         </View>
 
-        {/* Tonight's Plan Strip — visible after noon, dismissible per day */}
-        {showTonightStrip && tonightMeal ? (
-          <View style={{ paddingHorizontal: Spacing.page, marginTop: -Spacing.xxl }}>
-            <GlassView style={[styles.tonightCard, { ...Shadows.ambient }]}>
+        {/* ═══ ROW 2: TONIGHT'S PLAN (conditional) ═══ */}
+        {showTonightStrip && tonightMeal && tonightRecipe && (
+          <Animated.View entering={enterDelay(0)} style={{ paddingHorizontal: GRID_PAD, marginBottom: GRID_GAP }}>
+            <Pressable
+              onPress={() => router.push(`/recipe/${tonightRecipe.id}`)}
+              style={[styles.tonightCard, { backgroundColor: colors.surfaceContainerLow }]}
+              accessibilityRole="button"
+              accessibilityLabel={`Tonight: ${tonightMeal.recipeName}`}
+            >
               <Image
                 source={{ uri: tonightMeal.recipeImage }}
-                style={styles.tonightImage}
+                style={[styles.tonightImage, { borderTopLeftRadius: Radius.xl, borderBottomLeftRadius: Radius.xl }]}
                 contentFit="cover"
                 transition={300}
                 accessible={false}
               />
+              <LinearGradient
+                colors={['transparent', colors.surfaceContainerLow]}
+                start={{ x: 0.4, y: 0 }}
+                end={{ x: 0.7, y: 0 }}
+                style={styles.tonightGradient}
+              />
               <View style={styles.tonightContent}>
-                {(() => {
-                  const todayParty = app.getDinnerPartyForDate(todayDate);
-                  const isDinnerParty = todayParty && todayParty.status !== 'completed';
-                  return (
-                    <>
-                      <Text style={[Typography.labelLarge, { color: colors.primary }]}>
-                        {isDinnerParty ? "TONIGHT'S DINNER PARTY" : "TONIGHT'S PLAN"}
-                      </Text>
-                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={1}>
-                        {tonightMeal.recipeName}
-                      </Text>
-                      {isDinnerParty && (
-                        <Text style={[Typography.caption, { color: colors.outline }]}>
-                          {app.getGuestCount(todayParty!.id).total} guests
-                        </Text>
-                      )}
-                      <Pressable onPress={handleCookTonight} accessibilityRole="button" accessibilityLabel={isDinnerParty ? 'Cook for your guests' : `Cook ${tonightMeal.recipeName} tonight`}>
-                        <Text style={[Typography.titleSmall, { color: colors.primary }]}>
-                          {isDinnerParty ? 'Cook for your guests' : 'Cook Tonight'}
-                        </Text>
-                      </Pressable>
-                    </>
-                  );
-                })()}
+                <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant }]}>TONIGHT</Text>
+                <Text style={[Typography.titleMedium, { color: colors.onSurface, fontFamily: 'NotoSerif_600SemiBold' }]} numberOfLines={2}>
+                  {tonightMeal.recipeName}
+                </Text>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
+                  {formatCookTime(tonightRecipe.prepTime + tonightRecipe.cookTime)} · {tonightRecipe.difficulty}
+                </Text>
+                <Pressable
+                  onPress={handleCookTonight}
+                  style={[styles.tonightCTA, { backgroundColor: colors.primary }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cook tonight"
+                >
+                  <Text style={[Typography.labelSmall, { color: colors.onPrimary }]}>Cook</Text>
+                </Pressable>
               </View>
               <Pressable
                 onPress={dismissTonightStrip}
                 style={styles.tonightDismiss}
                 hitSlop={8}
                 accessibilityRole="button"
-                accessibilityLabel="Dismiss tonight's plan"
+                accessibilityLabel="Dismiss"
               >
                 <MaterialCommunityIcons name="close" size={16} color={colors.onSurfaceVariant} />
               </Pressable>
-            </GlassView>
-          </View>
-        ) : !showTonightStrip && !tonightRecipe ? (
-          <View style={{ paddingHorizontal: Spacing.page, marginTop: -Spacing.xxl }}>
-            <GlassView style={[styles.tonightCard, { ...Shadows.ambient }]}>
-              <View style={[styles.tonightImage, { backgroundColor: colors.surfaceContainerHigh, alignItems: 'center', justifyContent: 'center' }]}>
-                <MaterialCommunityIcons name="calendar-blank" size={24} color={colors.outlineVariant} />
-              </View>
-              <View style={styles.tonightContent}>
-                <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
-                  No dinner planned yet
-                </Text>
-                <Pressable onPress={() => router.push('/(tabs)/plan')} accessibilityRole="button" accessibilityLabel="Plan tonight's dinner">
-                  <Text style={[Typography.titleSmall, { color: colors.primary }]}>Plan Tonight</Text>
-                </Pressable>
-              </View>
-            </GlassView>
-          </View>
-        ) : null}
+            </Pressable>
+          </Animated.View>
+        )}
 
-        {/* Explore Cuisines */}
-        <View style={{ marginTop: Spacing.xxl }}>
-          <SectionHeader label="EXPLORE CUISINES" title="Explore Cuisines" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
-          <View style={styles.grid}>
-            {curatedCountries.map((country) => (
-              <DestinationCard key={country.id} country={country} />
-            ))}
+        {/* ═══ ROW 3: HERO DESTINATION + XP/STATS ═══ */}
+        <View style={[styles.bentoRow, { paddingHorizontal: GRID_PAD, gap: GRID_GAP }]}>
+          {/* LEFT: Featured Country */}
+          <Animated.View entering={enterDelay(60)}>
+            <Pressable
+              onPress={() => router.push(`/country/${featuredCountry.id}`)}
+              style={[styles.heroCountry, { width: CELL_WIDTH, height: HERO_HEIGHT }]}
+              accessibilityRole="button"
+              accessibilityLabel={`Explore ${featuredCountry.name}`}
+            >
+              <Image
+                source={{ uri: featuredCountry.heroImage }}
+                style={StyleSheet.absoluteFill}
+                contentFit="cover"
+                transition={300}
+                accessible={false}
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.7)']}
+                style={StyleSheet.absoluteFill}
+              />
+              <View style={styles.heroCountryContent}>
+                <Text style={{ fontSize: 24 }}>{featuredCountry.flag}</Text>
+                <Text style={[Typography.headline, { color: '#FFFFFF' }]}>{featuredCountry.name}</Text>
+                <Text style={[Typography.caption, { color: 'rgba(255,255,255,0.7)' }]}>{featuredRecipeCount} recipes</Text>
+              </View>
+            </Pressable>
+          </Animated.View>
+
+          {/* RIGHT: Stacked XP + Stats */}
+          <View style={{ width: CELL_WIDTH, gap: GRID_GAP }}>
+            {/* XP Card */}
+            <Animated.View entering={enterDelay(120)}>
+              <Pressable
+                onPress={() => router.push('/profile')}
+                style={[styles.xpCard, { backgroundColor: colors.surfaceContainerLow, height: (HERO_HEIGHT - GRID_GAP) / 2 }]}
+                accessibilityRole="button"
+                accessibilityLabel={`Level ${level}, ${xp} XP`}
+              >
+                <Text style={[Typography.labelSmall, { color: colors.warning, letterSpacing: 1 }]}>LEVEL {level}</Text>
+                <Text style={[Typography.titleSmall, { color: colors.onSurface, fontFamily: 'NotoSerif_600SemiBold' }]}>{levelName}</Text>
+                <View style={styles.xpBarContainer}>
+                  <View style={[styles.xpBarTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
+                    <View style={[styles.xpBarFill, { backgroundColor: colors.warning, width: `${progress * 100}%` }]} />
+                  </View>
+                </View>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{xp % 300} / 300</Text>
+              </Pressable>
+            </Animated.View>
+
+            {/* Stats Card */}
+            <Animated.View entering={enterDelay(180)}>
+              <Pressable
+                onPress={() => router.push('/profile')}
+                style={[styles.statsCard, { backgroundColor: colors.surfaceContainerLow, height: (HERO_HEIGHT - GRID_GAP) / 2 }]}
+                accessibilityRole="button"
+                accessibilityLabel={`${totalRecipesCooked} recipes cooked`}
+              >
+                <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{totalRecipesCooked} recipes cooked</Text>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{exploredCountries} countries explored</Text>
+                {stampFlags.length > 0 && (
+                  <View style={styles.stampRow}>
+                    {stampFlags.map((flag, i) => (
+                      <Text key={i} style={{ fontSize: 16 }}>{flag}</Text>
+                    ))}
+                  </View>
+                )}
+              </Pressable>
+            </Animated.View>
           </View>
         </View>
 
-        {/* Popular Recipes */}
-        <View style={{ marginTop: Spacing.xl }}>
-          <SectionHeader label="POPULAR RECIPES" title="Popular Recipes" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
-          <View style={styles.grid}>
-            {trendingRecipes.map((recipe, index) => (
-              <AnimatedListItem key={recipe.id} index={index}>
-                <RecipeCard recipe={recipe} onAdd={() => setAddSheetRecipe(recipe)} />
-              </AnimatedListItem>
+        {/* ═══ ROW 4: CUISINE FILTER CHIPS ═══ */}
+        <Animated.View entering={enterDelay(200)}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.chipRow, { paddingHorizontal: GRID_PAD }]}
+          >
+            <Pressable
+              onPress={() => setSelectedCountry(null)}
+              style={[
+                styles.chip,
+                { backgroundColor: selectedCountry === null ? colors.primary : colors.surfaceContainerHigh },
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: selectedCountry === null }}
+            >
+              <Text style={[Typography.labelSmall, { color: selectedCountry === null ? colors.onPrimary : colors.onSurfaceVariant, letterSpacing: 0 }]}>All</Text>
+            </Pressable>
+            {countries.map((c) => (
+              <Pressable
+                key={c.id}
+                onPress={() => setSelectedCountry(c.id)}
+                style={[
+                  styles.chip,
+                  { backgroundColor: selectedCountry === c.id ? colors.primary : colors.surfaceContainerHigh },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={`Filter by ${c.name}`}
+                accessibilityState={{ selected: selectedCountry === c.id }}
+              >
+                <Text style={{ fontSize: 14 }}>{c.flag}</Text>
+                <Text style={[Typography.labelSmall, { color: selectedCountry === c.id ? colors.onPrimary : colors.onSurfaceVariant, letterSpacing: 0 }]}>{c.name}</Text>
+              </Pressable>
             ))}
-          </View>
+          </ScrollView>
+        </Animated.View>
+
+        {/* ═══ ROW 5+: RECIPE GRID ═══ */}
+        <View style={[styles.recipeGrid, { paddingHorizontal: GRID_PAD, gap: GRID_GAP }]}>
+          {gridRecipes.slice(0, visibleCount).map((recipe, index) => (
+            <AnimatedListItem key={recipe.id} index={index}>
+              <Pressable
+                onPress={() => router.push(`/recipe/${recipe.id}`)}
+                style={[styles.recipeCard, { width: CELL_WIDTH, backgroundColor: colors.surfaceContainerLow }]}
+                accessibilityRole="button"
+                accessibilityLabel={`${recipe.title}, ${formatCookTime(recipe.prepTime + recipe.cookTime)}`}
+              >
+                <View style={styles.recipeImageWrap}>
+                  <Image
+                    source={{ uri: recipe.image }}
+                    style={[styles.recipeImage, { height: CARD_IMG_HEIGHT }]}
+                    contentFit="cover"
+                    transition={300}
+                    accessible={false}
+                  />
+                  {/* Heart overlay */}
+                  <Pressable
+                    onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+                    style={[styles.heartBtn, {
+                      backgroundColor: OVERLAY_BUTTON.background,
+                      borderWidth: OVERLAY_BUTTON.borderWidth,
+                      borderColor: OVERLAY_BUTTON.borderColor,
+                    }]}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from saved` : `Save ${recipe.title}`}
+                  >
+                    <AnimatedHeart
+                      filled={isBookmarked(recipe.id)}
+                      onToggle={() => toggleBookmark(recipe.id)}
+                      size={OVERLAY_BUTTON.iconSize}
+                      filledColor={colors.primary}
+                      outlineColor={OVERLAY_BUTTON.iconColor}
+                      hitSlop={0}
+                    />
+                  </Pressable>
+                  {/* Tonight quick-add */}
+                  <Pressable
+                    onPress={(e) => { e.stopPropagation(); handleAddTonight(recipe); }}
+                    style={[styles.tonightQuickAdd, { backgroundColor: colors.surfaceContainerHigh }]}
+                    hitSlop={6}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add ${recipe.title} to tonight`}
+                  >
+                    <MaterialCommunityIcons name="weather-night" size={16} color={colors.primary} />
+                  </Pressable>
+                </View>
+                <View style={styles.recipeContent}>
+                  <Text style={[Typography.titleSmall, { color: colors.onSurface, fontFamily: 'NotoSerif_600SemiBold' }]} numberOfLines={2}>
+                    {recipe.title}
+                  </Text>
+                  <View style={styles.recipeMeta}>
+                    <Text style={{ fontSize: 12 }}>{countries.find((c) => c.id === recipe.countryId)?.flag}</Text>
+                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
+                      {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.difficulty}
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+            </AnimatedListItem>
+          ))}
         </View>
       </ScrollView>
 
+      {/* Toast notification */}
       {toastMessage && (
         <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
           <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
@@ -356,103 +452,179 @@ export default function DiscoverScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  heroContainer: {
-    height: HERO_HEIGHT,
-    position: 'relative',
-  },
-  heroContent: {
-    position: 'absolute',
-    bottom: 60,
-    left: Spacing.page,
-    right: Spacing.page,
-    gap: Spacing.md,
-  },
-  heroTitle: {
-  },
+  container: { flex: 1 },
+
+  // Row 1: Greeting
   greetingRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: Spacing.md,
   },
-  greetingAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+  profileBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  flagBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: Radius.full,
-  },
-  exploreCTA: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 14,
-    borderRadius: Radius.full,
-  },
-  paginationDots: {
+  notifDot: {
     position: 'absolute',
-    right: Spacing.md,
-    top: '50%',
-    gap: 8,
-    alignItems: 'center',
+    top: 2,
+    right: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
-  dot: {
-    borderRadius: Radius.full,
-  },
-  dotActive: {
-    width: 4,
-    height: 16,
-    borderRadius: Radius.full,
-  },
-  dotInactive: {
-    width: 4,
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.4)',
-    borderRadius: Radius.full,
-  },
-  tonightDismiss: {
-    position: 'absolute',
-    top: Spacing.xs,
-    right: Spacing.xs,
-    padding: Spacing.xs,
-  },
+
+  // Row 2: Tonight
   tonightCard: {
     flexDirection: 'row',
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
     overflow: 'hidden',
-    alignItems: 'center',
-    padding: Spacing.md,
-    gap: Spacing.md,
+    height: 120,
   },
   tonightImage: {
-    width: 56,
-    height: 56,
-    borderRadius: Radius.md,
+    width: '60%',
+    height: '100%',
+  },
+  tonightGradient: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: '35%',
+    width: '30%',
   },
   tonightContent: {
     flex: 1,
+    padding: Spacing.md,
+    justifyContent: 'center',
     gap: 4,
   },
-  grid: {
+  tonightCTA: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+    marginTop: 4,
+  },
+  tonightDismiss: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    width: 28,
+    height: 28,
+    borderRadius: Radius.full,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Row 3: Bento
+  bentoRow: {
+    flexDirection: 'row',
+    marginBottom: Spacing.md,
+  },
+  heroCountry: {
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+  },
+  heroCountryContent: {
+    position: 'absolute',
+    bottom: Spacing.md,
+    left: Spacing.md,
+    gap: 2,
+  },
+  xpCard: {
+    borderRadius: Radius.xl,
+    padding: Spacing.md,
+    justifyContent: 'center',
+    gap: 4,
+  },
+  xpBarContainer: {
+    marginTop: 4,
+  },
+  xpBarTrack: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  xpBarFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  statsCard: {
+    borderRadius: Radius.xl,
+    padding: Spacing.md,
+    justifyContent: 'center',
+    gap: 4,
+  },
+  stampRow: {
+    flexDirection: 'row',
+    gap: 4,
+    marginTop: 2,
+  },
+
+  // Row 4: Chips
+  chipRow: {
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 40,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.full,
+  },
+
+  // Row 5: Recipe Grid
+  recipeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.page,
   },
+  recipeCard: {
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+  },
+  recipeImageWrap: {
+    position: 'relative',
+  },
+  recipeImage: {
+    width: '100%',
+  },
+  heartBtn: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    width: OVERLAY_BUTTON.size,
+    height: OVERLAY_BUTTON.size,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tonightQuickAdd: {
+    position: 'absolute',
+    bottom: Spacing.sm,
+    right: Spacing.sm,
+    width: 32,
+    height: 32,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recipeContent: {
+    padding: Spacing.md,
+    gap: 4,
+  },
+  recipeMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  // Toast
   toast: {
     position: 'absolute',
     bottom: 100,
@@ -464,6 +636,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: 14,
     borderRadius: Radius.full,
-    alignSelf: 'center',
   },
+
 });
