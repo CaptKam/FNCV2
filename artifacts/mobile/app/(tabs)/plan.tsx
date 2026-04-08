@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -187,6 +188,31 @@ export default function PlanScreen() {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerTarget, setPickerTarget] = useState<{ date: string; courseType: 'appetizer' | 'main' | 'dessert' } | null>(null);
 
+  // First-time auto-generate explanation
+  const [hasSeenAutoGen, setHasSeenAutoGen] = useState(true); // default true to avoid flash
+  const [showPlanHint, setShowPlanHint] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem('@fork_compass_autogen_seen').then((val) => {
+      if (val !== 'true') setHasSeenAutoGen(false);
+    });
+    AsyncStorage.getItem('@fork_compass_hint_plan_seen').then((val) => {
+      if (val !== 'true') setShowPlanHint(true);
+    });
+  }, []);
+
+  // Auto-dismiss plan hint when first meal is added
+  useEffect(() => {
+    if (showPlanHint && plannedCount > 0) {
+      setShowPlanHint(false);
+      AsyncStorage.setItem('@fork_compass_hint_plan_seen', 'true');
+    }
+  }, [plannedCount, showPlanHint]);
+
+  const dismissPlanHint = useCallback(() => {
+    setShowPlanHint(false);
+    AsyncStorage.setItem('@fork_compass_hint_plan_seen', 'true');
+  }, []);
+
   // ─── Week data from AppContext ───
   const weekDays: ItineraryDay[] = app.getWeek(weekStartDate);
   const todaysMeals = app.getTodaysMeals();
@@ -236,7 +262,7 @@ export default function PlanScreen() {
   const weekLabels: Record<WeekOption, string> = {
     'this-week': 'This Week',
     'next-week': 'Next Week',
-    'past': 'Past Journeys',
+    'past': 'Past Weeks',
   };
 
   // ─── Daily view data ───
@@ -406,6 +432,22 @@ export default function PlanScreen() {
                 color={multipleMeals ? colors.primary : colors.outlineVariant}
               />
             </Pressable>
+          </View>
+        )}
+
+        {/* First-time plan hint */}
+        {showPlanHint && plannedCount === 0 && (
+          <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
+            <View style={[styles.onboardingHint, { backgroundColor: colors.surfaceContainerLow }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[Typography.body, { color: colors.onSurface }]}>
+                  Plan your week here. Tap any day to add a recipe, or use Auto-Plan to fill your week in one tap.
+                </Text>
+              </View>
+              <Pressable onPress={dismissPlanHint} hitSlop={8} accessibilityRole="button" accessibilityLabel="Dismiss hint">
+                <MaterialCommunityIcons name="close" size={18} color={colors.onSurfaceVariant} />
+              </Pressable>
+            </View>
           </View>
         )}
 
@@ -667,16 +709,25 @@ export default function PlanScreen() {
                       }
                       if (mainMeal) {
                         return (
-                          <Pressable
-                            onPress={() => router.push(`/dinner-setup?date=${day.date}`)}
-                            style={{ marginBottom: Spacing.sm }}
-                            accessibilityRole="button"
-                            accessibilityLabel="Plan dinner party"
-                          >
-                            <View style={[styles.hostDinnerBtn, { backgroundColor: colors.primary }]}>
-                              <MaterialCommunityIcons name="candelabra-fire" size={20} color="#FFFFFF" />
+                          <View style={[styles.dinnerPartyPromo, { backgroundColor: colors.surfaceContainerLow }]}>
+                            <View style={styles.dinnerPartyPromoContent}>
+                              <Text style={{ fontSize: 20, marginRight: Spacing.sm }}>🎉</Text>
+                              <View style={{ flex: 1 }}>
+                                <Text style={[Typography.titleSmall, { color: colors.onSurface, marginBottom: 2 }]}>Hosting tonight?</Text>
+                                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
+                                  Invite friends and we'll handle the timing and dietary needs.
+                                </Text>
+                              </View>
                             </View>
-                          </Pressable>
+                            <Pressable
+                              onPress={() => router.push(`/dinner-setup?date=${day.date}`)}
+                              style={[styles.dinnerPartyPromoCTA, { backgroundColor: colors.primary }]}
+                              accessibilityRole="button"
+                              accessibilityLabel="Plan a dinner party"
+                            >
+                              <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Plan a Dinner Party</Text>
+                            </Pressable>
+                          </View>
                         );
                       }
                       return null;
@@ -769,20 +820,38 @@ export default function PlanScreen() {
             .slice(0, dayCount);
           if (emptyDates.length === 0) return;
           setShowQuickGen(false);
-          Alert.alert(
-            'Auto-Generate Meals',
-            `Fill ${emptyDates.length} empty day${emptyDates.length > 1 ? 's' : ''} with recipes?${app.dietaryFlags.length > 0 ? '\n\nYour dietary preferences will be respected.' : ''}`,
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Generate',
-                onPress: () => {
-                  app.autoGenerateWeek(emptyDates, app.coursePreference);
-                  try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+
+          const doGenerate = () => {
+            app.autoGenerateWeek(emptyDates, app.coursePreference);
+            try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+          };
+
+          if (!hasSeenAutoGen) {
+            Alert.alert(
+              'Auto-Plan Your Week',
+              `We'll fill your empty days with a variety of recipes from different countries. You can swap any meal afterward.`,
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Fill Empty Days',
+                  onPress: () => {
+                    AsyncStorage.setItem('@fork_compass_autogen_seen', 'true');
+                    setHasSeenAutoGen(true);
+                    doGenerate();
+                  },
                 },
-              },
-            ]
-          );
+              ]
+            );
+          } else {
+            Alert.alert(
+              'Auto-Plan Meals',
+              `Fill ${emptyDates.length} empty day${emptyDates.length > 1 ? 's' : ''} with recipes?${app.dietaryFlags.length > 0 ? '\n\nYour dietary preferences will be respected.' : ''}`,
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Generate', onPress: doGenerate },
+              ]
+            );
+          }
         };
 
         return (
@@ -797,9 +866,10 @@ export default function PlanScreen() {
                 delayLongPress={400}
                 style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
                 accessibilityRole="button"
-                accessibilityLabel={`Auto-generate meals. Tap for all ${emptyDayCount} days, hold for options.`}
+                accessibilityLabel={`Auto-plan meals for empty days`}
               >
                 <MaterialCommunityIcons name="auto-fix" size={22} color={colors.onPrimary} />
+                <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontSize: 9, fontWeight: '700', marginTop: 1 }]}>Auto</Text>
               </Pressable>
             </View>
 
@@ -813,7 +883,7 @@ export default function PlanScreen() {
                   right: Spacing.page,
                 }]}>
                   <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm }]}>
-                    QUICK FILL
+                    AUTO-PLAN MEALS
                   </Text>
                   {[3, 5, 7].map((n) => {
                     const available = Math.min(n, emptyDayCount);
@@ -984,13 +1054,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xs,
     paddingVertical: Spacing.xs,
     borderRadius: Radius.full,
-  },
-  hostDinnerBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   partyPill: {
     flexDirection: 'row',
@@ -1202,8 +1265,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   fab: {
-    width: 52,
-    height: 52,
+    width: 56,
+    height: 56,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1274,5 +1337,28 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 2,
+  },
+  onboardingHint: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: Radius.lg,
+  },
+  dinnerPartyPromo: {
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    gap: Spacing.md,
+  },
+  dinnerPartyPromoContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  dinnerPartyPromoCTA: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
   },
 });

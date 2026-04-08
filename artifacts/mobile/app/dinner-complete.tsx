@@ -98,6 +98,9 @@ export default function DinnerCompleteScreen() {
               Your first dinner party! The tradition begins.
             </Text>
           )}
+          <Text style={[Typography.caption, { color: colors.onSurfaceVariant, textAlign: 'center', marginTop: Spacing.md }]}>
+            Each country you cook from earns a passport stamp 🌍
+          </Text>
         </Animated.View>
 
         {/* Session Stats */}

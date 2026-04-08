@@ -59,9 +59,9 @@ export function HeaderBar({ transparent = false, showBack = false, rightAction }
           onPress={() => router.push('/bookmarks')}
           style={[styles.iconBtn, { backgroundColor: transparent ? 'rgba(255,255,255,0.2)' : 'transparent' }]}
           accessibilityRole="button"
-          accessibilityLabel="Bookmarks"
+          accessibilityLabel="Saved recipes"
         >
-          <MaterialCommunityIcons name="bookmark-outline" size={22} color={iconColor} />
+          <MaterialCommunityIcons name="heart-outline" size={22} color={iconColor} />
         </Pressable>
       </View>
     </View>

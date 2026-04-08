@@ -311,9 +311,9 @@ export default function DiscoverScreen() {
           </View>
         )}
 
-        {/* Curated Regions */}
+        {/* Explore Cuisines */}
         <View style={{ marginTop: Spacing.xxl }}>
-          <SectionHeader label="CURATED REGIONS" title="Curated Regions" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
+          <SectionHeader label="EXPLORE CUISINES" title="Explore Cuisines" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
           <View style={styles.grid}>
             {curatedCountries.map((country) => (
               <DestinationCard key={country.id} country={country} />
@@ -321,9 +321,9 @@ export default function DiscoverScreen() {
           </View>
         </View>
 
-        {/* Trending Bites — with Tonight/Week quick-add buttons */}
+        {/* Popular Recipes — with Tonight/Week quick-add buttons */}
         <View style={{ marginTop: Spacing.xl }}>
-          <SectionHeader label="TRENDING BITES" title="Trending Bites" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
+          <SectionHeader label="POPULAR RECIPES" title="Popular Recipes" actionText="View All" onAction={() => router.push('/(tabs)/search')} />
           <View style={styles.grid}>
             {trendingRecipes.map((recipe) => (
               <View key={recipe.id}>
