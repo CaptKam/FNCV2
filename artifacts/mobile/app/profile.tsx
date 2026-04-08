@@ -114,7 +114,7 @@ export default function ProfileScreen() {
   const levelName = app.getCookingLevelName();
   const progress = (xp % 300) / 300;
   const xpToNext = 300 - (xp % 300);
-  const countriesExplored = Object.keys(passportStamps).length;
+  const countriesExplored = Object.keys(passportStamps).filter((k) => passportStamps[k] > 0).length;
 
   const toggleDietary = (id: string) => {
     const next = dietaryFlags.includes(id)
