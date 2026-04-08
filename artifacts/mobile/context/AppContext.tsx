@@ -3,6 +3,7 @@ import { Storage } from '@/utils/storage';
 import { Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { DinnerPlan } from '@/types/kitchen';
+import { DinnerParty, DinnerGuest, DietaryConflict, DinnerPartyMenu } from '@/types/dinnerParty';
 import { buildDinnerTimeline } from '@/utils/timelineEngine';
 
 // ═══════════════════════════════════════════
@@ -116,6 +117,22 @@ interface AppContextValue {
   addPassportStamp: (countryId: string) => void;
   getCookingLevelName: () => string;
 
+  // Dinner parties
+  dinnerParties: DinnerParty[];
+  activeDinnerParty: DinnerParty | null;
+  createDinnerParty: (params: { date: string; title: string; targetServingTime: string; cuisineCountryId: string }) => DinnerParty;
+  updateDinnerParty: (partyId: string, updates: Partial<DinnerParty>) => void;
+  cancelDinnerParty: (partyId: string) => void;
+  addGuest: (partyId: string, guest: Omit<DinnerGuest, 'id' | 'rsvpStatus'>) => void;
+  removeGuest: (partyId: string, guestId: string) => void;
+  updateGuestRsvp: (partyId: string, guestId: string, updates: { rsvpStatus: DinnerGuest['rsvpStatus']; dietaryRestrictions?: string[]; allergens?: string[]; notes?: string }) => void;
+  getDinnerPartyForDate: (date: string) => DinnerParty | undefined;
+  getActiveDinnerParty: () => DinnerParty | null;
+  startDinnerPartyCooking: (partyId: string) => void;
+  completeDinnerParty: (partyId: string) => void;
+  checkDietaryConflicts: (partyId: string) => DietaryConflict[];
+  getGuestCount: (partyId: string) => { total: number; accepted: number; maybe: number; declined: number; pending: number };
+
   // Dinner plan
   pendingDinnerPlan: DinnerPlan | null;
   activeDinnerPlan: DinnerPlan | null;
@@ -138,6 +155,7 @@ const KEYS = {
   preferences: '@fork_compass_preferences',
   history: '@fork_compass_history',
   dinnerPlan: '@fork_compass_dinner_plan',
+  dinnerParties: '@fork_compass_dinner_parties',
 };
 
 // ═══════════════════════════════════════════
@@ -243,6 +261,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [level, setLevel] = useState(defaultHistory.level);
   const [passportStamps, setPassportStamps] = useState<Record<string, number>>(defaultHistory.passportStamps);
   const [pendingDinnerPlan, setPendingDinnerPlan] = useState<DinnerPlan | null>(null);
+  const [dinnerParties, setDinnerParties] = useState<DinnerParty[]>([]);
+  const [activeDinnerParty, setActiveDinnerParty] = useState<DinnerParty | null>(null);
   const [activeDinnerPlan, setActiveDinnerPlan] = useState<DinnerPlan | null>(null);
   const [currentDinnerEventIndex, setCurrentDinnerEventIndex] = useState(0);
 
@@ -267,6 +287,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setActiveDinnerPlan(dp.plan);
         setCurrentDinnerEventIndex(dp.eventIndex);
       }
+      const parties = await Storage.get<DinnerParty[]>(KEYS.dinnerParties, []);
+      setDinnerParties(parties);
+      const activeParty = parties.find((p) => p.status === 'cooking') ?? null;
+      setActiveDinnerParty(activeParty);
       if (pr.cookingLevel) setCookingLevelState(pr.cookingLevel);
       if (pr.coursePreference) setCoursePreferenceState(pr.coursePreference);
       if (pr.groceryPartner) setGroceryPartnerState(pr.groceryPartner);
@@ -309,6 +333,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (hydrated.current)
       Storage.set(KEYS.dinnerPlan, { plan: activeDinnerPlan, eventIndex: currentDinnerEventIndex });
   }, [activeDinnerPlan, currentDinnerEventIndex]);
+
+  useEffect(() => {
+    if (hydrated.current)
+      Storage.set(KEYS.dinnerParties, dinnerParties);
+  }, [dinnerParties]);
 
   // ═══════════════════════════════════════════
   // GROCERY ACTIONS (defined first, used by itinerary)
@@ -756,6 +785,164 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [activeDinnerPlan]);
 
   // ═══════════════════════════════════════════
+  // DINNER PARTY ACTIONS
+  // ═══════════════════════════════════════════
+
+  const RESTRICTION_CONFLICTS: Record<string, string[]> = {
+    vegetarian: ['chicken', 'beef', 'lamb', 'pork', 'fish', 'shrimp', 'bacon', 'anchovy', 'gelatin', 'salmon'],
+    vegan: ['chicken', 'beef', 'lamb', 'pork', 'fish', 'shrimp', 'bacon', 'anchovy', 'gelatin', 'salmon', 'dairy', 'egg', 'butter', 'cream', 'cheese', 'honey', 'milk', 'yogurt'],
+    'gluten-free': ['flour', 'bread', 'pasta', 'soy sauce', 'breadcrumbs', 'couscous'],
+    'nut-free': ['almond', 'walnut', 'pecan', 'cashew', 'pistachio', 'pine nut', 'hazelnut', 'macadamia', 'peanut'],
+    'dairy-free': ['milk', 'butter', 'cream', 'cheese', 'yogurt', 'whey'],
+  };
+
+  const createDinnerPartyAction = useCallback((params: { date: string; title: string; targetServingTime: string; cuisineCountryId: string }): DinnerParty => {
+    const dayItinerary = itinerary.find((d) => d.date === params.date);
+    const menu: DinnerPartyMenu = {};
+    if (dayItinerary?.courses.appetizer) {
+      menu.appetizer = { recipeId: dayItinerary.courses.appetizer.recipeId, recipeName: dayItinerary.courses.appetizer.recipeName, recipeImage: dayItinerary.courses.appetizer.recipeImage };
+    }
+    if (dayItinerary?.courses.main) {
+      menu.main = { recipeId: dayItinerary.courses.main.recipeId, recipeName: dayItinerary.courses.main.recipeName, recipeImage: dayItinerary.courses.main.recipeImage };
+    }
+    if (dayItinerary?.courses.dessert) {
+      menu.dessert = { recipeId: dayItinerary.courses.dessert.recipeId, recipeName: dayItinerary.courses.dessert.recipeName, recipeImage: dayItinerary.courses.dessert.recipeImage };
+    }
+    const party: DinnerParty = {
+      id: generateId(),
+      ...params,
+      hostName: '',
+      status: 'planning',
+      createdAt: new Date().toISOString(),
+      menu,
+      guests: [],
+    };
+    setDinnerParties((prev) => [...prev, party]);
+    return party;
+  }, [itinerary]);
+
+  const updateDinnerPartyAction = useCallback((partyId: string, updates: Partial<DinnerParty>) => {
+    setDinnerParties((prev) => prev.map((p) => p.id === partyId ? { ...p, ...updates } : p));
+  }, []);
+
+  const cancelDinnerPartyAction = useCallback((partyId: string) => {
+    setDinnerParties((prev) => prev.map((p) => p.id === partyId ? { ...p, status: 'cancelled' as const } : p));
+    setActiveDinnerParty((prev) => prev?.id === partyId ? null : prev);
+  }, []);
+
+  const addGuestAction = useCallback((partyId: string, guest: Omit<DinnerGuest, 'id' | 'rsvpStatus'>) => {
+    const newGuest: DinnerGuest = { ...guest, id: generateId(), rsvpStatus: 'pending' };
+    setDinnerParties((prev) => prev.map((p) => p.id === partyId ? { ...p, guests: [...p.guests, newGuest] } : p));
+  }, []);
+
+  const removeGuestAction = useCallback((partyId: string, guestId: string) => {
+    setDinnerParties((prev) => prev.map((p) => p.id === partyId ? { ...p, guests: p.guests.filter((g) => g.id !== guestId) } : p));
+  }, []);
+
+  const updateGuestRsvpAction = useCallback((partyId: string, guestId: string, updates: { rsvpStatus: DinnerGuest['rsvpStatus']; dietaryRestrictions?: string[]; allergens?: string[]; notes?: string }) => {
+    setDinnerParties((prev) => prev.map((p) => {
+      if (p.id !== partyId) return p;
+      return { ...p, guests: p.guests.map((g) => g.id === guestId ? { ...g, ...updates, rsvpRespondedAt: new Date().toISOString() } : g) };
+    }));
+  }, []);
+
+  const getDinnerPartyForDateAction = useCallback((date: string): DinnerParty | undefined => {
+    return dinnerParties.find((p) => p.date === date && p.status !== 'cancelled');
+  }, [dinnerParties]);
+
+  const getActiveDinnerPartyAction = useCallback((): DinnerParty | null => {
+    return activeDinnerParty;
+  }, [activeDinnerParty]);
+
+  const startDinnerPartyCookingAction = useCallback((partyId: string) => {
+    setDinnerParties((prev) => prev.map((p) => p.id === partyId ? { ...p, status: 'cooking' as const } : p));
+    const party = dinnerParties.find((p) => p.id === partyId);
+    if (party) setActiveDinnerParty({ ...party, status: 'cooking' });
+  }, [dinnerParties]);
+
+  const completeDinnerPartyAction = useCallback((partyId: string) => {
+    setDinnerParties((prev) => prev.map((p) => p.id === partyId ? { ...p, status: 'completed' as const } : p));
+    setActiveDinnerParty(null);
+    // Award 100 XP for hosting
+    setXp((prevXp) => {
+      const newXp = prevXp + 100;
+      setLevel(Math.floor(newXp / 300) + 1);
+      return newXp;
+    });
+    const party = dinnerParties.find((p) => p.id === partyId);
+    if (party) {
+      setTotalRecipesCooked((prev) => prev + Object.values(party.menu).filter(Boolean).length);
+      if (party.cuisineCountryId) {
+        setPassportStamps((prev) => ({ ...prev, [party.cuisineCountryId]: (prev[party.cuisineCountryId] ?? 0) + 1 }));
+      }
+    }
+  }, [dinnerParties]);
+
+  const checkDietaryConflictsAction = useCallback((partyId: string): DietaryConflict[] => {
+    const party = dinnerParties.find((p) => p.id === partyId);
+    if (!party) return [];
+    const conflicts: DietaryConflict[] = [];
+    const allRecipeData = require('@/data/recipes').recipes as Recipe[];
+    const menuRecipes = [party.menu.appetizer, party.menu.main, party.menu.dessert]
+      .filter(Boolean)
+      .map((m) => ({ meta: m!, recipe: allRecipeData.find((r) => r.id === m!.recipeId) }))
+      .filter((r) => r.recipe);
+
+    for (const guest of party.guests) {
+      // Check dietary restrictions
+      for (const restriction of guest.dietaryRestrictions) {
+        const conflictIngredients = RESTRICTION_CONFLICTS[restriction.toLowerCase()] ?? [];
+        for (const { meta, recipe } of menuRecipes) {
+          if (!recipe) continue;
+          for (const ing of recipe.ingredients) {
+            const ingLower = ing.name.toLowerCase();
+            if (conflictIngredients.some((c) => ingLower.includes(c))) {
+              conflicts.push({
+                guestName: guest.name,
+                restriction,
+                conflictingRecipe: meta.recipeName,
+                conflictingIngredient: ing.name,
+                severity: 'warning',
+              });
+            }
+          }
+        }
+      }
+      // Check allergens (critical)
+      for (const allergen of guest.allergens) {
+        const allergenLower = allergen.toLowerCase();
+        for (const { meta, recipe } of menuRecipes) {
+          if (!recipe) continue;
+          for (const ing of recipe.ingredients) {
+            if (ing.name.toLowerCase().includes(allergenLower)) {
+              conflicts.push({
+                guestName: guest.name,
+                restriction: `allergy: ${allergen}`,
+                conflictingRecipe: meta.recipeName,
+                conflictingIngredient: ing.name,
+                severity: 'critical',
+              });
+            }
+          }
+        }
+      }
+    }
+    return conflicts;
+  }, [dinnerParties]);
+
+  const getGuestCountAction = useCallback((partyId: string) => {
+    const party = dinnerParties.find((p) => p.id === partyId);
+    if (!party) return { total: 0, accepted: 0, maybe: 0, declined: 0, pending: 0 };
+    return {
+      total: party.guests.length,
+      accepted: party.guests.filter((g) => g.rsvpStatus === 'accepted').length,
+      maybe: party.guests.filter((g) => g.rsvpStatus === 'maybe').length,
+      declined: party.guests.filter((g) => g.rsvpStatus === 'declined').length,
+      pending: party.guests.filter((g) => g.rsvpStatus === 'pending').length,
+    };
+  }, [dinnerParties]);
+
+  // ═══════════════════════════════════════════
   // VALUE
   // ═══════════════════════════════════════════
 
@@ -806,6 +993,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     awardXP,
     addPassportStamp,
     getCookingLevelName,
+
+    dinnerParties,
+    activeDinnerParty,
+    createDinnerParty: createDinnerPartyAction,
+    updateDinnerParty: updateDinnerPartyAction,
+    cancelDinnerParty: cancelDinnerPartyAction,
+    addGuest: addGuestAction,
+    removeGuest: removeGuestAction,
+    updateGuestRsvp: updateGuestRsvpAction,
+    getDinnerPartyForDate: getDinnerPartyForDateAction,
+    getActiveDinnerParty: getActiveDinnerPartyAction,
+    startDinnerPartyCooking: startDinnerPartyCookingAction,
+    completeDinnerParty: completeDinnerPartyAction,
+    checkDietaryConflicts: checkDietaryConflictsAction,
+    getGuestCount: getGuestCountAction,
 
     pendingDinnerPlan,
     activeDinnerPlan,
