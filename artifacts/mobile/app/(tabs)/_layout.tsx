@@ -59,6 +59,7 @@ export default function TabLayout() {
         options={{
           title: "Discover",
           tabBarAccessibilityLabel: "Discover tab",
+          tabBarActiveTintColor: colors.primary,
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
@@ -76,11 +77,12 @@ export default function TabLayout() {
         options={{
           title: "Search",
           tabBarAccessibilityLabel: "Search tab",
+          tabBarActiveTintColor: colors.accentNavy,
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
                 styles.iconWrap,
-                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
+                focused && { backgroundColor: colors.accentNavyMuted, transform: [{ scale: 1.1 }] },
               ]}
             >
               <MaterialCommunityIcons name="magnify" size={24} color={color} />
@@ -93,11 +95,12 @@ export default function TabLayout() {
         options={{
           title: "Plan",
           tabBarAccessibilityLabel: "Plan tab",
+          tabBarActiveTintColor: colors.accentPlum,
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
                 styles.iconWrap,
-                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
+                focused && { backgroundColor: colors.accentPlumMuted, transform: [{ scale: 1.1 }] },
               ]}
             >
               <MaterialCommunityIcons name="calendar-month-outline" size={24} color={color} />
@@ -110,13 +113,14 @@ export default function TabLayout() {
         options={{
           title: "Grocery",
           tabBarAccessibilityLabel: "Grocery tab",
+          tabBarActiveTintColor: colors.accentSage,
           tabBarBadge: groceryBadgeCount > 0 ? groceryBadgeCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: colors.primary, color: colors.onPrimary, fontSize: 10 },
+          tabBarBadgeStyle: { backgroundColor: colors.accentSage, color: '#FFFFFF', fontSize: 10 },
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
                 styles.iconWrap,
-                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
+                focused && { backgroundColor: colors.accentSageMuted, transform: [{ scale: 1.1 }] },
               ]}
             >
               <MaterialCommunityIcons name="cart-outline" size={24} color={color} />
@@ -129,11 +133,12 @@ export default function TabLayout() {
         options={{
           title: "Cook",
           tabBarAccessibilityLabel: "Cook tab",
+          tabBarActiveTintColor: colors.accentGold,
           tabBarIcon: ({ color, focused }) => (
             <View
               style={[
                 styles.iconWrap,
-                focused && { backgroundColor: colors.primaryMuted, transform: [{ scale: 1.1 }] },
+                focused && { backgroundColor: colors.accentGoldMuted, transform: [{ scale: 1.1 }] },
               ]}
             >
               <MaterialCommunityIcons name="chef-hat" size={24} color={color} />
