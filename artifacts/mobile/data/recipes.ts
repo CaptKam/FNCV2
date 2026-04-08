@@ -2,6 +2,7 @@ export interface Ingredient {
   name: string;
   amount: string;
   category: 'Produce' | 'Protein' | 'Dairy' | 'Pantry' | 'Spices' | 'Other';
+  substitutions?: string[];
 }
 
 export interface Step {

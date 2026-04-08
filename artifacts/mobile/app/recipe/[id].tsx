@@ -11,8 +11,9 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { countries } from '@/data/countries';
-import { recipes, Step } from '@/data/recipes';
+import { recipes, Step, Ingredient } from '@/data/recipes';
 import { convertAmount, formatCookTime } from '@/data/helpers';
+import { getSubstitutions } from '@/data/substitutions';
 import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allergens';
 import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useBookmarks } from '@/context/BookmarksContext';
@@ -73,6 +74,8 @@ export default function RecipeDetailScreen() {
   const [servings, setServings] = useState(recipe?.servings ?? 1);
   const [showPlanSheet, setShowPlanSheet] = useState(false);
   const [planCourseType, setPlanCourseType] = useState<'appetizer' | 'main' | 'dessert'>('main');
+  const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
+  const [expandedSubs, setExpandedSubs] = useState<Set<string>>(new Set());
 
   // Generate the next 14 days for the "Add to Plan" sheet
   const planDays = useMemo(() => {
@@ -116,6 +119,24 @@ export default function RecipeDetailScreen() {
     },
     {} as Record<string, typeof recipe.ingredients>
   );
+
+  const toggleIngredient = useCallback((key: string) => {
+    setCheckedIngredients((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const toggleSub = useCallback((key: string) => {
+    setExpandedSubs((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
 
   const handleStartCooking = () => {
     app.startCookSession(recipe, currentServings);
@@ -328,14 +349,85 @@ export default function RecipeDetailScreen() {
                 <Text style={[Typography.labelLarge, { color: colors.primary, marginBottom: Spacing.sm }]}>
                   {category.toUpperCase()}
                 </Text>
-                {ingredients.map((ing, idx) => (
-                  <View key={idx} style={styles.ingredientRow}>
-                    <Text style={[Typography.body, { color: colors.onSurface, flex: 1 }]}>
-                      {ing.name}
-                    </Text>
-                    <Text style={[Typography.bodySmall, { color: colors.outline }]}>{convertAmount(ing.amount, app.useMetric)}</Text>
-                  </View>
-                ))}
+                {ingredients.map((ing, idx) => {
+                  const ingKey = `${category}-${idx}`;
+                  const isChecked = checkedIngredients.has(ingKey);
+                  const subs = ing.substitutions ?? getSubstitutions(ing.name);
+                  const isSubExpanded = expandedSubs.has(ingKey);
+                  return (
+                    <View key={idx}>
+                      <Pressable
+                        onPress={() => toggleIngredient(ingKey)}
+                        style={styles.ingredientRow}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: isChecked }}
+                        accessibilityLabel={`${ing.name}, ${convertAmount(ing.amount, app.useMetric)}`}
+                      >
+                        <MaterialCommunityIcons
+                          name={isChecked ? 'checkbox-marked-circle' : 'checkbox-blank-circle-outline'}
+                          size={20}
+                          color={isChecked ? colors.primary : colors.outlineVariant}
+                          style={{ marginRight: Spacing.sm }}
+                        />
+                        <Text
+                          style={[
+                            Typography.body,
+                            {
+                              color: isChecked ? colors.outline : colors.onSurface,
+                              flex: 1,
+                              textDecorationLine: isChecked ? 'line-through' : 'none',
+                              opacity: isChecked ? 0.5 : 1,
+                            },
+                          ]}
+                        >
+                          {ing.name}
+                        </Text>
+                        <Text
+                          style={[
+                            Typography.bodySmall,
+                            {
+                              color: colors.outline,
+                              opacity: isChecked ? 0.5 : 1,
+                              textDecorationLine: isChecked ? 'line-through' : 'none',
+                            },
+                          ]}
+                        >
+                          {convertAmount(ing.amount, app.useMetric)}
+                        </Text>
+                        {subs && subs.length > 0 && (
+                          <Pressable
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              toggleSub(ingKey);
+                            }}
+                            hitSlop={8}
+                            style={{ marginLeft: Spacing.sm }}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Substitutions for ${ing.name}`}
+                          >
+                            <MaterialCommunityIcons
+                              name={isSubExpanded ? 'swap-horizontal-circle' : 'swap-horizontal-circle-outline'}
+                              size={18}
+                              color={isSubExpanded ? colors.primary : colors.outlineVariant}
+                            />
+                          </Pressable>
+                        )}
+                      </Pressable>
+                      {subs && subs.length > 0 && isSubExpanded && (
+                        <View style={[styles.substitutionHint, { backgroundColor: colors.surfaceContainerLow }]}>
+                          <MaterialCommunityIcons name="swap-horizontal" size={14} color={colors.primary} />
+                          <View style={{ flex: 1 }}>
+                            {subs.map((sub, si) => (
+                              <Text key={si} style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
+                                {sub}
+                              </Text>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
               </View>
             ))}
           </View>
@@ -544,8 +636,18 @@ const styles = StyleSheet.create({
   },
   ingredientRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: Spacing.sm,
+  },
+  substitutionHint: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.xs,
+    marginLeft: 28,
+    marginBottom: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.sm,
   },
   levelPill: {
     alignSelf: 'flex-start',
