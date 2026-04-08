@@ -61,7 +61,8 @@ export default function CookScreen() {
   const heroRecipe = hasActiveSession ? sessionRecipe : hasTodayPlan ? todayRecipe : null;
   const heroCountry = heroRecipe ? countries.find((c) => c.id === heroRecipe.countryId) : null;
 
-  const [checks, setChecks] = React.useState<boolean[]>(KITCHEN_CHECKS.map(() => false));
+  const checks = app.kitchenChecks;
+  const setChecks = (next: boolean[]) => app.setKitchenChecks(next);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -157,18 +158,23 @@ export default function CookScreen() {
               </View>
               <View style={[styles.guestRow, { backgroundColor: colors.surface, borderTopColor: colors.glassOverlay }]}>
                 <View style={styles.guestAvatars}>
-                  {[1, 2, 3].map((i) => (
+                  {(todayParty?.guests ?? []).slice(0, 3).map((g, i) => (
                     <View
-                      key={i}
-                      style={[styles.guestDot, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.surface, marginLeft: i === 1 ? 0 : -Spacing.sm }]}
+                      key={g.id}
+                      style={[styles.guestDot, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.surface, marginLeft: i === 0 ? 0 : -Spacing.sm }]}
                     />
                   ))}
-                  <View style={[styles.guestDot, styles.guestPending, { backgroundColor: colors.surfaceContainerHighest, borderColor: colors.surface, marginLeft: -Spacing.sm }]}>
-                    <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant, letterSpacing: 0 }]}>?</Text>
-                  </View>
+                  {(todayParty?.guests.length ?? 0) > 3 && (
+                    <View style={[styles.guestDot, styles.guestPending, { backgroundColor: colors.surfaceContainerHighest, borderColor: colors.surface, marginLeft: -Spacing.sm }]}>
+                      <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant, letterSpacing: 0 }]}>+{(todayParty?.guests.length ?? 0) - 3}</Text>
+                    </View>
+                  )}
                 </View>
                 <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
-                  4 Guests <Text style={{ opacity: 0.6 }}>(3 Confirmed)</Text>
+                  {partyGuestCount ? `${partyGuestCount.total} Guest${partyGuestCount.total !== 1 ? 's' : ''}` : 'Dinner Party Planned'}
+                  {partyGuestCount && partyGuestCount.accepted > 0 ? (
+                    <Text style={{ opacity: 0.6 }}> ({partyGuestCount.accepted} Confirmed)</Text>
+                  ) : null}
                 </Text>
               </View>
             </View>

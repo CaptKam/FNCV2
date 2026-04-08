@@ -133,6 +133,10 @@ interface AppContextValue {
   checkDietaryConflicts: (partyId: string) => DietaryConflict[];
   getGuestCount: (partyId: string) => { total: number; accepted: number; maybe: number; declined: number; pending: number };
 
+  // Kitchen check
+  kitchenChecks: boolean[];
+  setKitchenChecks: (checks: boolean[]) => void;
+
   // Dinner plan
   pendingDinnerPlan: DinnerPlan | null;
   activeDinnerPlan: DinnerPlan | null;
@@ -156,6 +160,7 @@ const KEYS = {
   history: '@fork_compass_history',
   dinnerPlan: '@fork_compass_dinner_plan',
   dinnerParties: '@fork_compass_dinner_parties',
+  kitchenCheck: '@fork_compass_kitchen_check',
 };
 
 // ═══════════════════════════════════════════
@@ -260,6 +265,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [xp, setXp] = useState(defaultHistory.xp);
   const [level, setLevel] = useState(defaultHistory.level);
   const [passportStamps, setPassportStamps] = useState<Record<string, number>>(defaultHistory.passportStamps);
+  const [kitchenChecks, setKitchenChecksState] = useState<boolean[]>([false, false, false]);
   const [pendingDinnerPlan, setPendingDinnerPlan] = useState<DinnerPlan | null>(null);
   const [dinnerParties, setDinnerParties] = useState<DinnerParty[]>([]);
   const [activeDinnerParty, setActiveDinnerParty] = useState<DinnerParty | null>(null);
@@ -289,6 +295,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       const parties = await Storage.get<DinnerParty[]>(KEYS.dinnerParties, []);
       setDinnerParties(parties);
+      const kc = await Storage.get<boolean[]>(KEYS.kitchenCheck, [false, false, false]);
+      setKitchenChecksState(kc);
       const activeParty = parties.find((p) => p.status === 'cooking') ?? null;
       setActiveDinnerParty(activeParty);
       if (pr.cookingLevel) setCookingLevelState(pr.cookingLevel);
@@ -338,6 +346,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (hydrated.current)
       Storage.set(KEYS.dinnerParties, dinnerParties);
   }, [dinnerParties]);
+
+  useEffect(() => {
+    if (hydrated.current)
+      Storage.set(KEYS.kitchenCheck, kitchenChecks);
+  }, [kitchenChecks]);
 
   // ═══════════════════════════════════════════
   // GROCERY ACTIONS (defined first, used by itinerary)
@@ -710,6 +723,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setUseMetric = useCallback((m: boolean) => setUseMetricState(m), []);
   const setDietaryFlags = useCallback((f: string[]) => setDietaryFlagsState(f), []);
   const setAllergens = useCallback((a: string[]) => setAllergensState(a), []);
+  const setKitchenChecks = useCallback((c: boolean[]) => setKitchenChecksState(c), []);
 
   // ═══════════════════════════════════════════
   // HISTORY / XP ACTIONS
@@ -993,6 +1007,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     awardXP,
     addPassportStamp,
     getCookingLevelName,
+
+    kitchenChecks,
+    setKitchenChecks,
 
     dinnerParties,
     activeDinnerParty,
