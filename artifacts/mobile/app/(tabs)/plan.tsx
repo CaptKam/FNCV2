@@ -13,8 +13,10 @@ import { Shadows } from '@/constants/shadows';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
+import { SmartCookBar } from '@/components/SmartCookBar';
 import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
+import { calculateCookReadiness } from '@/utils/cookReadiness';
 
 // ─── Helpers ───
 
@@ -696,52 +698,17 @@ export default function PlanScreen() {
         )}
       </ScrollView>
 
-      {/* Cook This Dinner bar — visible when selected/today's day has meals */}
-      {(() => {
-        const viewDay = isDailyView ? selectedDay : weekDays.find((d) => d.date === new Date().toISOString().split('T')[0]);
-        const hasMeals = viewDay && (viewDay.courses.appetizer || viewDay.courses.main || viewDay.courses.dessert);
-        if (!hasMeals || !viewDay) return null;
-        return (
-          <View style={[styles.readyCTA, { bottom: 100, left: Spacing.page, right: Spacing.page }]}>
-            <Pressable onPress={() => {
-              const dayRecipes: Recipe[] = [];
-              for (const meal of Object.values(viewDay.courses)) {
-                if (meal) {
-                  const r = allRecipes.find((rec) => rec.id === meal.recipeId);
-                  if (r) dayRecipes.push(r);
-                }
-              }
-              if (dayRecipes.length > 0) {
-                const target = new Date();
-                target.setHours(19, 0, 0, 0);
-                app.createDinnerPlan(dayRecipes, target, 4);
-                router.push('/cooking-schedule');
-              }
-            }} accessibilityRole="button" accessibilityLabel="Cook this dinner">
-              <GlassView style={[styles.readyCTAInner, { ...Shadows.ambient }]}>
-                <View style={[styles.playCircle, { backgroundColor: colors.primary }]}>
-                  <MaterialCommunityIcons name="play" size={16} color={colors.onPrimary} />
-                </View>
-                <Text style={[Typography.titleSmall, { color: colors.primary, fontWeight: '700' }]}>
-                  Cook This Dinner
-                </Text>
-                <View style={{ flex: 1 }} />
-                <Text style={[Typography.labelSmall, { color: colors.outline }]}>
-                  {isDailyView ? viewDay.dayLabel : 'Tonight'}
-                </Text>
-              </GlassView>
-            </Pressable>
-          </View>
-        );
-      })()}
+      {/* Smart Cook Bar — adapts to grocery readiness, timing, and dinner party */}
+      <View style={[styles.readyCTA, { bottom: 100, left: 0, right: 0 }]}>
+        <SmartCookBar variant="floating" />
+      </View>
 
       {/* Auto-generate FAB — only visible when there are empty days to fill */}
       {(() => {
         const emptyDayCount = weekDays.filter((d) => !d.courses.main).length;
         if (emptyDayCount === 0) return null;
 
-        const viewDay = isDailyView ? selectedDay : weekDays.find((d) => d.date === new Date().toISOString().split('T')[0]);
-        const cookBarVisible = viewDay && (viewDay.courses.appetizer || viewDay.courses.main || viewDay.courses.dessert);
+        const cookBarVisible = todaysMeals.length > 0;
 
         const handleQuickGen = (dayCount: number) => {
           const emptyDates = weekDays
