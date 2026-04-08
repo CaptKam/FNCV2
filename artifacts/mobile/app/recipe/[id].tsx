@@ -20,6 +20,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { HeaderBar } from '@/components/HeaderBar';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 
 // ─── Helpers ───
 
@@ -157,10 +158,12 @@ export default function RecipeDetailScreen() {
           <Pressable
             onPress={() => toggleBookmark(recipe.id)}
             style={{
-              width: 40,
-              height: 40,
+              width: OVERLAY_BUTTON.size,
+              height: OVERLAY_BUTTON.size,
               borderRadius: 20,
-              backgroundColor: 'rgba(255,255,255,0.2)',
+              backgroundColor: OVERLAY_BUTTON.background,
+              borderWidth: OVERLAY_BUTTON.borderWidth,
+              borderColor: OVERLAY_BUTTON.borderColor,
               alignItems: 'center',
               justifyContent: 'center',
             }}
@@ -170,7 +173,7 @@ export default function RecipeDetailScreen() {
             <MaterialCommunityIcons
               name={isSaved ? 'heart' : 'heart-outline'}
               size={20}
-              color={isSaved ? colors.error : colors.textOnImage}
+              color={isSaved ? colors.error : OVERLAY_BUTTON.iconColor}
             />
           </Pressable>
         }

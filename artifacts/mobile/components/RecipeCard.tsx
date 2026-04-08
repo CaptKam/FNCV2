@@ -7,7 +7,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { useThemeColors } from '@/hooks/useThemeColors';
-import { GlassView } from './GlassView';
+import { OVERLAY_BUTTON } from '@/constants/icons';
 import { Recipe } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
 import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allergens';
@@ -48,18 +48,25 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         />
         <Pressable
           onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
-          style={styles.heartButton}
+          style={[styles.heartButton, {
+            width: OVERLAY_BUTTON.size,
+            height: OVERLAY_BUTTON.size,
+            borderRadius: Radius.full,
+            backgroundColor: OVERLAY_BUTTON.background,
+            borderWidth: OVERLAY_BUTTON.borderWidth,
+            borderColor: OVERLAY_BUTTON.borderColor,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }]}
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={isFav ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
         >
-          <GlassView style={styles.heartGlass}>
-            <MaterialCommunityIcons
-              name={isFav ? 'heart' : 'heart-outline'}
-              size={16}
-              color={isFav ? colors.primary : colors.textOnImage}
-            />
-          </GlassView>
+          <MaterialCommunityIcons
+            name={isFav ? 'heart' : 'heart-outline'}
+            size={OVERLAY_BUTTON.iconSize}
+            color={isFav ? colors.primary : OVERLAY_BUTTON.iconColor}
+          />
         </Pressable>
       </View>
       <View style={styles.content}>
@@ -137,13 +144,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Spacing.sm,
     right: Spacing.sm,
-  },
-  heartGlass: {
-    width: 32,
-    height: 32,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   content: {
     padding: Spacing.md,
