@@ -85,7 +85,7 @@ export default function CookScreen() {
 
             <View style={styles.heroCard}>
               <GlassView style={styles.heroCardInner}>
-                <Text style={[Typography.labelLarge, { color: colors.accentGold, fontStyle: 'italic' }]}>
+                <Text style={[Typography.labelLarge, { color: colors.primary, fontStyle: 'italic' }]}>
                   {hasActiveSession ? 'Now Cooking' : hasDinnerParty ? 'Dinner Party' : 'Tonight\'s Dinner'}
                 </Text>
                 {hasDinnerParty && partyGuestCount && !hasActiveSession && (
@@ -99,21 +99,21 @@ export default function CookScreen() {
 
                 <View style={styles.statsRow}>
                   <View style={styles.statItem}>
-                    <MaterialCommunityIcons name="clock-outline" size={18} color={colors.accentGold} />
+                    <MaterialCommunityIcons name="clock-outline" size={18} color={colors.primary} />
                     <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
                       {formatCookTime(heroRecipe.prepTime + heroRecipe.cookTime)}
                     </Text>
                   </View>
                   <View style={[styles.statDivider, { backgroundColor: colors.outlineVariant }]} />
                   <View style={styles.statItem}>
-                    <MaterialCommunityIcons name="account-group-outline" size={18} color={colors.accentGold} />
+                    <MaterialCommunityIcons name="account-group-outline" size={18} color={colors.primary} />
                     <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
                       {heroRecipe.servings} Servings
                     </Text>
                   </View>
                   <View style={[styles.statDivider, { backgroundColor: colors.outlineVariant }]} />
                   <View style={styles.statItem}>
-                    <MaterialCommunityIcons name="star-outline" size={18} color={colors.accentGold} />
+                    <MaterialCommunityIcons name="star-outline" size={18} color={colors.primary} />
                     <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
                       {heroRecipe.difficulty}
                     </Text>
@@ -126,7 +126,7 @@ export default function CookScreen() {
           <View style={[styles.emptyHero, { marginHorizontal: Spacing.page }]}>
             <View style={[styles.emptyHeroInner, { borderColor: colors.outlineVariant }]}>
               <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
-                <MaterialCommunityIcons name="weather-sunset" size={44} color={colors.accentGold} />
+                <MaterialCommunityIcons name="weather-sunset" size={44} color={colors.primary} />
               </View>
               <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
                 Ready when you are
@@ -278,13 +278,13 @@ export default function CookScreen() {
         <View style={styles.levelSection}>
           <View style={styles.levelHeader}>
             <Text style={[Typography.labelLarge, { color: colors.outline }]}>Your Cooking Journey</Text>
-            <Text style={[Typography.caption, { color: colors.accentGold, fontWeight: '700' }]}>{xp} points</Text>
+            <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{xp} points</Text>
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface }]}>{levelName}</Text>
           <View style={styles.levelBarRow}>
             <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>Level {level}</Text>
             <View style={[styles.progressBar, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <View style={[styles.progressFill, { backgroundColor: colors.accentGold, width: `${progress * 100}%` }]} />
+              <View style={[styles.progressFill, { backgroundColor: colors.primary, width: `${progress * 100}%` }]} />
             </View>
           </View>
         </View>
@@ -345,7 +345,7 @@ export default function CookScreen() {
               accessibilityRole="button"
               accessibilityLabel="View saved recipes"
             >
-              <Text style={[Typography.titleSmall, { color: colors.accentGold }]}>View Saved</Text>
+              <Text style={[Typography.titleSmall, { color: colors.primary }]}>View Saved</Text>
             </Pressable>
           </View>
         </View>

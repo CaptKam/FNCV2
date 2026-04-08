@@ -36,15 +36,6 @@ const colors = {
     categorySpice: '#FF8A65',
     categoryPantry: '#A1887F',
 
-    accentSage: '#527A4B',
-    accentSageMuted: 'rgba(82, 122, 75, 0.12)',
-    accentNavy: '#3D5A80',
-    accentNavyMuted: 'rgba(61, 90, 128, 0.12)',
-    accentGold: '#B8860B',
-    accentGoldMuted: 'rgba(184, 134, 11, 0.12)',
-    accentPlum: '#7B5E7B',
-    accentPlumMuted: 'rgba(123, 94, 123, 0.12)',
-
     primaryTint: 'rgba(154, 65, 0, 0.07)',
     primarySubtle: 'rgba(154, 65, 0, 0.09)',
     primaryMuted: 'rgba(154, 65, 0, 0.12)',
@@ -109,15 +100,6 @@ const colors = {
     categoryDairy: '#FFD54F',
     categorySpice: '#FF8A65',
     categoryPantry: '#A1887F',
-
-    accentSage: '#6DAF65',
-    accentSageMuted: 'rgba(109, 175, 101, 0.15)',
-    accentNavy: '#6B9BD2',
-    accentNavyMuted: 'rgba(107, 155, 210, 0.15)',
-    accentGold: '#D4A830',
-    accentGoldMuted: 'rgba(212, 168, 48, 0.15)',
-    accentPlum: '#B08DB0',
-    accentPlumMuted: 'rgba(176, 141, 176, 0.15)',
 
     primaryTint: 'rgba(154, 65, 0, 0.10)',
     primarySubtle: 'rgba(154, 65, 0, 0.12)',

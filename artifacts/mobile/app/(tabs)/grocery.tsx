@@ -209,7 +209,7 @@ export default function GroceryScreen() {
         <HeaderBar />
         <View style={styles.emptyRoot}>
           <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
-            <MaterialCommunityIcons name="cart-outline" size={48} color={colors.accentSage} />
+            <MaterialCommunityIcons name="cart-outline" size={48} color={colors.primary} />
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
             No ingredients yet
@@ -230,15 +230,15 @@ export default function GroceryScreen() {
             />
             {manualItemName.trim().length > 0 && (
               <Pressable onPress={handleAddManualItem} accessibilityRole="button" accessibilityLabel="Add item">
-                <View style={[styles.addBtn, { backgroundColor: colors.accentSage }]}>
-                  <Text style={[Typography.titleSmall, { color: '#FFFFFF' }]}>Add</Text>
+                <View style={[styles.addBtn, { backgroundColor: colors.primary }]}>
+                  <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Add</Text>
                 </View>
               </Pressable>
             )}
           </View>
           <Pressable
             onPress={() => router.push('/(tabs)')}
-            style={[styles.emptyBtn, { backgroundColor: colors.accentSage }]}
+            style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
             accessibilityRole="button"
             accessibilityLabel="Browse recipes"
           >
