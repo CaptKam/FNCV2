@@ -32,6 +32,15 @@ import { useApp } from '@/context/AppContext';
 
 const HERO_HEIGHT = 480;
 
+const AVATAR_ICON_MAP: Record<string, string> = {
+  chef: 'chef-hat',
+  globe: 'earth',
+  fire: 'fire',
+  heart: 'heart',
+  star: 'star',
+  compass: 'compass',
+};
+
 // ─── Helpers ───
 
 function getMonday(d: Date): Date {
@@ -183,9 +192,20 @@ export default function DiscoverScreen() {
                   style={StyleSheet.absoluteFill}
                 />
                 <View style={styles.heroContent}>
-                  <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic' }]}>
-                    {getGreeting(app.displayName || undefined)}
-                  </Text>
+                  <View style={styles.greetingRow}>
+                    {app.displayName ? (
+                      <View style={styles.greetingAvatar}>
+                        <MaterialCommunityIcons
+                          name={(AVATAR_ICON_MAP[app.avatarId] ?? 'chef-hat') as any}
+                          size={16}
+                          color="#FFFFFF"
+                        />
+                      </View>
+                    ) : null}
+                    <Text style={[Typography.title, { color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', flex: 1 }]}>
+                      {getGreeting(app.displayName || undefined)}
+                    </Text>
+                  </View>
                   <GlassView style={styles.flagBadge}>
                     <Text style={{ fontSize: 14 }}>{item.flag}</Text>
                     <Text style={[Typography.caption, { color: colors.textOnImage }]}>{item.region}</Text>
@@ -394,6 +414,19 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   heroTitle: {
+  },
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  greetingAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   flagBadge: {
     flexDirection: 'row',
