@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#005caf",
+                        "surface-dim": "#ded9d4",
+                        "surface-container-low": "#f8f3ed",
+                        "background": "#fef9f3",
+                        "tertiary-fixed-dim": "#a7c8ff",
+                        "outline": "#897267",
+                        "on-background": "#1d1b18",
+                        "on-tertiary-fixed-variant": "#004689",
+                        "tertiary-fixed": "#d5e3ff",
+                        "surface-container": "#f2ede7",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#ffdbcb",
+                        "primary-fixed-dim": "#ffb691",
+                        "surface-container-highest": "#e6e2dc",
+                        "on-surface-variant": "#564339",
+                        "on-tertiary-fixed": "#001b3c",
+                        "tertiary": "#004485",
+                        "surface-container-high": "#ece7e2",
+                        "inverse-primary": "#ffb691",
+                        "secondary-container": "#fbdab4",
+                        "outline-variant": "#ddc1b4",
+                        "on-primary-fixed-variant": "#783100",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#32302c",
+                        "surface-variant": "#e6e2dc",
+                        "primary": "#753000",
+                        "on-primary-fixed": "#341100",
+                        "surface-bright": "#fef9f3",
+                        "on-tertiary-container": "#c0d6ff",
+                        "secondary": "#725a3c",
+                        "secondary-fixed-dim": "#e1c19d",
+                        "secondary-fixed": "#feddb7",
+                        "on-primary-container": "#ffc9af",
+                        "surface-tint": "#9d4303",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#775e40",
+                        "on-secondary-fixed-variant": "#594327",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#fef9f3",
+                        "primary-container": "#9a4100",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f5f0ea",
+                        "on-secondary-fixed": "#291802",
+                        "on-surface": "#1d1b18"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 
+                0 4px 24px -1px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+        }
+        .glass-card-active {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1.5px solid rgba(117, 48, 0, 0.4);
+            box-shadow: 
+                0 12px 32px -4px rgba(117, 48, 0, 0.15),
+                inset 0 1px 0 0 rgba(255, 255, 255, 1);
+        }
+        .glass-nav {
+            background: rgba(254, 249, 243, 0.6);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+        }
+        body {
+            background-color: #fef9f3;
+            background-image: radial-gradient(at 0% 0%, rgba(255, 219, 203, 0.15) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, rgba(213, 227, 255, 0.15) 0px, transparent 50%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        .serif {
+            font-family: 'Noto Serif', serif;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="text-on-surface pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 liquid-glass">
+<div class="flex justify-between items-center px-5 h-16 w-full">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl">calendar_today</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1">
+<h1 class="serif font-bold text-xl text-primary leading-none">This Week</h1>
+<span class="material-symbols-outlined text-primary text-lg">expand_more</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 rounded-full bg-white/40 flex items-center justify-center text-on-surface-variant backdrop-blur-md border border-white/60 shadow-sm">
+<span class="material-symbols-outlined text-[22px]">search</span>
+</button>
+<div class="w-9 h-9 rounded-full p-0.5 bg-white/60 backdrop-blur-md shadow-sm border border-white/80">
+<div class="w-full h-full rounded-full overflow-hidden">
+<img alt="profile portrait" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASqRcLFZhlxr2Tl0MKyZgSVC48O6XdobFkxGPd4rv4AtVL1avG7ByXl5wcwFfTBt04JephRUStyV5VTvWvohKnrdj3tI0-f8u1hjUJKZXoocMf1bUCB7V2YBRoRD2gnwcuxQTuiMgFr2pz2kE0HWV9m9s5j3hwEUMGMQa_IUrVIkPfWXHt47ztyOVIY3yMN46tmJbLqbpzQTGILGWiTALK53bUdk28qt6x-3njv0YVzLn7f8rKOddVM0cvApjBT9RLJJQFN8ndAXbD"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-5 max-w-2xl mx-auto space-y-8">
+<!-- Monday (Today) -->
+<section class="glass-card-active rounded-[32px] overflow-hidden p-6 transition-all duration-300">
+<div class="flex justify-between items-start mb-6">
+<div>
+<span class="text-primary font-bold text-[10px] uppercase tracking-[0.15em] block mb-1">Today</span>
+<h2 class="serif text-2xl font-bold text-on-surface leading-tight">Monday, 12 Oct</h2>
+<div class="flex items-center gap-3 mt-2">
+<div class="flex items-center gap-1 text-[12px] font-semibold text-on-surface-variant/70">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                            85 min total
+                        </div>
+<button class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold">
+<span class="material-symbols-outlined text-[14px]">groups</span>
+                            Dinner Party
+                        </button>
+</div>
+</div>
+</div>
+<!-- Course List -->
+<div class="space-y-4">
+<!-- Appetizer -->
+<div class="group relative overflow-hidden rounded-2xl shadow-sm border border-white/60">
+<div class="relative aspect-[16/8]">
+<img alt="Appetizer" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8l2bjvLV5Ppia9sWgSm2B542SSZLs2O01___7-d32OxNkB6AMRigRnvXY4oYOX_LZCGNg47eSWFTWDuQt-urCP-0liMlbtdycYOqujcOVLlPg9F528lN9KvdkI57wY8V3mHgVLmaT2IzpQw7ZHlBT2443v-T2-l1ximlUXH3Ul6ojW_4edB9BVGlsnKgKjRXdWZO4tcxaS29gS4SKQjY0yzHpHs66MXqq59fU3S9pgPJPqTJlDuYAfCf9d7bVGKpZO9r-t5bn1ZLB"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+<!-- Actions -->
+<div class="absolute top-2 left-2">
+<button class="w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg flex items-center justify-center text-primary active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+<div class="absolute top-2 right-2">
+<button class="w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg flex items-center justify-center text-error active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="absolute bottom-3 left-4">
+<p class="text-white text-[10px] font-bold uppercase tracking-widest opacity-80 mb-0.5">Appetizer</p>
+<h3 class="text-white font-bold text-lg leading-none">Harvest Salad Bowl</h3>
+</div>
+</div>
+</div>
+<!-- Main -->
+<div class="group relative overflow-hidden rounded-2xl shadow-sm border border-white/60">
+<div class="relative aspect-[16/8]">
+<img alt="Main" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6UKCXBUwNYHUL3iExLY9y6aylbKNCJPOXa0nYwtE4cvL4oGXluEE8SbDqw2XMDpMZsyZ-7hDASe3Y0FDUUN7EJCHlC6SZo5FJi3ZGaokagwndwrQr54thUP9piLZaI6ca2D3eOWCYxqWyvtbLQmB1lr7cekoOdsEO6WNvUNUyeT_u0Anw_22IYLLaEqGPbD83dlnlFvnj_rZyj7p67aBdc5YUcbpHuGGVKhT54ewqTkZnWCrhnu3X9xz8j4hGe7qd_3Rz6Qm5WTD-"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+<!-- Actions -->
+<div class="absolute top-2 left-2">
+<button class="w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+<div class="absolute top-2 right-2">
+<button class="w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="absolute bottom-3 left-4">
+<p class="text-white text-[10px] font-bold uppercase tracking-widest opacity-80 mb-0.5">Main</p>
+<h3 class="text-white font-bold text-lg leading-none">Grilled Chicken Skewers</h3>
+</div>
+</div>
+</div>
+<!-- Dessert (Added for completeness) -->
+<div class="group relative overflow-hidden rounded-2xl shadow-sm border border-white/60">
+<div class="relative aspect-[16/8]">
+<img alt="Dessert" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB58ks8j8K4sZRXuSzXUp8Wa2jPPRa0uXCFua2lzgTprtt8X0BD8iBvNYKFpzZCguMwgDwsIpCeZkzQbsqv3AdCwJXTvWN1BxfgDQ7V_QFXSMu-QmjA_Kx5vdy71vykbaIwvKymxCyGaOaJBvQZpKO1IXpwGXWTWeoDfgd8oBoTfz3K_Oag4CFdSOsL9PF8Vlwd3ge4UZGShoRbsR7ycRLkhfSSVXMr7YkhgxFtvNHGzGDb_MEiRY2RBg_qXVSbr5-OxKZJsUvdjfwu"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+<!-- Actions -->
+<div class="absolute top-2 left-2">
+<button class="w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+<div class="absolute top-2 right-2">
+<button class="w-8 h-8 rounded-full bg-white/90 backdrop-blur shadow-lg flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="absolute bottom-3 left-4">
+<p class="text-white text-[10px] font-bold uppercase tracking-widest opacity-80 mb-0.5">Dessert</p>
+<h3 class="text-white font-bold text-lg leading-none">Honey Glazed Doughnuts</h3>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Tuesday -->
+<section class="glass-card rounded-[28px] overflow-hidden p-6 transition-all duration-300">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="serif text-2xl font-bold text-on-surface/90 leading-tight">Tuesday, 13 Oct</h2>
+<div class="flex items-center gap-3 mt-2">
+<div class="flex items-center gap-1 text-[12px] font-medium text-on-surface-variant/60">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                            45 min
+                        </div>
+<button class="p-1.5 rounded-full text-primary hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="group relative overflow-hidden rounded-2xl border border-white/40">
+<div class="relative aspect-[16/8]">
+<img alt="Main Course" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg-Q5QR5gfC0vBblofzDCBUKKirz8l6cO0J8yd8fQI_a2g8HtDySZd7ebfSS2b3bDBd4Gc3_8i6Vt133dM587zPQpYvMsYI-v3SLu4cnOOWloyWo536T6DXGDq6WB85cKjpmwtiBwkY3HuTGh7hDnAztRKVkmuUHIMnuUYgJ2WJEHBtYUa1yF0aku-UfxF6GhQUffzAAdQXnWNQHhSdb8ZmyDbPHpwD-PCuyB12asFxD9g7iP0xoYi0NnoV21KjsSO-rHPpfUidJuG"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+<div class="absolute top-2 left-2">
+<button class="w-7 h-7 rounded-full bg-white/80 backdrop-blur shadow flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+</button>
+</div>
+<div class="absolute top-2 right-2">
+<button class="w-7 h-7 rounded-full bg-white/80 backdrop-blur shadow flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<div class="absolute bottom-3 left-4 text-white">
+<p class="text-[9px] font-bold uppercase tracking-widest opacity-80">Main</p>
+<h3 class="font-bold text-base">Pesto Genovese Pasta</h3>
+</div>
+</div>
+</div><div class="flex flex-wrap gap-2 mt-4">
+<button class="px-3 py-1.5 rounded-full border border-outline/20 bg-secondary/5 text-secondary text-[11px] font-bold flex items-center gap-1.5 hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-[14px]">add</span>
+        Appetizer
+    </button>
+<button class="px-3 py-1.5 rounded-full border border-outline/20 bg-secondary/5 text-secondary text-[11px] font-bold flex items-center gap-1.5 hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-[14px]">add</span>
+        Dessert
+    </button>
+<button class="px-3 py-1.5 rounded-full border border-outline/20 bg-secondary/5 text-secondary text-[11px] font-bold flex items-center gap-1.5 hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-[14px]">add</span>
+        Drink
+    </button>
+</div>
+</div>
+</section>
+<!-- Wednesday (Empty State) -->
+<section class="border border-white/40 bg-white/20 backdrop-blur-md rounded-[28px] p-6 flex items-center justify-between group cursor-pointer hover:bg-white/40 transition-all duration-300 shadow-sm">
+<div>
+<h2 class="serif text-2xl font-bold text-on-surface/40 group-hover:text-on-surface/80 duration-300">Wednesday, 14 Oct</h2>
+<p class="text-[13px] font-medium text-on-surface-variant/50">Plan your midweek menu</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center text-primary/40 group-hover:text-primary transition-colors border border-white/60">
+<span class="material-symbols-outlined">add</span>
+</div>
+</section>
+<!-- Thursday -->
+<section class="glass-card rounded-[28px] overflow-hidden p-6 transition-all duration-300">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="serif text-2xl font-bold text-on-surface/90 leading-tight">Thursday, 15 Oct</h2>
+<div class="flex items-center gap-3 mt-2">
+<div class="flex items-center gap-1 text-[12px] font-medium text-on-surface-variant/60">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                            110 min
+                        </div>
+<button class="p-1.5 rounded-full text-primary/60 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="group relative overflow-hidden rounded-2xl border border-white/40">
+<div class="relative aspect-[16/8]">
+<img alt="Main Course" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwlqP9GObDleH1pB7uuDDNtwf_yOCRT2UUne2MyTASWezH1PI1phfDJPv_KLw79DkeH7pm77LpZpsfTcWVuoVcR2eX410ZHpd6uI3DKA8fBzIcuTUloj-QSq3RzOGI9Gku83pvwLtL-sy5II91YAedQ7q3atZy3slWh-EiBkUdiHsJOmmEk9JzkW2AllAtpfLMQeI4kp5G92dJxCF6XhtTr-sDN1us_6fnFIoeIUJLGXcBYO4sDPGMiV-KeZnYxHrbTdSbD6wV8J7W"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+<div class="absolute top-2 left-2">
+<button class="w-7 h-7 rounded-full bg-white/80 backdrop-blur shadow flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+</button>
+</div>
+<div class="absolute top-2 right-2">
+<button class="w-7 h-7 rounded-full bg-white/80 backdrop-blur shadow flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<div class="absolute bottom-3 left-4 text-white">
+<p class="text-[9px] font-bold uppercase tracking-widest opacity-80">Main</p>
+<h3 class="font-bold text-base">Lemon Herb Roasted Salmon</h3>
+</div>
+</div>
+</div><div class="flex flex-wrap gap-2 mt-4">
+<button class="px-3 py-1.5 rounded-full border border-outline/20 bg-secondary/5 text-secondary text-[11px] font-bold flex items-center gap-1.5 hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-[14px]">add</span>
+        Appetizer
+    </button>
+<button class="px-3 py-1.5 rounded-full border border-outline/20 bg-secondary/5 text-secondary text-[11px] font-bold flex items-center gap-1.5 hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-[14px]">add</span>
+        Dessert
+    </button>
+<button class="px-3 py-1.5 rounded-full border border-outline/20 bg-secondary/5 text-secondary text-[11px] font-bold flex items-center gap-1.5 hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-[14px]">add</span>
+        Drink
+    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 glass-nav border-t border-white/40">
+<div class="flex justify-around items-center w-full px-2 h-20 pb-safe">
+<button class="flex flex-col items-center justify-center text-stone-500 hover:text-primary transition-all duration-300 scale-90 group">
+<span class="material-symbols-outlined text-[24px]">explore</span>
+<span class="text-[10px] font-bold tracking-widest uppercase mt-1 opacity-70 group-hover:opacity-100">Discover</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 hover:text-primary transition-all duration-300 scale-90 group">
+<span class="material-symbols-outlined text-[24px]">search</span>
+<span class="text-[10px] font-bold tracking-widest uppercase mt-1 opacity-70 group-hover:opacity-100">Search</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary bg-white/70 backdrop-blur-xl border border-white/80 shadow-sm rounded-2xl px-4 py-2 duration-300 scale-100">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="text-[10px] font-bold tracking-widest uppercase mt-1">Plan</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 hover:text-primary transition-all duration-300 scale-90 group">
+<span class="material-symbols-outlined text-[24px]">shopping_basket</span>
+<span class="text-[10px] font-bold tracking-widest uppercase mt-1 opacity-70 group-hover:opacity-100">Grocery</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 hover:text-primary transition-all duration-300 scale-90 group">
+<span class="material-symbols-outlined text-[24px]">restaurant</span>
+<span class="text-[10px] font-bold tracking-widest uppercase mt-1 opacity-70 group-hover:opacity-100">Cook</span>
+</button>
+</div>
+</nav>
+</body></html>

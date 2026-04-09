@@ -16,7 +16,7 @@ import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
 import { Checkbox } from '@/components/Checkbox';
-import { useApp, GroceryItem } from '@/context/AppContext';
+import { useApp, GroceryItem, ItineraryDay } from '@/context/AppContext';
 import { recipes as allRecipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
 import { computeScaledAmount } from '@/utils/groceryScaling';
@@ -221,6 +221,51 @@ export default function GroceryScreen() {
     app.clearCheckedItems();
   };
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showUndo, setShowUndo] = useState(false);
+  const undoSnapshot = useRef<{ itinerary: ItineraryDay[]; grocery: GroceryItem[] } | null>(null);
+  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((msg: string, withUndo = false) => {
+    setToastMessage(msg);
+    setShowUndo(withUndo);
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    toastTimeout.current = setTimeout(() => {
+      setToastMessage(null);
+      setShowUndo(false);
+      undoSnapshot.current = null;
+    }, withUndo ? 5000 : 3000);
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    if (undoSnapshot.current) {
+      app.restoreItinerary(undoSnapshot.current.itinerary);
+      app.restoreGrocery(undoSnapshot.current.grocery);
+      undoSnapshot.current = null;
+      setShowUndo(false);
+      setToastMessage(null);
+      if (toastTimeout.current) clearTimeout(toastTimeout.current);
+      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    }
+  }, [app]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    };
+  }, []);
+
+  const handleRemoveRecipeSource = useCallback((recipeTitle: string) => {
+    undoSnapshot.current = {
+      itinerary: JSON.parse(JSON.stringify(app.itinerary)),
+      grocery: JSON.parse(JSON.stringify(app.groceryItems)),
+    };
+    app.removeGroceryItemsByRecipe(recipeTitle);
+    app.removeRecipeFromPlanByName(recipeTitle);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+    showToast(`Removed ${recipeTitle}`, true);
+  }, [app, showToast]);
+
   const handleClearAll = () => {
     Alert.alert(
       'Clear Grocery List',
@@ -277,6 +322,18 @@ export default function GroceryScreen() {
             <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Browse Recipes</Text>
           </Pressable>
         </View>
+
+        {toastMessage && (
+          <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
+            <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
+            <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface, flex: 1 }]}>{toastMessage}</Text>
+            {showUndo && (
+              <Pressable onPress={handleUndo} hitSlop={8} accessibilityRole="button" accessibilityLabel="Undo removal">
+                <Text style={[Typography.titleSmall, { color: colors.inversePrimary, fontWeight: '700' }]}>Undo</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
       </View>
     );
   }
@@ -399,10 +456,10 @@ export default function GroceryScreen() {
                         accessible={false}
                       />
                       <Pressable
-                        onPress={() => app.removeGroceryItemsByRecipe(recipe.title)}
+                        onPress={() => handleRemoveRecipeSource(recipe.title)}
                         style={[styles.recipeCloseBtn, { backgroundColor: 'rgba(0,0,0,0.45)' }]}
                         accessibilityRole="button"
-                        accessibilityLabel={`Remove ${recipe.title} from grocery list`}
+                        accessibilityLabel={`Remove ${recipe.title} from grocery and plan`}
                       >
                         <MaterialCommunityIcons name="close" size={20} color={OVERLAY_BUTTON.iconColor} />
                       </Pressable>
@@ -717,6 +774,18 @@ export default function GroceryScreen() {
           )}
         </GlassView>
       </View>
+
+      {toastMessage && (
+        <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
+          <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
+          <Text style={[Typography.titleSmall, { color: colors.inverseOnSurface, flex: 1 }]}>{toastMessage}</Text>
+          {showUndo && (
+            <Pressable onPress={handleUndo} hitSlop={8} accessibilityRole="button" accessibilityLabel="Undo removal">
+              <Text style={[Typography.titleSmall, { color: colors.inversePrimary, fontWeight: '700' }]}>Undo</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
     </View>
   );
 }
@@ -971,6 +1040,18 @@ const styles = StyleSheet.create({
   cookHandoffBtn: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 100,
+    left: Spacing.page,
+    right: Spacing.page,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 14,
     borderRadius: Radius.full,
   },
 });
