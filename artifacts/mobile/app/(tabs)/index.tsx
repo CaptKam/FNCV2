@@ -33,29 +33,9 @@ import { recipes, Recipe } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
+import { todayLocal, addDays, getDayLabel, formatDateShort } from '@/utils/dates';
 
 // ─── Helpers ───
-
-function toISO(d: Date): string {
-  return d.toISOString().split('T')[0];
-}
-
-function addDays(dateStr: string, n: number): string {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + n);
-  return toISO(d);
-}
-
-function getDayLabel(dateStr: string): string {
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  return days[new Date(dateStr).getDay()];
-}
-
-function formatDateShort(dateStr: string): string {
-  const d = new Date(dateStr);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[d.getMonth()]} ${d.getDate()}`;
-}
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -119,7 +99,7 @@ export default function DiscoverScreen() {
 
   // Tonight's plan
   const todaysMeals = app.getTodaysMeals();
-  const todayDate = toISO(new Date());
+  const todayDate = todayLocal();
   const tonightMeal = todaysMeals.length > 0 ? todaysMeals[0] : null;
   const tonightRecipe = tonightMeal ? recipes.find((r) => r.id === tonightMeal.recipeId) : null;
 

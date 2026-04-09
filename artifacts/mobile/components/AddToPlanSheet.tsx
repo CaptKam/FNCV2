@@ -13,30 +13,14 @@ import { GlassView } from '@/components/GlassView';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
-
-function toISO(d: Date): string {
-  return d.toISOString().split('T')[0];
-}
-
-function addDays(dateStr: string, n: number): string {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + n);
-  return toISO(d);
-}
+import { todayLocal, addDays, getDayLabelFull, formatDateShort } from '@/utils/dates';
 
 function getDayLabel(dateStr: string): string {
-  const today = toISO(new Date());
+  const today = todayLocal();
   const tomorrow = addDays(today, 1);
   if (dateStr === today) return 'Today';
   if (dateStr === tomorrow) return 'Tomorrow';
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[new Date(dateStr).getDay()];
-}
-
-function formatDateShort(dateStr: string): string {
-  const d = new Date(dateStr);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[d.getMonth()]} ${d.getDate()}`;
+  return getDayLabelFull(dateStr);
 }
 
 interface AddToPlanButtonProps {
@@ -74,7 +58,7 @@ interface AddToPlanSheetProps {
 
 export function AddToPlanSheet({ visible, recipeName, onClose, onAdd }: AddToPlanSheetProps) {
   const colors = useThemeColors();
-  const todayDate = toISO(new Date());
+  const todayDate = todayLocal();
 
   const planDays = useMemo(() => {
     return Array.from({ length: 14 }, (_, i) => {

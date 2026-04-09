@@ -18,6 +18,7 @@ import { REGION_IMAGES, RECIPE_REGION_MAP } from '@/data/maps';
 import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
+import { todayLocal } from '@/utils/dates';
 
 export default function CountryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,7 +32,7 @@ export default function CountryDetailScreen() {
   const app = useApp();
 
   const handleQuickAdd = useCallback((recipe: typeof recipes[0]) => {
-    const todayDate = new Date().toISOString().split('T')[0];
+    const todayDate = todayLocal();
     app.addCourseToDay(todayDate, 'main', recipe);
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
     setToastMsg(`Added ${recipe.title} to today's plan`);

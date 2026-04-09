@@ -5,6 +5,7 @@ import { countries } from '@/data/countries';
 import { DinnerPlan } from '@/types/kitchen';
 import { DinnerParty, DinnerGuest, DietaryConflict, DinnerPartyMenu } from '@/types/dinnerParty';
 import { buildDinnerTimeline } from '@/utils/timelineEngine';
+import { todayLocal, dateToLocal, addDays as addDaysLocal, getDayLabelFull, parseDateLocal } from '@/utils/dates';
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -185,15 +186,6 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
 }
 
-function getDayLabel(dateStr: string): string {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[new Date(dateStr).getDay()];
-}
-
-function todayISO(): string {
-  return new Date().toISOString().split('T')[0];
-}
-
 function categorizeIngredient(name: string): GroceryItem['category'] {
   const n = name.toLowerCase();
   if (/chicken|beef|lamb|fish|shrimp|pork|salmon|tofu/.test(n)) return 'protein';
@@ -280,16 +272,10 @@ function recipeToPlannedMeal(recipe: Recipe): PlannedMeal {
 function makeEmptyDay(date: string): ItineraryDay {
   return {
     date,
-    dayLabel: getDayLabel(date),
+    dayLabel: getDayLabelFull(date),
     courses: {},
     hasDinnerParty: false,
   };
-}
-
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
 }
 
 // ═══════════════════════════════════════════
@@ -367,7 +353,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         Storage.get(KEYS.history, defaultHistory),
         Storage.get<{ plan: DinnerPlan | null; eventIndex: number }>(KEYS.dinnerPlan, { plan: null, eventIndex: 0 }),
       ]);
-      setItinerary(it);
+      // Clean up itinerary entries older than 28 days
+      const cutoff = addDaysLocal(todayLocal(), -28);
+      const cleanedItinerary = it.filter((d: ItineraryDay) => d.date >= cutoff);
+      setItinerary(cleanedItinerary);
       setGroceryItems(gr);
       setActiveCookSession(cs);
       if (dp.plan) {
@@ -657,7 +646,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
       const afterRecencyFilter = afterLevelFilter.filter((r) => !recentRecipeIds.has(r.id));
       // Fallback: if too few recipes, use pre-recency pool
-      const eligible = afterRecencyFilter.length >= selectedDates.length ? afterRecencyFilter : afterLevelFilter;
+      // Skip past dates — only generate for today and future
+      const today = todayLocal();
+      const futureDates = selectedDates.filter(d => d >= today);
+
+      const eligible = afterRecencyFilter.length >= futureDates.length ? afterRecencyFilter : afterLevelFilter;
 
       const shuffled = [...eligible].sort(() => Math.random() - 0.5);
       const usedIds = new Set<string>();
@@ -684,7 +677,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       setItinerary((prev) => {
         let days = [...prev];
-        for (const date of selectedDates) {
+        for (const date of futureDates) {
           const [updated, day] = findOrCreateDay(days, date);
           days = updated;
 
@@ -757,7 +750,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     (startDate: string): ItineraryDay[] => {
       const week: ItineraryDay[] = [];
       for (let i = 0; i < 7; i++) {
-        const date = addDays(startDate, i);
+        const date = addDaysLocal(startDate, i);
         const existing = itinerary.find((d) => d.date === date);
         week.push(existing ?? makeEmptyDay(date));
       }
@@ -767,7 +760,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const getTodaysMeals = useCallback((): PlannedMeal[] => {
-    const today = todayISO();
+    const today = todayLocal();
     const day = itinerary.find((d) => d.date === today);
     if (!day) return [];
     return Object.values(day.courses).filter((m): m is PlannedMeal => m != null);

@@ -18,6 +18,7 @@ import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { Checkbox } from '@/components/Checkbox';
+import { todayLocal } from '@/utils/dates';
 
 import { TECHNIQUES } from '@/data/techniques';
 
@@ -52,7 +53,7 @@ export default function CookScreen() {
   const hasTodayPlan = !hasActiveSession && todayRecipe != null;
 
   // Dinner party awareness
-  const todayDate = new Date().toISOString().split('T')[0];
+  const todayDate = todayLocal();
   const todayParty = app.getDinnerPartyForDate(todayDate);
   const hasDinnerParty = todayParty != null && todayParty.status !== 'completed';
   const partyGuestCount = todayParty ? app.getGuestCount(todayParty.id) : null;

@@ -29,6 +29,7 @@ import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
 import { OVERLAY_BUTTON } from '@/constants/icons';
+import { todayLocal } from '@/utils/dates';
 
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
 const ALLERGEN_FILTERS: AllergenType[] = ['milk', 'egg', 'wheat', 'peanuts', 'tree_nuts', 'fish', 'shellfish', 'soy', 'sesame'];
@@ -63,7 +64,7 @@ export default function SearchScreen() {
     if (!addSheetRecipe) return;
     app.addCourseToDay(date, 'main', addSheetRecipe);
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
-    const todayDate = new Date().toISOString().split('T')[0];
+    const todayDate = todayLocal();
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const label = date === todayDate ? "tonight's" : dayNames[new Date(date).getDay()] + "'s";
     showToast(`Added to ${label} plan.`);

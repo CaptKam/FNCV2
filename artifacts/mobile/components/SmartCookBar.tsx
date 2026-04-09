@@ -12,6 +12,7 @@ import { GlassView } from '@/components/GlassView';
 import { useApp } from '@/context/AppContext';
 import { recipes as allRecipes } from '@/data/recipes';
 import { calculateCookReadiness, CookReadiness } from '@/utils/cookReadiness';
+import { todayLocal } from '@/utils/dates';
 
 interface SmartCookBarProps {
   variant?: 'floating' | 'inline';
@@ -31,7 +32,7 @@ export function SmartCookBar({ variant = 'floating' }: SmartCookBarProps) {
   }, []);
 
   const todaysMeals = app.getTodaysMeals();
-  const todayDate = new Date().toISOString().split('T')[0];
+  const todayDate = todayLocal();
   const todayParty = app.getDinnerPartyForDate(todayDate);
   const hasDinnerParty = todayParty != null && todayParty.status !== 'completed';
   const guestCount = todayParty ? app.getGuestCount(todayParty.id).accepted : 0;
