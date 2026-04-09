@@ -265,12 +265,16 @@ export default function PlanScreen() {
   }, [plannedCount, showPlanHint]);
 
   // ─── Week navigation ───
+  const currentMonday = useMemo(() => toISO(getMonday(new Date())), []);
   const shiftWeek = useCallback((delta: number) => {
-    setWeekStartDate((prev) => addDays(prev, delta * 7));
-    if (delta > 0) setSelectedWeek('next-week');
-    else if (delta < 0) setSelectedWeek('past');
-    else setSelectedWeek('this-week');
-  }, []);
+    setWeekStartDate((prev) => {
+      const next = addDays(prev, delta * 7);
+      if (next === currentMonday) setSelectedWeek('this-week');
+      else if (next > currentMonday) setSelectedWeek('next-week');
+      else setSelectedWeek('past');
+      return next;
+    });
+  }, [currentMonday]);
 
   // ─── Recipe picker ───
   const openPicker = useCallback((date: string, courseType: 'appetizer' | 'main' | 'dessert') => {
@@ -687,6 +691,98 @@ export default function PlanScreen() {
           )
         ) : (
           /* ═══ WEEKLY VIEW ═══ */
+          selectedWeek === 'past' ? (
+            /* ── Past Week: simple card layout ── */
+            <View style={{ paddingHorizontal: Spacing.page, gap: Spacing.md }}>
+              {weekDays.map((day) => {
+                const { appetizer, main: mainMeal, dessert } = day.courses;
+                const allMeals = [appetizer, mainMeal, dessert].filter(Boolean) as PlannedMeal[];
+                const hasMeals = allMeals.length > 0;
+                const totalTime = allMeals.reduce((sum, m) => sum + (m.cookTime || 0), 0);
+
+                if (!hasMeals) {
+                  return (
+                    <View
+                      key={day.date}
+                      style={[styles.pastEmptyCard, { borderColor: colors.outlineVariant }]}
+                    >
+                      <View>
+                        <Text style={[Typography.headline, { color: colors.onSurface, opacity: 0.4, fontSize: 18 }]}>
+                          {day.dayLabel}, {formatDateLabel(day.date)}
+                        </Text>
+                        <Text style={[Typography.caption, { color: colors.outline, opacity: 0.5, marginTop: 2 }]}>
+                          No meals planned
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                }
+
+                return (
+                  <Pressable
+                    key={day.date}
+                    onPress={() => {
+                      if (mainMeal) router.push(`/recipe/${mainMeal.recipeId}`);
+                    }}
+                    style={[styles.pastDayCard, { backgroundColor: colors.surfaceContainerLow }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${day.dayLabel}, ${allMeals.length} meals`}
+                  >
+                    <View style={styles.pastDayHeader}>
+                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18, opacity: 0.8 }]}>
+                        {day.dayLabel}, {formatDateLabel(day.date)}
+                      </Text>
+                      {totalTime > 0 && (
+                        <View style={styles.pastTimePill}>
+                          <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
+                          <Text style={[Typography.caption, { color: colors.outline }]}>
+                            {formatCookTime(totalTime)}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    {allMeals.length >= 3 ? (
+                      <View style={styles.pastThumbGrid}>
+                        {[appetizer, mainMeal, dessert].map((meal, idx) => (
+                          <View key={idx} style={styles.pastThumbCol}>
+                            <View style={[styles.pastThumbSquare, { backgroundColor: colors.surfaceContainerHigh }]}>
+                              {meal?.recipeImage ? (
+                                <Image source={{ uri: meal.recipeImage }} style={styles.pastThumbImage} />
+                              ) : (
+                                <MaterialCommunityIcons name="silverware-variant" size={20} color={colors.outline} />
+                              )}
+                            </View>
+                            <Text style={[Typography.caption, {
+                              color: colors.outline,
+                              textAlign: 'center',
+                              fontSize: 9,
+                              letterSpacing: 0.8,
+                              textTransform: 'uppercase',
+                            }]}>
+                              {idx === 0 ? 'Appetizer' : idx === 1 ? 'Main' : 'Dessert'}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    ) : (
+                      <View style={styles.pastThumbRow}>
+                        {allMeals.map((meal, idx) => (
+                          <View key={idx} style={[styles.pastThumbSmall, { backgroundColor: colors.surfaceContainerHigh }]}>
+                            {meal.recipeImage ? (
+                              <Image source={{ uri: meal.recipeImage }} style={styles.pastThumbImage} />
+                            ) : (
+                              <MaterialCommunityIcons name="silverware-variant" size={16} color={colors.outline} />
+                            )}
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : (
+          /* ── Current/Future Week: timeline layout ── */
           <View style={styles.timeline}>
             <View style={[styles.timelineLine, { backgroundColor: colors.primarySoft }]} />
             {weekDays.map((day) => {
@@ -809,6 +905,7 @@ export default function PlanScreen() {
               );
             })}
           </View>
+          )
         )}
       </ScrollView>
 
@@ -1413,5 +1510,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: Radius.lg,
     marginBottom: Spacing.xl,
+  },
+  pastDayCard: {
+    borderRadius: 24,
+    padding: Spacing.lg,
+    overflow: 'hidden',
+  },
+  pastEmptyCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    padding: Spacing.lg,
+  },
+  pastDayHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.md,
+  },
+  pastTimePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  pastThumbGrid: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  pastThumbCol: {
+    flex: 1,
+    gap: Spacing.xs,
+  },
+  pastThumbSquare: {
+    aspectRatio: 1,
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pastThumbImage: {
+    width: '100%',
+    height: '100%',
+  },
+  pastThumbRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  pastThumbSmall: {
+    width: 80,
+    height: 80,
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

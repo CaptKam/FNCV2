@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#005caf",
+                        "surface-dim": "#ded9d4",
+                        "surface-container-low": "#f8f3ed",
+                        "background": "#fef9f3",
+                        "tertiary-fixed-dim": "#a7c8ff",
+                        "outline": "#897267",
+                        "on-background": "#1d1b18",
+                        "on-tertiary-fixed-variant": "#004689",
+                        "tertiary-fixed": "#d5e3ff",
+                        "surface-container": "#f2ede7",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#ffdbcb",
+                        "primary-fixed-dim": "#ffb691",
+                        "surface-container-highest": "#e6e2dc",
+                        "on-surface-variant": "#564339",
+                        "on-tertiary-fixed": "#001b3c",
+                        "tertiary": "#004485",
+                        "surface-container-high": "#ece7e2",
+                        "inverse-primary": "#ffb691",
+                        "secondary-container": "#fbdab4",
+                        "outline-variant": "#ddc1b4",
+                        "on-primary-fixed-variant": "#783100",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#32302c",
+                        "surface-variant": "#e6e2dc",
+                        "primary": "#753000",
+                        "on-primary-fixed": "#341100",
+                        "surface-bright": "#fef9f3",
+                        "on-tertiary-container": "#c0d6ff",
+                        "secondary": "#725a3c",
+                        "secondary-fixed-dim": "#e1c19d",
+                        "secondary-fixed": "#feddb7",
+                        "on-primary-container": "#ffc9af",
+                        "surface-tint": "#9d4303",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#775e40",
+                        "on-secondary-fixed-variant": "#594327",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#fef9f3",
+                        "primary-container": "#9a4100",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f5f0ea",
+                        "on-secondary-fixed": "#291802",
+                        "on-surface": "#1d1b18"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .liquid-glass {
+            background: rgba(254, 249, 243, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        body {
+            background-color: #fef9f3;
+            font-family: 'Inter', sans-serif;
+        }
+        .serif {
+            font-family: 'Noto Serif', serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 liquid-glass border-b border-outline-variant/15">
+<div class="flex justify-between items-center px-5 h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">calendar_today</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-1">
+<h1 class="serif font-bold text-xl text-primary leading-none">This Week</h1>
+<span class="material-symbols-outlined text-primary text-lg">expand_more</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:opacity-80 duration-150 active:scale-95">
+<span class="material-symbols-outlined">search</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-primary-fixed">
+<img class="w-full h-full object-cover" data-alt="portrait of a woman in soft natural lighting with a warm editorial aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASqRcLFZhlxr2Tl0MKyZgSVC48O6XdobFkxGPd4rv4AtVL1avG7ByXl5wcwFfTBt04JephRUStyV5VTvWvohKnrdj3tI0-f8u1hjUJKZXoocMf1bUCB7V2YBRoRD2gnwcuxQTuiMgFr2pz2kE0HWV9m9s5j3hwEUMGMQa_IUrVIkPfWXHt47ztyOVIY3yMN46tmJbLqbpzQTGILGWiTALK53bUdk28qt6x-3njv0YVzLn7f8rKOddVM0cvApjBT9RLJJQFN8ndAXbD"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-5 max-w-2xl mx-auto space-y-4">
+<!-- Monday (Today) -->
+<section class="bg-surface-container-lowest rounded-[24px] border-2 border-primary shadow-sm overflow-hidden p-5 transition-transform duration-200 hover:scale-[1.01]">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="text-primary font-semibold text-xs uppercase tracking-widest block mb-1">Today</span>
+<h2 class="serif text-2xl font-bold text-on-surface">Monday, 12 Oct</h2>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant bg-surface-container px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-sm font-medium">85 min</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant bg-surface-container px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-sm">group</span>
+<span class="text-sm font-medium">4 ppl</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="space-y-2">
+<div class="aspect-square rounded-xl overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="vibrant healthy salad bowl with fresh greens and seeds in soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8l2bjvLV5Ppia9sWgSm2B542SSZLs2O01___7-d32OxNkB6AMRigRnvXY4oYOX_LZCGNg47eSWFTWDuQt-urCP-0liMlbtdycYOqujcOVLlPg9F528lN9KvdkI57wY8V3mHgVLmaT2IzpQw7ZHlBT2443v-T2-l1ximlUXH3Ul6ojW_4edB9BVGlsnKgKjRXdWZO4tcxaS29gS4SKQjY0yzHpHs66MXqq59fU3S9pgPJPqTJlDuYAfCf9d7bVGKpZO9r-t5bn1ZLB"/>
+</div>
+<p class="text-[11px] font-semibold text-on-surface-variant text-center uppercase tracking-tighter">Appetizer</p>
+</div>
+<div class="space-y-2">
+<div class="aspect-square rounded-xl overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="succulent grilled chicken skewers with roasted vegetables and rich herb sauce" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6UKCXBUwNYHUL3iExLY9y6aylbKNCJPOXa0nYwtE4cvL4oGXluEE8SbDqw2XMDpMZsyZ-7hDASe3Y0FDUUN7EJCHlC6SZo5FJi3ZGaokagwndwrQr54thUP9piLZaI6ca2D3eOWCYxqWyvtbLQmB1lr7cekoOdsEO6WNvUNUyeT_u0Anw_22IYLLaEqGPbD83dlnlFvnj_rZyj7p67aBdc5YUcbpHuGGVKhT54ewqTkZnWCrhnu3X9xz8j4hGe7qd_3Rz6Qm5WTD-"/>
+</div>
+<p class="text-[11px] font-semibold text-on-surface-variant text-center uppercase tracking-tighter">Main Course</p>
+</div>
+<div class="space-y-2">
+<div class="aspect-square rounded-xl overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="decadent chocolate lava cake with raspberry coulis on a minimal ceramic plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7M-OueeIeqoQ7TvRmpXU9IAme1Nmw8zvvJrZTUVRJWQfy2RHKHAQfiTZ_QsYcZ_utlwfzFLhtWcdVvIzORghVZF8tuBAGyg8w6hnfRZxCOmc3bqP2joQ3w7iqCTSHVZ6epMO6v7l2XPNeDRBtdI6AwR1cWyLrX0ZUKFwEGwZa2QscabfTtWl1i1V-4z_fg4ePhxPCJWXfHntqINj_4HxRFaEXpBmysUxJLS3dHrqLulEVr6nbGumuAjerZYfX-bqYn5TXQfBsecvT"/>
+</div>
+<p class="text-[11px] font-semibold text-on-surface-variant text-center uppercase tracking-tighter">Dessert</p>
+</div>
+</div>
+</section>
+<!-- Tuesday -->
+<section class="bg-surface-container-low rounded-[24px] overflow-hidden p-5 transition-transform duration-200 hover:scale-[1.01]">
+<div class="flex justify-between items-start mb-4">
+<h2 class="serif text-2xl font-bold text-on-surface opacity-80">Tuesday, 13 Oct</h2>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant/70">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-sm">45 min</span>
+</div>
+</div>
+</div>
+<div class="flex gap-2 overflow-x-auto pb-1">
+<div class="flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="artisanal pesto pasta with pine nuts and fresh basil garnish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg-Q5QR5gfC0vBblofzDCBUKKirz8l6cO0J8yd8fQI_a2g8HtDySZd7ebfSS2b3bDBd4Gc3_8i6Vt133dM587zPQpYvMsYI-v3SLu4cnOOWloyWo536T6DXGDq6WB85cKjpmwtiBwkY3HuTGh7hDnAztRKVkmuUHIMnuUYgJ2WJEHBtYUa1yF0aku-UfxF6GhQUffzAAdQXnWNQHhSdb8ZmyDbPHpwD-PCuyB12asFxD9g7iP0xoYi0NnoV21KjsSO-rHPpfUidJuG"/>
+</div>
+<div class="flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="mediterranean platter with hummus falafel and pita bread in warm earthy tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSBOk6AR1x-eyBQJzwHvHVQSzmGPV5phDST2xfdQN2m6cUSDPPIjuvVJccMd3kmyqFwglCSMuCwTbo-w5xDmkaqBG-KDPXqWZyKqD9lNu2ME_HaXMkakkFrhuHzFpnekb3L5s_SqEI0sk5egkSgV5wC8BCPYDNvFhF53chyCGyrUnmTPbLAOB79g_XM2lBW02xMD6_Hzvsj0muAiUxBLH-9YtX9zGfX0yZyWks7kBIplxhfYicrhh18xbH9sZfvG-oSGPT3PV_2b0o"/>
+</div>
+</div>
+</section>
+<!-- Wednesday (Empty - Blank Ticket) -->
+<section class="bg-transparent border border-outline-variant/30 rounded-[24px] p-5 flex items-center justify-between group cursor-pointer hover:bg-surface-container-low duration-200">
+<div>
+<h2 class="serif text-2xl font-bold text-on-surface/40 group-hover:text-on-surface duration-200">Wednesday, 14 Oct</h2>
+<p class="text-sm text-on-surface-variant/50">No meals planned yet</p>
+</div>
+<span class="material-symbols-outlined text-primary/40 group-hover:text-primary transition-colors">add_circle</span>
+</section>
+<!-- Thursday -->
+<section class="bg-surface-container-low rounded-[24px] overflow-hidden p-5 transition-transform duration-200 hover:scale-[1.01]">
+<div class="flex justify-between items-start mb-4">
+<h2 class="serif text-2xl font-bold text-on-surface opacity-80">Thursday, 15 Oct</h2>
+<div class="flex items-center gap-1.5 text-on-surface-variant/70">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-sm">110 min</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="aspect-square rounded-xl overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="roasted salmon with lemon and asparagus spears on a textured plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwlqP9GObDleH1pB7uuDDNtwf_yOCRT2UUne2MyTASWezH1PI1phfDJPv_KLw79DkeH7pm77LpZpsfTcWVuoVcR2eX410ZHpd6uI3DKA8fBzIcuTUloj-QSq3RzOGI9Gku83pvwLtL-sy5II91YAedQ7q3atZy3slWh-EiBkUdiHsJOmmEk9JzkW2AllAtpfLMQeI4kp5G92dJxCF6XhtTr-sDN1us_6fnFIoeIUJLGXcBYO4sDPGMiV-KeZnYxHrbTdSbD6wV8J7W"/>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="vibrant poke bowl with fresh tuna avocado and radish slices" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPEyYHcU3c78Ot9_ILQ-swXKn_4jz8vu1l19-O6YkR-lDVx6lkMb-wx_eAPQcnGQ3bE-JB6XF95FiMyrm9NEIeCzWUcFMhT2alBUPgUGvPeRCo5b81LXmtn0HYp6uV370xpMWUNPBablIiV8whchvYe9NF6hv2dK49UwzX1GV_HqXYGc9qf3kWzpZZr9jFs2r1gsumlvFoWblJlA13ewkEL9AMkguLLxho6HkiNQYZr08I9Bu4ZE0QKkqPyT-d8tK7dCaHVUVWKPEe"/>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="trio of mini gourmet donuts with elegant toppings and glazes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCi-KkUQOFfeezlqoYJYMgR-JGfGBnvhXjT1-rubP1pqLV10uWTX0Nz8dauDIqJFwdsSAqhkOJ2u0QrRbX6Kp2kkWmftXaNnXpHQGOP6bBLnsmuz068SeMjN7YyuYeZr07wHrd4yNLLesZR_XogFsXTuvyLaV-sqzxV3VT1hyvqBv80hilXL3ErjTuOUfVQQHKcn8VRO0qRGzSQlv8_TvRZ3dGajjM1tZ-WPaO4dsqyqp3Rk3DU9oKO8sB52vvVfzckgEx7gykNyRjF"/>
+</div>
+</div>
+</section>
+<!-- Friday -->
+<section class="bg-surface-container-low rounded-[24px] overflow-hidden p-5 transition-transform duration-200 hover:scale-[1.01]">
+<div class="flex justify-between items-start mb-4">
+<h2 class="serif text-2xl font-bold text-on-surface opacity-80">Friday, 16 Oct</h2>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-on-surface-variant/70">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-sm">25 min</span>
+</div>
+</div>
+</div>
+<div class="flex gap-2">
+<div class="w-full h-32 rounded-xl overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="thin crust italian pizza with buffalo mozzarella and fresh basil leaves" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApfgJh6dYcdoACvLKw-qzXX5j80SxQTgYAdXhiN7IaziiTn0ce75PT2lyi_N-oMAikC-aLVVA6qaF3x6WYlcZR_Sgyl_hkCcBeCCCOp3OWE7M9-S-GQ4OnIkbZTz0223VkJYKm3xTDOls3jRUvh2UWEoWbcMpce95RBvM1N11PxE7HJU7nG0XDkrbj7idisECgBsfxbPXNUs_w7wiRZ9Z_R_vobAC60wlfDER8AgamJnyt49_053JV044KwSKGorz3t6nVIMA6evqv"/>
+</div>
+</div>
+</section>
+<!-- Saturday (Empty - Blank Ticket) -->
+<section class="bg-transparent border border-outline-variant/30 rounded-[24px] p-5 flex items-center justify-between group cursor-pointer hover:bg-surface-container-low duration-200">
+<div>
+<h2 class="serif text-2xl font-bold text-on-surface/40 group-hover:text-on-surface duration-200">Saturday, 17 Oct</h2>
+<p class="text-sm text-on-surface-variant/50">Free Day</p>
+</div>
+<span class="material-symbols-outlined text-primary/40 group-hover:text-primary transition-colors">add_circle</span>
+</section>
+<!-- Sunday -->
+<section class="bg-surface-container-low rounded-[24px] overflow-hidden p-5 transition-transform duration-200 hover:scale-[1.01]">
+<div class="flex justify-between items-start mb-4">
+<h2 class="serif text-2xl font-bold text-on-surface opacity-80">Sunday, 18 Oct</h2>
+<div class="flex items-center gap-1.5 text-on-surface-variant/70">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-sm">180 min</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="h-32 rounded-xl overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="slow-cooked beef short ribs with creamy polenta and roasted carrots" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEDUVr744__DmYdxsmTVjZ4G7jo1MfQr-qzEebKkZXsdl29Wjou08JLXj4dUsl4HHSAi5jP44c5K45VAdLfXGgAy2VjZRJaduJFRdAscIekALMz3CmHG8W3tnEpKfFnKnAZBviVbada_pLQaWToktbGxThafPQ9Km_N4o7FPMjqt5Lhp3bqPA0MNtdvGh7CQg_j5wQvvHUnFBA2myfWk754k9Cn3OfCCD3PeSij5sVzQoq5eJAYtNCFA1hIKcvh50ryo2BCCMsXDPB"/>
+</div>
+<div class="h-32 rounded-xl overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="elegant dessert spread with french macarons and petit fours on marble" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKkG0DT2uemRSm8Rl_QhL0MdxRWhBJM2Bt5O-iGkWFOBFKY-8etH65ee9dgQw_aFGunRTI0JdF1vTvrxm11bzS4j57VhnCtaRecIg658nDajU1_WIvZXTxL5MA299l6QIrKIqJsAj-ETQNeZejyn4ndE64Bm9lNCMpyBb0OlA8ZhaSCXyvep3oZfJmg1736sMBrCpXubrSCj1ituZwOt-fcBNTNawh2G4JWjGCbMD2bhB7T84jcr7g712LxlRSQJBPDenNHUO9yTpw"/>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 liquid-glass border-t border-outline-variant/10 shadow-[0_-12px_40px_rgba(29,27,24,0.06)]">
+<div class="flex justify-around items-center w-full px-4 h-20 pb-safe">
+<button class="flex flex-col items-center justify-center text-stone-500 hover:text-orange-800 duration-200 scale-95">
+<span class="material-symbols-outlined">explore</span>
+<span class="text-[13px] font-medium tracking-tight mt-1">Discover</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 hover:text-orange-800 duration-200 scale-95">
+<span class="material-symbols-outlined">search</span>
+<span class="text-[13px] font-medium tracking-tight mt-1">Search</span>
+</button>
+<button class="flex flex-col items-center justify-center text-orange-900 bg-orange-100/50 rounded-xl px-4 py-1.5 duration-200 scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">event_note</span>
+<span class="text-[13px] font-semibold tracking-tight mt-1">Plan</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 hover:text-orange-800 duration-200 scale-95">
+<span class="material-symbols-outlined">shopping_basket</span>
+<span class="text-[13px] font-medium tracking-tight mt-1">Grocery</span>
+</button>
+<button class="flex flex-col items-center justify-center text-stone-500 hover:text-orange-800 duration-200 scale-95">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="text-[13px] font-medium tracking-tight mt-1">Cook</span>
+</button>
+</div>
+</nav>
+</body></html>
