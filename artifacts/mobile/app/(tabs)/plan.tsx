@@ -729,16 +729,19 @@ export default function PlanScreen() {
                               accessibilityLabel={`${slot.meal.recipeName}`}
                             >
                               <Image source={{ uri: slot.meal.recipeImage }} style={styles.pastThumbImage} />
-                              <View style={styles.pastGrayOverlay} />
+                              <View style={styles.pastGrayOverlay} pointerEvents="none" />
                             </Pressable>
                           ) : (
                             <Pressable
-                              onPress={() => openPicker(day.date, slot.courseType)}
-                              style={[styles.pastThumbSquare, styles.pastEmptySlot, { borderColor: `${colors.outlineVariant}50` }]}
+                              onPress={() => {
+                                openPicker(day.date, slot.courseType);
+                              }}
+                              style={[styles.pastThumbSquare, styles.pastEmptySlot, { borderColor: colors.outlineVariant }]}
                               accessibilityRole="button"
                               accessibilityLabel={`Add ${slot.label}`}
+                              hitSlop={8}
                             >
-                              <MaterialCommunityIcons name="plus" size={24} color={`${colors.primary}66`} />
+                              <MaterialCommunityIcons name="plus" size={24} color={`${colors.primary}80`} />
                             </Pressable>
                           )}
                           <Text style={[Typography.caption, {
@@ -1499,6 +1502,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: 72,
   },
   pastDayHeader: {
     flexDirection: 'row',
@@ -1539,8 +1543,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.15)',
   },
   pastEmptySlot: {
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    backgroundColor: 'transparent',
+    borderWidth: 1.5,
   },
 });
