@@ -680,21 +680,21 @@ export default function PlanScreen() {
                       onPress={() => openPicker(day.date, 'main')}
                       style={[
                         styles.weekEmptyCard,
-                        { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40`, borderWidth: 1 },
+                        { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40`, borderWidth: 1, opacity: 0.6 },
                       ]}
                       accessibilityRole="button"
                       accessibilityLabel={`Add meal for ${day.dayLabel}`}
                     >
                       <View>
-                        <Text style={[Typography.headline, { color: colors.onSurface, opacity: 0.4, fontSize: 20 }]}>
+                        <Text style={[Typography.headline, { color: colors.onSurface, opacity: 0.35, fontSize: 20 }]}>
                           {day.dayLabel}, {formatDateLabel(day.date)}
                         </Text>
-                        <Text style={[Typography.caption, { color: colors.outline, opacity: 0.5, marginTop: 2 }]}>
+                        <Text style={[Typography.caption, { color: colors.outline, opacity: 0.4, marginTop: 2 }]}>
                           No meals logged
                         </Text>
                       </View>
                       <View style={[styles.weekAddCircle, { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40` }]}>
-                        <MaterialCommunityIcons name="plus" size={24} color={`${colors.primary}66`} />
+                        <MaterialCommunityIcons name="plus" size={24} color={`${colors.primary}44`} />
                       </View>
                     </Pressable>
                   );
@@ -707,11 +707,11 @@ export default function PlanScreen() {
                     intensity={30}
                   >
                     <View style={styles.pastDayHeader}>
-                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20, opacity: 0.9 }]}>
+                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20, opacity: 0.45 }]}>
                         {day.dayLabel}, {formatDateLabel(day.date)}
                       </Text>
                       {totalTime > 0 && (
-                        <View style={[styles.pastTimePill, { backgroundColor: `${colors.surface}99`, borderColor: `${colors.outlineVariant}30` }]}>
+                        <View style={[styles.pastTimePill, { backgroundColor: `${colors.surface}99`, borderColor: `${colors.outlineVariant}30`, opacity: 0.5 }]}>
                           <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
                           <Text style={[Typography.caption, { color: colors.outline, fontWeight: '500', fontSize: 13 }]}>
                             {formatCookTime(totalTime)}
@@ -727,7 +727,8 @@ export default function PlanScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={allMeals[0].recipeName}
                       >
-                        <Image source={{ uri: allMeals[0].recipeImage }} style={styles.pastImageFill} />
+                        <Image source={{ uri: allMeals[0].recipeImage }} style={[styles.pastImageFill, { opacity: 0.5 }]} />
+                        <View style={styles.pastDesatOverlay} pointerEvents="none" />
                       </Pressable>
                     )}
 
@@ -741,7 +742,8 @@ export default function PlanScreen() {
                             accessibilityRole="button"
                             accessibilityLabel={meal.recipeName}
                           >
-                            <Image source={{ uri: meal.recipeImage }} style={styles.pastImageFill} />
+                            <Image source={{ uri: meal.recipeImage }} style={[styles.pastImageFill, { opacity: 0.5 }]} />
+                            <View style={styles.pastDesatOverlay} pointerEvents="none" />
                           </Pressable>
                         ))}
                       </View>
@@ -757,7 +759,8 @@ export default function PlanScreen() {
                             accessibilityRole="button"
                             accessibilityLabel={meal.recipeName}
                           >
-                            <Image source={{ uri: meal.recipeImage }} style={styles.pastImageFill} />
+                            <Image source={{ uri: meal.recipeImage }} style={[styles.pastImageFill, { opacity: 0.5 }]} />
+                            <View style={styles.pastDesatOverlay} pointerEvents="none" />
                           </Pressable>
                         ))}
                       </View>
@@ -1672,5 +1675,9 @@ const styles = StyleSheet.create({
   pastImageFill: {
     width: '100%',
     height: '100%',
+  },
+  pastDesatOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(200,190,180,0.25)',
   },
 });
