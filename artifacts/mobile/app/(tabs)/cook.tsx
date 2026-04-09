@@ -12,6 +12,7 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
+import { PressableScale } from '@/components/PressableScale';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
@@ -285,7 +286,7 @@ export default function CookScreen() {
 
         {heroRecipe && (
           <View style={styles.ctaSection}>
-            <Pressable
+            <PressableScale
               onPress={() => {
                 if (hasActiveSession) {
                   router.push(`/cook-mode/${activeCookSession!.recipeId}`);
@@ -301,12 +302,14 @@ export default function CookScreen() {
               style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
               accessibilityRole="button"
               accessibilityLabel={hasActiveSession ? 'Continue cooking' : 'Start cooking'}
+              scaleDown={0.98}
+              haptic="medium"
             >
               <Text style={[Typography.titleMedium, { color: colors.onPrimary, letterSpacing: -0.3 }]}>
                 {hasActiveSession ? 'Continue Cooking' : 'Start Cooking'}
               </Text>
               <MaterialCommunityIcons name="arrow-right" size={20} color={colors.onPrimary} />
-            </Pressable>
+            </PressableScale>
             {hasDinnerParty && !hasActiveSession && todayParty && (
               <Pressable
                 onPress={() => router.push(`/dinner-setup?date=${todayDate}`)}
@@ -411,7 +414,7 @@ export default function CookScreen() {
             contentContainerStyle={{ paddingHorizontal: Spacing.page, gap: Spacing.md }}
           >
             {TECHNIQUES.map((tech) => (
-              <Pressable key={tech.id} onPress={() => router.push(`/technique/${tech.id}`)} style={styles.techCard} accessibilityRole="button" accessibilityLabel={`${tech.title}, ${tech.duration}`}>
+              <PressableScale key={tech.id} onPress={() => router.push(`/technique/${tech.id}`)} style={styles.techCard} accessibilityRole="button" accessibilityLabel={`${tech.title}, ${tech.duration}`} scaleDown={0.96}>
                 <Image
                   source={{ uri: tech.image }}
                   style={StyleSheet.absoluteFill}
@@ -436,7 +439,7 @@ export default function CookScreen() {
                     {tech.subtitle}
                   </Text>
                 </View>
-              </Pressable>
+              </PressableScale>
             ))}
           </ScrollView>
         </View>

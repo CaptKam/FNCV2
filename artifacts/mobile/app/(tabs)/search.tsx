@@ -17,6 +17,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { HeaderBar } from '@/components/HeaderBar';
+import { PressableScale } from '@/components/PressableScale';
 import { DestinationCard } from '@/components/DestinationCard';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
@@ -244,11 +245,12 @@ export default function SearchScreen() {
         <View style={styles.grid}>
           {filteredRecipes.map((recipe, index) => (
             <AnimatedListItem key={recipe.id} index={index}>
-              <Pressable
+              <PressableScale
                 onPress={() => router.push(`/recipe/${recipe.id}`)}
                 style={[styles.card, { width: CARD_WIDTH }]}
                 accessibilityRole="button"
                 accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
+                scaleDown={0.97}
               >
                 <View style={styles.imageWrapper}>
                   <Image
@@ -287,7 +289,7 @@ export default function SearchScreen() {
                     {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
                   </Text>
                 </View>
-              </Pressable>
+              </PressableScale>
             </AnimatedListItem>
           ))}
         </View>

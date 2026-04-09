@@ -17,6 +17,7 @@ import { Shadows } from '@/constants/shadows';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
+import { PressableScale } from '@/components/PressableScale';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
 
 import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
@@ -61,10 +62,11 @@ function MealCard({
   colors: ReturnType<typeof useThemeColors>;
 }) {
   const card = (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`${meal.recipeName}, ${meal.cookTime} minutes`}
+      scaleDown={0.97}
     >
       <GlassView style={styles.mealCard}>
         <View>
@@ -123,7 +125,7 @@ function MealCard({
           </View>
         </View>
       </GlassView>
-    </Pressable>
+    </PressableScale>
   );
 
   if (!onRemove) return card;

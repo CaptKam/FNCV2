@@ -27,6 +27,7 @@ import { OVERLAY_BUTTON } from '@/constants/icons';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
+import { PressableScale } from '@/components/PressableScale';
 import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
 import { countries } from '@/data/countries';
 import { recipes, Recipe } from '@/data/recipes';
@@ -205,11 +206,12 @@ export default function DiscoverScreen() {
         {/* ═══ ROW 2: TONIGHT'S PLAN (conditional) ═══ */}
         {showTonightStrip && tonightMeal && tonightRecipe && (
           <Animated.View entering={enterDelay(0)} style={{ paddingHorizontal: GRID_PAD, marginBottom: GRID_GAP }}>
-            <Pressable
+            <PressableScale
               onPress={() => router.push(`/recipe/${tonightRecipe.id}`)}
               style={[styles.tonightCard, { backgroundColor: colors.surfaceContainerLow }]}
               accessibilityRole="button"
               accessibilityLabel={`Tonight: ${tonightMeal.recipeName}`}
+              scaleDown={0.97}
             >
               <Image
                 source={{ uri: tonightMeal.recipeImage }}
@@ -250,7 +252,7 @@ export default function DiscoverScreen() {
               >
                 <MaterialCommunityIcons name="close" size={16} color={colors.onSurfaceVariant} />
               </Pressable>
-            </Pressable>
+            </PressableScale>
           </Animated.View>
         )}
 
@@ -329,11 +331,12 @@ export default function DiscoverScreen() {
         <View style={[styles.bentoRow, { paddingHorizontal: GRID_PAD, gap: GRID_GAP, marginBottom: GRID_GAP }]}>
           {/* XP Card */}
           <Animated.View entering={enterDelay(120)} style={{ flex: 1 }}>
-            <Pressable
+            <PressableScale
               onPress={() => router.push('/profile')}
               style={[styles.xpCard, { backgroundColor: colors.surfaceContainerLow }]}
               accessibilityRole="button"
               accessibilityLabel={`Level ${level}, ${xp} XP`}
+              scaleDown={0.97}
             >
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: Spacing.xs }}>
                 <Text style={[Typography.labelSmall, { color: colors.warning, letterSpacing: 1 }]}>LEVEL {level}</Text>
@@ -342,21 +345,22 @@ export default function DiscoverScreen() {
               <View style={[styles.xpBarTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
                 <View style={[styles.xpBarFill, { backgroundColor: colors.warning, width: `${progress * 100}%` }]} />
               </View>
-            </Pressable>
+            </PressableScale>
           </Animated.View>
 
           {/* Stats/Streak Card */}
           <Animated.View entering={enterDelay(180)} style={{ flex: 1 }}>
-            <Pressable
+            <PressableScale
               onPress={() => router.push('/profile')}
               style={[styles.streakCard, { backgroundColor: colors.primary }]}
               accessibilityRole="button"
               accessibilityLabel={`${totalRecipesCooked} recipes cooked`}
+              scaleDown={0.97}
             >
               <MaterialCommunityIcons name="fire" size={24} color="#FFFFFF" />
               <Text style={[Typography.headline, { color: '#FFFFFF', fontSize: 20 }]}>{totalRecipesCooked} cooked</Text>
               <Text style={[Typography.caption, { color: 'rgba(255,255,255,0.7)', letterSpacing: 1 }]}>{exploredCountries} COUNTRIES</Text>
-            </Pressable>
+            </PressableScale>
           </Animated.View>
         </View>
 
@@ -401,11 +405,12 @@ export default function DiscoverScreen() {
         <View style={[styles.recipeGrid, { paddingHorizontal: GRID_PAD, gap: GRID_GAP }]}>
           {gridRecipes.slice(0, visibleCount).map((recipe, index) => (
             <AnimatedListItem key={recipe.id} index={index}>
-              <Pressable
+              <PressableScale
                 onPress={() => router.push(`/recipe/${recipe.id}`)}
                 style={[styles.recipeCard, { width: CELL_WIDTH, backgroundColor: colors.surfaceContainerLow }]}
                 accessibilityRole="button"
                 accessibilityLabel={`${recipe.title}, ${formatCookTime(recipe.prepTime + recipe.cookTime)}`}
+                scaleDown={0.97}
               >
                 <View style={styles.recipeImageWrap}>
                   <Image
@@ -455,7 +460,7 @@ export default function DiscoverScreen() {
                     </Text>
                   </View>
                 </View>
-              </Pressable>
+              </PressableScale>
             </AnimatedListItem>
           ))}
         </View>

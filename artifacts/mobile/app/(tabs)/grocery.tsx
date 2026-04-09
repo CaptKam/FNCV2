@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert, Animated as RNAnimated } from 'react-native';
-import Animated, { FadeInDown, FadeOutDown, useReducedMotion } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutDown, FadeOut, LinearTransition, useReducedMotion } from 'react-native-reanimated';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -615,8 +615,12 @@ export default function GroceryScreen() {
               const scaledAmount = getScaledAmount(item);
               const isManual = item.recipeNames.length === 0;
               return (
-                <Swipeable
+                <Animated.View
                   key={item.id}
+                  exiting={reduceMotion ? undefined : FadeOut.duration(200)}
+                  layout={reduceMotion ? undefined : LinearTransition.springify().damping(18).stiffness(150)}
+                >
+                <Swipeable
                   renderLeftActions={(progress: RNAnimated.AnimatedInterpolation<number>) => (
                     <RNAnimated.View style={[styles.swipeAction, { backgroundColor: colors.success, opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }) }]}>
                       <MaterialCommunityIcons name="check" size={20} color="#FFFFFF" />
@@ -715,6 +719,7 @@ export default function GroceryScreen() {
                   <Checkbox checked={item.checked} onToggle={() => app.toggleGroceryItem(item.id)} />
                 </PressableScale>
                 </Swipeable>
+                </Animated.View>
               );
             })}
           </View>
