@@ -17,12 +17,11 @@ import { OVERLAY_BUTTON } from '@/constants/icons';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
-import { SmartCookBar } from '@/components/SmartCookBar';
+
 import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
 import { NutritionInfo } from '@/data/nutrition';
-import { calculateCookReadiness } from '@/utils/cookReadiness';
 import { todayLocal, dateToLocal, addDays, getMonday, formatDateShort as formatDateLabel } from '@/utils/dates';
 
 // ─── Helpers ───
@@ -939,10 +938,6 @@ export default function PlanScreen() {
         )}
       </ScrollView>
 
-      {/* Smart Cook Bar — adapts to grocery readiness, timing, and dinner party */}
-      <View style={[styles.readyCTA, { bottom: 100, left: 0, right: 0 }]}>
-        <SmartCookBar variant="floating" />
-      </View>
 
       {/* Auto-generate FAB — only visible when there are empty days to fill */}
       {(() => {
@@ -1386,17 +1381,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
     marginTop: Spacing.sm,
-  },
-  readyCTA: {
-    position: 'absolute',
-  },
-  readyCTAInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    borderRadius: Radius.full,
   },
   playCircle: {
     width: 32,
