@@ -1,12 +1,12 @@
 # FORK & COMPASS
 
-## Master Blueprint V3
+## Master Blueprint V4
 
 **Product Vision · Design System · Glassmorphic UI · Architecture · Systems Roadmap**
 
 *Pick a country, cook a dinner, feel like you traveled.*
 
-Confidential · Version 3.0 · April 2026 · Solo Founder: Kam
+Confidential · Version 4.0 · April 2026 · Solo Founder: Kam
 
 voyageapron.com
 
@@ -307,15 +307,17 @@ Haptic feedback is purposeful and sparse. A light tap on bookmark. A medium impa
 | Framework | Expo (managed workflow) | SDK 54 |
 | Router | expo-router (file-based) | ~6.0.17 |
 | Language | TypeScript | 5.x |
-| State | React Context + AsyncStorage | — |
+| State | React Context (AppContext + ThemeContext + BookmarksContext) + AsyncStorage | — |
 | Images | expo-image | — |
 | Effects | expo-blur, expo-linear-gradient | — |
 | Haptics | expo-haptics | — |
 | Keep Awake | expo-keep-awake | v15 |
 | Keyboard | react-native-keyboard-controller | v1.18.5 |
 | Gestures | react-native-gesture-handler | — |
+| Animations | react-native-reanimated | — |
 | Data fetching | @tanstack/react-query | — |
 | Splash | expo-splash-screen | — |
+| Storage | @react-native-async-storage/async-storage (via `utils/storage.ts`) | — |
 
 ## 4.2 Provider Stack (`app/_layout.tsx`)
 
@@ -326,32 +328,46 @@ SafeAreaProvider
             └─ GestureHandlerRootView
                  └─ ThemeProvider
                       └─ BookmarksProvider
-                           └─ KeyboardProvider
-                                └─ <Stack> navigator
+                           └─ AppProvider
+                                └─ KeyboardProvider
+                                     └─ OnboardingGuard
+                                          ├─ <Stack> navigator (RootLayoutNav)
+                                          └─ CookingPill (floating indicator)
 ```
+
+`OnboardingGuard` checks `hasCompletedOnboarding` from AppContext. If the user hasn't completed onboarding, they're redirected to `/onboarding`. Once complete, they're routed to `/(tabs)`.
 
 ## 4.3 Navigation Structure
 
 ```
 Root Stack
-├── (tabs)/           # Tab navigator
-│   ├── index         # Discover
-│   ├── search        # Search
-│   ├── plan          # Plan
-│   ├── grocery       # Grocery
-│   └── cook          # Cook
-├── country/[id]      # Country Detail (push)
-├── recipe/[id]       # Recipe Detail (push)
-├── cook-mode/[id]    # Cook Mode (fullScreenModal)
-├── profile           # Profile & Settings (modal)
-└── bookmarks         # Bookmarks (push)
+├── onboarding           # Onboarding (3-step flow, no gesture back)
+├── (tabs)/              # Tab navigator
+│   ├── index            # Discover
+│   ├── search           # Search
+│   ├── plan             # Plan
+│   ├── grocery          # Grocery
+│   └── cook             # Cook
+├── country/[id]         # Country Detail (push)
+├── recipe/[id]          # Recipe Detail (push)
+├── technique/[id]       # Technique Detail (push)
+├── cook-mode/[id]       # Cook Mode (fullScreenModal)
+├── dinner-setup         # Dinner Party Setup (push)
+├── cooking-schedule     # Multi-Course Cooking Schedule (push)
+├── dinner-complete      # Dinner Complete Celebration (push)
+├── profile              # Profile & Settings (modal)
+└── bookmarks            # Bookmarks (push)
 ```
 
 ## 4.4 Data Layer
 
 - `data/countries.ts` — 8 countries with `id`, `name`, `flag`, `region`, `heroImage`, `cuisineLabel`, `description`
-- `data/recipes.ts` — 97 recipes with `id`, `countryId`, `title`, `image`, `category`, `prepTime`, `cookTime`, `servings`, `difficulty`, `ingredients[]`, `steps[]`, `culturalNote`
-- Ingredient model: `{ name: string; amount: string; category: Category }` — amount is a **display string** (e.g., "400g", "2 tbsp, freshly cracked"), NOT a numeric value
+- `data/recipes.ts` — 97 recipes with `id`, `countryId`, `title`, `image`, `category`, `prepTime`, `cookTime`, `servings`, `difficulty`, `ingredients[]`, `steps[]`, `culturalNote`, `nutrition`, `allergens[]`. Each step has `instruction`, `instructionFirstSteps?`, `instructionChefsTable?`, `duration?`. Allergens are auto-detected from ingredient names via `utils/allergens.ts`.
+- `data/nutrition.ts` — Per-recipe nutrition data (`calories`, `protein`, `carbs`, `fat`) keyed by recipe ID
+- `data/techniques.ts` — Cooking technique articles for the Cook tab technique library
+- `data/substitutions.ts` — Ingredient substitution suggestions shown in Recipe Detail
+- `data/helpers.ts` — Lookups, `formatCookTime()`, `convertAmount()` (metric/imperial), `getInstructionForLevel()`
+- Ingredient model: `{ name: string; amount: string; category: Category; substitutions?: string[] }` — amount is a **display string** (e.g., "400g", "2 tbsp, freshly cracked") parsed numerically by `parseAmountParts()` in AppContext and `parseAmount()` in `utils/groceryScaling.ts`
 
 ---
 
@@ -363,75 +379,109 @@ Root Stack
 
 | Feature | Status |
 |---------|--------|
-| Hero carousel (5 countries, paginated FlatList) | IMPLEMENTED |
-| Vertical pagination dots | IMPLEMENTED |
-| "Explore [Country]" CTA → Country Detail | IMPLEMENTED |
-| Tonight's Plan strip (first recipe) | IMPLEMENTED |
-| Curated Regions grid (DestinationCard) | IMPLEMENTED |
-| Trending Bites grid (RecipeCard) | IMPLEMENTED |
+| Hero carousel (8 countries, paginated FlatList, swipeable) | IMPLEMENTED |
+| Tappable pagination dots | IMPLEMENTED |
+| "Let's Go" CTA → Country Detail | IMPLEMENTED |
+| Tonight's Plan strip (conditional: after noon, dismissible per day) | IMPLEMENTED |
+| "Cook" CTA on Tonight strip → starts session and opens Cook Mode | IMPLEMENTED |
+| Cuisine filter chips (All + per-country, filter recipe grid) | IMPLEMENTED |
+| Two-column recipe grid with lazy pagination (+8 on scroll) | IMPLEMENTED |
+| Bookmark heart (wired to BookmarksContext) on grid cards | IMPLEMENTED |
+| "Add to Plan" overlay button → AddToPlanSheet (date picker) | IMPLEMENTED |
+| XP/Level card → Profile | IMPLEMENTED |
+| Stats card (recipes cooked, countries explored) | IMPLEMENTED |
+| Pull-to-refresh (shuffles grid, advances hero) | IMPLEMENTED |
+| `useReducedMotion()` for entry animations | IMPLEMENTED |
 | HeaderBar (transparent mode) | IMPLEMENTED |
 
 ## 5.2 Search (`/(tabs)/search`)
 
-**Purpose:** Find recipes by text query and mood filters.
+**Purpose:** Find recipes by text query, mood filters, and allergen exclusions.
 
 | Feature | Status |
 |---------|--------|
 | Text search (title + ingredient name matching) | IMPLEMENTED |
 | Mood filter chips (7 moods with filter logic) | IMPLEMENTED |
+| Allergen exclusion filter chips (9 allergens) | IMPLEMENTED |
+| User allergen profile awareness (highlights user's allergens) | IMPLEMENTED |
 | Two-column recipe grid with images | IMPLEMENTED |
-| "ADD +" action on cards | IMPLEMENTED (navigates to recipe detail) |
-| Heart/bookmark button on cards | IMPLEMENTED (UI only — not wired to BookmarksContext) |
+| Bookmark heart (wired to BookmarksContext) on grid cards | IMPLEMENTED |
+| "Add to Plan" overlay button → AddToPlanSheet | IMPLEMENTED |
+| Empty state with country suggestions | IMPLEMENTED |
+| Result count display | IMPLEMENTED |
 | HeaderBar (frosted glass) | IMPLEMENTED |
 
 ## 5.3 Plan (`/(tabs)/plan`)
 
-**Purpose:** Weekly meal planner with daily/weekly views.
+**Purpose:** Weekly meal planner with daily/weekly views, real calendar dates, and course slots.
 
 | Feature | Status |
 |---------|--------|
-| Weekly view with day selector strip | IMPLEMENTED |
-| Daily view with meal time slots (Breakfast/Lunch/Dinner) | IMPLEMENTED |
-| Week picker dropdown (This Week / Next Week / Past) | IMPLEMENTED (UI only — no data change) |
-| Course slots (Appetizer, Dessert, Drink Pairings) | IMPLEMENTED (UI only — non-functional) |
-| Multi-meal toggle | IMPLEMENTED (UI only) |
-| Adding/removing recipes to days | NOT BUILT — data is hardcoded constants |
-| Auto-generate itinerary from country | NOT BUILT |
-| Recipe picker modal for empty slots | NOT BUILT |
-| Persistent itinerary state | NOT BUILT |
+| Weekly view with 7-day card list | IMPLEMENTED |
+| Daily view with meal time slots (Appetizer/Dinner/Dessert) | IMPLEMENTED |
+| Week picker dropdown (This Week / Next Week / Past) | IMPLEMENTED |
+| Week navigation arrows (shift ±1 week) | IMPLEMENTED |
+| Day selector strip (M–S circles with dots for planned days) | IMPLEMENTED |
+| Course slots (Appetizer, Main, Dessert) per day | IMPLEMENTED |
+| Multi-meal toggle (daily view) | IMPLEMENTED |
+| Tap empty slot → RecipePickerSheet (search + browse + pick) | IMPLEMENTED |
+| Add recipe to specific day + course | IMPLEMENTED |
+| Remove recipe from day (overlay button + swipe-to-remove) | IMPLEMENTED |
+| Swap recipe (overlay button → opens picker for same slot) | IMPLEMENTED |
+| Auto-generate week (fill selected days with random recipes) | IMPLEMENTED |
+| Quick-gen modal (choose course preference: main only or full) | IMPLEMENTED |
+| Undo support (snapshot + restore itinerary + grocery) | IMPLEMENTED |
+| Toast notifications (add/remove/undo actions) | IMPLEMENTED |
+| First-time plan hint (auto-dismissed on first meal add) | IMPLEMENTED |
+| Real calendar dates via `utils/dates.ts` (local timezone) | IMPLEMENTED |
+| Persistent itinerary state (AsyncStorage via AppContext) | IMPLEMENTED |
+| Two-way plan ↔ grocery sync (add to plan auto-adds grocery) | IMPLEMENTED |
 | HeaderBar (frosted glass) | IMPLEMENTED |
 
 ## 5.4 Grocery (`/(tabs)/grocery`)
 
-**Purpose:** Smart grocery list aggregated from active recipes.
+**Purpose:** Smart grocery list aggregated from planned recipes with scaling and manual entry.
 
 | Feature | Status |
 |---------|--------|
-| Categorized ingredient list (6 categories) | IMPLEMENTED |
-| Checkbox toggle per ingredient | IMPLEMENTED |
-| Active recipe source carousel | IMPLEMENTED |
-| Per-recipe servings adjuster (+/- buttons) | IMPLEMENTED (UI only — does not scale amounts) |
-| Remove recipe from list | IMPLEMENTED |
-| Ingredient deduplication by name | PARTIAL — deduplicates but does not sum amounts |
-| Online/In-Store toggle | IMPLEMENTED |
-| Retailer selector with zip code | IMPLEMENTED (UI only — no real integration) |
-| Sticky bottom order bar | IMPLEMENTED (hardcoded $47.50 estimate) |
-| Eco banner (CO₂ savings) | IMPLEMENTED |
-| Tab badge for unchecked count | NOT BUILT — state is screen-local |
+| Categorized ingredient list (5 categories: produce, protein, dairy, spice, pantry) | IMPLEMENTED |
+| Checkbox toggle per ingredient (swipeable rows) | IMPLEMENTED |
+| Active recipe source carousel (horizontal cards) | IMPLEMENTED |
+| Per-recipe serving stepper (+/- buttons, scales amounts) | IMPLEMENTED |
+| Remove recipe from grocery + plan (with undo) | IMPLEMENTED |
+| Ingredient deduplication by name with quantity aggregation | IMPLEMENTED |
+| Amount parsing (`parseAmountParts`) + unit normalization + aggregation | IMPLEMENTED |
+| Serving-aware scaling via `utils/groceryScaling.ts` (`computeScaledAmount`) | IMPLEMENTED |
+| Metric/imperial conversion via `convertAmount()` | IMPLEMENTED |
+| Manual item entry (text input, auto-categorized) | IMPLEMENTED |
+| Online/In-Store toggle (In-Store = checklist, Online = Coming Soon) | IMPLEMENTED |
+| Clear checked items | IMPLEMENTED |
+| Clear all items (with confirmation alert) | IMPLEMENTED |
+| Tab badge for unchecked count (from AppContext in `_layout.tsx`) | IMPLEMENTED |
+| Undo/restore with toast (snapshot itinerary + grocery) | IMPLEMENTED |
+| First-time grocery hint (auto-dismissed) | IMPLEMENTED |
+| Empty state with manual input + "Browse Recipes" CTA | IMPLEMENTED |
 | HeaderBar (frosted glass) | IMPLEMENTED |
 
 ## 5.5 Cook (`/(tabs)/cook`)
 
-**Purpose:** Cooking hub with reputation, technique library, and session resume.
+**Purpose:** Cooking hub with active session resume, dinner party awareness, technique library, and XP progress.
 
 | Feature | Status |
 |---------|--------|
-| Kitchen Reputation profile (level, XP, progress bar) | IMPLEMENTED (hardcoded values) |
-| Active cook session card with "Resume Session" | IMPLEMENTED (hardcoded to `recipes[3]`) |
-| Technique Library horizontal carousel | IMPLEMENTED |
-| Upcoming Class card | IMPLEMENTED (static) |
-| Pantry stocked percentage | IMPLEMENTED (hardcoded 73%) |
-| Profile link (avatar → /profile) | IMPLEMENTED |
+| Active cook session hero card (reads real session from AppContext) | IMPLEMENTED |
+| "Continue Cooking" / "Start Cooking" CTA | IMPLEMENTED |
+| Tonight's dinner plan awareness (from AppContext `getTodaysMeals()`) | IMPLEMENTED |
+| Dinner party awareness (guest count, RSVP stats, party start) | IMPLEMENTED |
+| "Review Party Details" → dinner-setup | IMPLEMENTED |
+| Kitchen readiness checklist (3 items, persisted via AppContext) | IMPLEMENTED |
+| XP progress bar + level name | IMPLEMENTED |
+| Recipes cooked stat (from AppContext `totalRecipesCooked`) | IMPLEMENTED |
+| Technique Library horizontal carousel → technique/[id] | IMPLEMENTED |
+| "View Saved" → bookmarks | IMPLEMENTED |
+| First-time cook hint (auto-dismissed on first session) | IMPLEMENTED |
+| Dinner Party card (guests, country theme) | IMPLEMENTED |
+| Empty hero state ("Ready when you are") | IMPLEMENTED |
 | HeaderBar (frosted glass) | IMPLEMENTED |
 
 ## 5.6 Country Detail (`/country/[id]`)
@@ -444,57 +494,145 @@ Root Stack
 | Culinary Heritage description | IMPLEMENTED |
 | Signature Recipes list (filtered by countryId) | IMPLEMENTED |
 | Back button (GlassView) | IMPLEMENTED |
-| "Add to Plan" action | NOT BUILT |
+| "Add to Plan" action on recipe cards | IMPLEMENTED |
 
 ## 5.7 Recipe Detail (`/recipe/[id]`)
 
-**Purpose:** Full recipe view with ingredients, steps, and cooking CTA.
+**Purpose:** Full recipe view with ingredients, steps, cooking CTA, and plan/grocery actions.
 
 | Feature | Status |
 |---------|--------|
 | Hero image with country flag | IMPLEMENTED |
 | Stats row (prep, cook, difficulty, servings) | IMPLEMENTED |
-| Servings adjuster (+/- buttons) | IMPLEMENTED (UI only — does not scale ingredient amounts) |
-| Ingredients grouped by category | IMPLEMENTED |
+| Servings adjuster (+/- buttons, scales ingredient amounts) | IMPLEMENTED |
+| Ingredients grouped by category with checkboxes | IMPLEMENTED |
+| Ingredient substitution suggestions (expandable per ingredient) | IMPLEMENTED |
 | Step-by-step instructions with durations | IMPLEMENTED |
+| Adaptive cooking language (First Steps / Home Cook / Chef's Table) | IMPLEMENTED |
 | Cultural Note section | IMPLEMENTED |
-| Bookmark toggle (heart icon) | IMPLEMENTED (wired to BookmarksContext) |
-| "Start Cooking" CTA → Cook Mode | IMPLEMENTED |
-| "Add to Plan" action | NOT BUILT |
-| "Add to Grocery" action | NOT BUILT |
+| Nutrition info display (calories, protein, carbs, fat) | IMPLEMENTED |
+| Allergen warnings with dietary conflict detection | IMPLEMENTED |
+| Bookmark toggle (heart icon, wired to BookmarksContext) | IMPLEMENTED |
+| "Start Cooking" CTA → starts session in AppContext → Cook Mode | IMPLEMENTED |
+| "Add to Plan" sheet (pick day + course type from next 14 days) | IMPLEMENTED |
+| "Add to Grocery" action (adds ingredients to AppContext grocery) | IMPLEMENTED |
+| Metric/imperial toggle (from AppContext `useMetric`) | IMPLEMENTED |
 
 ## 5.8 Cook Mode (`/cook-mode/[id]`)
 
-**Purpose:** Distraction-free step-by-step cooking with timers.
+**Purpose:** Distraction-free step-by-step cooking with timers and session persistence.
 
 | Feature | Status |
 |---------|--------|
 | Full-screen dark UI | IMPLEMENTED |
-| Step instruction display | IMPLEMENTED |
+| Step instruction display with culinary verb highlighting | IMPLEMENTED |
 | Progress bar (step/total) | IMPLEMENTED |
 | Countdown timer (per-step durations) | IMPLEMENTED |
 | Timer play/pause/reset | IMPLEMENTED |
+| Timer state persistence (activeTimerStart/Duration in AppContext) | IMPLEMENTED |
 | Contextual ingredient pills (matched to current step) | IMPLEMENTED |
-| Previous/Next step navigation | IMPLEMENTED |
-| Swipe gestures for step navigation | NOT BUILT — button-based prev/next only |
+| Previous/Next step navigation (buttons) | IMPLEMENTED |
 | Haptic feedback (step changes, timer completion) | IMPLEMENTED |
-| Keep-awake (screen stays on) | IMPLEMENTED |
-| Servings scaler | NOT BUILT |
-| Session persistence (resume after leaving) | NOT BUILT — state resets on unmount |
+| Keep-awake (screen stays on via expo-keep-awake) | IMPLEMENTED |
+| Session persistence (survives app restart via AppContext + AsyncStorage) | IMPLEMENTED |
+| Session resume (auto-restores step + timer on re-open) | IMPLEMENTED |
+| "Finish Cooking" at last step → complete session, award XP, add passport stamp | IMPLEMENTED |
+| Metric/imperial conversion on ingredient pills | IMPLEMENTED |
+| Swipe gestures for step navigation | NOT BUILT — button-based prev/next only |
+| Servings scaler in cook mode UI | NOT BUILT |
 
-## 5.9 Profile (`/profile`)
+## 5.9 Onboarding (`/onboarding`)
+
+**Purpose:** 3-step personalization flow for new users.
+
+| Feature | Status |
+|---------|--------|
+| Step 1: Name + avatar selection (7 avatar options) | IMPLEMENTED |
+| Step 2: Dietary preferences (6 options, multi-select) | IMPLEMENTED |
+| Step 3: Cooking level (beginner / home_cook / chef) | IMPLEMENTED |
+| Progress dots | IMPLEMENTED |
+| Back navigation between steps | IMPLEMENTED |
+| Sets `hasCompletedOnboarding` in AppContext on finish | IMPLEMENTED |
+| Persists all preferences to AsyncStorage | IMPLEMENTED |
+| OnboardingGuard in `_layout.tsx` redirects new users here | IMPLEMENTED |
+
+## 5.10 Dinner Setup (`/dinner-setup`)
+
+**Purpose:** Create and manage a dinner party — guests, menu, timing.
+
+| Feature | Status |
+|---------|--------|
+| Create dinner party (auto-sets date, country, title) | IMPLEMENTED |
+| Add/remove guests (name, phone, dietary restrictions, allergens) | IMPLEMENTED |
+| Guest avatar initials | IMPLEMENTED |
+| RSVP status tracking (pending/accepted/maybe/declined) | IMPLEMENTED |
+| Dietary conflict detection (warns about menu vs guest restrictions) | IMPLEMENTED |
+| Phone number formatting | IMPLEMENTED |
+| Share invite via system share sheet | IMPLEMENTED |
+| Menu display (appetizer/main/dessert from plan) | IMPLEMENTED |
+| Target serving time configuration | IMPLEMENTED |
+| Cuisine country theming | IMPLEMENTED |
+| "Start Cooking" → sets party status to 'cooking', starts cook session | IMPLEMENTED |
+| Guest count summary | IMPLEMENTED |
+| Actual SMS/Twilio integration | NOT BUILT (uses system share sheet as placeholder) |
+
+## 5.11 Cooking Schedule (`/cooking-schedule`)
+
+**Purpose:** Multi-course timeline view for dinner parties.
+
+| Feature | Status |
+|---------|--------|
+| Timeline event cards (active, passive, transition, finish) | IMPLEMENTED |
+| Start time → target time display | IMPLEMENTED |
+| Event type icons and color coding | IMPLEMENTED |
+| Materials list per event | IMPLEMENTED |
+| Duration display per event | IMPLEMENTED |
+| "Start Cooking" CTA → activates dinner plan | IMPLEMENTED |
+| Reads from `pendingDinnerPlan` / `activeDinnerPlan` in AppContext | IMPLEMENTED |
+| Full backward-planning algorithm refinement | PARTIAL — basic timeline engine built, edge cases remain |
+
+## 5.12 Dinner Complete (`/dinner-complete`)
+
+**Purpose:** Celebration screen after completing a dinner party.
+
+| Feature | Status |
+|---------|--------|
+| Animated passport stamp celebration | IMPLEMENTED |
+| Country flag and name display | IMPLEMENTED |
+| Guest list recap (accepted guests) | IMPLEMENTED |
+| Courses cooked count | IMPLEMENTED |
+| First-party badge ("Your first dinner party!") | IMPLEMENTED |
+| `useReducedMotion()` for celebration animations | IMPLEMENTED |
+| XP award and passport stamp | IMPLEMENTED |
+
+## 5.13 Technique Detail (`/technique/[id]`)
+
+**Purpose:** Cooking technique article with step-by-step instructions and related recipes.
+
+| Feature | Status |
+|---------|--------|
+| Hero image with technique title | IMPLEMENTED |
+| Difficulty badge (beginner/intermediate/advanced) | IMPLEMENTED |
+| Category icon and duration | IMPLEMENTED |
+| Step-by-step instructions | IMPLEMENTED |
+| Pro tips section | IMPLEMENTED |
+| Related recipes (RecipeCard links) | IMPLEMENTED |
+
+## 5.14 Profile (`/profile`)
 
 **Purpose:** User preferences and app settings.
 
 | Feature | Status |
 |---------|--------|
+| Display name + avatar | IMPLEMENTED |
+| Cooking level selection | IMPLEMENTED |
 | Dietary preferences | IMPLEMENTED |
-| Cooking skill level | IMPLEMENTED |
-| Theme picker (system/light/dark) | IMPLEMENTED (wired to ThemeContext) |
+| Theme picker (system/light/dark, wired to ThemeContext) | IMPLEMENTED |
+| Metric/Imperial toggle | IMPLEMENTED |
 | Notification toggles | IMPLEMENTED (UI only) |
 | General settings | IMPLEMENTED |
 
-## 5.10 Bookmarks (`/bookmarks`)
+## 5.15 Bookmarks (`/bookmarks`)
 
 **Purpose:** Saved/favorited recipes.
 
@@ -504,13 +642,30 @@ Root Stack
 | Grouped by country | IMPLEMENTED |
 | Tap to navigate to Recipe Detail | IMPLEMENTED |
 | Remove bookmark | IMPLEMENTED |
-| Persistence (AsyncStorage) | IMPLEMENTED |
+| Persistence (AsyncStorage via BookmarksContext) | IMPLEMENTED |
 
 ---
 
 # 6. Major Systems Inventory
 
-## 6.1 ThemeContext — IMPLEMENTED
+## 6.1 AppContext — IMPLEMENTED
+
+- **File:** `context/AppContext.tsx` (1292 lines)
+- **Unified Provider:** Single `AppProvider` wrapping the app, consolidating itinerary, grocery, cook session, preferences, XP/history, dinner parties, dinner plans, and kitchen checks
+- **State Domains:**
+  - Itinerary: `ItineraryDay[]` with `courses: { appetizer?, main?, dessert? }`, `date`, `dayLabel`, `hasDinnerParty`
+  - Grocery: `GroceryItem[]` with `id`, `name`, `amount`, `unit`, `category`, `recipeNames[]`, `sourceAmounts`, `checked`, `excluded`
+  - Cook Session: `CookSession | null` with `recipeId`, `currentStepIndex`, `completedSteps`, `servings`, `activeTimerStart`, `activeTimerDuration`, `status`
+  - Preferences: `cookingLevel`, `coursePreference`, `groceryPartner`, `zipCode`, `useMetric`, `dietaryFlags`, `allergens`, `hasCompletedOnboarding`, `displayName`, `avatarId`
+  - History: `totalRecipesCooked`, `xp`, `level`, `passportStamps`
+  - Dinner Parties: `DinnerParty[]` with full CRUD, guest management, RSVP tracking, dietary conflict detection
+  - Dinner Plan: `pendingDinnerPlan`, `activeDinnerPlan`, `currentDinnerEventIndex`
+  - Kitchen Checks: `boolean[]` (3-item checklist)
+- **Persistence:** All state persisted to AsyncStorage via `utils/storage.ts` abstraction. Hydration on mount with `isHydrated` flag. Auto-persist via `useEffect` watchers.
+- **Helper Functions:** `parseAmountParts()`, `normalizeUnit()`, `aggregateAmounts()`, `formatQty()`, `categorizeIngredient()`, `ingredientStableId()`, `recipeToPlannedMeal()`, `makeEmptyDay()`
+- **Consumers:** `useApp()` hook used by all screens
+
+## 6.2 ThemeContext — IMPLEMENTED
 
 - **File:** `context/ThemeContext.tsx`
 - **State:** `preference: 'system' | 'light' | 'dark'`, `isDark: boolean`
@@ -518,85 +673,147 @@ Root Stack
 - **Consumers:** `useThemePreference()` → `useThemeColors()` hook used by all screens
 - **Status:** Fully functional. Theme picker in Profile wired correctly.
 
-## 6.2 BookmarksContext — IMPLEMENTED
+## 6.3 BookmarksContext — IMPLEMENTED
 
 - **File:** `context/BookmarksContext.tsx`
-- **State:** `bookmarkedIds: string[]`
+- **State:** `bookmarkedIds: string[]` (defaults to 5 seeded bookmarks)
 - **Persistence:** AsyncStorage (`@fork_compass_bookmarks`)
-- **Consumers:** `useBookmarks()` → Recipe Detail (heart toggle), Bookmarks screen, RecipeCard
-- **Status:** Fully functional. Toggle, persistence, and count all work.
-- **Note:** Search screen heart buttons are NOT wired to this context (UI-only).
+- **Consumers:** `useBookmarks()` → Discover (grid cards), Search (grid cards), Recipe Detail (hero heart), Country Detail, Bookmarks screen
+- **Haptics:** Light impact on toggle
+- **Status:** Fully functional. Toggle, persistence, count, and haptics all work. Wired across all recipe-displaying screens.
 
-## 6.3 AppContext / Global Session State — NOT BUILT
+## 6.4 Meal Planning System — IMPLEMENTED
 
-No shared context exists for:
-- Active cook session (recipe, step, timer)
-- Weekly itinerary / meal plan
-- Grocery list state (active recipes, servings, checked items)
+- **State:** `itinerary: ItineraryDay[]` in AppContext with real calendar dates
+- **Features:**
+  - Real calendar dates via `utils/dates.ts` (local timezone, not UTC)
+  - Course slots: appetizer, main, dessert per day
+  - Add recipe to specific day + course type
+  - Remove recipe from day
+  - Swap recipe (remove + open picker for same slot)
+  - Auto-generate week (fill selected dates with random recipes from pool)
+  - Week navigation: this week / next week / past, ±1 week arrows
+  - Daily and weekly views with smooth toggle
+  - Day selector strip (M–S) with visual indicators (planned dot, today ring)
+  - `RecipePickerSheet` component (search, browse, select)
+  - Undo support (snapshot itinerary + grocery before action, restore on undo)
+  - Two-way sync: adding to plan auto-adds to grocery, removing from grocery orphan-checks plan
+  - 28-day cleanup on hydration (removes old entries)
+- **Persistence:** AsyncStorage (`@fork_compass_itinerary`)
 
-Each of these is either hardcoded or local to a single screen. Screens cannot communicate session state.
+## 6.5 Grocery System — IMPLEMENTED
 
-## 6.4 Meal Planning System — UI BUILT, LOGIC NOT WIRED
+- **State:** `groceryItems: GroceryItem[]` in AppContext
+- **Features:**
+  - Two-way sync with plan: adding recipe to plan auto-populates grocery, removing recipe source from grocery removes from plan
+  - Ingredient deduplication by stable ID (`ingredientStableId`)
+  - Quantity aggregation: `parseAmountParts()` extracts `{ qty, unit }`, `normalizeUnit()` standardizes units (g/gram/grams → g), `aggregateAmounts()` sums compatible units (including g↔kg, ml↔l cross-conversion)
+  - Per-recipe serving scaling: `utils/groceryScaling.ts` → `computeScaledAmount(originalAmount, baseServings, targetServings)` handles fractions, mixed numbers, ranges
+  - Metric/imperial conversion: `convertAmount()` in `data/helpers.ts` (g↔oz, kg↔lb, ml↔fl oz, l↔cups, etc.)
+  - Manual item entry with auto-categorization
+  - Recipe source carousel with per-recipe serving steppers
+  - 5-category grouping: produce, protein, dairy, spice, pantry
+  - In-store checklist mode with swipe-to-remove (Swipeable from react-native-gesture-handler)
+  - Online tab shows "Coming Soon" with retailer cards
+  - Clear checked items, clear all with confirmation
+  - Undo/restore (snapshot + toast)
+  - Tab badge showing unchecked count (wired in `_layout.tsx`)
+- **Persistence:** AsyncStorage (`@fork_compass_grocery`)
 
-- Plan tab has full weekly/daily view UI with day selectors, meal time slots, course slots, and week picker
-- All data comes from hardcoded constants (`PLANNED_DAYS`, `DAILY_MEALS`, `MOCK_DATES`)
-- No state management, no persistence, no add/remove/edit actions
-- No `PlanContext` exists
+## 6.6 Cook Session System — IMPLEMENTED
 
-## 6.5 Grocery System — PARTIAL
+- **State:** `activeCookSession: CookSession | null` in AppContext
+- **Features:**
+  - Start session: creates `CookSession` with recipe info, step count, servings
+  - Advance/previous step: updates `currentStepIndex`, tracks `completedSteps`
+  - Timer: `activeTimerStart` (ISO string) + `activeTimerDuration` (seconds), restored from elapsed time on re-open
+  - Complete session: clears session, increments `totalRecipesCooked`, awards XP (`xp += 50`), adds passport stamp
+  - Resume: `resumeCookSession()` returns persisted session from AsyncStorage
+  - Cook tab reads real `activeCookSession` for hero card and CTA
+  - CookingPill floating indicator: renders above tab bar when session active, shows recipe name + step progress, tappable → Cook Mode. Hidden when already in Cook Mode.
+- **Persistence:** AsyncStorage (`@fork_compass_cook_session`)
+- **Missing:** Swipe gesture navigation for steps, servings scaler in Cook Mode UI
 
-- Grocery tab builds a deduplicated list from `activeRecipes` (hardcoded to `recipes.slice(0, 4)`)
-- Checkboxes work (local `checkedIds` Set state)
-- Per-recipe servings adjuster exists but `buildGroceryList()` ignores `servingSizes`
-- Ingredient amounts are display strings — no parsing, no scaling, no numeric summation
-- State is screen-local: no context, no persistence, no tab badge
+## 6.7 Ingredient Amount Parsing — IMPLEMENTED
 
-## 6.6 Cook Session System — MOSTLY FUNCTIONAL, NO PERSISTENCE
+- **AppContext helpers:**
+  - `parseAmountParts(amount)` → `{ qty: number, unit: string } | null` — extracts numeric value and unit from display strings like "400g", "2 tbsp", "1/2 tsp"
+  - `normalizeUnit(u)` → canonical unit string (handles plurals, abbreviations)
+  - `aggregateAmounts(a, b)` → summed amount string with cross-unit conversion (g↔kg, ml↔l)
+  - `formatQty(n)` → clean display number
+- **`utils/groceryScaling.ts`:**
+  - `computeScaledAmount(originalAmount, baseServings, targetServings)` → scaled amount string
+  - Handles fractions ("1/2"), mixed fractions ("1 1/2"), ranges ("3-4"), plain numbers
+- **`data/helpers.ts`:**
+  - `convertAmount(amount, toMetric)` → metric/imperial conversion with 7 conversion rules
 
-- Cook Mode screen works end-to-end: step navigation (button-based prev/next), timers, haptics, keep-awake, contextual ingredients
-- BUT: no swipe gesture navigation — step changes are button-only
-- No session persistence — leaving the screen resets all state
-- Cook tab "Resume Session" card is hardcoded to `recipes[3]`, not a real active session
-- No CookingPill floating indicator above tab bar
-- No servings scaler in Cook Mode
+## 6.8 Adaptive Cooking Language — IMPLEMENTED
 
-## 6.7 Ingredient Amount Parsing — NOT BUILT
+- All 97 recipes have three instruction tiers per step:
+  - `instruction` — Home Cook (default)
+  - `instructionFirstSteps` — First Steps (beginner-friendly, more detailed)
+  - `instructionChefsTable` — Chef's Table (technical, concise)
+- `getStepInstruction(step, level)` in Recipe Detail and `getInstructionForLevel(step, level)` in `data/helpers.ts` select the appropriate instruction based on user's `cookingLevel` from AppContext
+- Skill level set during onboarding and adjustable in Profile
+- Culinary verb highlighting in instructions via `utils/textFormatting.ts`
 
-- All ingredient amounts are display strings (`"400g"`, `"2 tbsp, freshly cracked"`, `"1 large, diced"`)
-- No parsing utility exists to extract numeric values and units
-- Servings adjusters in Recipe Detail, Grocery, and Cook Mode are all cosmetic
-- This is a foundational gap that blocks scaling, deduplication, and smart grocery totals
+## 6.9 Nutrition & Allergen System — IMPLEMENTED
 
-## 6.8 Multi-Course Timeline Coordinator — DEFERRED
+- **Nutrition:** `data/nutrition.ts` provides per-recipe `NutritionInfo` (calories, protein, carbs, fat). Injected into recipe objects at build time. Displayed in Recipe Detail.
+- **Allergens:** `utils/allergens.ts` with:
+  - 9 allergen types (milk, egg, fish, shellfish, tree_nuts, peanuts, wheat, soy, sesame)
+  - `detectAllergens(ingredients)` — keyword-based allergen detection from ingredient names (auto-applied to all 97 recipes)
+  - `getDietaryConflicts(recipeAllergens, userDietaryFlags)` — checks recipe allergens against user's dietary profile
+  - `ALLERGEN_INFO` — labels, icons, and colors for allergen UI
+- Search screen allergen exclusion filter (exclude recipes containing specific allergens)
+- Recipe Detail shows allergen warnings and dietary conflict badges
 
-- V2 vision: backward-planning timeline engine that coordinates multiple dishes to a target dinner time
-- "Set dinner at 7 PM. Three dishes. Start at 4:25 PM. We'll tell you what to do and when."
-- Four implementation prompts written (types/engine, context/state, setup/schedule screens, cook mode integration)
-- Solo cook mode is the focus first; multi-course timeline is the competitive differentiator for a later release
+## 6.10 Dinner Party System — PARTIALLY IMPLEMENTED
 
-## 6.9 Dinner Party System — DEFERRED
+- **Types:** `types/dinnerParty.ts` — `DinnerParty`, `DinnerGuest`, `DinnerPartyMenu`, `DietaryConflict`
+- **AppContext CRUD:** Full lifecycle management:
+  - `createDinnerParty()`, `updateDinnerParty()`, `cancelDinnerParty()`
+  - `addGuest()`, `removeGuest()`, `updateGuestRsvp()`
+  - `getDinnerPartyForDate()`, `getActiveDinnerParty()`, `getGuestCount()`
+  - `startDinnerPartyCooking()` — sets status to 'cooking'
+  - `completeDinnerParty()` — sets status to 'completed'
+  - `checkDietaryConflicts()` — cross-references guest restrictions with menu recipes
+- **UI:** Dinner Setup screen built (guest management, phone formatting, share invites, menu display, serving time, RSVP tracking). Dinner Complete celebration screen with animated passport stamp.
+- **Cook Tab Integration:** Dinner party awareness — shows party card, guest counts, RSVP stats, "Review Party Details" CTA
+- **Persistence:** AsyncStorage (`@fork_compass_dinner_parties`)
+- **Missing:** Actual SMS/Twilio integration (uses system share sheet), live status view for guests
 
-- V2 vision: create dinner parties from Plan view, invite friends via SMS (Twilio), track RSVPs, dietary conflict detection, live dinner status view for guests
-- Backend infrastructure designed (dinner_parties and dinner_guests tables, API routes)
-- Not built in current local-only Expo app
+## 6.11 Multi-Course Timeline — PARTIALLY IMPLEMENTED
 
-## 6.10 Delivery Integration — DEFERRED
+- **Types:** `types/kitchen.ts` — `TimelineEvent`, `DinnerPlan`, `CookConfig`, `EventType`
+- **Timeline Engine:** `utils/timelineEngine.ts` (264 lines) — `buildDinnerTimeline(recipes, targetTime, config)`:
+  - Step duration estimation based on instruction keywords
+  - Passive step detection (simmer, roast, bake, marinate, etc.)
+  - Active/passive/transition/finish event types
+  - Backward planning from target time
+  - Buffer minutes between dishes
+- **UI:** Cooking Schedule screen built — timeline cards for each event type, start/target time display, "Start Cooking" CTA
+- **AppContext:** `pendingDinnerPlan`, `activeDinnerPlan`, `currentDinnerEventIndex`, `createDinnerPlan()`, `startDinnerPlan()`, `advanceDinnerStep()`, `completeDinnerPlan()`
+- **Persistence:** AsyncStorage (`@fork_compass_dinner_plan`)
+- **Missing:** Full backward-planning algorithm refinement for edge cases, integration with real cook mode (stepping through timeline events in Cook Mode)
 
-- V2 vision: Instacart, Walmart, Kroger integration for grocery delivery
-- In-Store Mode and Pantry Inventory also deferred
-- Current build has retailer selector UI (non-functional placeholder)
+## 6.12 Cook Readiness Engine — IMPLEMENTED
 
-## 6.11 Auth & Subscriptions — DEFERRED
+- **File:** `utils/cookReadiness.ts`
+- **Purpose:** State machine that calculates cook readiness based on today's meals, active session, grocery progress, and time until dinner
+- **States:** `hidden`, `now_cooking`, `groceries_needed`, `almost_ready`, `planned_early`, `good_timing`, `time_to_start`, `running_late`, `dinner_passed`
+- **Dinner Party Awareness:** Adjusts urgency and copy for dinner party context (guest count, serving time)
+- **Output:** Headline, CTA text, CTA style, start/serving time labels, grocery progress
 
-- V2 vision: Supabase for auth, RevenueCat for premium tier gating
-- Current build is entirely local with no auth, no user accounts, no subscription checks
+## 6.13 Delivery Integration — DEFERRED
 
-## 6.12 Adaptive Cooking Language — DEFERRED
+- Online tab in Grocery screen shows retailer cards (Instacart, Walmart, Amazon Fresh) with "Coming Soon" messaging
+- No actual API integration
 
-- V2 vision: three skill tiers (First Steps 🌱, Home Cook 🍳, Chef's Table 👨‍🍳) change instruction voice per recipe
-- Same ingredients, different instruction language
-- Skill level selection exists in Profile (UI only) — not wired to recipe instruction rendering
-- Beginner and Chef's Table rewrites would be AI-generated at build time, not runtime
+## 6.14 Auth & Subscriptions — DEFERRED
+
+- No auth, no user accounts, no subscription checks
+- All data is local (AsyncStorage)
 
 ---
 
@@ -608,55 +825,117 @@ Each of these is either hardcoded or local to a single screen. Screens cannot co
 |-----------|------|---------|
 | GlassView | `components/GlassView.tsx` | Frosted glass container with specular top-edge highlight |
 | HeaderBar | `components/HeaderBar.tsx` | Shared header: transparent (Discover) or frosted glass (others) |
-| SectionHeader | `components/SectionHeader.tsx` | Section label + title + "View All" action link |
 | RecipeCard | `components/RecipeCard.tsx` | Grid card: image, title, metadata, bookmark icon |
 | DestinationCard | `components/DestinationCard.tsx` | Country card: image, flag, name |
+| RecipePickerSheet | `components/RecipePickerSheet.tsx` | Bottom sheet: search + browse + select recipe for plan slot |
+| AddToPlanSheet | `components/AddToPlanSheet.tsx` | Bottom sheet: pick day + course to add recipe to plan |
+| PressableScale | `components/PressableScale.tsx` | Animated pressable with scale feedback |
+| AnimatedHeart | `components/AnimatedHeart.tsx` | Heart/bookmark toggle with spring animation |
+| AnimatedListItem | `components/AnimatedListItem.tsx` | Staggered fade-in for list items |
+| Checkbox | `components/Checkbox.tsx` | Custom checkbox with theme-aware styling |
+| CookingPill | `components/CookingPill.tsx` | Floating pill above tab bar showing active cook session |
+| SmartCookBar | `components/SmartCookBar.tsx` | Context-aware cooking action bar |
 | ErrorBoundary | `components/ErrorBoundary.tsx` | React error boundary wrapper |
 | ErrorFallback | `components/ErrorFallback.tsx` | Fallback UI for caught errors |
-| KeyboardAwareScrollViewCompat | `components/KeyboardAwareScrollViewCompat.tsx` | Cross-platform keyboard-aware scroll |
 
 ## 7.2 File Map
 
 ```
 artifacts/mobile/
 ├── app/
-│   ├── _layout.tsx                    # Root layout: providers, error boundary
+│   ├── _layout.tsx                    # Root layout: providers, OnboardingGuard, CookingPill
 │   ├── +not-found.tsx                 # 404 screen
+│   ├── onboarding.tsx                 # 3-step onboarding (name/avatar, diet, cooking level)
+│   ├── dinner-setup.tsx               # Dinner party creation & guest management
+│   ├── cooking-schedule.tsx           # Multi-course timeline view
+│   ├── dinner-complete.tsx            # Post-dinner celebration with passport stamp
+│   ├── profile.tsx                    # Profile & Settings (modal)
+│   ├── bookmarks.tsx                  # Bookmarks (push)
 │   ├── (tabs)/
-│   │   ├── _layout.tsx                # Tab navigator + floating pill bar
-│   │   ├── index.tsx                  # Discover
-│   │   ├── search.tsx                 # Search
-│   │   ├── plan.tsx                   # Plan ⚠️ hardcoded data
-│   │   ├── grocery.tsx                # Grocery ⚠️ scaling broken
-│   │   └── cook.tsx                   # Cook
+│   │   ├── _layout.tsx                # Tab navigator: floating glass pill bar, grocery badge
+│   │   ├── index.tsx                  # Discover: hero carousel, recipe grid, XP stats
+│   │   ├── search.tsx                 # Search: text + mood + allergen filters
+│   │   ├── plan.tsx                   # Plan: weekly/daily calendar, RecipePickerSheet, undo
+│   │   ├── grocery.tsx                # Grocery: categorized list, scaling, manual entry, undo
+│   │   └── cook.tsx                   # Cook: session resume, dinner party, techniques, XP
 │   ├── country/[id].tsx               # Country Detail
-│   ├── recipe/[id].tsx                # Recipe Detail ⚠️ scaling broken
-│   ├── cook-mode/[id].tsx             # Cook Mode
-│   ├── profile.tsx                    # Profile & Settings
-│   └── bookmarks.tsx                  # Bookmarks
-├── components/                        # Shared UI components (see 7.1)
-├── constants/                         # Design tokens (colors, typography, spacing, radius, shadows, glass)
+│   ├── recipe/[id].tsx                # Recipe Detail: ingredients, steps, plan/grocery actions
+│   ├── technique/[id].tsx             # Technique article with steps and related recipes
+│   └── cook-mode/[id].tsx             # Cook Mode: step-by-step, timer, session persistence
+├── components/
+│   ├── GlassView.tsx                  # Frosted glass container
+│   ├── HeaderBar.tsx                  # Shared header bar
+│   ├── RecipeCard.tsx                 # Recipe grid card
+│   ├── DestinationCard.tsx            # Country card
+│   ├── RecipePickerSheet.tsx          # Recipe selection bottom sheet
+│   ├── AddToPlanSheet.tsx             # Date/course picker for adding to plan
+│   ├── PressableScale.tsx             # Animated scale pressable
+│   ├── AnimatedHeart.tsx              # Bookmark heart toggle
+│   ├── AnimatedListItem.tsx           # Staggered list entry animation
+│   ├── Checkbox.tsx                   # Custom checkbox
+│   ├── CookingPill.tsx                # Floating active session indicator
+│   ├── SmartCookBar.tsx               # Context-aware cook action bar
+│   ├── ErrorBoundary.tsx              # Error boundary
+│   └── ErrorFallback.tsx              # Error fallback UI
+├── constants/
+│   ├── colors.ts                      # Color palette (light/dark tokens)
+│   ├── typography.ts                  # Typography tokens
+│   ├── spacing.ts                     # Spacing scale
+│   ├── radius.ts                      # Border radius tokens
+│   ├── shadows.ts                     # Shadow system (subtle/medium/prominent)
+│   ├── glass.ts                       # Glass effect values
+│   ├── icons.ts                       # Overlay button constants
+│   └── motion.ts                      # Animation constants
 ├── context/
-│   ├── ThemeContext.tsx                # Theme preference + AsyncStorage
-│   └── BookmarksContext.tsx            # Bookmark state + AsyncStorage
+│   ├── AppContext.tsx                  # Global state: itinerary, grocery, cook, prefs, XP, parties
+│   ├── ThemeContext.tsx                # Theme preference (system/light/dark)
+│   └── BookmarksContext.tsx            # Bookmark state
 ├── data/
 │   ├── countries.ts                   # 8 countries
-│   └── recipes.ts                     # 97 recipes
+│   ├── recipes.ts                     # 97 recipes (with auto-detected allergens + nutrition)
+│   ├── nutrition.ts                   # Per-recipe nutrition data
+│   ├── techniques.ts                  # Cooking technique articles
+│   ├── substitutions.ts               # Ingredient substitutions
+│   ├── helpers.ts                     # Lookups, formatting, unit conversion
+│   ├── maps.ts                        # Map data
+│   └── index.ts                       # Data barrel exports
 ├── hooks/
-│   └── useThemeColors.ts              # Theme-aware color accessor
+│   ├── useThemeColors.ts              # Theme-aware color accessor
+│   └── useRecipeData.ts               # Recipe data hook
+├── types/
+│   ├── dinnerParty.ts                 # DinnerParty, DinnerGuest, DietaryConflict types
+│   └── kitchen.ts                     # TimelineEvent, DinnerPlan, CookConfig types
+├── utils/
+│   ├── storage.ts                     # AsyncStorage abstraction (get/set/remove)
+│   ├── dates.ts                       # Local timezone date helpers
+│   ├── groceryScaling.ts              # Ingredient amount scaling
+│   ├── allergens.ts                   # Allergen detection + dietary conflict checking
+│   ├── timelineEngine.ts              # Multi-course backward-planning timeline
+│   ├── textFormatting.ts              # Culinary verb highlighting
+│   └── cookReadiness.ts              # Cook readiness state machine
 ├── FLOW_MAP.md                        # Screen flow documentation
 └── MASTER_BLUEPRINT.md                # This file
 ```
 
 ## 7.3 Persistence
 
-| Data | Storage | Status |
-|------|---------|--------|
-| Theme preference | AsyncStorage (`@fork_compass_theme`) | IMPLEMENTED |
-| Bookmarked recipe IDs | AsyncStorage (`@fork_compass_bookmarks`) | IMPLEMENTED |
-| Cook session state | — | NOT BUILT (resets on unmount) |
-| Weekly itinerary | — | NOT BUILT (hardcoded) |
-| Grocery checked state | — | NOT BUILT (screen-local) |
+| Data | Storage Key | Status |
+|------|-------------|--------|
+| Theme preference | `@fork_compass_theme` (ThemeContext) | IMPLEMENTED |
+| Bookmarked recipe IDs | `@fork_compass_bookmarks` (BookmarksContext) | IMPLEMENTED |
+| Weekly itinerary | `@fork_compass_itinerary` (AppContext) | IMPLEMENTED |
+| Grocery items | `@fork_compass_grocery` (AppContext) | IMPLEMENTED |
+| Cook session state | `@fork_compass_cook_session` (AppContext) | IMPLEMENTED |
+| User preferences | `@fork_compass_preferences` (AppContext) | IMPLEMENTED |
+| History / XP | `@fork_compass_history` (AppContext) | IMPLEMENTED |
+| Dinner plan + event index | `@fork_compass_dinner_plan` (AppContext) | IMPLEMENTED |
+| Dinner parties | `@fork_compass_dinner_parties` (AppContext) | IMPLEMENTED |
+| Kitchen check state | `@fork_compass_kitchen_check` (AppContext) | IMPLEMENTED |
+| Auto-gen hint seen | `@fork_compass_autogen_seen` (AsyncStorage direct) | IMPLEMENTED |
+| First-time hints (plan, grocery, cook) | `@fork_compass_hint_*_seen` (AsyncStorage direct) | IMPLEMENTED |
+| Tonight strip dismissed | `@fork_compass_tonight_dismissed_*` (AsyncStorage direct) | IMPLEMENTED |
+
+AppContext persistence flows through `utils/storage.ts`, a thin abstraction over `@react-native-async-storage/async-storage` designed for a future swap to MMKV. A handful of lightweight flags (hint dismissals, tonight-strip dismissal) use `AsyncStorage` directly for simplicity. ThemeContext and BookmarksContext also use `AsyncStorage` directly (predating the `Storage` abstraction).
 
 ## 7.4 Platform Compatibility
 
@@ -664,6 +943,15 @@ artifacts/mobile/
 - `expo-keep-awake` v15 (compatible with SDK 54)
 - `react-native-keyboard-controller` v1.18.5 (compatible with SDK 54)
 - Web fallbacks via `Platform.OS === 'web'` in tab bar positioning and GlassView rendering
+- `GlassView` web fallback renders as solid `View` with background color overlay (no BlurView on web)
+
+## 7.5 API Server
+
+- **File:** `artifacts/api-server/src/index.ts` — Fastify server bound to `PORT` env var
+- **Current State:** Health check endpoint only (`GET /healthz`)
+- **OpenAPI Spec:** `lib/api-spec/openapi.yaml` — defines `HealthStatus` schema
+- **Database Schema:** `lib/db/src/schema/index.ts` — empty (commented templates for Drizzle tables)
+- **Status:** Scaffolded, not yet functional beyond health check
 
 ---
 
@@ -715,79 +1003,55 @@ artifacts/mobile/
 
 # 9. Execution Roadmap
 
+> The original V3 roadmap (P1: AppContext, P2: Plan→Grocery→Cook wiring, P3: Cook Mode polish) is **CORE COMPLETE**. All three priorities have been implemented end-to-end. Two polish items remain from P3: swipe gesture navigation in Cook Mode and a servings scaler in Cook Mode UI. The roadmap below addresses these remaining gaps and defines the next phase.
+
 Applying the Top 10 List Protocol — the Jobsian framework of listing ten priorities and crossing out the bottom seven — Fork & Compass's immediate execution focuses on three things only:
 
-## Priority 1: AppContext — Global State Foundation
+## Priority 1: Cook Mode Polish
 
-**Goal:** Create the shared state layer that all other systems depend on.
-
-**Scope:**
-1. **`CookSessionContext`** — tracks active recipe ID, current step index, timer seconds, timer running state, servings override. Persisted to AsyncStorage so sessions survive app restarts.
-2. **`PlanContext`** — tracks weekly itinerary as `Record<string, Record<string, string | null>>` (day → mealSlot → recipeId). Persisted to AsyncStorage.
-3. **`GroceryContext`** — tracks active recipe IDs, servings overrides per recipe, checked item IDs. Derived grocery list computed via `useMemo`. Persisted to AsyncStorage.
-
-All three contexts wrap the app in `_layout.tsx` alongside existing `ThemeProvider` and `BookmarksProvider`.
-
-**Unblocks:** Everything in P2 and P3.
-
-## Priority 2: Plan → Grocery → Cook Core Loop Wiring
-
-**Goal:** Make the core user journey functional end-to-end.
-
-**Plan tab:**
-- Replace hardcoded `PLANNED_DAYS` / `DAILY_MEALS` / `MOCK_DATES` with `PlanContext` state
-- Tap empty meal slot → recipe picker modal (search/browse recipes, select one)
-- "Add to Plan" action from Recipe Detail (pick day + meal slot)
-- "Auto-Generate Week" from Country Detail (fill empty dinner slots with country's recipes)
-- Swipe or long-press to remove a planned meal
-- Course slots (appetizer, dessert, drink) become functional pickers
-
-**Grocery tab:**
-- `GroceryContext` provides active recipes and servings (instead of local `recipes.slice(0, 4)`)
-- Plan tab's planned recipes automatically feed into grocery list
-- Build ingredient amount parsing utility (`utils/ingredientParser.ts`) to extract `{ value, unit, qualifier }` from display strings
-- `buildGroceryList()` uses parser to scale amounts by `(currentServings / baseServings)` and sum duplicates with compatible units
-- Grocery tab badge on tab bar icon showing unchecked item count (read from `GroceryContext` in `_layout.tsx`)
-
-**Cook session:**
-- "Start Cooking" in Recipe Detail creates a session in `CookSessionContext`
-- Cook Mode reads/writes session state (current step, timer)
-- Leaving Cook Mode keeps session alive in context
-- Cook tab "Resume Session" reads from `CookSessionContext` instead of `recipes[3]`
-- Floating `CookingPill` component renders above tab bar when `activeSession != null`, showing recipe name + current step
-- Recipe Detail servings adjuster actually scales ingredient amounts using parser
-
-**Depends on:** P1
-
-## Priority 3: Cook Mode Polish
-
-**Goal:** Complete the cook mode experience with scaling, session persistence, and finishing flow.
+**Goal:** Complete the cook mode experience with the remaining UX features.
 
 **Scope:**
-- Servings scaler in Cook Mode top bar (reads from `CookSessionContext`, scales ingredient pill amounts)
-- Swipe gesture navigation for step changes: add `GestureDetector` with horizontal pan gesture, spring animation (280ms, damping: 18, stiffness: 120) with medium haptic on step change
-- Session auto-save: on step change, persist current step + timer to AsyncStorage
-- Session resume: on mount, restore from context (which loaded from AsyncStorage)
-- CookingPill indicator visible across all tabs (renders in root layout when session active)
-- "Finish Cooking" action at last step: clears session, increments XP (stored in future UserProgressContext or AsyncStorage)
-- Timer completion notification (local notification or prominent visual alert)
+1. **Swipe gesture navigation** — Add `GestureDetector` with horizontal pan gesture for step navigation. Spring animation (280ms, damping: 18, stiffness: 120) with medium haptic on step change. Must coexist with scroll for long instruction text.
+2. **Servings scaler in Cook Mode** — Top bar control that reads from session, updates `servings` in `CookSession`, and scales contextual ingredient pill amounts in real time.
+3. **CookingPill refinement** — Currently functional. Polish: add pulse animation when timer is active, show timer countdown on pill.
 
-**Depends on:** P1, P2
+**Unblocks:** TestFlight-ready cook experience.
+
+## Priority 2: Backend & Data Migration
+
+**Goal:** Move from local mock data to server-served data with user accounts.
+
+**Scope:**
+1. **API server buildout** — Expand `artifacts/api-server` beyond health check. Add Fastify routes for recipes, countries, user data.
+2. **Database schema** — Define Drizzle tables in `lib/db/src/schema/`: users, recipes, meal_plans, grocery_lists, cook_sessions, dinner_parties. Migrate recipe data from `data/recipes.ts` to PostgreSQL.
+3. **Authentication** — User accounts (email/password or social auth). Replace local AsyncStorage persistence with server-synced state.
+4. **Data sync** — `@tanstack/react-query` already installed. Wire up queries to fetch from API instead of local imports.
+
+**Depends on:** P1 (polish first, then migrate)
+
+## Priority 3: Production Readiness
+
+**Goal:** Prepare for App Store submission and TestFlight.
+
+**Scope:**
+1. **Reduce Motion support** — Wire `useReducedMotion()` into all remaining animated components (currently only in tab bar, Discover, and dinner-complete). Every animated transition should respect the OS accessibility setting.
+2. **Accessibility audit** — Full VoiceOver walkthrough, Dynamic Type at maximum scale, touch target verification (48pt minimum), color independence check.
+3. **Performance optimization** — Lazy-load heavy modules (recipe data, technique data). Embed fonts (currently loaded via Google Fonts at runtime). Code-split large screens.
+4. **App icon** — Design app icon for Liquid Glass era (translucent material, dynamic color).
+
+**Depends on:** P2 (ship on real backend)
 
 ## On the Horizon (Deferred, Not Forgotten)
 
-- Multi-Course Timeline Coordinator (backward-planning dinner engine — the competitive differentiator)
-- Dinner Party feature (guest management, SMS invites via Twilio, RSVP tracking, dietary conflict detection)
-- Adaptive cooking language (First Steps / Home Cook / Chef's Table instruction tiers)
-- Delivery integration (Instacart, Walmart, Kroger)
-- Pantry Inventory (kitchen scanner via expo-camera, auto-subtract from grocery)
-- Supabase auth integration and user accounts
-- RevenueCat premium tier gating
-- Search bookmark wiring (heart buttons → BookmarksContext)
-- Admin dashboard (Next.js, admin.forkandcompass.app)
-- `useReducedMotion()` wiring across all animated components
-- App icon redesign for Liquid Glass era
-- Performance: lazy-load heavy modules, embed fonts, split large data files
+- **Delivery integration** — Instacart, Walmart, Amazon Fresh API integration for grocery ordering. Currently UI placeholder only.
+- **Pantry Inventory** — Track what the user already has at home. Auto-subtract from grocery lists. Camera scanning via `expo-camera`.
+- **SMS/Twilio for dinner parties** — Replace system share sheet with direct SMS invites and RSVP link tracking.
+- **Timeline engine refinement** — Full backward-planning algorithm with parallel cooking tracks, equipment conflict detection, and real Cook Mode integration.
+- **Admin dashboard** — Next.js admin panel (admin.forkandcompass.app) for recipe management, user analytics, content moderation.
+- **RevenueCat premium tier** — Subscription gating for advanced features (dinner party hosting, chef-level techniques, expanded country catalog).
+- **Expanded country catalog** — Beyond the initial 8 countries. Add Southeast Asia, South America, Middle East, Africa.
+- **Social features** — Share completed dinners, follow friends' cooking journeys, dinner party photo galleries.
 
 ---
 

@@ -62,22 +62,34 @@ const hydrationStyles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FEF9F3' },
 });
 
+const FADE_SLIDE = {
+  animation: 'fade_from_bottom' as const,
+  animationDuration: 240,
+  contentStyle: { backgroundColor: '#FEF9F3' },
+};
+
+const SLIDE = {
+  animation: 'slide_from_right' as const,
+  animationDuration: 280,
+  contentStyle: { backgroundColor: '#FEF9F3' },
+};
+
 function RootLayoutNav() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
-      <Stack.Screen name="profile" options={{ headerShown: false, presentation: 'modal' }} />
+    <Stack screenOptions={{ headerShown: false, ...SLIDE }}>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'none' }} />
+      <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' as const, animationDuration: 350 }} />
+      <Stack.Screen name="profile" options={{ headerShown: false, presentation: 'modal', ...FADE_SLIDE }} />
       <Stack.Screen name="bookmarks" options={{ headerShown: false }} />
       <Stack.Screen name="country/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="recipe/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="technique/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="cooking-schedule" options={{ headerShown: false }} />
-      <Stack.Screen name="dinner-setup" options={{ headerShown: false }} />
-      <Stack.Screen name="dinner-complete" options={{ headerShown: false }} />
+      <Stack.Screen name="dinner-setup" options={{ headerShown: false, ...FADE_SLIDE }} />
+      <Stack.Screen name="dinner-complete" options={{ headerShown: false, ...FADE_SLIDE }} />
       <Stack.Screen
         name="cook-mode/[id]"
-        options={{ headerShown: false, presentation: 'fullScreenModal' }}
+        options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade' as const, animationDuration: 300 }}
       />
     </Stack>
   );
