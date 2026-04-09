@@ -27,6 +27,7 @@ import { CookingPill } from "@/components/CookingPill";
 import { AppProvider, useApp } from "@/context/AppContext";
 import { BookmarksProvider } from "@/context/BookmarksContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -87,6 +88,7 @@ function RootLayoutNav() {
       <Stack.Screen name="cooking-schedule" options={{ headerShown: false }} />
       <Stack.Screen name="dinner-setup" options={{ headerShown: false, ...FADE_SLIDE }} />
       <Stack.Screen name="dinner-complete" options={{ headerShown: false, ...FADE_SLIDE }} />
+      <Stack.Screen name="passport" options={{ headerShown: false }} />
       <Stack.Screen
         name="cook-mode/[id]"
         options={{ headerShown: false, presentation: 'fullScreenModal', animation: 'fade' as const, animationDuration: 300 }}
@@ -129,12 +131,14 @@ export default function RootLayout() {
             <ThemeProvider>
               <BookmarksProvider>
                 <AppProvider>
-                  <KeyboardProvider>
-                    <OnboardingGuard>
-                      <RootLayoutNav />
-                      <CookingPill />
-                    </OnboardingGuard>
-                  </KeyboardProvider>
+                  <ToastProvider>
+                    <KeyboardProvider>
+                      <OnboardingGuard>
+                        <RootLayoutNav />
+                        <CookingPill />
+                      </OnboardingGuard>
+                    </KeyboardProvider>
+                  </ToastProvider>
                 </AppProvider>
               </BookmarksProvider>
             </ThemeProvider>
