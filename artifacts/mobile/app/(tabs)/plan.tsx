@@ -374,113 +374,111 @@ export default function PlanScreen() {
                   )}
                 </View>
 
-                <Pressable
-                  style={styles.navArrow}
-                  hitSlop={8}
-                  onPress={() => {
-                    if (isDailyView) {
-                      if (selectedDayIndex < 6) {
-                        setSelectedDayIndex(selectedDayIndex + 1);
+                <View style={styles.navRight}>
+                  <View style={[styles.segmentedControl, { backgroundColor: colors.primaryMuted }]}>
+                    <Pressable
+                      onPress={() => {
+                        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                        setIsDailyView(true);
+                      }}
+                      style={[
+                        styles.segmentBtn,
+                        isDailyView && { backgroundColor: colors.primary },
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel="Switch to daily view"
+                      accessibilityState={{ selected: isDailyView }}
+                    >
+                      <Text style={[
+                        Typography.caption,
+                        { fontWeight: '700', fontSize: 11, letterSpacing: 0.3 },
+                        isDailyView ? { color: colors.onPrimary } : { color: colors.outline },
+                      ]}>
+                        Day
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => {
+                        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                        setIsDailyView(false);
+                      }}
+                      style={[
+                        styles.segmentBtn,
+                        !isDailyView && { backgroundColor: colors.primary },
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel="Switch to weekly view"
+                      accessibilityState={{ selected: !isDailyView }}
+                    >
+                      <Text style={[
+                        Typography.caption,
+                        { fontWeight: '700', fontSize: 11, letterSpacing: 0.3 },
+                        !isDailyView ? { color: colors.onPrimary } : { color: colors.outline },
+                      ]}>
+                        Week
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  <Pressable
+                    style={styles.navArrow}
+                    hitSlop={8}
+                    onPress={() => {
+                      if (isDailyView) {
+                        if (selectedDayIndex < 6) {
+                          setSelectedDayIndex(selectedDayIndex + 1);
+                        } else {
+                          shiftWeek(1);
+                          setSelectedDayIndex(0);
+                        }
                       } else {
                         shiftWeek(1);
-                        setSelectedDayIndex(0);
                       }
-                    } else {
-                      shiftWeek(1);
-                    }
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={isDailyView ? "Next day" : "Next week"}
-                >
-                  <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
-                </Pressable>
-              </View>
-
-              <View style={[styles.navBottomRow, { borderTopWidth: 1, borderTopColor: colors.outlineVariant + '30' }]}>
-                {isDailyView ? (
-                  <>
-                    <View style={styles.daySelector}>
-                      {DAY_LETTERS.map((letter, i) => {
-                        const isActive = i === selectedDayIndex;
-                        const day = weekDays[i];
-                        const hasRecipe = !!(day?.courses.appetizer || day?.courses.main || day?.courses.dessert);
-                        const isToday = day?.date === todayISO;
-                        return (
-                          <Pressable
-                            key={i}
-                            onPress={() => {
-                              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-                              setSelectedDayIndex(i);
-                            }}
-                            style={[
-                              styles.dayCircle,
-                              isActive && { backgroundColor: colors.primary },
-                              !isActive && hasRecipe && { backgroundColor: colors.primaryMuted },
-                              !isActive && isToday && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryTint },
-                            ]}
-                            accessibilityRole="button"
-                            accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
-                            accessibilityState={{ selected: isActive }}
-                          >
-                            <Text style={[
-                              Typography.caption,
-                              { fontWeight: '600' },
-                              isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary, fontWeight: '700' } : { color: colors.outline },
-                            ]}>
-                              {letter}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                    <View style={[styles.navDividerV, { backgroundColor: colors.outlineVariant + '40' }]} />
-                  </>
-                ) : null}
-                <View style={[styles.segmentedControl, { backgroundColor: colors.primaryMuted }]}>
-                  <Pressable
-                    onPress={() => {
-                      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-                      setIsDailyView(true);
                     }}
-                    style={[
-                      styles.segmentBtn,
-                      isDailyView && { backgroundColor: colors.primary },
-                    ]}
                     accessibilityRole="button"
-                    accessibilityLabel="Switch to daily view"
-                    accessibilityState={{ selected: isDailyView }}
+                    accessibilityLabel={isDailyView ? "Next day" : "Next week"}
                   >
-                    <Text style={[
-                      Typography.caption,
-                      { fontWeight: '700', fontSize: 11, letterSpacing: 0.3 },
-                      isDailyView ? { color: colors.onPrimary } : { color: colors.outline },
-                    ]}>
-                      Day
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => {
-                      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-                      setIsDailyView(false);
-                    }}
-                    style={[
-                      styles.segmentBtn,
-                      !isDailyView && { backgroundColor: colors.primary },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel="Switch to weekly view"
-                    accessibilityState={{ selected: !isDailyView }}
-                  >
-                    <Text style={[
-                      Typography.caption,
-                      { fontWeight: '700', fontSize: 11, letterSpacing: 0.3 },
-                      !isDailyView ? { color: colors.onPrimary } : { color: colors.outline },
-                    ]}>
-                      Week
-                    </Text>
+                    <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
                   </Pressable>
                 </View>
               </View>
+
+              {isDailyView && (
+                <View style={[styles.navDayRow, { borderTopWidth: 1, borderTopColor: colors.outlineVariant + '30' }]}>
+                  {DAY_LETTERS.map((letter, i) => {
+                    const isActive = i === selectedDayIndex;
+                    const day = weekDays[i];
+                    const hasRecipe = !!(day?.courses.appetizer || day?.courses.main || day?.courses.dessert);
+                    const isToday = day?.date === todayISO;
+                    return (
+                      <Pressable
+                        key={i}
+                        onPress={() => {
+                          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                          setSelectedDayIndex(i);
+                        }}
+                        style={[
+                          styles.dayCircle,
+                          isActive && { backgroundColor: colors.primary },
+                          !isActive && hasRecipe && { backgroundColor: colors.primaryMuted },
+                          !isActive && isToday && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryTint },
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
+                        accessibilityState={{ selected: isActive }}
+                      >
+                        <Text style={[
+                          Typography.caption,
+                          { fontWeight: '600' },
+                          isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary, fontWeight: '700' } : { color: colors.outline },
+                        ]}>
+                          {letter}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
             </GlassView>
           </View>
         </View>
@@ -1223,22 +1221,17 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: Radius.full,
   },
-  navBottomRow: {
+  navRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  navDayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
     marginTop: Spacing.sm,
     paddingTop: Spacing.sm,
-  },
-  navDividerV: {
-    width: 1,
-    height: 24,
-  },
-  daySelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
   },
   dayCircle: {
     width: 32,
