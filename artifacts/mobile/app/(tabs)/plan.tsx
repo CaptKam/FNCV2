@@ -237,7 +237,7 @@ export default function PlanScreen() {
   }, [plannedCount, showPlanHint]);
 
   // ─── Week navigation ───
-  const currentMonday = useMemo(() => toISO(getMonday(new Date())), []);
+  const currentMonday = useMemo(() => dateToLocal(getMonday(new Date())), []);
   const shiftWeek = useCallback((delta: number) => {
     setWeekStartDate((prev) => {
       const next = addDays(prev, delta * 7);
