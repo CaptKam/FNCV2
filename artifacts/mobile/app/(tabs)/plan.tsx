@@ -772,7 +772,7 @@ export default function PlanScreen() {
           ) : (
           /* ── Current/Future Week: card layout ── */
           <View style={{ paddingHorizontal: Spacing.page, gap: Spacing.lg }}>
-            {weekDays.map((day) => {
+            {weekDays.map((day, dayIdx) => {
               const { appetizer, main: mainMeal, dessert } = day.courses;
               const allMeals = [appetizer, mainMeal, dessert].filter(Boolean) as PlannedMeal[];
               const hasMeals = allMeals.length > 0;
@@ -780,12 +780,13 @@ export default function PlanScreen() {
               const isPastDay = day.date < todayISO;
               const totalTime = allMeals.reduce((sum, m) => sum + (m.cookTime || 0), 0);
               const dayParty = app.getDinnerPartyForDate(day.date);
+              const goToDayView = () => { setSelectedDayIndex(dayIdx); setIsDailyView(true); };
 
               if (!hasMeals) {
                 return (
                   <Pressable
                     key={day.date}
-                    onPress={() => openPicker(day.date, 'main')}
+                    onPress={goToDayView}
                     style={[
                       styles.weekEmptyCard,
                       {
@@ -826,8 +827,8 @@ export default function PlanScreen() {
               const filledSlots = courseSlots.filter((s) => s.meal);
 
               return (
+                <Pressable key={day.date} onPress={goToDayView} accessibilityRole="button" accessibilityLabel={`View ${day.dayLabel}`}>
                 <GlassView
-                  key={day.date}
                   style={[
                     styles.weekDayCard,
                     isToday && { borderWidth: 2, borderColor: `${colors.primary}66` },
@@ -855,7 +856,7 @@ export default function PlanScreen() {
                         )}
                         {dayParty && (
                           <Pressable
-                            onPress={() => router.push(`/dinner-setup?date=${day.date}`)}
+                            onPress={(e) => { e.stopPropagation(); router.push(`/dinner-setup?date=${day.date}`); }}
                             style={[styles.weekPartyPill, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}25` }]}
                             accessibilityRole="button"
                             accessibilityLabel="Dinner party"
@@ -874,7 +875,7 @@ export default function PlanScreen() {
                     {filledSlots.map((slot) => (
                       <Pressable
                         key={slot.courseType}
-                        onPress={() => router.push(`/recipe/${slot.meal!.recipeId}`)}
+                        onPress={(e) => { e.stopPropagation(); router.push(`/recipe/${slot.meal!.recipeId}`); }}
                         style={styles.weekMealSlot}
                         accessibilityRole="button"
                         accessibilityLabel={`${slot.label}: ${slot.meal!.recipeName}`}
@@ -927,7 +928,7 @@ export default function PlanScreen() {
                           {missingSlots.map((slot) => (
                             <Pressable
                               key={slot.courseType}
-                              onPress={() => openPicker(day.date, slot.courseType)}
+                              onPress={(e) => { e.stopPropagation(); openPicker(day.date, slot.courseType); }}
                               style={[styles.weekAddCoursePill, { borderColor: `${colors.outline}30`, backgroundColor: `${colors.secondary}08` }]}
                               accessibilityRole="button"
                               accessibilityLabel={`Add ${slot.label}`}
@@ -943,6 +944,7 @@ export default function PlanScreen() {
                     })()}
                   </View>
                 </GlassView>
+                </Pressable>
               );
             })}
           </View>
