@@ -290,31 +290,6 @@ export default function PlanScreen() {
 
   const primaryMeal = selectedDay?.courses.main;
 
-  // ─── Smart Grocery Indicator ───
-  const groceryTotal = app.groceryItems.filter((i) => !i.excluded).length;
-  const groceryUnchecked = app.groceryItems.filter((i) => !i.excluded && !i.checked).length;
-  const dayOfWeek = new Date().getDay();
-  const isLateInWeek = dayOfWeek === 0 || dayOfWeek >= 4;
-
-  const showGroceryIndicator = groceryTotal > 0 && groceryUnchecked > 0 && (isLateInWeek || groceryUnchecked > groceryTotal / 2);
-
-  const renderGroceryIndicator = () => {
-    if (!showGroceryIndicator) return null;
-    return (
-      <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.sm }}>
-        <View style={[styles.groceryIndicator, { backgroundColor: colors.surfaceContainerLow }]}>
-          <MaterialCommunityIcons name="cart-outline" size={20} color={colors.onSurfaceVariant} />
-          <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, flex: 1 }]}>
-            {groceryUnchecked} items on your grocery list
-          </Text>
-          <Pressable onPress={() => router.push('/(tabs)/grocery')} accessibilityRole="button" accessibilityLabel="View grocery list">
-            <Text style={[Typography.labelSmall, { color: colors.primary }]}>View</Text>
-          </Pressable>
-        </View>
-      </View>
-    );
-  };
-
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <HeaderBar />
@@ -464,7 +439,7 @@ export default function PlanScreen() {
 
         {!isDailyView && <View style={{ height: Spacing.sm }} />}
 
-        {!isDailyView && renderGroceryIndicator()}
+        {!isDailyView && <View style={{ height: Spacing.sm }} />}
 
         {/* ═══ DAILY VIEW ═══ */}
         {isDailyView ? (
@@ -532,7 +507,6 @@ export default function PlanScreen() {
                   );
                 })}
               </View>
-              {renderGroceryIndicator()}
             </>
           ) : (
             /* ── Daily: single meal (primary dinner) + course slots ── */
@@ -655,7 +629,6 @@ export default function PlanScreen() {
                   );
                 })}
               </View>
-              {renderGroceryIndicator()}
             </>
           )
         ) : (
@@ -1170,14 +1143,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.sm,
     marginBottom: Spacing.lg,
-  },
-  groceryIndicator: {
-    height: 44,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    borderRadius: Radius.lg,
-    gap: Spacing.sm + 4,
   },
   timeline: {
     paddingHorizontal: Spacing.page,
