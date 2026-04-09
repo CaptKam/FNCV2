@@ -124,16 +124,6 @@ export function SmartCookBar({ variant = 'floating' }: SmartCookBarProps) {
         <Text style={[Typography.titleSmall, { color: colors.onSurface }]} numberOfLines={2}>
           {headline}
         </Text>
-        {readiness.groceryProgress && (
-          <View style={styles.progressRow}>
-            <View style={[styles.progressTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <View style={[styles.progressFill, { backgroundColor: colors.primary, width: `${(readiness.groceryProgress.checked / Math.max(readiness.groceryProgress.total, 1)) * 100}%` }]} />
-            </View>
-            <Text style={[Typography.caption, { color: colors.outline }]}>
-              {readiness.groceryProgress.checked}/{readiness.groceryProgress.total}
-            </Text>
-          </View>
-        )}
       </View>
       <Pressable
         onPress={handleCTA}
@@ -184,22 +174,6 @@ const styles = StyleSheet.create({
   },
   textArea: {
     flex: 1,
-    gap: Spacing.xs,
-  },
-  progressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 2,
   },
   ctaBtn: {
     paddingHorizontal: Spacing.md,
