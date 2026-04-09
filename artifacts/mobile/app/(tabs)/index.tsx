@@ -68,7 +68,7 @@ export default function DiscoverScreen() {
 
   const CELL_WIDTH = (SCREEN_WIDTH - GRID_PAD * 2 - GRID_GAP) / 2;
   const HERO_HEIGHT = SCREEN_WIDTH < 375 ? 200 : SCREEN_WIDTH > 414 ? 280 : 240;
-  const CARD_IMG_HEIGHT = SCREEN_WIDTH < 375 ? 150 : 180;
+  const CARD_IMG_HEIGHT = 160;
 
   // Hero carousel ref
   const heroListRef = useRef<FlatList>(null);

@@ -244,7 +244,7 @@ export default function CountryDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   heroContainer: {
-    height: 400,
+    height: 360,
     position: 'relative',
   },
   heroText: {
