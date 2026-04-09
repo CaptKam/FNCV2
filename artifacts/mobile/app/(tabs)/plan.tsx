@@ -336,24 +336,24 @@ export default function PlanScreen() {
                 <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
               </Pressable>
               <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
-                <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
+                <Text style={[Typography.labelLarge, { color: colors.outline, lineHeight: 16, marginBottom: 2 }]}>
                   YOUR MEAL PLAN
                 </Text>
                 <View style={styles.weekTitleRow}>
-                  <Text style={[Typography.title, { color: colors.onSurface }]}>
+                  <Text style={[Typography.headline, { color: colors.onSurface, lineHeight: 28 }]}>
                     {isDailyView ? (selectedDay?.dayLabel ?? '') : weekLabels[selectedWeek]}
                   </Text>
                   {isDailyView && selectedDate === todayISO && (
-                    <Text style={[Typography.title, { color: colors.primary }]}> · Today</Text>
+                    <Text style={[Typography.headline, { color: colors.primary, lineHeight: 28 }]}> · Today</Text>
                   )}
                   <MaterialCommunityIcons name="chevron-down" size={20} color={colors.primary} />
                 </View>
                 {isDailyView ? (
-                  <Text style={[Typography.caption, { color: colors.primary, marginTop: Spacing.xs }]}>
+                  <Text style={[Typography.caption, { color: colors.primary, lineHeight: 16, marginTop: 2 }]}>
                     {formatDateLabel(selectedDate)} · {weekLabels[selectedWeek]}
                   </Text>
                 ) : (
-                  <Text style={[Typography.caption, { color: colors.outline, marginTop: Spacing.xs }]}>
+                  <Text style={[Typography.caption, { color: colors.outline, lineHeight: 16, marginTop: 2 }]}>
                     {weekLabel}
                   </Text>
                 )}
@@ -1191,7 +1191,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingVertical: 14,
     borderRadius: Radius.full,
   },
   weekCenter: {
