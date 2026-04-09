@@ -841,17 +841,14 @@ export default function PlanScreen() {
                           </View>
                         )}
                         {dayParty && (
-                          <Pressable
-                            onPress={(e) => { e.stopPropagation(); router.push(`/dinner-setup?date=${day.date}`); }}
+                          <View
                             style={[styles.weekPartyPill, { backgroundColor: `${colors.primary}12`, borderColor: `${colors.primary}25` }]}
-                            accessibilityRole="button"
-                            accessibilityLabel="Dinner party"
                           >
                             <MaterialCommunityIcons name="account-group" size={14} color={colors.primary} />
                             <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', fontSize: 11 }]}>
                               Dinner Party
                             </Text>
-                          </Pressable>
+                          </View>
                         )}
                       </View>
                     </View>
