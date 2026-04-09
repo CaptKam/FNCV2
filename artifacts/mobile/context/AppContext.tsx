@@ -489,9 +489,46 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const removeRecipeFromPlanByName = useCallback(
+    (recipeName: string) => {
+      setItinerary((prev) =>
+        prev.map((day) => {
+          const courses = { ...day.courses };
+          let changed = false;
+          for (const key of Object.keys(courses) as CourseType[]) {
+            if (courses[key]?.recipeName === recipeName) {
+              delete courses[key];
+              changed = true;
+            }
+          }
+          return changed ? { ...day, courses } : day;
+        })
+      );
+    },
+    []
+  );
+
   const removeGroceryItem = useCallback((id: string) => {
-    setGroceryItems((prev) => prev.filter((item) => item.id !== id));
-  }, []);
+    setGroceryItems((prev) => {
+      const target = prev.find((item) => item.id === id);
+      if (!target) return prev;
+      const next = prev.filter((item) => item.id !== id);
+      const affectedRecipes = target.recipeNames;
+      if (affectedRecipes.length > 0) {
+        const orphaned = affectedRecipes.filter(
+          (name) => !next.some((g) => !g.id.startsWith('manual-') && g.recipeNames.includes(name))
+        );
+        if (orphaned.length > 0) {
+          setTimeout(() => {
+            for (const name of orphaned) {
+              removeRecipeFromPlanByName(name);
+            }
+          }, 0);
+        }
+      }
+      return next;
+    });
+  }, [removeRecipeFromPlanByName]);
 
   const removeGroceryItemsByRecipe = useCallback((recipeName: string) => {
     setGroceryItems((prev) =>
@@ -578,25 +615,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     },
     [removeGroceryItemsByRecipe]
-  );
-
-  const removeRecipeFromPlanByName = useCallback(
-    (recipeName: string) => {
-      setItinerary((prev) =>
-        prev.map((day) => {
-          const courses = { ...day.courses };
-          let changed = false;
-          for (const key of Object.keys(courses) as CourseType[]) {
-            if (courses[key]?.recipeName === recipeName) {
-              delete courses[key];
-              changed = true;
-            }
-          }
-          return changed ? { ...day, courses } : day;
-        })
-      );
-    },
-    []
   );
 
   const toggleDinnerParty = useCallback((date: string) => {
