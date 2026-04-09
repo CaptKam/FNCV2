@@ -398,11 +398,11 @@ export default function ProfileScreen() {
         </Text>
       </ScrollView>
 
-      {/* Theme picker modal */}
       <Modal
         visible={showThemeModal}
         transparent
         animationType="fade"
+        statusBarTranslucent
         onRequestClose={() => setShowThemeModal(false)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowThemeModal(false)} accessibilityRole="button" accessibilityLabel="Close appearance settings">
@@ -457,11 +457,11 @@ export default function ProfileScreen() {
         </Pressable>
       </Modal>
 
-      {/* Servings picker modal */}
       <Modal
         visible={showServingsModal}
         transparent
         animationType="fade"
+        statusBarTranslucent
         onRequestClose={() => setShowServingsModal(false)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowServingsModal(false)} accessibilityRole="button" accessibilityLabel="Close servings picker">
@@ -501,11 +501,11 @@ export default function ProfileScreen() {
         </Pressable>
       </Modal>
 
-      {/* Grocery partner picker modal */}
       <Modal
         visible={showPartnerModal}
         transparent
         animationType="fade"
+        statusBarTranslucent
         onRequestClose={() => setShowPartnerModal(false)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowPartnerModal(false)} accessibilityRole="button" accessibilityLabel="Close grocery partner picker">
@@ -559,6 +559,7 @@ export default function ProfileScreen() {
         visible={showProfileModal}
         transparent
         animationType="fade"
+        statusBarTranslucent
         onRequestClose={() => setShowProfileModal(false)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowProfileModal(false)} accessibilityRole="button" accessibilityLabel="Close profile editor">
@@ -780,6 +781,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
+    zIndex: 999,
   },
   modalSheet: {
     borderTopLeftRadius: Radius.lg,
