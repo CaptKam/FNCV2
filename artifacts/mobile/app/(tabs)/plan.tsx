@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, ScrollView, StyleSheet, Pressable, Modal, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -86,7 +87,7 @@ function MealCard({
   onRemove?: () => void;
   colors: ReturnType<typeof useThemeColors>;
 }) {
-  return (
+  const card = (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
@@ -150,6 +151,26 @@ function MealCard({
         </View>
       </GlassView>
     </Pressable>
+  );
+
+  if (!onRemove) return card;
+
+  return (
+    <Swipeable
+      renderRightActions={(progress: RNAnimated.AnimatedInterpolation<number>) => (
+        <RNAnimated.View style={[styles.swipeRemove, { backgroundColor: colors.error, opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }) }]}>
+          <MaterialCommunityIcons name="close" size={20} color="#FFFFFF" />
+          <Text style={[Typography.labelSmall, { color: '#FFFFFF', marginTop: 4 }]}>Remove</Text>
+        </RNAnimated.View>
+      )}
+      onSwipeableOpen={() => {
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } catch {}
+        onRemove();
+      }}
+      overshootRight={false}
+    >
+      {card}
+    </Swipeable>
   );
 }
 
@@ -1385,5 +1406,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: 14,
     borderRadius: Radius.full,
+  },
+  swipeRemove: {
+    width: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: Radius.lg,
+    marginBottom: Spacing.xl,
   },
 });

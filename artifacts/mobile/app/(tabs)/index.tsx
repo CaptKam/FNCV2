@@ -9,6 +9,7 @@ import {
   FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  RefreshControl,
   useWindowDimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -105,6 +106,17 @@ export default function DiscoverScreen() {
   // Recipe pagination
   const [visibleCount, setVisibleCount] = useState(8);
 
+  // Pull-to-refresh
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [shuffleSeed, setShuffleSeed] = useState(0);
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    setHeroIndex((prev) => (prev + 1) % countries.length);
+    setShuffleSeed((s) => s + 1);
+    setVisibleCount(8);
+    setTimeout(() => setIsRefreshing(false), 800);
+  }, []);
+
   // Tonight's plan
   const todaysMeals = app.getTodaysMeals();
   const todayDate = toISO(new Date());
@@ -146,7 +158,8 @@ export default function DiscoverScreen() {
       ? recipes.filter((r) => r.countryId === selectedCountry)
       : [...recipes].sort(() => Math.random() - 0.5);
     return pool;
-  }, [selectedCountry]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCountry, shuffleSeed]);
 
   // XP/Level data
   const { xp, level, totalRecipesCooked, passportStamps } = app;
@@ -204,6 +217,9 @@ export default function DiscoverScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={200}
         contentContainerStyle={{ paddingTop: insets.top + 76, paddingBottom: 120 }}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+        }
       >
         {/* ═══ ROW 1: GREETING + PROFILE ═══ */}
         <View style={[styles.greetingRow, { paddingHorizontal: GRID_PAD }]}>
