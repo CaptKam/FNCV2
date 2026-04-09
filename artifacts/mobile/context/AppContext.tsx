@@ -71,6 +71,7 @@ interface AppContextValue {
   itinerary: ItineraryDay[];
   addCourseToDay: (date: string, courseType: CourseType, recipe: Recipe) => void;
   removeCourseFromDay: (date: string, courseType: CourseType) => void;
+  removeRecipeFromPlanByName: (recipeName: string) => void;
   toggleDinnerParty: (date: string) => void;
   autoGenerateWeek: (selectedDates: string[], coursePreference: CoursePreference) => void;
   restoreItinerary: (snapshot: ItineraryDay[]) => void;
@@ -577,6 +578,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     },
     [removeGroceryItemsByRecipe]
+  );
+
+  const removeRecipeFromPlanByName = useCallback(
+    (recipeName: string) => {
+      setItinerary((prev) =>
+        prev.map((day) => {
+          const courses = { ...day.courses };
+          let changed = false;
+          for (const key of Object.keys(courses) as CourseType[]) {
+            if (courses[key]?.recipeName === recipeName) {
+              delete courses[key];
+              changed = true;
+            }
+          }
+          return changed ? { ...day, courses } : day;
+        })
+      );
+    },
+    []
   );
 
   const toggleDinnerParty = useCallback((date: string) => {
@@ -1152,6 +1172,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     itinerary,
     addCourseToDay,
     removeCourseFromDay,
+    removeRecipeFromPlanByName,
     toggleDinnerParty,
     autoGenerateWeek,
     restoreItinerary,
