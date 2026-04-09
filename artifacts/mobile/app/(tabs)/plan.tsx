@@ -334,6 +334,7 @@ export default function PlanScreen() {
             <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
               <Pressable
                 style={styles.weekArrow}
+                hitSlop={8}
                 onPress={() => {
                   if (isDailyView) {
                     if (selectedDayIndex > 0) {
@@ -376,6 +377,7 @@ export default function PlanScreen() {
               </Pressable>
               <Pressable
                 style={styles.weekArrow}
+                hitSlop={8}
                 onPress={() => {
                   if (isDailyView) {
                     if (selectedDayIndex < 6) {
@@ -1262,7 +1264,10 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   weekArrow: {
-    padding: Spacing.xs,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dayCircle: {
     width: 36,

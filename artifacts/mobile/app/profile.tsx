@@ -69,6 +69,35 @@ interface SettingRowProps {
 }
 
 function SettingRow({ icon, label, subtitle, onPress, trailing, colors }: SettingRowProps) {
+  const content = (
+    <>
+      <View style={[styles.settingIcon, { backgroundColor: colors.primaryMuted }]}>
+        <MaterialCommunityIcons name={icon} size={20} color={colors.primary} />
+      </View>
+      <View style={styles.settingText}>
+        <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{label}</Text>
+        {subtitle && (
+          <Text style={[Typography.caption, { color: colors.outline }]}>{subtitle}</Text>
+        )}
+      </View>
+      {trailing || (
+        <MaterialCommunityIcons name="chevron-right" size={20} color={colors.outline} />
+      )}
+    </>
+  );
+
+  // If trailing exists, use View to avoid nested Pressable (button-in-button)
+  if (trailing) {
+    return (
+      <View
+        style={[styles.settingRow, { backgroundColor: colors.surfaceContainerLow }]}
+        accessibilityLabel={subtitle ? `${label}, ${subtitle}` : label}
+      >
+        {content}
+      </View>
+    );
+  }
+
   return (
     <Pressable
       onPress={onPress}
@@ -82,18 +111,7 @@ function SettingRow({ icon, label, subtitle, onPress, trailing, colors }: Settin
       accessibilityRole="button"
       accessibilityLabel={subtitle ? `${label}, ${subtitle}` : label}
     >
-      <View style={[styles.settingIcon, { backgroundColor: colors.primaryMuted }]}>
-        <MaterialCommunityIcons name={icon} size={20} color={colors.primary} />
-      </View>
-      <View style={styles.settingText}>
-        <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{label}</Text>
-        {subtitle && (
-          <Text style={[Typography.caption, { color: colors.outline }]}>{subtitle}</Text>
-        )}
-      </View>
-      {trailing || (
-        <MaterialCommunityIcons name="chevron-right" size={20} color={colors.outline} />
-      )}
+      {content}
     </Pressable>
   );
 }

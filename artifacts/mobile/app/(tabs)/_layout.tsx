@@ -1,6 +1,6 @@
-import { Tabs } from "expo-router";
+import { Tabs, usePathname } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useCallback, createContext, useContext } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   useSharedValue,
@@ -13,6 +13,27 @@ import { GlassView } from "@/components/GlassView";
 import { useThemeColors } from "@/hooks/useThemeColors";
 import { Radius } from "@/constants/radius";
 import { useApp } from "@/context/AppContext";
+
+// Scroll-to-top context: tab screens register their scrollRef,
+// and the tab bar calls scrollToTop when the active tab is re-tapped.
+type ScrollToTopFn = () => void;
+const ScrollToTopContext = createContext<{
+  register: (route: string, fn: ScrollToTopFn) => void;
+  unregister: (route: string) => void;
+  trigger: (route: string) => void;
+}>({
+  register: () => {},
+  unregister: () => {},
+  trigger: () => {},
+});
+
+export function useScrollToTop(route: string, fn: ScrollToTopFn) {
+  const { register, unregister } = useContext(ScrollToTopContext);
+  useEffect(() => {
+    register(route, fn);
+    return () => unregister(route);
+  }, [route, fn, register, unregister]);
+}
 
 const TAB_BAR_HEIGHT = 64;
 const ICON_SPRING = { damping: 16, stiffness: 260, mass: 0.6 };
@@ -68,12 +89,27 @@ export default function TabLayout() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const app = useApp();
+  const pathname = usePathname();
   const groceryBadgeCount = useMemo(
     () => app.groceryItems.filter((i) => !i.checked && !i.excluded).length,
     [app.groceryItems]
   );
 
+  // Scroll-to-top registry
+  const scrollHandlers = React.useRef<Record<string, ScrollToTopFn>>({});
+  const register = useCallback((route: string, fn: ScrollToTopFn) => {
+    scrollHandlers.current[route] = fn;
+  }, []);
+  const unregister = useCallback((route: string) => {
+    delete scrollHandlers.current[route];
+  }, []);
+  const trigger = useCallback((route: string) => {
+    scrollHandlers.current[route]?.();
+  }, []);
+  const scrollCtx = useMemo(() => ({ register, unregister, trigger }), [register, unregister, trigger]);
+
   return (
+    <ScrollToTopContext.Provider value={scrollCtx}>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -107,12 +143,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          lazy: false,
           title: "Discover",
           tabBarAccessibilityLabel: "Discover tab",
           tabBarIcon: ({ color, focused }) => (
             <AnimatedIcon name="compass-outline" color={color} focused={focused} colors={colors} />
           ),
         }}
+        listeners={{ tabPress: () => { if (pathname === '/') trigger('index'); } }}
       />
       <Tabs.Screen
         name="search"
@@ -123,16 +161,19 @@ export default function TabLayout() {
             <AnimatedIcon name="magnify" color={color} focused={focused} colors={colors} />
           ),
         }}
+        listeners={{ tabPress: () => { if (pathname === '/search') trigger('search'); } }}
       />
       <Tabs.Screen
         name="plan"
         options={{
+          lazy: false,
           title: "Plan",
           tabBarAccessibilityLabel: "Plan tab",
           tabBarIcon: ({ color, focused }) => (
             <AnimatedIcon name="calendar-month-outline" color={color} focused={focused} colors={colors} />
           ),
         }}
+        listeners={{ tabPress: () => { if (pathname === '/plan') trigger('plan'); } }}
       />
       <Tabs.Screen
         name="grocery"
@@ -145,18 +186,22 @@ export default function TabLayout() {
             <AnimatedIcon name="cart-outline" color={color} focused={focused} colors={colors} />
           ),
         }}
+        listeners={{ tabPress: () => { if (pathname === '/grocery') trigger('grocery'); } }}
       />
       <Tabs.Screen
         name="cook"
         options={{
+          lazy: false,
           title: "Cook",
           tabBarAccessibilityLabel: "Cook tab",
           tabBarIcon: ({ color, focused }) => (
             <AnimatedIcon name="chef-hat" color={color} focused={focused} colors={colors} />
           ),
         }}
+        listeners={{ tabPress: () => { if (pathname === '/cook') trigger('cook'); } }}
       />
     </Tabs>
+    </ScrollToTopContext.Provider>
   );
 }
 
