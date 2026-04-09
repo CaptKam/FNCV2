@@ -907,6 +907,29 @@ export default function PlanScreen() {
                         </View>
                       </Pressable>
                     ))}
+
+                    {(() => {
+                      const missingSlots = courseSlots.filter((s) => !s.meal);
+                      if (missingSlots.length === 0) return null;
+                      return (
+                        <View style={styles.weekAddCoursePills}>
+                          {missingSlots.map((slot) => (
+                            <Pressable
+                              key={slot.courseType}
+                              onPress={() => openPicker(day.date, slot.courseType)}
+                              style={[styles.weekAddCoursePill, { borderColor: `${colors.outline}30`, backgroundColor: `${colors.secondary}08` }]}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Add ${slot.label}`}
+                            >
+                              <MaterialCommunityIcons name="plus" size={14} color={colors.secondary} />
+                              <Text style={[Typography.labelSmall, { color: colors.secondary, fontWeight: '700', fontSize: 11 }]}>
+                                {slot.label}
+                              </Text>
+                            </Pressable>
+                          ))}
+                        </View>
+                      );
+                    })()}
                   </View>
                 </GlassView>
               );
@@ -1579,6 +1602,21 @@ const styles = StyleSheet.create({
     bottom: Spacing.md,
     left: Spacing.md,
     right: Spacing.md,
+  },
+  weekAddCoursePills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+  },
+  weekAddCoursePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+    borderWidth: 1,
   },
   pastDayCard: {
     borderRadius: 24,
