@@ -55,7 +55,7 @@ function getDayOfYear(): number {
 // ─── Constants ───
 
 const GRID_PAD = Spacing.md; // 16px
-const GRID_GAP = Spacing.sm + 4; // 12px
+const GRID_GAP = 12;
 
 export default function DiscoverScreen() {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   recipeContent: {
-    padding: Spacing.md,
+    padding: 12,
     gap: 4,
   },
   recipeMeta: {

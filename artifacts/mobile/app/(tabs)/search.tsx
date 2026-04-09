@@ -37,7 +37,7 @@ const ALLERGEN_FILTERS: AllergenType[] = ['milk', 'egg', 'wheat', 'peanuts', 'tr
 
 export default function SearchScreen() {
   const { width } = useWindowDimensions();
-  const CARD_WIDTH = (width - Spacing.page * 2 - Spacing.md) / 2;
+  const CARD_WIDTH = (width - Spacing.page * 2 - 12) / 2;
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: Radius.lg,
     overflow: 'hidden',
-    marginBottom: Spacing.md,
+    marginBottom: 12,
     position: 'relative',
   },
   cardImage: {
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     height: 220,
   },
   cardContent: {
-    padding: Spacing.md,
+    padding: 12,
     gap: 6,
   },
   imageWrapper: {
