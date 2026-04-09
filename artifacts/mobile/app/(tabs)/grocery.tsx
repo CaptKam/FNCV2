@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert, Animated as RNAnimated } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -541,8 +542,33 @@ export default function GroceryScreen() {
               const scaledAmount = getScaledAmount(item);
               const isManual = item.recipeNames.length === 0;
               return (
-                <PressableScale
+                <Swipeable
                   key={item.id}
+                  renderLeftActions={(progress: RNAnimated.AnimatedInterpolation<number>) => (
+                    <RNAnimated.View style={[styles.swipeAction, { backgroundColor: colors.success, opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }) }]}>
+                      <MaterialCommunityIcons name="check" size={20} color="#FFFFFF" />
+                      <Text style={[Typography.labelSmall, { color: '#FFFFFF', marginTop: 4 }]}>Done</Text>
+                    </RNAnimated.View>
+                  )}
+                  renderRightActions={(progress: RNAnimated.AnimatedInterpolation<number>) => (
+                    <RNAnimated.View style={[styles.swipeAction, { backgroundColor: colors.error, opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }) }]}>
+                      <MaterialCommunityIcons name="trash-can-outline" size={20} color="#FFFFFF" />
+                      <Text style={[Typography.labelSmall, { color: '#FFFFFF', marginTop: 4 }]}>Delete</Text>
+                    </RNAnimated.View>
+                  )}
+                  onSwipeableOpen={(direction) => {
+                    if (direction === 'left') {
+                      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                      app.toggleGroceryItem(item.id);
+                    } else {
+                      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } catch {}
+                      app.removeGroceryItem(item.id);
+                    }
+                  }}
+                  overshootLeft={false}
+                  overshootRight={false}
+                >
+                <PressableScale
                   haptic="light"
                   onPress={() => {
                     app.toggleGroceryItem(item.id);
@@ -557,6 +583,14 @@ export default function GroceryScreen() {
                   accessibilityRole="checkbox"
                   accessibilityLabel={`${item.name}${scaledAmount ? ', ' + scaledAmount : ''}`}
                   accessibilityState={{ checked: item.checked }}
+                  accessibilityActions={[
+                    { name: 'delete', label: 'Delete item' },
+                    { name: 'toggleCheck', label: 'Mark as purchased' },
+                  ]}
+                  onAccessibilityAction={(event: { nativeEvent: { actionName: string } }) => {
+                    if (event.nativeEvent.actionName === 'delete') app.removeGroceryItem(item.id);
+                    if (event.nativeEvent.actionName === 'toggleCheck') app.toggleGroceryItem(item.id);
+                  }}
                 >
                   <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
                     <MaterialCommunityIcons name={group.icon} size={16} color={group.color} />
@@ -607,6 +641,7 @@ export default function GroceryScreen() {
                   )}
                   <Checkbox checked={item.checked} onToggle={() => app.toggleGroceryItem(item.id)} />
                 </PressableScale>
+                </Swipeable>
               );
             })}
           </View>
@@ -875,5 +910,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.md,
+  },
+  swipeAction: {
+    width: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: Radius.sm,
+    marginBottom: Spacing.sm,
   },
 });
