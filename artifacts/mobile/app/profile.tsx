@@ -110,6 +110,7 @@ export default function ProfileScreen() {
   const [showServingsModal, setShowServingsModal] = useState(false);
   const [showPartnerModal, setShowPartnerModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const anyModalOpen = showThemeModal || showServingsModal || showPartnerModal || showProfileModal;
   const [editName, setEditName] = useState(app.displayName);
   const [editAvatar, setEditAvatar] = useState(app.avatarId);
 
@@ -147,7 +148,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <HeaderBar showBack />
+      {!anyModalOpen && <HeaderBar showBack />}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 76 }}

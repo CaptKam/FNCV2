@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fork &amp; Compass | Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fef9f3",
+                        "primary": "#753000",
+                        "secondary": "#845238",
+                        "secondary-container": "#ffbd9d",
+                        "on-tertiary-fixed": "#001b3c",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#341100",
+                        "primary-container": "#9a4100",
+                        "surface-container": "#f2ede7",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#ffc9af",
+                        "inverse-surface": "#32302c",
+                        "primary-fixed": "#ffdbcb",
+                        "surface": "#fef9f3",
+                        "on-tertiary-fixed-variant": "#004689",
+                        "surface-variant": "#e6e2dc",
+                        "on-secondary-fixed-variant": "#683b23",
+                        "tertiary-container": "#005caf",
+                        "surface-container-high": "#ece7e2",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#e6e2dc",
+                        "secondary-fixed-dim": "#f9b897",
+                        "on-surface-variant": "#564339",
+                        "secondary-fixed": "#ffdbcb",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#f8f3ed",
+                        "background": "#fef9f3",
+                        "tertiary": "#004485",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f5f0ea",
+                        "on-tertiary-container": "#c0d6ff",
+                        "outline-variant": "#ddc1b4",
+                        "surface-dim": "#ded9d4",
+                        "on-background": "#1d1b18",
+                        "inverse-primary": "#ffb691",
+                        "on-surface": "#1d1b18",
+                        "on-primary-fixed-variant": "#783100",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#ffb691",
+                        "on-secondary-container": "#7a4a31",
+                        "tertiary-fixed": "#d5e3ff",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#a7c8ff",
+                        "on-secondary-fixed": "#331101",
+                        "outline": "#897267",
+                        "surface-tint": "#9d4303"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .dark .liquid-glass {
+            background: rgba(40, 38, 35, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .specular-highlight {
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full bg-orange-50/80 dark:bg-stone-900/80 backdrop-blur-3xl z-50 flex justify-between items-center px-6 h-16 shadow-[0_20px_40px_rgba(29,27,24,0.06)] border-t border-white/40">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-orange-900 dark:text-orange-100 cursor-pointer">menu</span>
+<h1 class="font-serif italic text-orange-950 dark:text-orange-50 text-2xl tracking-tight">Fork &amp; Compass</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-stone-500 dark:text-stone-400 font-serif text-lg">Profile</span>
+<img alt="User profile photo" class="w-10 h-10 rounded-full border-2 border-white/40 object-cover" data-alt="professional portrait of a middle-aged man with kind eyes and a warm smile, soft studio lighting, neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlfjMR-_855J2N_1y8UgTiCf1_rEfIkGQTOLtrnTTIoR2xPunT4r_6wH6s-VscVuv41DWaNyQLQYYuCGzx0czmBge3sJvlyistnOX_FOMZueo25WU7NKt81VbdAw9ZlXNvRhNO-wa42lHjg_ZUzvipPOTS58qHvLykccvIXfvoIK7Tp--uhNBINVclHU7wsCKPNO_YcR8dZqZhUdlzR82KeSfA4rMeopjZ2zUGuZywB3My4lP6VmIkPQIaUliw-VPwOCfdayWKrQWl"/>
+</div>
+</header>
+<main class="mt-20 px-6 max-w-2xl mx-auto space-y-10">
+<!-- User Profile Section -->
+<section class="flex flex-col items-center text-center mt-12">
+<div class="relative group">
+<div class="absolute -inset-1 bg-gradient-to-tr from-primary to-secondary-container rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+<img alt="Elias Thorne" class="relative w-32 h-32 rounded-full border-4 border-surface shadow-xl object-cover" data-alt="close-up portrait of a culinary expert with sophisticated attire, soft natural window light, warm earthy tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuTdbzxZB5Noei9qDzaj4uJSUqObOV7Prp4mw8IX0eBuGd9uhLXsOjPlLXSe3_tXX6Sgx7HYgsMHRcqbuNr8KbzGfwL49F8nnlv9Njd-120NIX8u2uKgk__mBzHL7_32X0xCsSGc2gZMkK7IWFuVXQ3cLLdR547JH7CFsrsSz7tnG244FKNMEtSwEmIihG_fCr0L_3mWKTt0XZHzdYUbKlsKXcgueEpt4bRJPpCXsJ7wFb6sqLmSP4cPexKBPpHiugtvZ8Mmx8Vmth"/>
+</div>
+<h2 class="mt-6 font-headline text-3xl font-bold text-on-background tracking-tight">Elias Thorne</h2>
+<div class="mt-2 px-4 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-label uppercase tracking-widest font-bold">
+                Master Gastronome
+            </div>
+</section>
+<!-- Stats Grid (Bento Style) -->
+<section class="grid grid-cols-3 gap-4">
+<div class="col-span-1 p-4 bg-surface-container-low rounded-lg flex flex-col items-center justify-center text-center">
+<span class="font-headline text-2xl font-bold text-primary">42</span>
+<span class="text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Recipes Cooked</span>
+</div>
+<div class="col-span-1 p-4 bg-primary text-on-primary rounded-lg flex flex-col items-center justify-center text-center shadow-lg">
+<span class="font-headline text-2xl font-bold">8</span>
+<span class="text-[10px] font-label uppercase tracking-wider opacity-80">Countries Visited</span>
+</div>
+<div class="col-span-1 p-4 bg-surface-container-low rounded-lg flex flex-col items-center justify-center text-center">
+<span class="font-headline text-2xl font-bold text-primary">12</span>
+<span class="text-[10px] font-label uppercase tracking-wider text-on-surface-variant">Week Streak</span>
+</div>
+</section>
+<!-- Culinary Passport Section -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<h3 class="font-headline text-xl text-on-background">Your Progress</h3>
+<span class="text-xs font-label text-primary font-bold uppercase tracking-widest cursor-pointer">View All</span>
+</div><p class="text-xs text-stone-500 mt-1 mb-4">Earned by mastering a regional week</p>
+<div class="grid grid-cols-3 gap-6">
+<!-- Italy Stamp -->
+<div class="aspect-square liquid-glass rounded-xl flex flex-col items-center justify-center p-4 group cursor-pointer hover:scale-105 transition-transform">
+<div class="w-16 h-16 rounded-full border-2 border-dashed border-orange-200 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-orange-800 text-3xl" data-icon="restaurant" data-weight="fill" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+</div>
+<span class="font-headline italic text-sm text-stone-800">Italy</span>
+<span class="text-[8px] font-label uppercase text-stone-500">June '25</span>
+</div>
+<!-- Morocco Stamp -->
+<div class="aspect-square liquid-glass rounded-xl flex flex-col items-center justify-center p-4 group cursor-pointer hover:scale-105 transition-transform">
+<div class="w-16 h-16 rounded-full border-2 border-dashed border-orange-200 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-orange-800 text-3xl" data-icon="local_cafe" data-weight="fill" style="font-variation-settings: 'FILL' 1;">local_cafe</span>
+</div>
+<span class="font-headline italic text-sm text-stone-800">Morocco</span>
+<span class="text-[8px] font-label uppercase text-stone-500">Sept '25</span>
+</div>
+<!-- Japan Stamp -->
+<div class="aspect-square liquid-glass rounded-xl flex flex-col items-center justify-center p-4 group cursor-pointer hover:scale-105 transition-transform">
+<div class="w-16 h-16 rounded-full border-2 border-dashed border-orange-200 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-orange-800 text-3xl" data-icon="ramen_dining" data-weight="fill" style="font-variation-settings: 'FILL' 1;">ramen_dining</span>
+</div>
+<span class="font-headline italic text-sm text-stone-800">Japan</span>
+<span class="text-[8px] font-label uppercase text-stone-500">Dec '25</span>
+</div>
+</div>
+</section>
+<!-- Settings List -->
+<section class="bg-surface-container-low rounded-xl overflow-hidden p-2">
+<div class="space-y-1">
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg group cursor-pointer transition-all hover:bg-white">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">restaurant_menu</span>
+</div>
+<span class="font-medium text-on-surface">Dietary Preferences</span>
+</div>
+<span class="material-symbols-outlined text-stone-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg group cursor-pointer transition-all hover:bg-white">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">contrast</span>
+</div>
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">Appearance</span>
+<span class="text-xs text-stone-500">Light Mode</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-stone-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg group cursor-pointer transition-all hover:bg-white">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<span class="font-medium text-on-surface">Notifications</span>
+</div>
+<span class="material-symbols-outlined text-stone-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-lg group cursor-pointer transition-all hover:bg-white">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">info</span>
+</div>
+<span class="font-medium text-on-surface">About</span>
+</div>
+<span class="material-symbols-outlined text-stone-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Liquid Tab) -->
+<nav class="fixed bottom-8 left-0 right-0 mx-auto flex justify-around items-center h-20 z-50 bg-stone-100/70 dark:bg-stone-950/70 backdrop-blur-2xl w-[90%] max-w-md rounded-full shadow-2xl border-t border-white/40">
+<div class="flex flex-col items-center gap-1 text-stone-600 dark:text-stone-400 p-3 hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-sans text-[10px] uppercase tracking-widest">Explore</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-stone-600 dark:text-stone-400 p-3 hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-sans text-[10px] uppercase tracking-widest">Bookmarks</span>
+</div>
+<!-- Middle action or third tab -->
+<div class="flex flex-col items-center gap-1 text-stone-600 dark:text-stone-400 p-3 hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined">import_contacts</span>
+<span class="font-sans text-[10px] uppercase tracking-widest">Passport</span>
+</div>
+<!-- Active Tab: Settings (Mapping Profile to Settings per JSON) -->
+<div class="flex flex-col items-center gap-1 bg-orange-800 text-white rounded-full p-3 shadow-lg hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-sans text-[10px] uppercase tracking-widest">Settings</span>
+</div>
+</nav>
+</body></html>
