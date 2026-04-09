@@ -632,7 +632,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     (selectedDates: string[], pref: CoursePreference) => {
       const allRecipes: Recipe[] = require('@/data/recipes').recipes;
 
-      // ── Dietary filtering ──
       const MEAT_TERMS = ['chicken', 'beef', 'pork', 'lamb', 'duck', 'veal', 'bacon', 'prosciutto', 'pancetta', 'sausage', 'steak', 'meatball', 'ground meat', 'chorizo', 'ham', 'turkey', 'oxtail', 'bone marrow', 'lard'];
       const FISH_TERMS = ['fish', 'salmon', 'tuna', 'shrimp', 'prawn', 'crab', 'lobster', 'squid', 'calamari', 'clam', 'mussel', 'oyster', 'anchovy', 'sardine', 'cod', 'sea bass', 'mahi', 'scallop', 'octopus', 'bonito', 'dashi'];
       const DAIRY_TERMS = ['cheese', 'cream', 'butter', 'milk', 'yogurt', 'ghee', 'paneer', 'mascarpone', 'ricotta', 'mozzarella', 'parmesan', 'pecorino', 'gruyère', 'crème'];
@@ -674,11 +673,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
 
       const dietaryFiltered = allRecipes.filter(isCompatible);
-
-      // All difficulty levels available to all users
       const afterLevelFilter = dietaryFiltered;
 
-      // ── Recency filtering (avoid recipes from current + previous 2 weeks) ──
       const recentRecipeIds = new Set<string>();
       itinerary.forEach((day) => {
         if (day.courses.main) recentRecipeIds.add(day.courses.main.recipeId);
@@ -686,10 +682,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (day.courses.dessert) recentRecipeIds.add(day.courses.dessert.recipeId);
       });
       const afterRecencyFilter = afterLevelFilter.filter((r) => !recentRecipeIds.has(r.id));
-      // Fallback: if too few recipes, use pre-recency pool
-      // Skip past dates — only generate for today and future
+
       const today = todayLocal();
-      const futureDates = selectedDates.filter(d => d >= today);
+      const uniqueDates = [...new Set(selectedDates)];
+      const futureDates = uniqueDates.filter(d => d >= today).slice(0, 7);
 
       const eligible = afterRecencyFilter.length >= futureDates.length ? afterRecencyFilter : afterLevelFilter;
 
@@ -716,48 +712,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return undefined;
       };
 
+      const plan: { date: string; courses: Record<string, ReturnType<typeof recipeToPlannedMeal>> }[] = [];
+      const recipesToAddToGrocery: Recipe[] = [];
+
+      for (const date of futureDates) {
+        const entry: typeof plan[number] = { date, courses: {} };
+
+        const mainRecipe = pickRecipe('main');
+        if (mainRecipe) {
+          entry.courses.main = recipeToPlannedMeal(mainRecipe);
+          recipesToAddToGrocery.push(mainRecipe);
+        }
+
+        if (pref === 'full') {
+          const appRecipe = pickRecipe('appetizer');
+          if (appRecipe) {
+            entry.courses.appetizer = recipeToPlannedMeal(appRecipe);
+            recipesToAddToGrocery.push(appRecipe);
+          }
+          const dessRecipe = pickRecipe('dessert');
+          if (dessRecipe) {
+            entry.courses.dessert = recipeToPlannedMeal(dessRecipe);
+            recipesToAddToGrocery.push(dessRecipe);
+          }
+        }
+
+        plan.push(entry);
+      }
+
       setItinerary((prev) => {
         let days = [...prev];
-        for (const date of futureDates) {
-          const [updated, day] = findOrCreateDay(days, date);
+        for (const entry of plan) {
+          const [updated, day] = findOrCreateDay(days, entry.date);
           days = updated;
-
-          const mainRecipe = pickRecipe('main');
-          if (mainRecipe) {
-            const meal = recipeToPlannedMeal(mainRecipe);
-            days = days.map((d) =>
-              d.date === day.date
-                ? { ...d, courses: { ...d.courses, main: meal } }
-                : d
-            );
-            addToGrocery(mainRecipe);
-          }
-
-          if (pref === 'full') {
-            const appRecipe = pickRecipe('appetizer');
-            if (appRecipe) {
-              const meal = recipeToPlannedMeal(appRecipe);
-              days = days.map((d) =>
-                d.date === day.date
-                  ? { ...d, courses: { ...d.courses, appetizer: meal } }
-                  : d
-              );
-              addToGrocery(appRecipe);
-            }
-            const dessRecipe = pickRecipe('dessert');
-            if (dessRecipe) {
-              const meal = recipeToPlannedMeal(dessRecipe);
-              days = days.map((d) =>
-                d.date === day.date
-                  ? { ...d, courses: { ...d.courses, dessert: meal } }
-                  : d
-              );
-              addToGrocery(dessRecipe);
-            }
-          }
+          days = days.map((d) =>
+            d.date === day.date
+              ? { ...d, courses: { ...d.courses, ...entry.courses } }
+              : d
+          );
         }
         return days;
       });
+
+      for (const recipe of recipesToAddToGrocery) {
+        addToGrocery(recipe);
+      }
     },
     [findOrCreateDay, addToGrocery, dietaryFlags, itinerary]
   );
