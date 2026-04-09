@@ -22,38 +22,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { HeaderBar } from '@/components/HeaderBar';
 import { Checkbox } from '@/components/Checkbox';
 import { OVERLAY_BUTTON } from '@/constants/icons';
-
-// ─── Helpers ───
-
-function getMonday(d: Date): Date {
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const m = new Date(d);
-  m.setDate(diff);
-  m.setHours(0, 0, 0, 0);
-  return m;
-}
-
-function toISO(d: Date): string {
-  return d.toISOString().split('T')[0];
-}
-
-function addDays(dateStr: string, n: number): string {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + n);
-  return toISO(d);
-}
-
-function getDayLabel(dateStr: string): string {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[new Date(dateStr).getDay()];
-}
-
-function formatDateShort(dateStr: string): string {
-  const d = new Date(dateStr);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[d.getMonth()]} ${d.getDate()}`;
-}
+import { dateToLocal, addDays, getMonday, getDayLabelFull as getDayLabel, formatDateShort } from '@/utils/dates';
 
 function getStepInstruction(step: Step, level: string): string {
   if (level === 'beginner' && step.instructionFirstSteps) return step.instructionFirstSteps;
@@ -80,7 +49,7 @@ export default function RecipeDetailScreen() {
 
   // Generate the next 14 days for the "Add to Plan" sheet
   const planDays = useMemo(() => {
-    const start = toISO(getMonday(new Date()));
+    const start = dateToLocal(getMonday(new Date()));
     return Array.from({ length: 14 }, (_, i) => {
       const date = addDays(start, i);
       return { date, label: getDayLabel(date), short: formatDateShort(date) };

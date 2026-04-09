@@ -22,39 +22,11 @@ import { Recipe, recipes as allRecipes } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
 import { NutritionInfo } from '@/data/nutrition';
 import { calculateCookReadiness } from '@/utils/cookReadiness';
+import { todayLocal, dateToLocal, addDays, getMonday, formatDateShort as formatDateLabel } from '@/utils/dates';
 
 // ─── Helpers ───
 
 const DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
-function getMonday(d: Date): Date {
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(d);
-  monday.setDate(diff);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
-}
-
-function toISO(d: Date): string {
-  return d.toISOString().split('T')[0];
-}
-
-function addDays(dateStr: string, n: number): string {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + n);
-  return toISO(d);
-}
-
-function formatDateLabel(dateStr: string): string {
-  const d = new Date(dateStr);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[d.getMonth()]} ${d.getDate()}`;
-}
-
-function getTodayISO(): string {
-  return toISO(new Date());
-}
 
 type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 type CourseSlot = { label: string; icon: MCIconName; placeholder: string; courseType: 'appetizer' | 'dessert' };
@@ -180,8 +152,8 @@ export default function PlanScreen() {
   const router = useRouter();
   const app = useApp();
 
-  const todayISO = getTodayISO();
-  const [weekStartDate, setWeekStartDate] = useState(() => toISO(getMonday(new Date())));
+  const todayISO = todayLocal();
+  const [weekStartDate, setWeekStartDate] = useState(() => dateToLocal(getMonday(new Date())));
   const [showDropdown, setShowDropdown] = useState(false);
   const [showQuickGen, setShowQuickGen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<WeekOption>('this-week');
@@ -1051,9 +1023,9 @@ export default function PlanScreen() {
                   <Pressable
                     key={option}
                     onPress={() => {
-                      if (option === 'this-week') setWeekStartDate(toISO(getMonday(new Date())));
-                      else if (option === 'next-week') setWeekStartDate(addDays(toISO(getMonday(new Date())), 7));
-                      else setWeekStartDate(addDays(toISO(getMonday(new Date())), -7));
+                      if (option === 'this-week') setWeekStartDate(dateToLocal(getMonday(new Date())));
+                      else if (option === 'next-week') setWeekStartDate(addDays(dateToLocal(getMonday(new Date())), 7));
+                      else setWeekStartDate(addDays(dateToLocal(getMonday(new Date())), -7));
                       setSelectedWeek(option);
                       setIsDailyView(false);
                       setShowDropdown(false);
