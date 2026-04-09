@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
+import Animated, { FadeIn, useReducedMotion, withSpring, useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
@@ -12,6 +13,7 @@ import { Radius } from '@/constants/radius';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { GlassView } from '@/components/GlassView';
 import { recipes } from '@/data/recipes';
+import { countries } from '@/data/countries';
 import { convertAmount } from '@/data/helpers';
 import { highlightCulinaryVerbs } from '@/utils/textFormatting';
 import { useApp } from '@/context/AppContext';
@@ -90,13 +92,40 @@ export default function CookModeScreen() {
   const prevDinnerRef = React.useRef(dinnerPlan);
   const hasNavigatedRef = React.useRef(false);
   const activeParty = app.activeDinnerParty;
+
+  const [showCelebration, setShowCelebration] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const celebrationScale = useSharedValue(0);
+  const celebrationStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: celebrationScale.value }],
+  }));
+  const completedRecipeRef = useRef<{ title: string; countryId: string; countryName: string; countryFlag: string } | null>(null);
+
+  useEffect(() => {
+    if (session && recipe) {
+      const country = countries.find(c => c.id === recipe.countryId);
+      completedRecipeRef.current = {
+        title: recipe.title,
+        countryId: recipe.countryId,
+        countryName: country?.name ?? '',
+        countryFlag: country?.flag ?? '🌍',
+      };
+    }
+  }, [session, recipe]);
+
   useEffect(() => {
     if (prevSessionRef.current && !session && !hasNavigatedRef.current && !isDinnerMode) {
       hasNavigatedRef.current = true;
       if (activeParty) {
         router.replace('/dinner-complete');
       } else {
-        router.back();
+        setShowCelebration(true);
+        if (!reduceMotion) {
+          celebrationScale.value = withSpring(1, { damping: 12, stiffness: 180 });
+        } else {
+          celebrationScale.value = 1;
+        }
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
       }
     }
     if (prevDinnerRef.current && !dinnerPlan && !hasNavigatedRef.current) {
@@ -104,7 +133,13 @@ export default function CookModeScreen() {
       if (activeParty) {
         router.replace('/dinner-complete');
       } else {
-        router.back();
+        setShowCelebration(true);
+        if (!reduceMotion) {
+          celebrationScale.value = withSpring(1, { damping: 12, stiffness: 180 });
+        } else {
+          celebrationScale.value = 1;
+        }
+        try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
       }
     }
     prevSessionRef.current = session;
@@ -385,6 +420,45 @@ export default function CookModeScreen() {
           </Pressable>
         </GlassView>
       </View>
+
+      {showCelebration && (
+        <View style={[StyleSheet.absoluteFill, styles.celebrationOverlay, { backgroundColor: t.bg }]}>
+          <View style={styles.celebrationContent}>
+            <Animated.View style={[styles.celebrationIcon, celebrationStyle]}>
+              <MaterialCommunityIcons name="check-circle" size={64} color={colors.success} />
+            </Animated.View>
+            <Animated.Text entering={reduceMotion ? undefined : FadeIn.delay(200).duration(300)} style={[Typography.display, { color: t.instructionColor, textAlign: 'center', marginTop: Spacing.lg }]}>
+              Well done!
+            </Animated.Text>
+            {completedRecipeRef.current && (
+              <Animated.View entering={reduceMotion ? undefined : FadeIn.delay(300).duration(300)}>
+                <Text style={[Typography.titleMedium, { color: t.instructionColor, textAlign: 'center', marginTop: Spacing.sm, opacity: 0.8 }]}>
+                  {completedRecipeRef.current.title}
+                </Text>
+                <Text style={{ fontSize: 32, textAlign: 'center', marginTop: Spacing.md }}>
+                  {completedRecipeRef.current.countryFlag}
+                </Text>
+              </Animated.View>
+            )}
+            <Animated.View entering={reduceMotion ? undefined : FadeIn.delay(500).duration(300)} style={{ alignItems: 'center', marginTop: Spacing.lg }}>
+              <Text style={[Typography.titleLarge, { color: colors.warning, fontWeight: '700' }]}>+50 XP</Text>
+              <Text style={[Typography.bodySmall, { color: t.instructionColor, opacity: 0.6, marginTop: Spacing.xs }]}>
+                {completedRecipeRef.current?.countryName} cuisine explored 🌍
+              </Text>
+            </Animated.View>
+            <Animated.View entering={reduceMotion ? undefined : FadeIn.delay(700).duration(300)} style={{ marginTop: Spacing.xxl }}>
+              <Pressable
+                onPress={() => { setShowCelebration(false); router.back(); }}
+                style={[styles.celebrationDoneBtn, { backgroundColor: colors.primary }]}
+                accessibilityRole="button"
+                accessibilityLabel="Done"
+              >
+                <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Done</Text>
+              </Pressable>
+            </Animated.View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -587,5 +661,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
+  },
+  celebrationOverlay: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  celebrationContent: {
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  celebrationIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  celebrationDoneBtn: {
+    paddingHorizontal: Spacing.xxxl,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.full,
   },
 });

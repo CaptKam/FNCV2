@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated } from 'react-native';
+import Animated, { FadeInDown, FadeOutDown, useReducedMotion } from 'react-native-reanimated';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
@@ -163,6 +164,9 @@ export default function PlanScreen() {
     return dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   });
   const [multipleMeals, setMultipleMeals] = useState(false);
+  const [showGroceryHandoff, setShowGroceryHandoff] = useState(false);
+  const lastHandoffTime = useRef(0);
+  const reduceMotion = useReducedMotion();
 
   // Recipe picker state
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -255,8 +259,18 @@ export default function PlanScreen() {
   const handlePickRecipe = useCallback((recipe: Recipe) => {
     if (pickerTarget) {
       app.addCourseToDay(pickerTarget.date, pickerTarget.courseType, recipe);
+      // Check grocery handoff conditions
+      setTimeout(() => {
+        const mealsPlanned = weekDays.filter(d => d.courses.main).length;
+        if (mealsPlanned >= 3 && app.getUncheckedCount() > 0 && Date.now() - lastHandoffTime.current > 600000) {
+          lastHandoffTime.current = Date.now();
+          try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+          setShowGroceryHandoff(true);
+          setTimeout(() => setShowGroceryHandoff(false), 8000);
+        }
+      }, 500);
     }
-  }, [pickerTarget, app]);
+  }, [pickerTarget, app, weekDays]);
 
   // ─── Remove course (long press) ───
   const handleRemoveCourse = useCallback((date: string, courseType: 'appetizer' | 'main' | 'dessert') => {
@@ -885,6 +899,16 @@ export default function PlanScreen() {
             try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
             const weekLabel = selectedWeek === 'next-week' ? 'next week' : 'this week';
             showToast(`Planned ${emptyDates.length} meals for ${weekLabel}`, true);
+            // Check grocery handoff conditions
+            setTimeout(() => {
+              const mealsPlanned = weekDays.filter(d => d.courses.main).length;
+              if (mealsPlanned >= 3 && app.getUncheckedCount() > 0 && Date.now() - lastHandoffTime.current > 600000) {
+                lastHandoffTime.current = Date.now();
+                try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                setShowGroceryHandoff(true);
+                setTimeout(() => setShowGroceryHandoff(false), 8000);
+              }
+            }, 500);
           };
 
           if (!hasSeenAutoGen) {
@@ -1071,6 +1095,31 @@ export default function PlanScreen() {
         onDismiss={() => setPickerVisible(false)}
         onSelect={handlePickRecipe}
       />
+
+      {/* Grocery handoff card */}
+      {showGroceryHandoff && (
+        <Animated.View
+          entering={reduceMotion ? undefined : FadeInDown.springify().damping(20)}
+          exiting={reduceMotion ? undefined : FadeOutDown.duration(200)}
+          style={[styles.handoffCard, { backgroundColor: colors.surfaceContainerLow, ...Shadows.ambient }]}
+        >
+          <MaterialCommunityIcons name="cart-outline" size={24} color={colors.primary} />
+          <View style={{ flex: 1 }}>
+            <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Your grocery list is ready</Text>
+            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
+              {app.getUncheckedCount()} ingredients across your planned meals
+            </Text>
+          </View>
+          <Pressable
+            onPress={() => { setShowGroceryHandoff(false); router.push('/(tabs)/grocery'); }}
+            style={[styles.handoffBtn, { backgroundColor: colors.primary }]}
+            accessibilityRole="button"
+            accessibilityLabel="Go shopping"
+          >
+            <Text style={[Typography.labelSmall, { color: colors.onPrimary }]}>Go Shopping</Text>
+          </Pressable>
+        </Animated.View>
+      )}
 
       {/* Toast with optional undo */}
       {toastMessage && (
@@ -1431,6 +1480,22 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: 14,
+    borderRadius: Radius.full,
+  },
+  handoffCard: {
+    position: 'absolute',
+    bottom: 90,
+    left: Spacing.page,
+    right: Spacing.page,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: Radius.xl,
+  },
+  handoffBtn: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
   },
   swipeRemove: {

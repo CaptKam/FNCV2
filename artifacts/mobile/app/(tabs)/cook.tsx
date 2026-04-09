@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
@@ -18,7 +18,9 @@ import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
 import { Checkbox } from '@/components/Checkbox';
-import { todayLocal } from '@/utils/dates';
+import { todayLocal, addDays, getDayLabelFull } from '@/utils/dates';
+import { RecipePickerSheet } from '@/components/RecipePickerSheet';
+import { Recipe } from '@/data/recipes';
 
 import { TECHNIQUES } from '@/data/techniques';
 
@@ -64,6 +66,12 @@ export default function CookScreen() {
   const checks = app.kitchenChecks;
   const setChecks = (next: boolean[]) => app.setKitchenChecks(next);
 
+  // Tomorrow nudge after cook completion
+  const [showTomorrowNudge, setShowTomorrowNudge] = useState(false);
+  const [tomorrowDismissed, setTomorrowDismissed] = useState(false);
+  const lastCookCount = useRef(app.totalRecipesCooked);
+  const [tomorrowPickerVisible, setTomorrowPickerVisible] = useState(false);
+
   // First-time cook hint
   const [showCookHint, setShowCookHint] = useState(false);
   useEffect(() => {
@@ -79,6 +87,28 @@ export default function CookScreen() {
       AsyncStorage.setItem('@fork_compass_hint_cook_seen', 'true');
     }
   }, [hasActiveSession, showCookHint]);
+
+  // Detect cook completion (totalRecipesCooked increases)
+  useEffect(() => {
+    if (app.totalRecipesCooked > lastCookCount.current && !hasActiveSession) {
+      lastCookCount.current = app.totalRecipesCooked;
+      setTomorrowDismissed(false);
+      setShowTomorrowNudge(true);
+    }
+  }, [app.totalRecipesCooked, hasActiveSession]);
+
+  // Tomorrow data
+  const tomorrowDate = addDays(todayLocal(), 1);
+  const tomorrowLabel = getDayLabelFull(tomorrowDate);
+  const tomorrowDay = app.itinerary.find(d => d.date === tomorrowDate);
+  const tomorrowMeal = tomorrowDay?.courses?.main;
+  const tomorrowRecipeName = tomorrowMeal?.recipeName;
+
+  const handleTomorrowPick = useCallback((recipe: Recipe) => {
+    app.addCourseToDay(tomorrowDate, 'main', recipe);
+    setTomorrowPickerVisible(false);
+    setShowTomorrowNudge(false);
+  }, [app, tomorrowDate]);
 
   const dismissCookHint = useCallback(() => {
     setShowCookHint(false);
@@ -309,6 +339,50 @@ export default function CookScreen() {
           </View>
         )}
 
+        {showTomorrowNudge && !tomorrowDismissed && !hasActiveSession && (
+          <View style={[styles.tomorrowCard, { backgroundColor: colors.surfaceContainerLow, marginHorizontal: Spacing.page, marginBottom: Spacing.lg }]}>
+            <Pressable
+              onPress={() => setTomorrowDismissed(true)}
+              style={styles.tomorrowDismiss}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss"
+            >
+              <MaterialCommunityIcons name="close" size={16} color={colors.onSurfaceVariant} />
+            </Pressable>
+            {tomorrowRecipeName ? (
+              <View style={{ gap: Spacing.xs }}>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>Tomorrow is {tomorrowLabel}</Text>
+                <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{tomorrowRecipeName}</Text>
+              </View>
+            ) : (
+              <>
+                <View style={{ gap: Spacing.xs }}>
+                  <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Tomorrow is {tomorrowLabel}</Text>
+                  <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>No dinner planned yet.</Text>
+                </View>
+                <View style={styles.tomorrowActions}>
+                  <Pressable
+                    onPress={() => setTomorrowPickerVisible(true)}
+                    style={[styles.tomorrowBtn, { backgroundColor: colors.surfaceContainerHigh }]}
+                    accessibilityRole="button"
+                    accessibilityLabel="Plan tomorrow"
+                  >
+                    <Text style={[Typography.labelSmall, { color: colors.primary }]}>Plan Tomorrow</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => router.push('/(tabs)')}
+                    accessibilityRole="button"
+                    accessibilityLabel="Browse recipes"
+                  >
+                    <Text style={[Typography.labelSmall, { color: colors.onSurfaceVariant }]}>Browse Recipes</Text>
+                  </Pressable>
+                </View>
+              </>
+            )}
+          </View>
+        )}
+
         <View style={styles.levelSection}>
           <View style={styles.levelHeader}>
             <Text style={[Typography.labelLarge, { color: colors.outline }]}>Your Progress</Text>
@@ -387,6 +461,11 @@ export default function CookScreen() {
           </View>
         </View>
       </ScrollView>
+      <RecipePickerSheet
+        visible={tomorrowPickerVisible}
+        onDismiss={() => setTomorrowPickerVisible(false)}
+        onSelect={handleTomorrowPick}
+      />
     </View>
   );
 }
@@ -596,5 +675,26 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     padding: Spacing.md,
     borderRadius: Radius.lg,
+  },
+  tomorrowCard: {
+    padding: Spacing.md,
+    borderRadius: Radius.xl,
+    gap: Spacing.md,
+  },
+  tomorrowDismiss: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    zIndex: 1,
+  },
+  tomorrowActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  tomorrowBtn: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
   },
 });

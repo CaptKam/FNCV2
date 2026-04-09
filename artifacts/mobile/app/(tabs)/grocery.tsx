@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert, Animated as RNAnimated } from 'react-native';
+import Animated, { FadeInDown, FadeOutDown, useReducedMotion } from 'react-native-reanimated';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -10,6 +11,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
+import { Shadows } from '@/constants/shadows';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
@@ -18,6 +20,7 @@ import { useApp, GroceryItem } from '@/context/AppContext';
 import { recipes as allRecipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
 import { computeScaledAmount } from '@/utils/groceryScaling';
+import { todayLocal } from '@/utils/dates';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -105,6 +108,8 @@ export default function GroceryScreen() {
   const [activeTab, setActiveTab] = useState<'online' | 'instore'>('online');
   const [manualItemName, setManualItemName] = useState('');
   const [showMealPlanHint, setShowMealPlanHint] = useState(false);
+  const [showCookHandoff, setShowCookHandoff] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     AsyncStorage.getItem('@fork_compass_hint_grocery_seen').then((val) => {
@@ -135,6 +140,17 @@ export default function GroceryScreen() {
   const uncheckedCount = app.getUncheckedCount();
   const totalCount = groceryItems.length;
   const checkedCount = groceryItems.filter((i) => i.checked).length;
+
+  // Cook handoff: watch uncheckedCount to detect shopping completion
+  const prevUnchecked = useRef(uncheckedCount);
+  useEffect(() => {
+    if (prevUnchecked.current > 0 && uncheckedCount === 0 && app.getTodaysMeals().length > 0) {
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+      setTimeout(() => setShowCookHandoff(true), 500);
+      setTimeout(() => setShowCookHandoff(false), 10000);
+    }
+    prevUnchecked.current = uncheckedCount;
+  }, [uncheckedCount]);
 
   // Derive unique recipe names from grocery items
   const recipeSourceNames = useMemo(() => {
@@ -648,6 +664,29 @@ export default function GroceryScreen() {
         ))}
       </ScrollView>
 
+      {/* Cook handoff card */}
+      {showCookHandoff && (
+        <Animated.View
+          entering={reduceMotion ? undefined : FadeInDown.springify().damping(20)}
+          exiting={reduceMotion ? undefined : FadeOutDown.duration(200)}
+          style={[styles.cookHandoff, { backgroundColor: colors.surfaceContainerLow, ...Shadows.ambient }]}
+        >
+          <MaterialCommunityIcons name="check-circle" size={24} color={colors.success} />
+          <View style={{ flex: 1 }}>
+            <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Shopping complete!</Text>
+            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>You've got everything for tonight.</Text>
+          </View>
+          <Pressable
+            onPress={() => { setShowCookHandoff(false); router.push('/(tabs)/cook'); }}
+            style={[styles.cookHandoffBtn, { backgroundColor: colors.primary }]}
+            accessibilityRole="button"
+            accessibilityLabel="Start cooking"
+          >
+            <Text style={[Typography.labelSmall, { color: colors.onPrimary }]}>Start Cooking</Text>
+          </Pressable>
+        </Animated.View>
+      )}
+
       {/* Sticky bottom order bar */}
       <View style={[styles.stickyBottom, { bottom: 80, paddingHorizontal: Spacing.page }]}>
         <GlassView style={[styles.stickyBottomInner, { borderRadius: Radius.lg }]}>
@@ -917,5 +956,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: Radius.sm,
     marginBottom: Spacing.sm,
+  },
+  cookHandoff: {
+    position: 'absolute',
+    bottom: 160,
+    left: Spacing.page,
+    right: Spacing.page,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: Radius.xl,
+  },
+  cookHandoffBtn: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.full,
   },
 });
