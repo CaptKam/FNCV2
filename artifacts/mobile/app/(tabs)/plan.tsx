@@ -292,41 +292,24 @@ export default function PlanScreen() {
 
   // ─── Smart Grocery Indicator ───
   const groceryTotal = app.groceryItems.filter((i) => !i.excluded).length;
-  const groceryChecked = app.groceryItems.filter((i) => !i.excluded && i.checked).length;
-  const groceryUnchecked = groceryTotal - groceryChecked;
-  const groceryPercent = groceryTotal > 0 ? Math.round((groceryChecked / groceryTotal) * 100) : 100;
-  const dayOfWeek = new Date().getDay(); // 0=Sun, 1=Mon...
-  const isLateInWeek = dayOfWeek === 0 || dayOfWeek >= 4; // Thu-Sun
+  const groceryUnchecked = app.groceryItems.filter((i) => !i.excluded && !i.checked).length;
+  const dayOfWeek = new Date().getDay();
+  const isLateInWeek = dayOfWeek === 0 || dayOfWeek >= 4;
 
-  const showGroceryIndicator = groceryTotal > 0 && groceryUnchecked > 0 && (isLateInWeek || groceryPercent < 50);
+  const showGroceryIndicator = groceryTotal > 0 && groceryUnchecked > 0 && (isLateInWeek || groceryUnchecked > groceryTotal / 2);
 
   const renderGroceryIndicator = () => {
     if (!showGroceryIndicator) return null;
-    const almostDone = groceryPercent >= 70;
     return (
       <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.sm }}>
         <View style={[styles.groceryIndicator, { backgroundColor: colors.surfaceContainerLow }]}>
-          <MaterialCommunityIcons
-            name={almostDone ? 'cart-check' : 'cart-outline'}
-            size={20}
-            color={almostDone ? colors.success : colors.onSurfaceVariant}
-          />
+          <MaterialCommunityIcons name="cart-outline" size={20} color={colors.onSurfaceVariant} />
           <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, flex: 1 }]}>
-            {almostDone
-              ? `${groceryChecked} of ${groceryTotal} ready · ${groceryUnchecked} to go`
-              : `${groceryUnchecked} items still needed`}
+            {groceryUnchecked} items on your grocery list
           </Text>
-          {almostDone ? (
-            <View style={styles.groceryMiniBar}>
-              <View style={[styles.groceryMiniTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
-                <View style={[styles.groceryMiniFill, { backgroundColor: colors.success, width: `${groceryPercent}%` }]} />
-              </View>
-            </View>
-          ) : (
-            <Pressable onPress={() => router.push('/(tabs)/grocery')} accessibilityRole="button" accessibilityLabel="View grocery list">
-              <Text style={[Typography.labelSmall, { color: colors.primary }]}>View List</Text>
-            </Pressable>
-          )}
+          <Pressable onPress={() => router.push('/(tabs)/grocery')} accessibilityRole="button" accessibilityLabel="View grocery list">
+            <Text style={[Typography.labelSmall, { color: colors.primary }]}>View</Text>
+          </Pressable>
         </View>
       </View>
     );
@@ -1189,24 +1172,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   groceryIndicator: {
-    height: 48,
+    height: 44,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.lg,
     gap: Spacing.sm + 4,
-  },
-  groceryMiniBar: {
-    width: 60,
-  },
-  groceryMiniTrack: {
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  groceryMiniFill: {
-    height: '100%',
-    borderRadius: 2,
   },
   timeline: {
     paddingHorizontal: Spacing.page,
