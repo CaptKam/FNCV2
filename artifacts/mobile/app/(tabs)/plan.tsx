@@ -777,6 +777,7 @@ export default function PlanScreen() {
               const allMeals = [appetizer, mainMeal, dessert].filter(Boolean) as PlannedMeal[];
               const hasMeals = allMeals.length > 0;
               const isToday = day.date === todayISO;
+              const isPastDay = day.date < todayISO;
               const totalTime = allMeals.reduce((sum, m) => sum + (m.cookTime || 0), 0);
               const dayParty = app.getDinnerPartyForDate(day.date);
 
@@ -791,6 +792,7 @@ export default function PlanScreen() {
                         backgroundColor: colors.glassOverlay,
                         borderColor: isToday ? colors.primary : `${colors.outlineVariant}40`,
                         borderWidth: isToday ? 2 : 1,
+                        opacity: isPastDay ? 0.55 : 1,
                       },
                     ]}
                     accessibilityRole="button"
@@ -802,15 +804,15 @@ export default function PlanScreen() {
                           TODAY
                         </Text>
                       )}
-                      <Text style={[Typography.headline, { color: colors.onSurface, opacity: isToday ? 1 : 0.4, fontSize: 20 }]}>
+                      <Text style={[Typography.headline, { color: colors.onSurface, opacity: isPastDay ? 0.4 : 1, fontSize: 20 }]}>
                         {day.dayLabel}, {formatDateLabel(day.date)}
                       </Text>
-                      <Text style={[Typography.caption, { color: colors.outline, opacity: 0.5, marginTop: 2 }]}>
-                        Plan your menu
+                      <Text style={[Typography.caption, { color: colors.outline, opacity: isPastDay ? 0.4 : 0.6, marginTop: 2 }]}>
+                        {isPastDay ? 'No meals logged' : 'Plan your menu'}
                       </Text>
                     </View>
                     <View style={[styles.weekAddCircle, { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40` }]}>
-                      <MaterialCommunityIcons name="plus" size={24} color={isToday ? colors.primary : `${colors.primary}66`} />
+                      <MaterialCommunityIcons name="plus" size={24} color={isToday ? colors.primary : isPastDay ? `${colors.primary}44` : `${colors.primary}99`} />
                     </View>
                   </Pressable>
                 );
@@ -839,7 +841,7 @@ export default function PlanScreen() {
                           TODAY
                         </Text>
                       )}
-                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20, opacity: isToday ? 1 : 0.9 }]}>
+                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20, opacity: isPastDay ? 0.45 : 1 }]}>
                         {day.dayLabel}, {formatDateLabel(day.date)}
                       </Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.xs }}>
@@ -879,10 +881,11 @@ export default function PlanScreen() {
                       >
                         <Image
                           source={{ uri: slot.meal!.recipeImage }}
-                          style={styles.weekMealImage}
+                          style={[styles.weekMealImage, isPastDay && { opacity: 0.5 }]}
                         />
+                        {isPastDay && <View style={styles.pastDesatOverlay} pointerEvents="none" />}
                         <LinearGradient
-                          colors={['transparent', 'rgba(0,0,0,0.50)']}
+                          colors={['transparent', isPastDay ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.50)']}
                           locations={[0.35, 1]}
                           style={StyleSheet.absoluteFill}
                           pointerEvents="none"
