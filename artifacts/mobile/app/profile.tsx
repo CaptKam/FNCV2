@@ -460,9 +460,9 @@ export default function ProfileScreen() {
                       {option.desc}
                     </Text>
                   </View>
-                  <Checkbox checked={isActive} onToggle={() => {
-                    setPreference(option.id);
-                  }} size="sm" />
+                  <View pointerEvents="none">
+                    <Checkbox checked={isActive} onToggle={() => {}} size="sm" />
+                  </View>
                 </Pressable>
               );
             })}
@@ -558,10 +558,9 @@ export default function ProfileScreen() {
                   <Text style={[Typography.titleSmall, { color: isActive ? colors.primary : colors.onSurface, flex: 1 }]}>
                     {partner.label}
                   </Text>
-                  <Checkbox checked={isActive} onToggle={() => {
-                    app.setGroceryPartner(partner.id);
-                    setShowPartnerModal(false);
-                  }} size="sm" />
+                  <View pointerEvents="none">
+                    <Checkbox checked={isActive} onToggle={() => {}} size="sm" />
+                  </View>
                 </Pressable>
               );
             })}

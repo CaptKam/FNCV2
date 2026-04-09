@@ -249,9 +249,9 @@ export default function OnboardingScreen() {
                     >
                       {option.label}
                     </Text>
-                    <Checkbox checked={isSelected} onToggle={() => {
-                      toggleDietary(option.id);
-                    }} size="sm" />
+                    <View pointerEvents="none">
+                      <Checkbox checked={isSelected} onToggle={() => {}} size="sm" />
+                    </View>
                   </Pressable>
                 );
               })}
@@ -306,10 +306,9 @@ export default function OnboardingScreen() {
                       {lvl.desc}
                     </Text>
                   </View>
-                  <Checkbox checked={isActive} onToggle={() => {
-                    setSelectedLevel(lvl.id);
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  }} size="sm" />
+                  <View pointerEvents="none">
+                    <Checkbox checked={isActive} onToggle={() => {}} size="sm" />
+                  </View>
                 </Pressable>
               );
             })}
