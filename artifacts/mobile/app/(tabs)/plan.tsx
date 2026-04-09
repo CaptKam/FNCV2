@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated, Platform, ScrollView } from 'react-native';
-import Animated, { FadeInDown, FadeOutDown, useReducedMotion, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
+import { View, Text, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated, Platform } from 'react-native';
+import Animated, { FadeInDown, FadeOutDown, useReducedMotion, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -169,7 +169,7 @@ export default function PlanScreen() {
   const [showGroceryHandoff, setShowGroceryHandoff] = useState(false);
   const lastHandoffTime = useRef(0);
   const reduceMotion = useReducedMotion();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
 
   const lastScrollY = useSharedValue(0);
   const accumulatedDelta = useSharedValue(0);
@@ -218,6 +218,15 @@ export default function PlanScreen() {
       navBarTranslateY.value,
       [-navHeight.value, -navHeight.value * 0.5, 0],
       [0, 0.5, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const contentSpacerStyle = useAnimatedStyle(() => ({
+    height: interpolate(
+      navBarTranslateY.value,
+      [-navHeight.value, 0],
+      [0, navHeight.value],
       Extrapolation.CLAMP,
     ),
   }));
@@ -372,7 +381,7 @@ export default function PlanScreen() {
 
   const navBarContent = (
     <View style={styles.navBarInner}>
-      <View style={[styles.navTopRow, { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.outlineVariant + '40' }]}>
+      <View style={styles.navTopRow}>
         <Pressable
           style={styles.navArrow}
           hitSlop={8}
@@ -542,7 +551,11 @@ export default function PlanScreen() {
         }}
       >
         {Platform.OS === 'web' ? (
-          <View style={[styles.navBarGlass, { backgroundColor: `${colors.surface}B3` }]}>
+          <View style={[styles.navBarGlass, {
+            backgroundColor: `${colors.surface}B3`,
+            borderTopWidth: StyleSheet.hairlineWidth,
+            borderTopColor: 'rgba(255,255,255,0.35)',
+          }]}>
             {navBarContent}
           </View>
         ) : (
@@ -554,7 +567,11 @@ export default function PlanScreen() {
             <View
               style={[
                 StyleSheet.absoluteFill,
-                { backgroundColor: `${colors.surface}B3` },
+                {
+                  backgroundColor: `${colors.surface}B3`,
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: 'rgba(255,255,255,0.35)',
+                },
               ]}
             />
             {navBarContent}
@@ -568,12 +585,13 @@ export default function PlanScreen() {
       </Animated.View>
 
       <Animated.ScrollView
-        ref={scrollRef as any}
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={scrollHandler}
-        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: HEADER_BOTTOM + measuredNavHeight }}
+        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: HEADER_BOTTOM }}
       >
+        <Animated.View style={contentSpacerStyle} />
 
         {/* Multiple meals toggle */}
         {isDailyView && (
