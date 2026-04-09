@@ -302,121 +302,135 @@ export default function PlanScreen() {
     }
   }, [selectedWeek, isDailyView]);
 
+  const [stickyHeight, setStickyHeight] = useState(0);
+
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <HeaderBar />
+
+      {/* Sticky week navigation header */}
+      <View
+        style={[styles.stickyHeader, { top: insets.top + 76 }]}
+        onLayout={(e) => setStickyHeight(e.nativeEvent.layout.height)}
+      >
+        <View style={{ backgroundColor: colors.surface, paddingBottom: Spacing.xs }}>
+          <View style={{ paddingHorizontal: Spacing.page, marginBottom: isDailyView ? Spacing.xs : 0 }}>
+            <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
+              <Pressable
+                style={styles.weekArrow}
+                onPress={() => {
+                  if (isDailyView) {
+                    if (selectedDayIndex > 0) {
+                      setSelectedDayIndex(selectedDayIndex - 1);
+                    } else {
+                      shiftWeek(-1);
+                      setSelectedDayIndex(6);
+                    }
+                  } else {
+                    shiftWeek(-1);
+                  }
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={isDailyView ? "Previous day" : "Previous week"}
+              >
+                <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
+              </Pressable>
+              <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
+                <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
+                  YOUR MEAL PLAN
+                </Text>
+                <View style={styles.weekTitleRow}>
+                  <Text style={[Typography.title, { color: colors.onSurface }]}>
+                    {isDailyView ? (selectedDay?.dayLabel ?? '') : weekLabels[selectedWeek]}
+                  </Text>
+                  {isDailyView && selectedDate === todayISO && (
+                    <Text style={[Typography.title, { color: colors.primary }]}> · Today</Text>
+                  )}
+                  <MaterialCommunityIcons name="chevron-down" size={20} color={colors.primary} />
+                </View>
+                {isDailyView ? (
+                  <Text style={[Typography.caption, { color: colors.primary, marginTop: Spacing.xs }]}>
+                    {formatDateLabel(selectedDate)} · {weekLabels[selectedWeek]}
+                  </Text>
+                ) : (
+                  <Text style={[Typography.caption, { color: colors.outline, marginTop: Spacing.xs }]}>
+                    {weekLabel}
+                  </Text>
+                )}
+              </Pressable>
+              <Pressable
+                style={styles.weekArrow}
+                onPress={() => {
+                  if (isDailyView) {
+                    if (selectedDayIndex < 6) {
+                      setSelectedDayIndex(selectedDayIndex + 1);
+                    } else {
+                      shiftWeek(1);
+                      setSelectedDayIndex(0);
+                    }
+                  } else {
+                    shiftWeek(1);
+                  }
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={isDailyView ? "Next day" : "Next week"}
+              >
+                <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
+              </Pressable>
+            </GlassView>
+          </View>
+
+          {isDailyView && (
+            <View style={{ paddingHorizontal: Spacing.page }}>
+              <GlassView style={[styles.daySelectorPill, { ...Shadows.subtle }]}>
+                {DAY_LETTERS.map((letter, i) => {
+                  const isActive = i === selectedDayIndex;
+                  const day = weekDays[i];
+                  const hasRecipe = !!(day?.courses.appetizer || day?.courses.main || day?.courses.dessert);
+                  const isToday = day?.date === todayISO;
+                  return (
+                    <Pressable
+                      key={i}
+                      onPress={() => {
+                        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                        setSelectedDayIndex(i);
+                      }}
+                      style={[
+                        styles.dayCircle,
+                        isActive && { backgroundColor: colors.primary },
+                        !isActive && hasRecipe && { backgroundColor: colors.primaryMuted },
+                        !isActive && isToday && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryTint },
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
+                      accessibilityState={{ selected: isActive }}
+                    >
+                      <Text style={[
+                        Typography.caption,
+                        { fontWeight: '600' },
+                        isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary, fontWeight: '700' } : { color: colors.outline },
+                      ]}>
+                        {letter}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </GlassView>
+            </View>
+          )}
+        </View>
+        <LinearGradient
+          colors={[colors.surface, colors.surface + '00']}
+          style={{ height: 12 }}
+          pointerEvents="none"
+        />
+      </View>
+
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 76 + stickyHeight }}
       >
-
-        {/* Week pill with chevron navigation */}
-        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.sm }}>
-          <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
-            <Pressable
-              style={styles.weekArrow}
-              onPress={() => {
-                if (isDailyView) {
-                  if (selectedDayIndex > 0) {
-                    setSelectedDayIndex(selectedDayIndex - 1);
-                  } else {
-                    shiftWeek(-1);
-                    setSelectedDayIndex(6);
-                  }
-                } else {
-                  shiftWeek(-1);
-                }
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={isDailyView ? "Previous day" : "Previous week"}
-            >
-              <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
-            </Pressable>
-            <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
-              <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-                YOUR MEAL PLAN
-              </Text>
-              <View style={styles.weekTitleRow}>
-                <Text style={[Typography.title, { color: colors.onSurface }]}>
-                  {isDailyView ? (selectedDay?.dayLabel ?? '') : weekLabels[selectedWeek]}
-                </Text>
-                {isDailyView && selectedDate === todayISO && (
-                  <Text style={[Typography.title, { color: colors.primary }]}> · Today</Text>
-                )}
-                <MaterialCommunityIcons name="chevron-down" size={20} color={colors.primary} />
-              </View>
-              {isDailyView ? (
-                <Text style={[Typography.caption, { color: colors.primary, marginTop: Spacing.xs }]}>
-                  {formatDateLabel(selectedDate)} · {weekLabels[selectedWeek]}
-                </Text>
-              ) : (
-                <Text style={[Typography.caption, { color: colors.outline, marginTop: Spacing.xs }]}>
-                  {weekLabel}
-                </Text>
-              )}
-            </Pressable>
-            <Pressable
-              style={styles.weekArrow}
-              onPress={() => {
-                if (isDailyView) {
-                  if (selectedDayIndex < 6) {
-                    setSelectedDayIndex(selectedDayIndex + 1);
-                  } else {
-                    shiftWeek(1);
-                    setSelectedDayIndex(0);
-                  }
-                } else {
-                  shiftWeek(1);
-                }
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={isDailyView ? "Next day" : "Next week"}
-            >
-              <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
-            </Pressable>
-          </GlassView>
-        </View>
-
-        {/* Day selector strip (daily view) */}
-        {isDailyView && (
-          <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
-            <GlassView style={[styles.daySelectorPill, { ...Shadows.subtle }]}>
-              {DAY_LETTERS.map((letter, i) => {
-                const isActive = i === selectedDayIndex;
-                const day = weekDays[i];
-                const hasRecipe = !!(day?.courses.appetizer || day?.courses.main || day?.courses.dessert);
-                const isToday = day?.date === todayISO;
-                return (
-                  <Pressable
-                    key={i}
-                    onPress={() => {
-                      try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-                      setSelectedDayIndex(i);
-                    }}
-                    style={[
-                      styles.dayCircle,
-                      isActive && { backgroundColor: colors.primary },
-                      !isActive && hasRecipe && { backgroundColor: colors.primaryMuted },
-                      !isActive && isToday && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryTint },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
-                    accessibilityState={{ selected: isActive }}
-                  >
-                    <Text style={[
-                      Typography.caption,
-                      { fontWeight: '600' },
-                      isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary, fontWeight: '700' } : { color: colors.outline },
-                    ]}>
-                      {letter}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </GlassView>
-          </View>
-        )}
 
         {/* Multiple meals toggle */}
         {isDailyView && (
@@ -1166,6 +1180,12 @@ export default function PlanScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  stickyHeader: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
   weekPill: {
     flexDirection: 'row',
     alignItems: 'center',
