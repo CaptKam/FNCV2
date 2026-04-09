@@ -218,8 +218,6 @@ export default function PlanScreen() {
   // ─── Week data from AppContext ───
   const weekDays: ItineraryDay[] = app.getWeek(weekStartDate);
   const todaysMeals = app.getTodaysMeals();
-  const uncheckedGroceryCount = app.getUncheckedCount();
-
   const selectedDay = weekDays[selectedDayIndex];
   const selectedDate = selectedDay?.date ?? '';
 
@@ -291,32 +289,48 @@ export default function PlanScreen() {
   }, [selectedDay]);
 
   const primaryMeal = selectedDay?.courses.main;
-  // ─── Grocery banner ───
-  const renderGroceryBanner = () => (
-    <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
-      <View style={[styles.groceryBanner, { backgroundColor: colors.primaryTint }]}>
-        <MaterialCommunityIcons name="basket" size={20} color={colors.primary} />
-        <View style={styles.groceryTextWrap}>
-          <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>
-            Grocery List Update
+
+  // ─── Smart Grocery Indicator ───
+  const groceryTotal = app.groceryItems.filter((i) => !i.excluded).length;
+  const groceryChecked = app.groceryItems.filter((i) => !i.excluded && i.checked).length;
+  const groceryUnchecked = groceryTotal - groceryChecked;
+  const groceryPercent = groceryTotal > 0 ? Math.round((groceryChecked / groceryTotal) * 100) : 100;
+  const dayOfWeek = new Date().getDay(); // 0=Sun, 1=Mon...
+  const isLateInWeek = dayOfWeek === 0 || dayOfWeek >= 4; // Thu-Sun
+
+  const showGroceryIndicator = groceryTotal > 0 && groceryUnchecked > 0 && (isLateInWeek || groceryPercent < 50);
+
+  const renderGroceryIndicator = () => {
+    if (!showGroceryIndicator) return null;
+    const almostDone = groceryPercent >= 70;
+    return (
+      <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.sm }}>
+        <View style={[styles.groceryIndicator, { backgroundColor: colors.surfaceContainerLow }]}>
+          <MaterialCommunityIcons
+            name={almostDone ? 'cart-check' : 'cart-outline'}
+            size={20}
+            color={almostDone ? colors.success : colors.onSurfaceVariant}
+          />
+          <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, flex: 1 }]}>
+            {almostDone
+              ? `${groceryChecked} of ${groceryTotal} ready · ${groceryUnchecked} to go`
+              : `${groceryUnchecked} items still needed`}
           </Text>
-          <Text style={[Typography.caption, { color: colors.outline }]}>
-            {uncheckedGroceryCount} items missing for your planned meals
-          </Text>
+          {almostDone ? (
+            <View style={styles.groceryMiniBar}>
+              <View style={[styles.groceryMiniTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
+                <View style={[styles.groceryMiniFill, { backgroundColor: colors.success, width: `${groceryPercent}%` }]} />
+              </View>
+            </View>
+          ) : (
+            <Pressable onPress={() => router.push('/(tabs)/grocery')} accessibilityRole="button" accessibilityLabel="View grocery list">
+              <Text style={[Typography.labelSmall, { color: colors.primary }]}>View List</Text>
+            </Pressable>
+          )}
         </View>
-        <Pressable
-          onPress={() => router.push('/(tabs)/grocery')}
-          style={[styles.reviewBtn, { backgroundColor: colors.glassOverlay }]}
-          accessibilityRole="button"
-          accessibilityLabel="Review grocery list"
-        >
-          <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700' }]}>
-            Review
-          </Text>
-        </Pressable>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -467,7 +481,7 @@ export default function PlanScreen() {
 
         {!isDailyView && <View style={{ height: Spacing.sm }} />}
 
-        {!isDailyView && renderGroceryBanner()}
+        {!isDailyView && renderGroceryIndicator()}
 
         {/* ═══ DAILY VIEW ═══ */}
         {isDailyView ? (
@@ -535,7 +549,7 @@ export default function PlanScreen() {
                   );
                 })}
               </View>
-              {renderGroceryBanner()}
+              {renderGroceryIndicator()}
             </>
           ) : (
             /* ── Daily: single meal (primary dinner) + course slots ── */
@@ -658,7 +672,7 @@ export default function PlanScreen() {
                   );
                 })}
               </View>
-              {renderGroceryBanner()}
+              {renderGroceryIndicator()}
             </>
           )
         ) : (
@@ -1174,22 +1188,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     marginBottom: Spacing.lg,
   },
-  groceryBanner: {
+  groceryIndicator: {
+    height: 48,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.md,
-    gap: Spacing.sm,
+    borderRadius: Radius.lg,
+    gap: Spacing.sm + 4,
   },
-  groceryTextWrap: {
-    flex: 1,
-    gap: Spacing.xs,
+  groceryMiniBar: {
+    width: 60,
   },
-  reviewBtn: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.full,
+  groceryMiniTrack: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  groceryMiniFill: {
+    height: '100%',
+    borderRadius: 2,
   },
   timeline: {
     paddingHorizontal: Spacing.page,
