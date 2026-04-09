@@ -443,7 +443,7 @@ export default function PlanScreen() {
             >
               <Text style={[
                 Typography.caption,
-                { fontWeight: '700', fontSize: 11, letterSpacing: 0.3 },
+                { fontWeight: '700', fontSize: 12, letterSpacing: 0.3 },
                 isDailyView ? { color: colors.onPrimary } : { color: colors.outline },
               ]}>
                 Day
@@ -464,7 +464,7 @@ export default function PlanScreen() {
             >
               <Text style={[
                 Typography.caption,
-                { fontWeight: '700', fontSize: 11, letterSpacing: 0.3 },
+                { fontWeight: '700', fontSize: 12, letterSpacing: 0.3 },
                 !isDailyView ? { color: colors.onPrimary } : { color: colors.outline },
               ]}>
                 Week
@@ -1335,9 +1335,9 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.sm,
   },
   dayCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1361,7 +1361,7 @@ const styles = StyleSheet.create({
   timeline: {
     paddingHorizontal: Spacing.page,
     position: 'relative',
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   timelineLine: {
     position: 'absolute',
@@ -1372,7 +1372,7 @@ const styles = StyleSheet.create({
   },
   dayRow: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: Spacing.md,
     minHeight: 80,
   },
   dayLeft: {
@@ -1418,7 +1418,7 @@ const styles = StyleSheet.create({
   },
   mealImageTall: {
     width: '100%',
-    height: 160,
+    height: 140,
   },
   imageActionLeft: {
     position: 'absolute',
@@ -1457,7 +1457,7 @@ const styles = StyleSheet.create({
   },
   mealContent: {
     padding: Spacing.md,
-    gap: Spacing.xs,
+    gap: Spacing.sm,
   },
   mealMeta: {
     flexDirection: 'row',
@@ -1597,7 +1597,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   weekDayCard: {
-    borderRadius: 28,
+    borderRadius: Radius.xl,
     padding: Spacing.md,
     overflow: 'hidden',
   },
@@ -1605,7 +1605,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   weekEmptyCard: {
-    borderRadius: 28,
+    borderRadius: Radius.xl,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.md,
     flexDirection: 'row',
@@ -1675,8 +1675,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   pastDayCard: {
-    borderRadius: 28,
-    padding: 16,
+    borderRadius: Radius.xl,
+    padding: Spacing.md,
     overflow: 'hidden',
   },
   pastDayHeader: {
