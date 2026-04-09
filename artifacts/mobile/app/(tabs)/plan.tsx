@@ -1055,7 +1055,7 @@ export default function PlanScreen() {
                           accessibilityLabel={`Swap ${slot.label}`}
                           hitSlop={6}
                         >
-                          <MaterialCommunityIcons name="refresh" size={16} color={colors.primary} />
+                          <MaterialCommunityIcons name="refresh" size={20} color={colors.primary} />
                         </Pressable>
                         <Pressable
                           onPress={(e) => { e.stopPropagation(); handleRemoveCourse(day.date, slot.courseType); }}
@@ -1064,7 +1064,7 @@ export default function PlanScreen() {
                           accessibilityLabel={`Remove ${slot.label}`}
                           hitSlop={6}
                         >
-                          <MaterialCommunityIcons name="close" size={16} color={colors.error} />
+                          <MaterialCommunityIcons name="close" size={20} color={colors.error} />
                         </Pressable>
                         <View style={styles.weekMealLabel} pointerEvents="none">
                           <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', opacity: 0.8 }}>
@@ -1347,8 +1347,8 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   segmentBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
   },
   multipleMealsRow: {
@@ -1414,11 +1414,11 @@ const styles = StyleSheet.create({
   },
   mealImage: {
     width: '100%',
-    height: 80,
+    height: 120,
   },
   mealImageTall: {
     width: '100%',
-    height: 100,
+    height: 160,
   },
   imageActionLeft: {
     position: 'absolute',
@@ -1456,7 +1456,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   mealContent: {
-    padding: 12,
+    padding: Spacing.md,
     gap: Spacing.xs,
   },
   mealMeta: {
@@ -1468,8 +1468,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
     alignItems: 'center',
     gap: Spacing.sm,
   },
@@ -1490,14 +1490,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
-    marginTop: Spacing.sm,
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.xs,
   },
   courseCard: {
     borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
   },
   courseCardInner: {
     flexDirection: 'row',
@@ -1505,9 +1506,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   addCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1597,19 +1598,20 @@ const styles = StyleSheet.create({
   },
   weekDayCard: {
     borderRadius: 28,
-    padding: 10,
+    padding: Spacing.md,
     overflow: 'hidden',
   },
   weekDayHeader: {
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   weekEmptyCard: {
     borderRadius: 28,
-    padding: 10,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 52,
+    minHeight: 64,
   },
   weekAddCircle: {
     width: 40,
@@ -1631,7 +1633,7 @@ const styles = StyleSheet.create({
   weekMealSlot: {
     borderRadius: Radius.lg,
     overflow: 'hidden',
-    aspectRatio: 2.5,
+    aspectRatio: 2.2,
   },
   weekMealImage: {
     width: '100%',
@@ -1639,9 +1641,9 @@ const styles = StyleSheet.create({
   },
   weekMealAction: {
     position: 'absolute',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: OVERLAY_BUTTON.size,
+    height: OVERLAY_BUTTON.size,
+    borderRadius: OVERLAY_BUTTON.size / 2,
     backgroundColor: 'rgba(255,255,255,0.85)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1666,9 +1668,9 @@ const styles = StyleSheet.create({
   weekAddCoursePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
     borderWidth: 1,
   },
