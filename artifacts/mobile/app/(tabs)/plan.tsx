@@ -1257,14 +1257,6 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: Radius.full,
   },
-  partyPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Radius.full,
-  },
   multipleMealsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1431,13 +1423,6 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     marginTop: Spacing.sm,
   },
-  playCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   fabContainer: {
     position: 'absolute',
   },
@@ -1474,47 +1459,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.md,
   },
-  dayNutritionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: Radius.md,
-    marginTop: Spacing.sm,
-  },
-  dayNutritionItem: {
-    alignItems: 'center',
-    gap: 1,
-  },
-  dayNutritionDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 2,
-  },
   onboardingHint: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Spacing.md,
     padding: Spacing.md,
     borderRadius: Radius.lg,
-  },
-  dinnerPartyPromo: {
-    borderRadius: Radius.lg,
-    padding: Spacing.md,
-    marginBottom: Spacing.md,
-    gap: Spacing.md,
-  },
-  dinnerPartyPromoContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  dinnerPartyPromoCTA: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.full,
   },
   toast: {
     position: 'absolute',
