@@ -1349,6 +1349,9 @@ const styles = StyleSheet.create({
   segmentBtn: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: Radius.full,
   },
   multipleMealsRow: {
@@ -1641,9 +1644,9 @@ const styles = StyleSheet.create({
   },
   weekMealAction: {
     position: 'absolute',
-    width: OVERLAY_BUTTON.size,
-    height: OVERLAY_BUTTON.size,
-    borderRadius: OVERLAY_BUTTON.size / 2,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(255,255,255,0.85)',
     alignItems: 'center',
     justifyContent: 'center',
