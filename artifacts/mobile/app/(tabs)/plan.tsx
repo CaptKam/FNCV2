@@ -786,7 +786,7 @@ export default function PlanScreen() {
                 return (
                   <Pressable
                     key={day.date}
-                    onPress={goToDayView}
+                    onPress={() => openPicker(day.date, 'main')}
                     style={[
                       styles.weekEmptyCard,
                       {
