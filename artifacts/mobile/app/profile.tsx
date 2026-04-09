@@ -22,6 +22,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { useThemePreference, ThemePreference } from '@/context/ThemeContext';
 import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
+import { countries } from '@/data/countries';
 
 type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -154,129 +155,130 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 76 }}
       >
 
-        {/* Profile card — wired to AppContext XP/level */}
+        {/* ═══ PROFILE HERO ═══ */}
         <View style={[styles.profileCard, { paddingHorizontal: Spacing.page }]}>
           <View style={{ height: Spacing.xl }} />
-          <View style={[styles.profileAccent, { backgroundColor: colors.primarySubtle }]}>
-            <View style={[styles.profileAccentLine, { backgroundColor: colors.primary }]} />
-          </View>
-          <View style={{ height: Spacing.lg }} />
           <Pressable
             onPress={() => {
               setEditName(displayName);
               setEditAvatar(avatarId);
               setShowProfileModal(true);
             }}
-            style={[styles.avatarLarge, { backgroundColor: colors.primarySubtle }]}
             accessibilityRole="button"
             accessibilityLabel="Edit profile"
           >
-            {currentAvatarIcon ? (
-              <MaterialCommunityIcons name={currentAvatarIcon} size={40} color={colors.primary} />
-            ) : (
-              <Text style={{ fontSize: 32, fontWeight: '700', color: colors.primary }}>
-                {(displayName || 'C').charAt(0).toUpperCase()}
-              </Text>
-            )}
+            <View style={styles.avatarGlow}>
+              <View style={[styles.avatarGlowRing, { backgroundColor: `${colors.primary}20` }]} />
+              <View style={[styles.avatarLarge, { backgroundColor: colors.primarySubtle }]}>
+                {currentAvatarIcon ? (
+                  <MaterialCommunityIcons name={currentAvatarIcon} size={48} color={colors.primary} />
+                ) : (
+                  <Text style={{ fontSize: 40, fontWeight: '700', color: colors.primary }}>
+                    {(displayName || 'C').charAt(0).toUpperCase()}
+                  </Text>
+                )}
+              </View>
+            </View>
             <View style={[styles.editBadge, { backgroundColor: colors.primary }]}>
-              <MaterialCommunityIcons name="pencil" size={16} color={colors.onPrimary} />
+              <MaterialCommunityIcons name="pencil" size={14} color={colors.onPrimary} />
             </View>
           </Pressable>
-          <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center' }]}>
+
+          <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center', marginTop: Spacing.lg }]}>
             {displayName || levelName}
           </Text>
-          <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center' }]}>
-            {displayName ? `${levelName} · ` : ''}Culinary explorer · Level {level}
-          </Text>
-
-          <View style={styles.levelContainer}>
-            <View style={styles.levelRow}>
-              <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
-                Level {level}
-              </Text>
-              <Text style={[Typography.caption, { color: colors.primary }]}>{xp} XP</Text>
-            </View>
-            <View style={[styles.progressBar, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <View
-                style={[
-                  styles.progressFill,
-                  { backgroundColor: colors.primary, width: `${progress * 100}%` },
-                ]}
-              />
-            </View>
-            <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', marginTop: 4 }]}>
-              {xpToNext} XP to Level {level + 1}
+          <View style={[styles.levelBadge, { backgroundColor: colors.primary }]}>
+            <Text style={[Typography.labelSmall, { color: colors.onPrimary, letterSpacing: 1.5, fontSize: 10 }]}>
+              {levelName.toUpperCase()}
             </Text>
           </View>
         </View>
 
-        {/* Stats — wired to AppContext */}
+        {/* ═══ STATS BENTO ═══ */}
         <View style={[styles.statsRow, { paddingHorizontal: Spacing.page }]}>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
             <Text style={[Typography.headlineLarge, { color: colors.primary }]}>{totalRecipesCooked}</Text>
-            <Text style={[Typography.caption, { color: colors.outline }]}>Recipes{'\n'}Cooked</Text>
+            <Text style={[Typography.caption, { color: colors.outline, textAlign: 'center', fontSize: 10, letterSpacing: 0.5 }]}>
+              {'RECIPES\nCOOKED'}
+            </Text>
           </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Text style={[Typography.headlineLarge, { color: colors.primary }]}>{countriesExplored}</Text>
-            <Text style={[Typography.caption, { color: colors.outline }]}>Countries{'\n'}Explored</Text>
+          <View style={[styles.statCard, styles.statCardPrimary, { backgroundColor: colors.primary }]}>
+            <Text style={[Typography.headlineLarge, { color: colors.onPrimary }]}>{countriesExplored}</Text>
+            <Text style={[Typography.caption, { color: colors.onPrimary, textAlign: 'center', fontSize: 10, letterSpacing: 0.5, opacity: 0.8 }]}>
+              {'COUNTRIES\nVISITED'}
+            </Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
             <Text style={[Typography.headlineLarge, { color: colors.primary }]}>{bookmarkCount}</Text>
-            <Text style={[Typography.caption, { color: colors.outline }]}>Recipes{'\n'}Saved</Text>
+            <Text style={[Typography.caption, { color: colors.outline, textAlign: 'center', fontSize: 10, letterSpacing: 0.5 }]}>
+              {'RECIPES\nSAVED'}
+            </Text>
           </View>
         </View>
 
-        {/* Dietary preferences — wired to AppContext */}
+        {/* ═══ YOUR PROGRESS (Passport Stamps) ═══ */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
-          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            DIETARY PREFERENCES
+          <View style={styles.sectionHeader}>
+            <Text style={[Typography.headline, { color: colors.onSurface }]}>Your Progress</Text>
+          </View>
+          <Text style={[Typography.caption, { color: colors.outline, marginBottom: Spacing.md }]}>
+            Earned by mastering a regional week
           </Text>
-          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
-            Dietary Preferences
-          </Text>
-          <View style={styles.dietaryGrid}>
-            {DIETARY_OPTIONS.map((option) => {
-              const isSelected = dietaryFlags.includes(option.id);
+          <View style={styles.stampGrid}>
+            {countries.slice(0, 3).map((c) => {
+              const count = passportStamps[c.id] || 0;
+              const earned = count > 0;
               return (
-                <Pressable
-                  key={option.id}
-                  onPress={() => toggleDietary(option.id)}
-                  style={[
-                    styles.dietaryChip,
-                    {
-                      backgroundColor: isSelected ? colors.primaryMuted : colors.surfaceContainerLow,
-                      borderColor: isSelected ? colors.primary : 'transparent',
-                      borderWidth: 1,
-                    },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${option.label} diet`}
-                  accessibilityState={{ selected: isSelected }}
-                >
-                  <Text style={{ fontSize: 18 }}>{option.emoji}</Text>
-                  <Text
-                    style={[
-                      Typography.titleSmall,
-                      { color: isSelected ? colors.primary : colors.onSurface },
-                    ]}
-                  >
-                    {option.label}
+                <GlassView key={c.id} style={styles.stampCard} intensity={40}>
+                  <View style={[styles.stampCircle, { borderColor: earned ? colors.primary : colors.outlineVariant }]}>
+                    <Text style={{ fontSize: 28 }}>{c.flag}</Text>
+                  </View>
+                  <Text style={[Typography.titleSmall, { color: colors.onSurface, fontStyle: 'italic' }]}>{c.name}</Text>
+                  <Text style={[Typography.caption, { color: colors.outline, fontSize: 8, letterSpacing: 1 }]}>
+                    {earned ? `${count} COOKED` : 'LOCKED'}
                   </Text>
-                </Pressable>
+                </GlassView>
               );
             })}
           </View>
         </View>
 
-        {/* Cooking settings — wired to AppContext */}
+        {/* ═══ SETTINGS (Grouped Card) ═══ */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
-          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            COOKING SETTINGS
-          </Text>
-          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
-            Cooking Settings
-          </Text>
-          <View style={styles.settingsGroup}>
+          <View style={[styles.settingsCard, { backgroundColor: colors.surfaceContainerLow }]}>
+            <SettingRow
+              icon="silverware-fork-knife"
+              label="Dietary Preferences"
+              subtitle={dietaryFlags.length > 0 ? dietaryFlags.map(d => DIETARY_OPTIONS.find(o => o.id === d)?.label).filter(Boolean).join(', ') : 'None set'}
+              onPress={() => {}}
+              colors={colors}
+            />
+            <SettingRow
+              icon="palette-outline"
+              label="Appearance"
+              subtitle={preference === 'system' ? 'System' : preference === 'light' ? 'Light Mode' : 'Dark Mode'}
+              onPress={() => setShowThemeModal(true)}
+              colors={colors}
+            />
+            <SettingRow
+              icon="bell-outline"
+              label="Notifications"
+              onPress={() => {}}
+              colors={colors}
+            />
+            <SettingRow
+              icon="information-outline"
+              label="About"
+              subtitle="Version 1.0.0"
+              onPress={() => {}}
+              colors={colors}
+            />
+          </View>
+        </View>
+
+        {/* ═══ COOKING SETTINGS (Grouped Card) ═══ */}
+        <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
+          <View style={[styles.settingsCard, { backgroundColor: colors.surfaceContainerLow }]}>
             <SettingRow
               icon="chef-hat"
               label="Cooking Level"
@@ -302,7 +304,7 @@ export default function ProfileScreen() {
             <SettingRow
               icon="silverware-fork-knife"
               label="Course Preference"
-              subtitle={coursePreference === 'main' ? 'Main course only' : 'Full course (appetizer + main + dessert)'}
+              subtitle={coursePreference === 'main' ? 'Main course only' : 'Full course'}
               colors={colors}
               trailing={
                 <Pressable
@@ -352,40 +354,9 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* General */}
+        {/* ═══ LEGAL + SIGN OUT ═══ */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
-          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
-            GENERAL
-          </Text>
-          <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
-            General
-          </Text>
-          <View style={styles.settingsGroup}>
-            <SettingRow
-              icon="palette-outline"
-              label="Appearance"
-              subtitle={preference === 'system' ? 'Follow system theme' : preference === 'light' ? 'Light mode' : 'Dark mode'}
-              onPress={() => setShowThemeModal(true)}
-              colors={colors}
-            />
-            <SettingRow
-              icon="help-circle-outline"
-              label="Help & Support"
-              onPress={() => {}}
-              colors={colors}
-            />
-            <SettingRow
-              icon="information-outline"
-              label="About Fork & Compass"
-              subtitle="Version 1.0.0"
-              onPress={() => {}}
-              colors={colors}
-            />
-          </View>
-        </View>
-
-        <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
-          <View style={styles.settingsGroup}>
+          <View style={[styles.settingsCard, { backgroundColor: colors.surfaceContainerLow }]}>
             <SettingRow
               icon="shield-check-outline"
               label="Privacy Policy"
@@ -398,10 +369,16 @@ export default function ProfileScreen() {
               onPress={() => {}}
               colors={colors}
             />
+            <SettingRow
+              icon="help-circle-outline"
+              label="Help & Support"
+              onPress={() => {}}
+              colors={colors}
+            />
           </View>
         </View>
 
-        <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.md }}>
+        <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.sm }}>
           <Pressable
             onPress={() => Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
               { text: 'Cancel', style: 'cancel' },
@@ -672,66 +649,89 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   profileCard: {
     alignItems: 'center',
-    paddingVertical: Spacing.xl,
+    paddingVertical: Spacing.lg,
     gap: Spacing.sm,
   },
-  avatarLarge: {
-    width: 96,
-    height: 96,
-    borderRadius: 9999,
+  avatarGlow: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.sm,
   },
-  levelContainer: {
-    width: '100%',
-    marginTop: Spacing.md,
-    paddingHorizontal: Spacing.xl,
+  avatarGlowRing: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
   },
-  levelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.xs,
+  avatarLarge: {
+    width: 128,
+    height: 128,
+    borderRadius: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  progressBar: {
-    height: 8,
-    borderRadius: 9999,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 9999,
+  levelBadge: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+    marginTop: Spacing.sm,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    gap: Spacing.md,
     marginBottom: Spacing.xl,
   },
   statCard: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: Spacing.lg,
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
     borderRadius: Radius.lg,
     gap: Spacing.xs,
+  },
+  statCardPrimary: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
   },
   section: {
     marginBottom: Spacing.lg,
   },
-  dietaryGrid: {
+  sectionHeader: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: Spacing.xs,
   },
-  dietaryChip: {
+  stampGrid: {
     flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  stampCard: {
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: Radius.xl,
     alignItems: 'center',
-    gap: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.full,
+    justifyContent: 'center',
+    padding: Spacing.sm,
+    gap: 4,
   },
-  settingsGroup: {
-    gap: Spacing.sm,
+  stampCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  settingsCard: {
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+    padding: Spacing.xs,
+    gap: 2,
   },
   settingRow: {
     flexDirection: 'row',
@@ -742,15 +742,15 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   settingIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.sm,
+    width: 40,
+    height: 40,
+    borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
   settingText: {
     flex: 1,
-    gap: Spacing.xs,
+    gap: 2,
   },
   unitToggle: {
     paddingHorizontal: Spacing.md,
@@ -765,6 +765,16 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     borderRadius: Radius.full,
     borderWidth: 1,
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalOverlay: {
     flex: 1,
@@ -810,30 +820,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileAccent: {
-    height: Spacing.xs,
-    borderRadius: Radius.full,
-    alignSelf: 'center',
-    width: 64,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  profileAccentLine: {
-    height: 2,
-    width: 40,
-    borderRadius: Radius.full,
-  },
-  editBadge: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
