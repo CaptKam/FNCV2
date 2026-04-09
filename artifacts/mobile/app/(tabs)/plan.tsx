@@ -164,6 +164,8 @@ export default function PlanScreen() {
     return dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   });
   const [multipleMeals, setMultipleMeals] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const todayCardRef = useRef<View>(null);
 
   // Recipe picker state
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -291,10 +293,21 @@ export default function PlanScreen() {
 
   const primaryMeal = selectedDay?.courses.main;
 
+  const weekContainerY = useRef(0);
+  const scrollToTodayCard = useCallback((cardY: number) => {
+    if (selectedWeek === 'this-week' && !isDailyView) {
+      const absoluteY = weekContainerY.current + cardY;
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ y: Math.max(0, absoluteY - 8), animated: false });
+      }, 100);
+    }
+  }, [selectedWeek, isDailyView]);
+
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <HeaderBar />
       <ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 76 }}
       >
@@ -741,7 +754,10 @@ export default function PlanScreen() {
             </View>
           ) : (
           /* ── Current/Future Week: card layout ── */
-          <View style={{ paddingHorizontal: Spacing.page, gap: Spacing.lg }}>
+          <View
+            style={{ paddingHorizontal: Spacing.page, gap: Spacing.lg }}
+            onLayout={(e) => { weekContainerY.current = e.nativeEvent.layout.y; }}
+          >
             {weekDays.map((day, dayIdx) => {
               const { appetizer, main: mainMeal, dessert } = day.courses;
               const allMeals = [appetizer, mainMeal, dessert].filter(Boolean) as PlannedMeal[];
@@ -757,6 +773,7 @@ export default function PlanScreen() {
                   <Pressable
                     key={day.date}
                     onPress={() => openPicker(day.date, 'main')}
+                    onLayout={isToday ? (e) => scrollToTodayCard(e.nativeEvent.layout.y) : undefined}
                     style={[
                       styles.weekEmptyCard,
                       {
@@ -797,7 +814,7 @@ export default function PlanScreen() {
               const filledSlots = courseSlots.filter((s) => s.meal);
 
               return (
-                <Pressable key={day.date} onPress={goToDayView} accessibilityRole="button" accessibilityLabel={`View ${day.dayLabel}`}>
+                <Pressable key={day.date} onPress={goToDayView} onLayout={isToday ? (e) => scrollToTodayCard(e.nativeEvent.layout.y) : undefined} accessibilityRole="button" accessibilityLabel={`View ${day.dayLabel}`}>
                 <GlassView
                   style={[
                     styles.weekDayCard,
