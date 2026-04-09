@@ -250,7 +250,7 @@ export default function ProfileScreen() {
               icon="silverware-fork-knife"
               label="Dietary Preferences"
               subtitle={dietaryFlags.length > 0 ? dietaryFlags.map(d => DIETARY_OPTIONS.find(o => o.id === d)?.label).filter(Boolean).join(', ') : 'None set'}
-              onPress={() => {}}
+              onPress={() => Alert.alert('Dietary Preferences', 'You can update your dietary preferences during onboarding or by editing your profile above.')}
               colors={colors}
             />
             <SettingRow
@@ -261,16 +261,10 @@ export default function ProfileScreen() {
               colors={colors}
             />
             <SettingRow
-              icon="bell-outline"
-              label="Notifications"
-              onPress={() => {}}
-              colors={colors}
-            />
-            <SettingRow
               icon="information-outline"
               label="About"
               subtitle="Version 1.0.0"
-              onPress={() => {}}
+              onPress={() => Alert.alert('Fork & Compass', 'Version 1.0.0\n\nA culinary journey through world cuisines.\n\nvoyageapron.com')}
               colors={colors}
             />
           </View>
@@ -360,19 +354,19 @@ export default function ProfileScreen() {
             <SettingRow
               icon="shield-check-outline"
               label="Privacy Policy"
-              onPress={() => {}}
+              onPress={() => Alert.alert('Privacy Policy', 'Our privacy policy will be available at voyageapron.com/privacy before public launch.')}
               colors={colors}
             />
             <SettingRow
               icon="file-document-outline"
               label="Terms of Service"
-              onPress={() => {}}
+              onPress={() => Alert.alert('Terms of Service', 'Our terms of service will be available at voyageapron.com/terms before public launch.')}
               colors={colors}
             />
             <SettingRow
               icon="help-circle-outline"
               label="Help & Support"
-              onPress={() => {}}
+              onPress={() => Alert.alert('Help & Support', 'Need help? Email us at support@voyageapron.com')}
               colors={colors}
             />
           </View>

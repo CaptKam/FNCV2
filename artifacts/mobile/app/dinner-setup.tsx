@@ -13,12 +13,13 @@ import { OVERLAY_BUTTON } from '@/constants/icons';
 import { useApp } from '@/context/AppContext';
 import { DinnerParty, DinnerGuest, DietaryConflict } from '@/types/dinnerParty';
 import { countries } from '@/data/countries';
+import { parseDateLocal } from '@/utils/dates';
 
 // ─── Helpers ───
 
 function getDayName(dateStr: string): string {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[new Date(dateStr).getDay()];
+  return days[parseDateLocal(dateStr).getDay()];
 }
 
 function formatTime(hours: number, mins: number): string {
@@ -40,7 +41,7 @@ function formatPhoneNumber(raw: string): string {
 }
 
 function formatDateDisplay(dateStr: string): string {
-  const d = new Date(dateStr);
+  const d = parseDateLocal(dateStr);
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
