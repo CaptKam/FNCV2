@@ -23,7 +23,7 @@ interface RecipeCardProps {
 
 export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
   const { width } = useWindowDimensions();
-  const CARD_WIDTH = (width - Spacing.page * 2 - Spacing.md) / 2;
+  const CARD_WIDTH = (width - Spacing.page * 2 - 12) / 2;
   const colors = useThemeColors();
   const router = useRouter();
   const { isBookmarked, toggleBookmark } = useBookmarks();
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 28,
     overflow: 'hidden',
-    marginBottom: Spacing.md,
+    marginBottom: 12,
   },
   imageContainer: {
     height: 192,
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    padding: Spacing.md,
+    padding: 12,
     gap: Spacing.sm,
   },
   badgeRow: {

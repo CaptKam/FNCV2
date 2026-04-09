@@ -829,7 +829,7 @@ export default function PlanScreen() {
           ) : (
           /* ── Current/Future Week: card layout ── */
           <View
-            style={{ paddingHorizontal: Spacing.page, gap: Spacing.lg }}
+            style={{ paddingHorizontal: Spacing.page, gap: 12 }}
             onLayout={(e) => { weekContainerY.current = e.nativeEvent.layout.y; }}
           >
             {weekDays.map((day, dayIdx) => {
@@ -929,7 +929,7 @@ export default function PlanScreen() {
                     </View>
                   </View>
 
-                  <View style={{ gap: Spacing.md }}>
+                  <View style={{ gap: 12 }}>
                     {filledSlots.map((slot) => (
                       <Pressable
                         key={slot.courseType}
@@ -1271,7 +1271,7 @@ const styles = StyleSheet.create({
   },
   dayRow: {
     flexDirection: 'row',
-    marginBottom: Spacing.xl,
+    marginBottom: 12,
     minHeight: 80,
   },
   dayLeft: {
@@ -1292,7 +1292,7 @@ const styles = StyleSheet.create({
   },
   dayRight: {
     flex: 1,
-    marginLeft: Spacing.lg,
+    marginLeft: 12,
   },
   primaryMealHeader: {
     marginBottom: Spacing.md,
@@ -1313,11 +1313,11 @@ const styles = StyleSheet.create({
   },
   mealImage: {
     width: '100%',
-    height: 180,
+    height: 120,
   },
   mealImageTall: {
     width: '100%',
-    height: 200,
+    height: 140,
   },
   imageActionLeft: {
     position: 'absolute',
@@ -1355,7 +1355,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   mealContent: {
-    padding: Spacing.md,
+    padding: 12,
     gap: Spacing.xs,
   },
   mealMeta: {
@@ -1367,8 +1367,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.lg,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     alignItems: 'center',
     gap: Spacing.sm,
   },
@@ -1496,19 +1496,19 @@ const styles = StyleSheet.create({
   },
   weekDayCard: {
     borderRadius: 28,
-    padding: Spacing.lg,
+    padding: 12,
     overflow: 'hidden',
   },
   weekDayHeader: {
-    marginBottom: Spacing.lg,
+    marginBottom: 12,
   },
   weekEmptyCard: {
     borderRadius: 28,
-    padding: Spacing.lg,
+    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 88,
+    minHeight: 64,
   },
   weekAddCircle: {
     width: 40,
