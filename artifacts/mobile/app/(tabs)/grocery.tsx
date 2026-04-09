@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Image, Alert, Animated as RNAnimated } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Alert, Animated as RNAnimated } from 'react-native';
+import { Image } from 'expo-image';
 import Animated, { FadeInDown, FadeOutDown, useReducedMotion } from 'react-native-reanimated';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -453,6 +454,8 @@ export default function GroceryScreen() {
                       <Image
                         source={{ uri: recipe.image }}
                         style={styles.recipeImage}
+                        contentFit="cover"
+                        transition={300}
                         accessible={false}
                       />
                       <Pressable
