@@ -541,7 +541,7 @@ export default function RecipeDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  heroContainer: { height: 420, position: 'relative' },
+  heroContainer: { height: 360, position: 'relative' },
   heroText: {
     position: 'absolute',
     bottom: Spacing.xl,

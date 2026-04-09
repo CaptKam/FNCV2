@@ -1350,11 +1350,11 @@ const styles = StyleSheet.create({
   },
   mealImage: {
     width: '100%',
-    height: 120,
+    height: 80,
   },
   mealImageTall: {
     width: '100%',
-    height: 140,
+    height: 100,
   },
   imageActionLeft: {
     position: 'absolute',
