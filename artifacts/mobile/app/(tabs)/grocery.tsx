@@ -204,8 +204,7 @@ export default function GroceryScreen() {
     return CATEGORY_ORDER
       .map((cat) => {
         const items = groceryItems
-          .filter((item) => item.category === cat.key)
-          .sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? 1 : -1));
+          .filter((item) => item.category === cat.key);
         return { ...cat, color: categoryColors[cat.key], items };
       })
       .filter((group) => group.items.length > 0);

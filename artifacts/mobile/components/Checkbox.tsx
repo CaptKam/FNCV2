@@ -32,8 +32,8 @@ export function Checkbox({ checked, onToggle, size = 'default' }: CheckboxProps)
         {
           width: dim,
           height: dim,
-          backgroundColor: checked ? colors.success : 'transparent',
-          borderColor: checked ? colors.success : colors.outlineVariant,
+          backgroundColor: checked ? colors.primary : 'transparent',
+          borderColor: checked ? colors.primary : colors.outlineVariant,
           borderWidth: checked ? 0 : 2,
         },
       ]}

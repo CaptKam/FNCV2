@@ -18,6 +18,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
+import { Checkbox } from '@/components/Checkbox';
 import { HeaderBar } from '@/components/HeaderBar';
 import { useThemePreference, ThemePreference } from '@/context/ThemeContext';
 import { useApp } from '@/context/AppContext';
@@ -459,9 +460,9 @@ export default function ProfileScreen() {
                       {option.desc}
                     </Text>
                   </View>
-                  {isActive && (
-                    <MaterialCommunityIcons name="check-circle" size={20} color={colors.primary} />
-                  )}
+                  <Checkbox checked={isActive} onToggle={() => {
+                    setPreference(option.id);
+                  }} size="sm" />
                 </Pressable>
               );
             })}
@@ -557,9 +558,10 @@ export default function ProfileScreen() {
                   <Text style={[Typography.titleSmall, { color: isActive ? colors.primary : colors.onSurface, flex: 1 }]}>
                     {partner.label}
                   </Text>
-                  {isActive && (
-                    <MaterialCommunityIcons name="check-circle" size={20} color={colors.primary} />
-                  )}
+                  <Checkbox checked={isActive} onToggle={() => {
+                    app.setGroceryPartner(partner.id);
+                    setShowPartnerModal(false);
+                  }} size="sm" />
                 </Pressable>
               );
             })}
