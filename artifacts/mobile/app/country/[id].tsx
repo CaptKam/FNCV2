@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderRadius: Radius.md,
     gap: Spacing.md,
-    marginBottom: Spacing.md,
+    marginBottom: 12,
     minHeight: 56,
   },
   recipeThumb: {

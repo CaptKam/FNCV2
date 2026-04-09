@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
+    gap: 12,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.sm,
     borderRadius: Radius.md,
