@@ -71,7 +71,7 @@ export default function BookmarksScreen() {
       <HeaderBar showBack />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 }}
       >
 
         <ScrollView
@@ -354,8 +354,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
   },
   itemThumb: {
-    width: 76,
-    height: 76,
+    width: 88,
+    height: 88,
     borderRadius: Radius.md,
     overflow: 'hidden',
   },

@@ -170,7 +170,7 @@ export default function ProfileScreen() {
       {!anyModalOpen && <HeaderBar showBack />}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 }}
       >
 
         {/* ═══ PROFILE HERO ═══ */}

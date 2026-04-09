@@ -173,7 +173,7 @@ export default function CookingScheduleScreen() {
       {/* Timeline */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 100, paddingBottom: 120 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 100, paddingBottom: Spacing.tabClearance }]}
       >
         {/* Summary strip */}
         <View style={[styles.summaryStrip, { backgroundColor: colors.surfaceContainerHigh }]}>

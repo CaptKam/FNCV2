@@ -116,7 +116,7 @@ export default function SearchScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 }}
       >
         <View style={{ paddingHorizontal: Spacing.page }}>
           <Text style={[Typography.displayMedium, { color: colors.onSurface }]}>
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: '100%',
-    height: 200,
+    height: 220,
   },
   cardContent: {
     padding: Spacing.md,

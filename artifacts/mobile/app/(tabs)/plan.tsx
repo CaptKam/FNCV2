@@ -447,7 +447,7 @@ export default function PlanScreen() {
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 160, paddingTop: insets.top + 76 + stickyHeight }}
+        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 + stickyHeight }}
       >
 
         {/* Multiple meals toggle */}
@@ -1352,11 +1352,11 @@ const styles = StyleSheet.create({
   },
   mealImage: {
     width: '100%',
-    height: 160,
+    height: 180,
   },
   mealImageTall: {
     width: '100%',
-    height: 176,
+    height: 200,
   },
   imageActionLeft: {
     position: 'absolute',
@@ -1406,7 +1406,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
-    paddingVertical: Spacing.xl,
+    paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.lg,
     alignItems: 'center',
     gap: Spacing.sm,

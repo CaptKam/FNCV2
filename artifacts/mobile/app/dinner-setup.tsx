@@ -257,7 +257,7 @@ export default function DinnerSetupScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 16 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 16 }}>
         {/* Header */}
         <View style={styles.headerRow}>
           <Pressable onPress={() => router.back()} hitSlop={12} accessibilityRole="button" accessibilityLabel="Go back">
