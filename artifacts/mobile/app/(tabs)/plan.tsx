@@ -761,126 +761,147 @@ export default function PlanScreen() {
               })}
             </View>
           ) : (
-          /* ── Current/Future Week: timeline layout ── */
-          <View style={styles.timeline}>
-            <View style={[styles.timelineLine, { backgroundColor: colors.primarySoft }]} />
+          /* ── Current/Future Week: glass card layout ── */
+          <View style={{ paddingHorizontal: Spacing.page, gap: Spacing.md }}>
             {weekDays.map((day) => {
-              const mainMeal = day.courses.main;
+              const { appetizer, main: mainMeal, dessert } = day.courses;
+              const allMeals = [appetizer, mainMeal, dessert].filter(Boolean) as PlannedMeal[];
+              const hasMeals = allMeals.length > 0;
               const isToday = day.date === todayISO;
+              const totalTime = allMeals.reduce((sum, m) => sum + (m.cookTime || 0), 0);
+              const dayParty = app.getDinnerPartyForDate(day.date);
+              const guestCount = dayParty ? app.getGuestCount(dayParty.id) : null;
 
-              return (
-                <View key={day.date} style={styles.dayRow}>
-                  <View style={styles.dayLeft}>
-                    <View
-                      style={[
-                        styles.timelineNode,
-                        {
-                          backgroundColor: mainMeal ? colors.primary : colors.surfaceContainerHigh,
-                        },
-                        isToday && !mainMeal && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryMuted, width: 14, height: 14 },
-                        isToday && mainMeal && { width: 14, height: 14 },
-                      ]}
-                    />
-                  </View>
-                  <View style={styles.dayRight}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.sm, gap: Spacing.xs }}>
-                      <Text style={[Typography.titleSmall, { color: isToday ? colors.primary : colors.outline, fontWeight: isToday ? '700' : '600' }]}>
+              if (!hasMeals) {
+                return (
+                  <Pressable
+                    key={day.date}
+                    onPress={() => openPicker(day.date, 'main')}
+                    style={[
+                      styles.weekEmptyCard,
+                      isToday && { borderColor: `${colors.primary}30`, borderWidth: 2 },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add meal for ${day.dayLabel}`}
+                  >
+                    <View>
+                      {isToday && (
+                        <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 1.5, fontSize: 10, marginBottom: 2 }]}>
+                          TODAY
+                        </Text>
+                      )}
+                      <Text style={[Typography.headline, { color: colors.onSurface, opacity: isToday ? 1 : 0.4, fontSize: 20 }]}>
                         {day.dayLabel}, {formatDateLabel(day.date)}
                       </Text>
+                      <Text style={[Typography.caption, { color: colors.outline, opacity: 0.5, marginTop: 2, fontSize: 13 }]}>
+                        {isToday ? 'Plan your meals for today' : 'Plan your menu'}
+                      </Text>
+                    </View>
+                    <View style={[styles.weekAddCircle, { backgroundColor: `${colors.surfaceContainerHigh}80`, borderColor: `${colors.outlineVariant}40` }]}>
+                      <MaterialCommunityIcons name="plus" size={20} color={`${colors.primary}66`} />
+                    </View>
+                  </Pressable>
+                );
+              }
+
+              return (
+                <GlassView
+                  key={day.date}
+                  style={[
+                    styles.weekDayCard,
+                    isToday && styles.weekDayCardToday,
+                    isToday && { borderColor: `${colors.primary}30`, borderWidth: 1 },
+                  ]}
+                  intensity={isToday ? 60 : 40}
+                >
+                  <View style={styles.weekDayHeader}>
+                    <View>
                       {isToday && (
-                        <View style={[styles.todayBadge, { backgroundColor: colors.primary }]}>
-                          <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700' }]}>
-                            TODAY
+                        <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 1.5, fontSize: 10, marginBottom: 2 }]}>
+                          TODAY
+                        </Text>
+                      )}
+                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: isToday ? 22 : 20 }]}>
+                        {day.dayLabel}, {formatDateLabel(day.date)}
+                      </Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                      {totalTime > 0 && (
+                        <View style={[styles.weekPillChip, { backgroundColor: `${colors.surfaceContainerHigh}80` }]}>
+                          <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
+                          <Text style={[Typography.caption, { color: colors.outline, fontWeight: '600', fontSize: 13 }]}>
+                            {formatCookTime(totalTime)}
                           </Text>
                         </View>
                       )}
-                    </View>
-                    {/* Dinner party indicator */}
-                    {(() => {
-                      const dayParty = app.getDinnerPartyForDate(day.date);
-                      if (dayParty) {
-                        const guestCount = app.getGuestCount(dayParty.id);
-                        const conflicts = app.checkDietaryConflicts(dayParty.id);
-                        return (
-                          <Pressable
-                            onPress={() => router.push(`/dinner-setup?date=${day.date}`)}
-                            style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: Spacing.sm }}
-                            accessibilityRole="button"
-                            accessibilityLabel={`Dinner party with ${guestCount.total} guests`}
-                          >
-                            <View style={[styles.partyPill, { backgroundColor: `${colors.primary}15` }]}>
-                              <Text style={{ fontSize: 14 }}>🍽️</Text>
-                              <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{guestCount.total} guests</Text>
-                            </View>
-                            {conflicts.length > 0 && (
-                              <View style={[styles.partyPill, { backgroundColor: `${colors.warning}15` }]}>
-                                <Text style={[Typography.caption, { color: colors.warning, fontWeight: '700' }]}>⚠️ Dietary conflicts</Text>
-                              </View>
-                            )}
-                          </Pressable>
-                        );
-                      }
-                      if (mainMeal) {
-                        return (
-                          <View style={[styles.dinnerPartyPromo, { backgroundColor: colors.surfaceContainerLow }]}>
-                            <View style={styles.dinnerPartyPromoContent}>
-                              <Text style={{ fontSize: 20, marginRight: Spacing.sm }}>🎉</Text>
-                              <View style={{ flex: 1 }}>
-                                <Text style={[Typography.titleSmall, { color: colors.onSurface, marginBottom: 2 }]}>Hosting tonight?</Text>
-                                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
-                                  Invite friends and we'll handle the timing and dietary needs.
-                                </Text>
-                              </View>
-                            </View>
-                            <Pressable
-                              onPress={() => router.push(`/dinner-setup?date=${day.date}`)}
-                              style={[styles.dinnerPartyPromoCTA, { backgroundColor: colors.primary }]}
-                              accessibilityRole="button"
-                              accessibilityLabel="Plan a dinner party"
-                            >
-                              <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Plan a Dinner Party</Text>
-                            </Pressable>
-                          </View>
-                        );
-                      }
-                      return null;
-                    })()}
-
-                    {mainMeal ? (
-                      <MealCard
-                        meal={mainMeal}
-                        imageStyle={styles.mealImage}
-                        badgeLabel="DINNER"
-                        headlineFontSize={22}
-                        onPress={() => router.push(`/recipe/${mainMeal.recipeId}`)}
-                        onSwap={() => openPicker(day.date, 'main')}
-                        onRemove={() => handleRemoveCourse(day.date, 'main')}
-                        colors={colors}
-                      />
-                    ) : (
-                      <View
-                        style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}
-                      >
-                        <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
-                          <MaterialCommunityIcons name="silverware-variant" size={28} color={colors.primary} />
-                        </View>
-                        <Text style={[Typography.bodySmall, { color: colors.outline }]}>
-                          This day is wide open — discover something new
-                        </Text>
+                      {guestCount && guestCount.total > 0 && (
                         <Pressable
-                          onPress={() => openPicker(day.date, 'main')}
-                          style={[styles.browseBtn, { backgroundColor: colors.primary }]}
+                          onPress={() => router.push(`/dinner-setup?date=${day.date}`)}
+                          style={[styles.weekPillChip, { backgroundColor: `${colors.surfaceContainerHigh}80` }]}
                           accessibilityRole="button"
-                          accessibilityLabel="Browse recipes"
+                          accessibilityLabel={`Dinner party with ${guestCount.total} guests`}
                         >
-                          <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
-                            Browse Recipes
+                          <MaterialCommunityIcons name="account-group" size={14} color={colors.outline} />
+                          <Text style={[Typography.caption, { color: colors.outline, fontWeight: '600', fontSize: 13 }]}>
+                            {guestCount.total} ppl
                           </Text>
                         </Pressable>
-                      </View>
-                    )}
+                      )}
+                    </View>
                   </View>
-                </View>
+
+                  {allMeals.length >= 3 ? (
+                    <View style={styles.weekThumbGrid3}>
+                      {[
+                        { meal: appetizer, label: 'Appetizer' },
+                        { meal: mainMeal, label: 'Main Course' },
+                        { meal: dessert, label: 'Dessert' },
+                      ].map((slot) => (
+                        <Pressable
+                          key={slot.label}
+                          onPress={() => slot.meal && router.push(`/recipe/${slot.meal.recipeId}`)}
+                          style={styles.weekThumbCol}
+                          accessibilityRole="button"
+                          accessibilityLabel={slot.meal?.recipeName ?? slot.label}
+                        >
+                          <View style={[styles.weekThumbSquare, { backgroundColor: colors.surfaceContainerHigh }]}>
+                            {slot.meal?.recipeImage && (
+                              <Image source={{ uri: slot.meal.recipeImage }} style={styles.weekThumbImage} />
+                            )}
+                          </View>
+                          <Text style={styles.weekThumbLabel}>{slot.label}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : allMeals.length === 2 ? (
+                    <View style={styles.weekThumbRow}>
+                      {allMeals.map((meal, idx) => (
+                        <Pressable
+                          key={idx}
+                          onPress={() => router.push(`/recipe/${meal.recipeId}`)}
+                          style={[styles.weekThumbRectSmall, { backgroundColor: colors.surfaceContainerHigh }]}
+                          accessibilityRole="button"
+                          accessibilityLabel={meal.recipeName}
+                        >
+                          {meal.recipeImage && (
+                            <Image source={{ uri: meal.recipeImage }} style={styles.weekThumbImage} />
+                          )}
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : (
+                    <Pressable
+                      onPress={() => mainMeal && router.push(`/recipe/${mainMeal.recipeId}`)}
+                      style={[styles.weekThumbWide, { backgroundColor: colors.surfaceContainerHigh }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={mainMeal?.recipeName ?? ''}
+                    >
+                      {allMeals[0]?.recipeImage && (
+                        <Image source={{ uri: allMeals[0].recipeImage }} style={styles.weekThumbImage} />
+                      )}
+                    </Pressable>
+                  )}
+                </GlassView>
               );
             })}
           </View>
@@ -1544,5 +1565,87 @@ const styles = StyleSheet.create({
   },
   pastEmptySlot: {
     borderWidth: 1.5,
+  },
+  weekDayCard: {
+    borderRadius: 28,
+    padding: Spacing.lg,
+    overflow: 'hidden' as const,
+  },
+  weekDayCardToday: {
+    borderRadius: 32,
+  },
+  weekDayHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'flex-start' as const,
+    marginBottom: 20,
+  },
+  weekPillChip: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: Radius.full,
+  },
+  weekEmptyCard: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 28,
+    padding: Spacing.lg,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    minHeight: 80,
+  },
+  weekAddCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  weekThumbGrid3: {
+    flexDirection: 'row' as const,
+    gap: 12,
+  },
+  weekThumbCol: {
+    flex: 1,
+    gap: 8,
+  },
+  weekThumbSquare: {
+    aspectRatio: 1,
+    borderRadius: 16,
+    overflow: 'hidden' as const,
+  },
+  weekThumbImage: {
+    width: '100%' as const,
+    height: '100%' as const,
+  },
+  weekThumbLabel: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 2,
+    color: 'rgba(86,67,57,0.6)',
+  },
+  weekThumbRow: {
+    flexDirection: 'row' as const,
+    gap: 12,
+  },
+  weekThumbRectSmall: {
+    width: 112,
+    height: 112,
+    borderRadius: 16,
+    overflow: 'hidden' as const,
+  },
+  weekThumbWide: {
+    width: '100%' as const,
+    height: 160,
+    borderRadius: 16,
+    overflow: 'hidden' as const,
   },
 });
