@@ -176,7 +176,8 @@ export default function PlanScreen() {
   const navBarTranslateY = useSharedValue(0);
   const [measuredNavHeight, setMeasuredNavHeight] = useState(isDailyView ? 100 : 56);
   const navHeight = useSharedValue(isDailyView ? 100 : 56);
-  const SCROLL_TRIGGER = 30;
+  const HIDE_TRIGGER = 30;
+  const SHOW_TRIGGER = 5;
   const springConfig = { damping: 20, stiffness: 200, mass: 0.8 };
 
   useEffect(() => {
@@ -197,11 +198,11 @@ export default function PlanScreen() {
         }
         accumulatedDelta.value += diff;
 
-        if (accumulatedDelta.value > SCROLL_TRIGGER) {
+        if (accumulatedDelta.value > HIDE_TRIGGER) {
           navBarTranslateY.value = reduceMotion
             ? -navHeight.value
             : withSpring(-navHeight.value, springConfig);
-        } else if (accumulatedDelta.value < -SCROLL_TRIGGER) {
+        } else if (accumulatedDelta.value < -SHOW_TRIGGER) {
           navBarTranslateY.value = reduceMotion
             ? 0
             : withSpring(0, springConfig);
