@@ -702,19 +702,23 @@ export default function PlanScreen() {
 
                 if (!hasMeals) {
                   return (
-                    <View
+                    <Pressable
                       key={day.date}
-                      style={[styles.pastEmptyCard, { borderColor: colors.outlineVariant }]}
+                      onPress={() => openPicker(day.date, 'main')}
+                      style={[styles.pastEmptyCard, { borderColor: `${colors.outlineVariant}50` }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add meal for ${day.dayLabel}`}
                     >
                       <View>
                         <Text style={[Typography.headline, { color: colors.onSurface, opacity: 0.4, fontSize: 18 }]}>
                           {day.dayLabel}, {formatDateLabel(day.date)}
                         </Text>
                         <Text style={[Typography.caption, { color: colors.outline, opacity: 0.5, marginTop: 2 }]}>
-                          No meals planned
+                          No meals planned yet
                         </Text>
                       </View>
-                    </View>
+                      <MaterialCommunityIcons name="plus-circle-outline" size={24} color={`${colors.primary}66`} />
+                    </Pressable>
                   );
                 }
 
@@ -1519,8 +1523,10 @@ const styles = StyleSheet.create({
   pastEmptyCard: {
     borderRadius: 24,
     borderWidth: 1,
-    borderStyle: 'dashed',
     padding: Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   pastDayHeader: {
     flexDirection: 'row',
