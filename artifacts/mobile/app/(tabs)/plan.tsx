@@ -665,7 +665,7 @@ export default function PlanScreen() {
         ) : (
           /* ═══ WEEKLY VIEW ═══ */
           selectedWeek === 'past' ? (
-            /* ── Past Week: simple card layout ── */
+            /* ── Past Week: glass card layout ── */
             <View style={{ paddingHorizontal: Spacing.page, gap: Spacing.md }}>
               {weekDays.map((day) => {
                 const { appetizer, main: mainMeal, dessert } = day.courses;
@@ -678,86 +678,91 @@ export default function PlanScreen() {
                     <Pressable
                       key={day.date}
                       onPress={() => openPicker(day.date, 'main')}
-                      style={[styles.pastEmptyCard, { borderColor: `${colors.outlineVariant}50` }]}
+                      style={[
+                        styles.weekEmptyCard,
+                        { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40`, borderWidth: 1 },
+                      ]}
                       accessibilityRole="button"
                       accessibilityLabel={`Add meal for ${day.dayLabel}`}
                     >
                       <View>
-                        <Text style={[Typography.headline, { color: colors.onSurface, opacity: 0.4, fontSize: 18 }]}>
+                        <Text style={[Typography.headline, { color: colors.onSurface, opacity: 0.4, fontSize: 20 }]}>
                           {day.dayLabel}, {formatDateLabel(day.date)}
                         </Text>
                         <Text style={[Typography.caption, { color: colors.outline, opacity: 0.5, marginTop: 2 }]}>
-                          No meals planned yet
+                          No meals logged
                         </Text>
                       </View>
-                      <MaterialCommunityIcons name="plus-circle-outline" size={24} color={`${colors.primary}66`} />
+                      <View style={[styles.weekAddCircle, { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40` }]}>
+                        <MaterialCommunityIcons name="plus" size={24} color={`${colors.primary}66`} />
+                      </View>
                     </Pressable>
                   );
                 }
 
-                const courseSlots: { label: string; courseType: 'appetizer' | 'main' | 'dessert'; meal?: PlannedMeal }[] = [
-                  { label: 'Appetizer', courseType: 'appetizer', meal: appetizer },
-                  { label: 'Main', courseType: 'main', meal: mainMeal },
-                  { label: 'Dessert', courseType: 'dessert', meal: dessert },
-                ];
-
                 return (
-                  <View
+                  <GlassView
                     key={day.date}
-                    style={[styles.pastDayCard, { backgroundColor: colors.surfaceContainerLow }]}
+                    style={styles.pastDayCard}
+                    intensity={30}
                   >
                     <View style={styles.pastDayHeader}>
-                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18, opacity: 0.8 }]}>
+                      <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 20, opacity: 0.9 }]}>
                         {day.dayLabel}, {formatDateLabel(day.date)}
                       </Text>
                       {totalTime > 0 && (
-                        <View style={styles.pastTimePill}>
+                        <View style={[styles.pastTimePill, { backgroundColor: `${colors.surface}99`, borderColor: `${colors.outlineVariant}30` }]}>
                           <MaterialCommunityIcons name="clock-outline" size={14} color={colors.outline} />
-                          <Text style={[Typography.caption, { color: colors.outline }]}>
+                          <Text style={[Typography.caption, { color: colors.outline, fontWeight: '500', fontSize: 13 }]}>
                             {formatCookTime(totalTime)}
                           </Text>
                         </View>
                       )}
                     </View>
-                    <View style={styles.pastThumbGrid}>
-                      {courseSlots.map((slot) => (
-                        <View key={slot.courseType} style={styles.pastThumbCol}>
-                          {slot.meal ? (
-                            <Pressable
-                              onPress={() => router.push(`/recipe/${slot.meal!.recipeId}`)}
-                              style={[styles.pastThumbSquare, { backgroundColor: colors.surfaceContainerHigh }]}
-                              accessibilityRole="button"
-                              accessibilityLabel={`${slot.meal.recipeName}`}
-                            >
-                              <Image source={{ uri: slot.meal.recipeImage }} style={styles.pastThumbImage} />
-                              <View style={styles.pastGrayOverlay} pointerEvents="none" />
-                            </Pressable>
-                          ) : (
-                            <Pressable
-                              onPress={() => {
-                                openPicker(day.date, slot.courseType);
-                              }}
-                              style={[styles.pastThumbSquare, styles.pastEmptySlot, { borderColor: colors.outlineVariant }]}
-                              accessibilityRole="button"
-                              accessibilityLabel={`Add ${slot.label}`}
-                              hitSlop={8}
-                            >
-                              <MaterialCommunityIcons name="plus" size={24} color={`${colors.primary}80`} />
-                            </Pressable>
-                          )}
-                          <Text style={[Typography.caption, {
-                            color: colors.outline,
-                            textAlign: 'center',
-                            fontSize: 9,
-                            letterSpacing: 0.8,
-                            textTransform: 'uppercase',
-                          }]}>
-                            {slot.label}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
+
+                    {allMeals.length === 1 && (
+                      <Pressable
+                        onPress={() => router.push(`/recipe/${allMeals[0].recipeId}`)}
+                        style={styles.pastSingleImage}
+                        accessibilityRole="button"
+                        accessibilityLabel={allMeals[0].recipeName}
+                      >
+                        <Image source={{ uri: allMeals[0].recipeImage }} style={styles.pastImageFill} />
+                      </Pressable>
+                    )}
+
+                    {allMeals.length === 2 && (
+                      <View style={styles.pastTwoGrid}>
+                        {allMeals.map((meal) => (
+                          <Pressable
+                            key={meal.recipeId}
+                            onPress={() => router.push(`/recipe/${meal.recipeId}`)}
+                            style={styles.pastTwoGridItem}
+                            accessibilityRole="button"
+                            accessibilityLabel={meal.recipeName}
+                          >
+                            <Image source={{ uri: meal.recipeImage }} style={styles.pastImageFill} />
+                          </Pressable>
+                        ))}
+                      </View>
+                    )}
+
+                    {allMeals.length === 3 && (
+                      <View style={styles.pastThreeGrid}>
+                        {allMeals.map((meal) => (
+                          <Pressable
+                            key={meal.recipeId}
+                            onPress={() => router.push(`/recipe/${meal.recipeId}`)}
+                            style={styles.pastThreeGridItem}
+                            accessibilityRole="button"
+                            accessibilityLabel={meal.recipeName}
+                          >
+                            <Image source={{ uri: meal.recipeImage }} style={styles.pastImageFill} />
+                          </Pressable>
+                        ))}
+                      </View>
+                    )}
+                  </GlassView>
                 );
               })}
             </View>
@@ -1619,58 +1624,53 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   pastDayCard: {
-    borderRadius: 24,
+    borderRadius: 28,
     padding: Spacing.lg,
     overflow: 'hidden',
-  },
-  pastEmptyCard: {
-    borderRadius: 24,
-    borderWidth: 1,
-    padding: Spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: 72,
   },
   pastDayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.md + 2,
   },
   pastTimePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: Radius.full,
+    borderWidth: 1,
   },
-  pastThumbGrid: {
+  pastSingleImage: {
+    width: '100%',
+    height: 160,
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
+  },
+  pastTwoGrid: {
     flexDirection: 'row',
     gap: Spacing.sm,
   },
-  pastThumbCol: {
+  pastTwoGridItem: {
     flex: 1,
-    gap: Spacing.xs,
+    height: 160,
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
   },
-  pastThumbSquare: {
+  pastThreeGrid: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  pastThreeGridItem: {
+    flex: 1,
     aspectRatio: 1,
     borderRadius: Radius.lg,
     overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  pastThumbImage: {
+  pastImageFill: {
     width: '100%',
     height: '100%',
-  },
-  pastGrayOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.15)',
-  },
-  pastEmptySlot: {
-    borderWidth: 1.5,
   },
 });
