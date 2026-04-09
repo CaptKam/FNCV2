@@ -35,3 +35,9 @@ id = "kRDOD5UFGcU_U6A3JhsOa"
 uri = "file://grandma-audit.md"
 type = "text"
 title = "Fork & Compass — Grandma Audit Report"
+
+[[outputs]]
+id = "GzqNa_pFtUXJuVaiw9hrg"
+uri = "file://artifacts/mobile/APP_PAGES_AND_FLOW_MAP.md"
+type = "text"
+title = "Fork & Compass — Complete Page & Flow Map"
