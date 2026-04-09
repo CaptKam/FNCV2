@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   imageContainer: {
-    height: 192,
+    height: 160,
     position: 'relative',
   },
   image: {

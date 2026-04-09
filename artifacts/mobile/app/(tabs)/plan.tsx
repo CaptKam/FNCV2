@@ -723,7 +723,7 @@ export default function PlanScreen() {
           /* ═══ WEEKLY VIEW ═══ */
           selectedWeek === 'past' ? (
             /* ── Past Week: glass card layout ── */
-            <View style={{ paddingHorizontal: Spacing.page, gap: Spacing.md }}>
+            <View style={{ paddingHorizontal: Spacing.page, gap: 8 }}>
               {weekDays.map((day) => {
                 const { appetizer, main: mainMeal, dessert } = day.courses;
                 const allMeals = [appetizer, mainMeal, dessert].filter(Boolean) as PlannedMeal[];
@@ -829,7 +829,7 @@ export default function PlanScreen() {
           ) : (
           /* ── Current/Future Week: card layout ── */
           <View
-            style={{ paddingHorizontal: Spacing.page, gap: 12 }}
+            style={{ paddingHorizontal: Spacing.page, gap: 8 }}
             onLayout={(e) => { weekContainerY.current = e.nativeEvent.layout.y; }}
           >
             {weekDays.map((day, dayIdx) => {
@@ -929,7 +929,7 @@ export default function PlanScreen() {
                     </View>
                   </View>
 
-                  <View style={{ gap: 12 }}>
+                  <View style={{ gap: 8 }}>
                     {filledSlots.map((slot) => (
                       <Pressable
                         key={slot.courseType}
@@ -1255,12 +1255,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.sm,
-    marginBottom: Spacing.lg,
+    marginBottom: 12,
   },
   timeline: {
     paddingHorizontal: Spacing.page,
     position: 'relative',
-    marginBottom: Spacing.lg,
+    marginBottom: 12,
   },
   timelineLine: {
     position: 'absolute',
@@ -1313,11 +1313,11 @@ const styles = StyleSheet.create({
   },
   mealImage: {
     width: '100%',
-    height: 120,
+    height: 80,
   },
   mealImageTall: {
     width: '100%',
-    height: 140,
+    height: 100,
   },
   imageActionLeft: {
     position: 'absolute',
@@ -1395,8 +1395,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.lg,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
   },
   courseCardInner: {
     flexDirection: 'row',
@@ -1492,23 +1492,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: Radius.lg,
-    marginBottom: Spacing.xl,
+    marginBottom: 12,
   },
   weekDayCard: {
     borderRadius: 28,
-    padding: 12,
+    padding: 10,
     overflow: 'hidden',
   },
   weekDayHeader: {
-    marginBottom: 12,
+    marginBottom: 8,
   },
   weekEmptyCard: {
     borderRadius: 28,
-    padding: 12,
+    padding: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 64,
+    minHeight: 52,
   },
   weekAddCircle: {
     width: 40,
@@ -1530,7 +1530,7 @@ const styles = StyleSheet.create({
   weekMealSlot: {
     borderRadius: Radius.lg,
     overflow: 'hidden',
-    aspectRatio: 2,
+    aspectRatio: 2.5,
   },
   weekMealImage: {
     width: '100%',
@@ -1560,7 +1560,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
-    marginTop: Spacing.md,
+    marginTop: 8,
   },
   weekAddCoursePill: {
     flexDirection: 'row',
@@ -1573,14 +1573,14 @@ const styles = StyleSheet.create({
   },
   pastDayCard: {
     borderRadius: 28,
-    padding: Spacing.lg,
+    padding: 16,
     overflow: 'hidden',
   },
   pastDayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: Spacing.md + 2,
+    marginBottom: Spacing.sm,
   },
   pastTimePill: {
     flexDirection: 'row',
