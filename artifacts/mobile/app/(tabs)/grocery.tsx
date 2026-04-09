@@ -344,7 +344,7 @@ export default function GroceryScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 180, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 }}
       >
         <View style={styles.titleSection}>
           <Text style={[Typography.labelLarge, { color: colors.outline, textAlign: 'center', marginBottom: Spacing.xs }]}>
@@ -834,7 +834,7 @@ const styles = StyleSheet.create({
   },
   recipeImage: {
     width: 200,
-    height: 130,
+    height: 150,
   },
   recipeCardContent: {
     padding: Spacing.md,

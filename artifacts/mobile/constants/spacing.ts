@@ -7,4 +7,5 @@ export const Spacing = {
   xxl: 40,
   xxxl: 48,
   page: 24,
+  tabClearance: 120,
 };

@@ -121,7 +121,7 @@ export default function CookScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 }}
       >
 
         {heroRecipe ? (
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   heroImageWrap: {
-    height: 220,
+    height: 240,
     borderRadius: Radius.xl,
     overflow: 'hidden',
   },
@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.xl,
-    paddingVertical: Spacing.xxxl + Spacing.sm,
+    paddingVertical: Spacing.xxl,
     paddingHorizontal: Spacing.lg,
     alignItems: 'center',
     gap: Spacing.md,
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
   },
   techCard: {
     width: 200,
-    height: 260,
+    height: 280,
     borderRadius: Radius.lg,
     overflow: 'hidden',
   },

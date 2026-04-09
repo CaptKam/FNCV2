@@ -62,7 +62,7 @@ export default function CountryDetailScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <HeaderBar transparent showBack />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Spacing.tabClearance }}>
         <View style={styles.heroContainer}>
           <Image
             source={{ uri: country.heroImage }}
@@ -244,7 +244,7 @@ export default function CountryDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   heroContainer: {
-    height: 360,
+    height: 400,
     position: 'relative',
   },
   heroText: {
@@ -307,8 +307,8 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   recipeThumb: {
-    width: 80,
-    height: 80,
+    width: 88,
+    height: 88,
     borderRadius: Radius.md,
   },
   recipeInfo: {

@@ -53,7 +53,7 @@ export default function TechniqueDetailScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Spacing.tabClearance }}>
         {/* Hero */}
         <View style={styles.heroContainer}>
           {technique.image ? (

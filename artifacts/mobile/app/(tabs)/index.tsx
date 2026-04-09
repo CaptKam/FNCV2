@@ -68,7 +68,7 @@ export default function DiscoverScreen() {
 
   const CELL_WIDTH = (SCREEN_WIDTH - GRID_PAD * 2 - GRID_GAP) / 2;
   const HERO_HEIGHT = SCREEN_WIDTH < 375 ? 200 : SCREEN_WIDTH > 414 ? 280 : 240;
-  const CARD_IMG_HEIGHT = SCREEN_WIDTH < 375 ? 140 : 160;
+  const CARD_IMG_HEIGHT = SCREEN_WIDTH < 375 ? 150 : 180;
 
   // Hero carousel ref
   const heroListRef = useRef<FlatList>(null);
@@ -191,7 +191,7 @@ export default function DiscoverScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={200}
-        contentContainerStyle={{ paddingTop: insets.top + 76, paddingBottom: 120 }}
+        contentContainerStyle={{ paddingTop: insets.top + 76, paddingBottom: Spacing.tabClearance }}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
         }

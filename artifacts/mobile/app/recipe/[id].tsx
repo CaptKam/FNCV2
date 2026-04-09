@@ -129,7 +129,7 @@ export default function RecipeDetailScreen() {
           </View>
         }
       />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Spacing.tabClearance }}>
         <View style={styles.heroContainer}>
           <Image
             source={{ uri: recipe.image }}
@@ -541,7 +541,7 @@ export default function RecipeDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  heroContainer: { height: 380, position: 'relative' },
+  heroContainer: { height: 420, position: 'relative' },
   heroText: {
     position: 'absolute',
     bottom: Spacing.xl,
