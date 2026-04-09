@@ -694,15 +694,16 @@ export default function PlanScreen() {
                   );
                 }
 
+                const courseSlots: { label: string; courseType: 'appetizer' | 'main' | 'dessert'; meal?: PlannedMeal }[] = [
+                  { label: 'Appetizer', courseType: 'appetizer', meal: appetizer },
+                  { label: 'Main', courseType: 'main', meal: mainMeal },
+                  { label: 'Dessert', courseType: 'dessert', meal: dessert },
+                ];
+
                 return (
-                  <Pressable
+                  <View
                     key={day.date}
-                    onPress={() => {
-                      if (mainMeal) router.push(`/recipe/${mainMeal.recipeId}`);
-                    }}
                     style={[styles.pastDayCard, { backgroundColor: colors.surfaceContainerLow }]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${day.dayLabel}, ${allMeals.length} meals`}
                   >
                     <View style={styles.pastDayHeader}>
                       <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18, opacity: 0.8 }]}>
@@ -717,43 +718,42 @@ export default function PlanScreen() {
                         </View>
                       )}
                     </View>
-                    {allMeals.length >= 3 ? (
-                      <View style={styles.pastThumbGrid}>
-                        {[appetizer, mainMeal, dessert].map((meal, idx) => (
-                          <View key={idx} style={styles.pastThumbCol}>
-                            <View style={[styles.pastThumbSquare, { backgroundColor: colors.surfaceContainerHigh }]}>
-                              {meal?.recipeImage ? (
-                                <Image source={{ uri: meal.recipeImage }} style={styles.pastThumbImage} />
-                              ) : (
-                                <MaterialCommunityIcons name="silverware-variant" size={20} color={colors.outline} />
-                              )}
-                            </View>
-                            <Text style={[Typography.caption, {
-                              color: colors.outline,
-                              textAlign: 'center',
-                              fontSize: 9,
-                              letterSpacing: 0.8,
-                              textTransform: 'uppercase',
-                            }]}>
-                              {idx === 0 ? 'Appetizer' : idx === 1 ? 'Main' : 'Dessert'}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
-                    ) : (
-                      <View style={styles.pastThumbRow}>
-                        {allMeals.map((meal, idx) => (
-                          <View key={idx} style={[styles.pastThumbSmall, { backgroundColor: colors.surfaceContainerHigh }]}>
-                            {meal.recipeImage ? (
-                              <Image source={{ uri: meal.recipeImage }} style={styles.pastThumbImage} />
-                            ) : (
-                              <MaterialCommunityIcons name="silverware-variant" size={16} color={colors.outline} />
-                            )}
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </Pressable>
+                    <View style={styles.pastThumbGrid}>
+                      {courseSlots.map((slot) => (
+                        <View key={slot.courseType} style={styles.pastThumbCol}>
+                          {slot.meal ? (
+                            <Pressable
+                              onPress={() => router.push(`/recipe/${slot.meal!.recipeId}`)}
+                              style={[styles.pastThumbSquare, { backgroundColor: colors.surfaceContainerHigh }]}
+                              accessibilityRole="button"
+                              accessibilityLabel={`${slot.meal.recipeName}`}
+                            >
+                              <Image source={{ uri: slot.meal.recipeImage }} style={styles.pastThumbImage} />
+                              <View style={styles.pastGrayOverlay} />
+                            </Pressable>
+                          ) : (
+                            <Pressable
+                              onPress={() => openPicker(day.date, slot.courseType)}
+                              style={[styles.pastThumbSquare, styles.pastEmptySlot, { borderColor: `${colors.outlineVariant}50` }]}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Add ${slot.label}`}
+                            >
+                              <MaterialCommunityIcons name="plus" size={24} color={`${colors.primary}66`} />
+                            </Pressable>
+                          )}
+                          <Text style={[Typography.caption, {
+                            color: colors.outline,
+                            textAlign: 'center',
+                            fontSize: 9,
+                            letterSpacing: 0.8,
+                            textTransform: 'uppercase',
+                          }]}>
+                            {slot.label}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
                 );
               })}
             </View>
@@ -1530,16 +1530,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  pastThumbRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
+  pastGrayOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.15)',
   },
-  pastThumbSmall: {
-    width: 80,
-    height: 80,
-    borderRadius: Radius.lg,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
+  pastEmptySlot: {
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    backgroundColor: 'transparent',
   },
 });
