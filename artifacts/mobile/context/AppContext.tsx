@@ -508,27 +508,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const pendingOrphanCheck = useRef<string[]>([]);
+
   const removeGroceryItem = useCallback((id: string) => {
     setGroceryItems((prev) => {
       const target = prev.find((item) => item.id === id);
       if (!target) return prev;
-      const next = prev.filter((item) => item.id !== id);
-      const affectedRecipes = target.recipeNames;
-      if (affectedRecipes.length > 0) {
-        const orphaned = affectedRecipes.filter(
-          (name) => !next.some((g) => !g.id.startsWith('manual-') && g.recipeNames.includes(name))
-        );
-        if (orphaned.length > 0) {
-          setTimeout(() => {
-            for (const name of orphaned) {
-              removeRecipeFromPlanByName(name);
-            }
-          }, 0);
-        }
+      if (target.recipeNames.length > 0) {
+        pendingOrphanCheck.current = [...pendingOrphanCheck.current, ...target.recipeNames];
       }
-      return next;
+      return prev.filter((item) => item.id !== id);
     });
-  }, [removeRecipeFromPlanByName]);
+  }, []);
+
+  useEffect(() => {
+    if (pendingOrphanCheck.current.length === 0) return;
+    const candidates = [...new Set(pendingOrphanCheck.current)];
+    pendingOrphanCheck.current = [];
+    const orphaned = candidates.filter(
+      (name) => !groceryItems.some((g) => !g.id.startsWith('manual-') && g.recipeNames.includes(name))
+    );
+    for (const name of orphaned) {
+      removeRecipeFromPlanByName(name);
+    }
+  }, [groceryItems, removeRecipeFromPlanByName]);
 
   const removeGroceryItemsByRecipe = useCallback((recipeName: string) => {
     setGroceryItems((prev) =>

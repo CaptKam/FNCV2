@@ -14,7 +14,7 @@ import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
 import { Checkbox } from '@/components/Checkbox';
-import { useApp, GroceryItem } from '@/context/AppContext';
+import { useApp, GroceryItem, ItineraryDay } from '@/context/AppContext';
 import { recipes as allRecipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
 import { computeScaledAmount } from '@/utils/groceryScaling';
@@ -207,7 +207,7 @@ export default function GroceryScreen() {
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showUndo, setShowUndo] = useState(false);
-  const undoSnapshot = useRef<{ itinerary: any; grocery: any } | null>(null);
+  const undoSnapshot = useRef<{ itinerary: ItineraryDay[]; grocery: GroceryItem[] } | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((msg: string, withUndo = false) => {
