@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { AppState } from 'react-native';
 import { Storage } from '@/utils/storage';
 import { Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
@@ -39,6 +40,8 @@ export interface GroceryItem {
   category: 'produce' | 'protein' | 'dairy' | 'pantry' | 'spice';
   recipeNames: string[];
   sourceAmounts: Record<string, string>;
+  /** Maps recipeName → YYYY-MM-DD date the recipe is planned for. */
+  sourceDates: Record<string, string>;
   checked: boolean;
   excluded: boolean;
 }
@@ -82,9 +85,9 @@ interface AppContextValue {
 
   // Grocery
   groceryItems: GroceryItem[];
-  addToGrocery: (recipe: Recipe) => void;
+  addToGrocery: (recipe: Recipe, date: string) => void;
   addManualGroceryItem: (name: string, category?: GroceryItem['category']) => void;
-  removeGroceryItemsByRecipe: (recipeName: string) => void;
+  removeGroceryItemsByRecipe: (recipeName: string, date?: string) => void;
   removeGroceryItem: (id: string) => void;
   toggleGroceryItem: (id: string) => void;
   clearCheckedItems: () => void;
@@ -123,6 +126,8 @@ interface AppContextValue {
   setDisplayName: (name: string) => void;
   setAvatarId: (id: string) => void;
   isHydrated: boolean;
+  /** Today's date as YYYY-MM-DD, auto-updates on foreground resume and midnight. */
+  appDate: string;
 
   // History / XP
   totalRecipesCooked: number;
@@ -342,6 +347,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const hydrated = useRef(false);
 
+  // Reactive "today" — updates on foreground resume and periodic midnight check
+  const [appDate, setAppDate] = useState(todayLocal);
+  useEffect(() => {
+    const refresh = () => setAppDate((prev) => { const now = todayLocal(); return now !== prev ? now : prev; });
+    const sub = AppState.addEventListener('change', (s) => { if (s === 'active') refresh(); });
+    const interval = setInterval(refresh, 30_000);
+    return () => { sub.remove(); clearInterval(interval); };
+  }, []);
+
   // ─── Hydrate on mount ───
 
   useEffect(() => {
@@ -355,20 +369,62 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         Storage.get<{ plan: DinnerPlan | null; eventIndex: number }>(KEYS.dinnerPlan, { plan: null, eventIndex: 0 }),
       ]);
       // Clean up itinerary entries older than 28 days
-      const cutoff = addDaysLocal(todayLocal(), -28);
+      const today = todayLocal();
+      const cutoff = addDaysLocal(today, -28);
+      const removedDates = new Set(it.filter((d: ItineraryDay) => d.date < cutoff).map((d: ItineraryDay) => d.date));
       const cleanedItinerary = it.filter((d: ItineraryDay) => d.date >= cutoff);
       setItinerary(cleanedItinerary);
-      setGroceryItems(gr);
-      setActiveCookSession(cs);
+      // Migrate grocery items: ensure sourceDates exists (backward compat)
+      // Also cascade-clean grocery items whose sourceDates reference removed itinerary dates
+      const migratedGrocery = gr
+        .map((g: GroceryItem) => {
+          const item = g.sourceDates ? g : { ...g, sourceDates: {} };
+          if (removedDates.size === 0) return item;
+          // Remove recipe contributions whose date was cleaned from the itinerary
+          let changed = false;
+          const newRecipeNames = [...item.recipeNames];
+          const newSources = { ...item.sourceAmounts };
+          const newDates = { ...item.sourceDates };
+          for (const [recipeName, date] of Object.entries(item.sourceDates)) {
+            if (removedDates.has(date)) {
+              const idx = newRecipeNames.indexOf(recipeName);
+              if (idx !== -1) newRecipeNames.splice(idx, 1);
+              delete newSources[recipeName];
+              delete newDates[recipeName];
+              changed = true;
+            }
+          }
+          if (!changed) return item;
+          const allAmounts = Object.values(newSources);
+          const newAmount = allAmounts.length > 1
+            ? allAmounts.reduce((a, b) => aggregateAmounts(a, b))
+            : allAmounts.length === 1 ? allAmounts[0] : '';
+          return { ...item, recipeNames: newRecipeNames, sourceAmounts: newSources, sourceDates: newDates, amount: newAmount };
+        })
+        .filter((g: GroceryItem) => g.recipeNames.length > 0 || g.id.startsWith('manual-'));
+      setGroceryItems(migratedGrocery);
+      // Discard cook sessions from previous days
+      if (cs && cs.startedAt && cs.startedAt.slice(0, 10) < today) {
+        setActiveCookSession(null);
+        Storage.remove(KEYS.cookSession);
+      } else {
+        setActiveCookSession(cs);
+      }
       if (dp.plan) {
         setActiveDinnerPlan(dp.plan);
         setCurrentDinnerEventIndex(dp.eventIndex);
       }
       const parties = await Storage.get<DinnerParty[]>(KEYS.dinnerParties, []);
-      setDinnerParties(parties);
+      // Auto-complete dinner parties from past dates that are still marked as cooking
+      const updatedParties = parties.map((p) =>
+        p.status === 'cooking' && p.date < today ? { ...p, status: 'completed' as const } : p
+      );
+      const partiesChanged = updatedParties.some((p, i) => p !== parties[i]);
+      setDinnerParties(updatedParties);
+      if (partiesChanged) Storage.set(KEYS.dinnerParties, updatedParties);
       const kc = await Storage.get<boolean[]>(KEYS.kitchenCheck, [false, false, false]);
       setKitchenChecksState(kc);
-      const activeParty = parties.find((p) => p.status === 'cooking') ?? null;
+      const activeParty = updatedParties.find((p) => p.status === 'cooking') ?? null;
       setActiveDinnerParty(activeParty);
       if (pr.cookingLevel) setCookingLevelState(pr.cookingLevel);
       if (pr.coursePreference) setCoursePreferenceState(pr.coursePreference);
@@ -432,7 +488,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // GROCERY ACTIONS (defined first, used by itinerary)
   // ═══════════════════════════════════════════
 
-  const addToGrocery = useCallback((recipe: Recipe) => {
+  const addToGrocery = useCallback((recipe: Recipe, date: string) => {
     setGroceryItems((prev) => {
       const next = [...prev];
       for (const ing of recipe.ingredients) {
@@ -444,6 +500,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
           const newSources = { ...existing.sourceAmounts, [recipe.title]: ing.amount };
           existing.sourceAmounts = newSources;
+          existing.sourceDates = { ...(existing.sourceDates ?? {}), [recipe.title]: date };
           const allAmounts = Object.values(newSources);
           existing.amount = allAmounts.length > 1
             ? allAmounts.reduce((a, b) => aggregateAmounts(a, b))
@@ -457,6 +514,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             category: categorizeIngredient(ing.name),
             recipeNames: [recipe.title],
             sourceAmounts: { [recipe.title]: ing.amount },
+            sourceDates: { [recipe.title]: date },
             checked: false,
             excluded: false,
           });
@@ -482,6 +540,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           category: category ?? categorizeIngredient(trimmed),
           recipeNames: [],
           sourceAmounts: {},
+          sourceDates: {},
           checked: false,
           excluded: false,
         },
@@ -533,21 +592,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [groceryItems, removeRecipeFromPlanByName]);
 
-  const removeGroceryItemsByRecipe = useCallback((recipeName: string) => {
+  const removeGroceryItemsByRecipe = useCallback((recipeName: string, date?: string) => {
     setGroceryItems((prev) =>
       prev
         .map((item) => {
           if (!item.recipeNames.includes(recipeName)) return item;
+          const dates = item.sourceDates ?? {};
+          // If a date was given and this recipe is planned on a DIFFERENT date too, keep it
+          if (date && dates[recipeName] && dates[recipeName] !== date) return item;
           const newRecipeNames = item.recipeNames.filter((n) => n !== recipeName);
           const newSources = { ...(item.sourceAmounts ?? {}) };
           delete newSources[recipeName];
+          const newDates = { ...dates };
+          delete newDates[recipeName];
           const allAmounts = Object.values(newSources);
           const newAmount = allAmounts.length > 1
             ? allAmounts.reduce((a, b) => aggregateAmounts(a, b))
             : allAmounts.length === 1
               ? allAmounts[0]
               : '';
-          return { ...item, recipeNames: newRecipeNames, sourceAmounts: newSources, amount: newAmount };
+          return { ...item, recipeNames: newRecipeNames, sourceAmounts: newSources, sourceDates: newDates, amount: newAmount };
         })
         .filter((item) => item.recipeNames.length > 0 || item.id.startsWith('manual-'))
     );
@@ -598,7 +662,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         );
         return updated;
       });
-      addToGrocery(recipe);
+      addToGrocery(recipe, date);
     },
     [findOrCreateDay, addToGrocery]
   );
@@ -608,7 +672,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setItinerary((prev) => {
         const day = prev.find((d) => d.date === date);
         const meal = day?.courses[courseType];
-        if (meal) removeGroceryItemsByRecipe(meal.recipeName);
+        if (meal) removeGroceryItemsByRecipe(meal.recipeName, date);
         return prev.map((d) => {
           if (d.date !== date) return d;
           const courses = { ...d.courses };
@@ -713,7 +777,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
 
       const plan: { date: string; courses: Record<string, ReturnType<typeof recipeToPlannedMeal>> }[] = [];
-      const recipesToAddToGrocery: Recipe[] = [];
+      const groceryBatch: { recipe: Recipe; date: string }[] = [];
 
       for (const date of futureDates) {
         const entry: typeof plan[number] = { date, courses: {} };
@@ -721,19 +785,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const mainRecipe = pickRecipe('main');
         if (mainRecipe) {
           entry.courses.main = recipeToPlannedMeal(mainRecipe);
-          recipesToAddToGrocery.push(mainRecipe);
+          groceryBatch.push({ recipe: mainRecipe, date });
         }
 
         if (pref === 'full') {
           const appRecipe = pickRecipe('appetizer');
           if (appRecipe) {
             entry.courses.appetizer = recipeToPlannedMeal(appRecipe);
-            recipesToAddToGrocery.push(appRecipe);
+            groceryBatch.push({ recipe: appRecipe, date });
           }
           const dessRecipe = pickRecipe('dessert');
           if (dessRecipe) {
             entry.courses.dessert = recipeToPlannedMeal(dessRecipe);
-            recipesToAddToGrocery.push(dessRecipe);
+            groceryBatch.push({ recipe: dessRecipe, date });
           }
         }
 
@@ -754,8 +818,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return days;
       });
 
-      for (const recipe of recipesToAddToGrocery) {
-        addToGrocery(recipe);
+      for (const { recipe, date } of groceryBatch) {
+        addToGrocery(recipe, date);
       }
     },
     [findOrCreateDay, addToGrocery, dietaryFlags, itinerary]
@@ -775,7 +839,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const day = prev.find((d) => d.date === date);
         if (day) {
           for (const meal of Object.values(day.courses)) {
-            if (meal) removeGroceryItemsByRecipe(meal.recipeName);
+            if (meal) removeGroceryItemsByRecipe(meal.recipeName, date);
           }
         }
         return prev.map((d) =>
@@ -1241,6 +1305,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setDisplayName,
     setAvatarId,
     isHydrated,
+    appDate,
 
     totalRecipesCooked,
     xp,
