@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, ScrollView, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated } from 'react-native';
-import Animated, { FadeInDown, FadeOutDown, useReducedMotion } from 'react-native-reanimated';
+import { View, Text, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated, Platform } from 'react-native';
+import Animated, { FadeInDown, FadeOutDown, useReducedMotion, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
@@ -157,7 +158,6 @@ export default function PlanScreen() {
 
   const todayISO = todayLocal();
   const [weekStartDate, setWeekStartDate] = useState(() => dateToLocal(getMonday(new Date())));
-  const [showDropdown, setShowDropdown] = useState(false);
   const [showQuickGen, setShowQuickGen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState<WeekOption>('this-week');
   const [isDailyView, setIsDailyView] = useState(false);
@@ -169,8 +169,68 @@ export default function PlanScreen() {
   const [showGroceryHandoff, setShowGroceryHandoff] = useState(false);
   const lastHandoffTime = useRef(0);
   const reduceMotion = useReducedMotion();
-  const scrollRef = useRef<ScrollView>(null);
-  const todayCardRef = useRef<View>(null);
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+
+  const lastScrollY = useSharedValue(0);
+  const accumulatedDelta = useSharedValue(0);
+  const navBarTranslateY = useSharedValue(0);
+  const [measuredNavHeight, setMeasuredNavHeight] = useState(isDailyView ? 100 : 56);
+  const navHeight = useSharedValue(isDailyView ? 100 : 56);
+  const HIDE_TRIGGER = 30;
+  const SHOW_TRIGGER = 5;
+  const springConfig = { damping: 20, stiffness: 200, mass: 0.8 };
+
+  useEffect(() => {
+    navHeight.value = measuredNavHeight;
+  }, [measuredNavHeight]);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      const currentY = event.contentOffset.y;
+      const diff = currentY - lastScrollY.value;
+
+      if (currentY <= 0) {
+        accumulatedDelta.value = 0;
+        navBarTranslateY.value = withSpring(0, springConfig);
+      } else {
+        if ((diff > 0 && accumulatedDelta.value < 0) || (diff < 0 && accumulatedDelta.value > 0)) {
+          accumulatedDelta.value = 0;
+        }
+        accumulatedDelta.value += diff;
+
+        if (accumulatedDelta.value > HIDE_TRIGGER) {
+          navBarTranslateY.value = reduceMotion
+            ? -navHeight.value
+            : withSpring(-navHeight.value, springConfig);
+        } else if (accumulatedDelta.value < -SHOW_TRIGGER) {
+          navBarTranslateY.value = reduceMotion
+            ? 0
+            : withSpring(0, springConfig);
+        }
+      }
+
+      lastScrollY.value = currentY;
+    },
+  });
+
+  const navBarAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: navBarTranslateY.value }],
+    opacity: interpolate(
+      navBarTranslateY.value,
+      [-navHeight.value, -navHeight.value * 0.5, 0],
+      [0, 0.5, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const contentSpacerStyle = useAnimatedStyle(() => ({
+    height: interpolate(
+      navBarTranslateY.value,
+      [-navHeight.value, 0],
+      [0, navHeight.value],
+      Extrapolation.CLAMP,
+    ),
+  }));
 
   // Recipe picker state
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -318,137 +378,221 @@ export default function PlanScreen() {
     }
   }, [selectedWeek, isDailyView]);
 
-  const [stickyHeight, setStickyHeight] = useState(0);
+  const HEADER_BOTTOM = insets.top + 76;
+
+  const navBarContent = (
+    <View style={styles.navBarInner}>
+      <View style={styles.navTopRow}>
+        <Pressable
+          style={styles.navArrow}
+          hitSlop={8}
+          onPress={() => {
+            if (isDailyView) {
+              if (selectedDayIndex > 0) {
+                setSelectedDayIndex(selectedDayIndex - 1);
+              } else {
+                shiftWeek(-1);
+                setSelectedDayIndex(6);
+              }
+            } else {
+              shiftWeek(-1);
+            }
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={isDailyView ? "Previous day" : "Previous week"}
+        >
+          <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
+        </Pressable>
+
+        <View style={styles.navCenter}>
+          <View style={styles.navTitleLine}>
+            <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18, lineHeight: 24 }]}>
+              {isDailyView
+                ? `${selectedDay?.dayLabel ?? ''}, ${formatDateLabel(selectedDate)}`
+                : weekLabels[selectedWeek]}
+            </Text>
+            {isDailyView && selectedDate === todayISO && (
+              <View style={[styles.todayTag, { backgroundColor: colors.primaryMuted }]}>
+                <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700', fontSize: 10, lineHeight: 14 }]}>
+                  TODAY
+                </Text>
+              </View>
+            )}
+          </View>
+          {!isDailyView && (
+            <Text style={[Typography.caption, { color: colors.outline, lineHeight: 16, marginTop: 1 }]}>
+              {weekLabel}
+            </Text>
+          )}
+        </View>
+
+        <View style={styles.navRight}>
+          <View style={[styles.segmentedControl, { backgroundColor: colors.primaryMuted }]}>
+            <Pressable
+              onPress={() => {
+                try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                setIsDailyView(true);
+              }}
+              style={[
+                styles.segmentBtn,
+                isDailyView && { backgroundColor: colors.primary },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Switch to daily view"
+              accessibilityState={{ selected: isDailyView }}
+            >
+              <Text style={[
+                Typography.caption,
+                { fontWeight: '700', fontSize: 12, letterSpacing: 0.3 },
+                isDailyView ? { color: colors.onPrimary } : { color: colors.outline },
+              ]}>
+                Day
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                setIsDailyView(false);
+              }}
+              style={[
+                styles.segmentBtn,
+                !isDailyView && { backgroundColor: colors.primary },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Switch to weekly view"
+              accessibilityState={{ selected: !isDailyView }}
+            >
+              <Text style={[
+                Typography.caption,
+                { fontWeight: '700', fontSize: 12, letterSpacing: 0.3 },
+                !isDailyView ? { color: colors.onPrimary } : { color: colors.outline },
+              ]}>
+                Week
+              </Text>
+            </Pressable>
+          </View>
+
+          <Pressable
+            style={styles.navArrow}
+            hitSlop={8}
+            onPress={() => {
+              if (isDailyView) {
+                if (selectedDayIndex < 6) {
+                  setSelectedDayIndex(selectedDayIndex + 1);
+                } else {
+                  shiftWeek(1);
+                  setSelectedDayIndex(0);
+                }
+              } else {
+                shiftWeek(1);
+              }
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={isDailyView ? "Next day" : "Next week"}
+          >
+            <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
+          </Pressable>
+        </View>
+      </View>
+
+      {isDailyView && (
+        <View style={[styles.navDayRow, { borderTopWidth: 1, borderTopColor: colors.outlineVariant + '30' }]}>
+          {DAY_LETTERS.map((letter, i) => {
+            const isActive = i === selectedDayIndex;
+            const day = weekDays[i];
+            const hasRecipe = !!(day?.courses.appetizer || day?.courses.main || day?.courses.dessert);
+            const isToday = day?.date === todayISO;
+            return (
+              <Pressable
+                key={i}
+                onPress={() => {
+                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                  setSelectedDayIndex(i);
+                }}
+                style={[
+                  styles.dayCircle,
+                  isActive && { backgroundColor: colors.primary },
+                  !isActive && hasRecipe && { backgroundColor: colors.primaryMuted },
+                  !isActive && isToday && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryTint },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
+                accessibilityState={{ selected: isActive }}
+              >
+                <Text style={[
+                  Typography.caption,
+                  { fontWeight: '600' },
+                  isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary, fontWeight: '700' } : { color: colors.outline },
+                ]}>
+                  {letter}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
+    </View>
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <HeaderBar />
 
-      {/* Sticky week navigation header */}
-      <View
-        style={[styles.stickyHeader, { top: insets.top + 76 }]}
-        onLayout={(e) => setStickyHeight(e.nativeEvent.layout.height)}
+      <Animated.View
+        style={[
+          styles.navBarContainer,
+          { top: HEADER_BOTTOM },
+          navBarAnimatedStyle,
+        ]}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          if (h > 0 && Math.abs(h - measuredNavHeight) > 2) {
+            setMeasuredNavHeight(h);
+          }
+        }}
       >
-        <View style={{ backgroundColor: colors.surface, paddingBottom: Spacing.xs }}>
-          <View style={{ paddingHorizontal: Spacing.page, marginBottom: isDailyView ? Spacing.xs : 0 }}>
-            <GlassView style={[styles.weekPill, { ...Shadows.subtle }]}>
-              <Pressable
-                style={styles.weekArrow}
-                hitSlop={8}
-                onPress={() => {
-                  if (isDailyView) {
-                    if (selectedDayIndex > 0) {
-                      setSelectedDayIndex(selectedDayIndex - 1);
-                    } else {
-                      shiftWeek(-1);
-                      setSelectedDayIndex(6);
-                    }
-                  } else {
-                    shiftWeek(-1);
-                  }
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={isDailyView ? "Previous day" : "Previous week"}
-              >
-                <MaterialCommunityIcons name="chevron-left" size={24} color={colors.primary} />
-              </Pressable>
-              <Pressable onPress={() => setShowDropdown(true)} style={styles.weekCenter} accessibilityRole="button" accessibilityLabel="Change planning view">
-                <Text style={[Typography.labelLarge, { color: colors.outline, lineHeight: 16, marginBottom: 2 }]}>
-                  YOUR MEAL PLAN
-                </Text>
-                <View style={styles.weekTitleRow}>
-                  <Text style={[Typography.headline, { color: colors.onSurface, lineHeight: 28 }]}>
-                    {isDailyView ? (selectedDay?.dayLabel ?? '') : weekLabels[selectedWeek]}
-                  </Text>
-                  {isDailyView && selectedDate === todayISO && (
-                    <Text style={[Typography.headline, { color: colors.primary, lineHeight: 28 }]}> · Today</Text>
-                  )}
-                  <MaterialCommunityIcons name="chevron-down" size={20} color={colors.primary} />
-                </View>
-                {isDailyView ? (
-                  <Text style={[Typography.caption, { color: colors.primary, lineHeight: 16, marginTop: 2 }]}>
-                    {formatDateLabel(selectedDate)} · {weekLabels[selectedWeek]}
-                  </Text>
-                ) : (
-                  <Text style={[Typography.caption, { color: colors.outline, lineHeight: 16, marginTop: 2 }]}>
-                    {weekLabel}
-                  </Text>
-                )}
-              </Pressable>
-              <Pressable
-                style={styles.weekArrow}
-                hitSlop={8}
-                onPress={() => {
-                  if (isDailyView) {
-                    if (selectedDayIndex < 6) {
-                      setSelectedDayIndex(selectedDayIndex + 1);
-                    } else {
-                      shiftWeek(1);
-                      setSelectedDayIndex(0);
-                    }
-                  } else {
-                    shiftWeek(1);
-                  }
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={isDailyView ? "Next day" : "Next week"}
-              >
-                <MaterialCommunityIcons name="chevron-right" size={24} color={colors.primary} />
-              </Pressable>
-            </GlassView>
+        {Platform.OS === 'web' ? (
+          <View style={[styles.navBarGlass, {
+            backgroundColor: `${colors.surface}B3`,
+            borderTopWidth: StyleSheet.hairlineWidth,
+            borderTopColor: 'rgba(255,255,255,0.35)',
+          }]}>
+            {navBarContent}
           </View>
-
-          {isDailyView && (
-            <View style={{ paddingHorizontal: Spacing.page }}>
-              <GlassView style={[styles.daySelectorPill, { ...Shadows.subtle }]}>
-                {DAY_LETTERS.map((letter, i) => {
-                  const isActive = i === selectedDayIndex;
-                  const day = weekDays[i];
-                  const hasRecipe = !!(day?.courses.appetizer || day?.courses.main || day?.courses.dessert);
-                  const isToday = day?.date === todayISO;
-                  return (
-                    <Pressable
-                      key={i}
-                      onPress={() => {
-                        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-                        setSelectedDayIndex(i);
-                      }}
-                      style={[
-                        styles.dayCircle,
-                        isActive && { backgroundColor: colors.primary },
-                        !isActive && hasRecipe && { backgroundColor: colors.primaryMuted },
-                        !isActive && isToday && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryTint },
-                      ]}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
-                      accessibilityState={{ selected: isActive }}
-                    >
-                      <Text style={[
-                        Typography.caption,
-                        { fontWeight: '600' },
-                        isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary, fontWeight: '700' } : { color: colors.outline },
-                      ]}>
-                        {letter}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </GlassView>
-            </View>
-          )}
-        </View>
+        ) : (
+          <BlurView
+            intensity={60}
+            tint={colors.isDark ? 'dark' : 'light'}
+            style={styles.navBarGlass}
+          >
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  backgroundColor: `${colors.surface}B3`,
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: 'rgba(255,255,255,0.35)',
+                },
+              ]}
+            />
+            {navBarContent}
+          </BlurView>
+        )}
         <LinearGradient
-          colors={[colors.surface, colors.surface + '00']}
-          style={{ height: 12 }}
+          colors={[colors.surface + '40', colors.surface + '00']}
+          style={{ height: 8 }}
           pointerEvents="none"
         />
-      </View>
+      </Animated.View>
 
-      <ScrollView
+      <Animated.ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 + stickyHeight }}
+        scrollEventThrottle={16}
+        onScroll={scrollHandler}
+        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: HEADER_BOTTOM }}
       >
+        <Animated.View style={contentSpacerStyle} />
 
         {/* Multiple meals toggle */}
         {isDailyView && (
@@ -911,7 +1055,7 @@ export default function PlanScreen() {
                           accessibilityLabel={`Swap ${slot.label}`}
                           hitSlop={6}
                         >
-                          <MaterialCommunityIcons name="refresh" size={16} color={colors.primary} />
+                          <MaterialCommunityIcons name="refresh" size={20} color={colors.primary} />
                         </Pressable>
                         <Pressable
                           onPress={(e) => { e.stopPropagation(); handleRemoveCourse(day.date, slot.courseType); }}
@@ -920,7 +1064,7 @@ export default function PlanScreen() {
                           accessibilityLabel={`Remove ${slot.label}`}
                           hitSlop={6}
                         >
-                          <MaterialCommunityIcons name="close" size={16} color={colors.error} />
+                          <MaterialCommunityIcons name="close" size={20} color={colors.error} />
                         </Pressable>
                         <View style={styles.weekMealLabel} pointerEvents="none">
                           <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', opacity: 0.8 }}>
@@ -963,7 +1107,7 @@ export default function PlanScreen() {
           </View>
           )
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
 
       {/* Auto-generate FAB — only visible when there are empty days to fill */}
@@ -1087,99 +1231,6 @@ export default function PlanScreen() {
         );
       })()}
 
-      {/* View dropdown modal */}
-      <Modal
-        visible={showDropdown}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowDropdown(false)}
-      >
-        <Pressable style={[styles.dropdownOverlay, { backgroundColor: colors.overlayBackdrop }]} onPress={() => setShowDropdown(false)} accessibilityRole="button" accessibilityLabel="Close menu">
-          <View style={{ paddingTop: insets.top + 100, paddingHorizontal: Spacing.page, alignItems: 'center' }}>
-            <Pressable
-              style={[styles.dropdownSheet, {
-                backgroundColor: colors.dropdownBg,
-                ...Shadows.ambient,
-              }]}
-              onPress={(e) => e.stopPropagation()}
-            >
-              {(['past', 'this-week', 'next-week'] as WeekOption[]).map((option) => {
-                const isActive = selectedWeek === option && !isDailyView;
-                return (
-                  <Pressable
-                    key={option}
-                    onPress={() => {
-                      if (option === 'this-week') setWeekStartDate(dateToLocal(getMonday(new Date())));
-                      else if (option === 'next-week') setWeekStartDate(addDays(dateToLocal(getMonday(new Date())), 7));
-                      else setWeekStartDate(addDays(dateToLocal(getMonday(new Date())), -7));
-                      setSelectedWeek(option);
-                      setIsDailyView(false);
-                      setShowDropdown(false);
-                    }}
-                    style={[
-                      styles.dropdownItem,
-                      isActive && { backgroundColor: colors.primaryMuted },
-                    ]}
-                  >
-                    <Text style={[
-                      Typography.titleSmall,
-                      { color: isActive ? colors.primary : colors.onSurface },
-                      isActive && { fontWeight: '700' },
-                    ]}>
-                      {weekLabels[option]}
-                    </Text>
-                    {isActive && (
-                      <MaterialCommunityIcons name="check" size={20} color={colors.primary} />
-                    )}
-                  </Pressable>
-                );
-              })}
-
-              <View style={[styles.dropdownDivider, { backgroundColor: colors.primaryTint }]} />
-
-              <Pressable
-                style={[
-                  styles.dropdownItem,
-                  !isDailyView && { backgroundColor: colors.primaryTint },
-                ]}
-                onPress={() => {
-                  setIsDailyView(false);
-                  setShowDropdown(false);
-                }}
-              >
-                <Text style={[Typography.titleSmall, { color: !isDailyView ? colors.primary : colors.onSurface }]}>
-                  Weekly Summary
-                </Text>
-                <MaterialCommunityIcons
-                  name={!isDailyView ? 'toggle-switch' : 'toggle-switch-off-outline'}
-                  size={40}
-                  color={!isDailyView ? colors.primary : colors.outlineVariant}
-                />
-              </Pressable>
-
-              <Pressable
-                style={[
-                  styles.dropdownItem,
-                  isDailyView && { backgroundColor: colors.primaryTint },
-                ]}
-                onPress={() => {
-                  setIsDailyView(true);
-                  setShowDropdown(false);
-                }}
-              >
-                <Text style={[Typography.titleSmall, { color: isDailyView ? colors.primary : colors.onSurface }]}>
-                  Daily View
-                </Text>
-                <MaterialCommunityIcons
-                  name={isDailyView ? 'toggle-switch' : 'toggle-switch-off-outline'}
-                  size={40}
-                  color={isDailyView ? colors.primary : colors.outlineVariant}
-                />
-              </Pressable>
-            </Pressable>
-          </View>
-        </Pressable>
-      </Modal>
 
       {/* Recipe picker bottom sheet */}
       <RecipePickerSheet
@@ -1231,60 +1282,76 @@ export default function PlanScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  stickyHeader: {
+  navBarContainer: {
     position: 'absolute',
     left: 0,
     right: 0,
-    zIndex: 10,
+    zIndex: 60,
+    overflow: 'hidden',
   },
-  weekPill: {
+  navBarGlass: {
+    overflow: 'hidden',
+  },
+  navBarInner: {
+    paddingHorizontal: Spacing.page,
+    paddingBottom: Spacing.xs,
+  },
+  navTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 8,
-    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.xs,
   },
-  weekCenter: {
+  navArrow: {
+    minWidth: 40,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navCenter: {
+    flex: 1,
     alignItems: 'center',
   },
-  weekTitleRow: {
+  navTitleLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  todayTag: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+  },
+  navRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
   },
-  daySelectorPill: {
+  navDayRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.xs,
-    borderRadius: Radius.full,
+    justifyContent: 'space-evenly',
     marginTop: Spacing.sm,
-  },
-  weekArrow: {
-    minWidth: 44,
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: Spacing.sm,
   },
   dayCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  todayBadge: {
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.full,
-  },
-  partyPill: {
+  segmentedControl: {
     flexDirection: 'row',
+    borderRadius: Radius.full,
+    padding: 2,
+  },
+  segmentBtn: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    minHeight: 40,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
     borderRadius: Radius.full,
   },
   multipleMealsRow: {
@@ -1297,7 +1364,7 @@ const styles = StyleSheet.create({
   timeline: {
     paddingHorizontal: Spacing.page,
     position: 'relative',
-    marginBottom: 12,
+    marginBottom: Spacing.md,
   },
   timelineLine: {
     position: 'absolute',
@@ -1308,7 +1375,7 @@ const styles = StyleSheet.create({
   },
   dayRow: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: Spacing.md,
     minHeight: 80,
   },
   dayLeft: {
@@ -1350,11 +1417,11 @@ const styles = StyleSheet.create({
   },
   mealImage: {
     width: '100%',
-    height: 80,
+    height: 120,
   },
   mealImageTall: {
     width: '100%',
-    height: 100,
+    height: 140,
   },
   imageActionLeft: {
     position: 'absolute',
@@ -1392,8 +1459,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   mealContent: {
-    padding: 12,
-    gap: Spacing.xs,
+    padding: Spacing.md,
+    gap: Spacing.sm,
   },
   mealMeta: {
     flexDirection: 'row',
@@ -1404,8 +1471,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
     alignItems: 'center',
     gap: Spacing.sm,
   },
@@ -1426,14 +1493,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
-    marginTop: Spacing.sm,
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.xs,
   },
   courseCard: {
     borderWidth: 1,
     borderStyle: 'dashed',
     borderRadius: Radius.lg,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
   },
   courseCardInner: {
     flexDirection: 'row',
@@ -1441,9 +1509,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   addCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1452,13 +1520,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
     marginTop: Spacing.sm,
-  },
-  playCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   fabContainer: {
     position: 'absolute',
@@ -1496,69 +1557,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.md,
   },
-  dropdownOverlay: {
-    flex: 1,
-  },
-  dropdownSheet: {
-    width: 240,
-    borderRadius: Radius.lg,
-    padding: Spacing.sm,
-    gap: Spacing.xs,
-  },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.md,
-  },
-  dropdownDivider: {
-    height: 1,
-    marginVertical: Spacing.xs,
-    marginHorizontal: Spacing.sm,
-  },
-  dayNutritionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: Radius.md,
-    marginTop: Spacing.sm,
-  },
-  dayNutritionItem: {
-    alignItems: 'center',
-    gap: 1,
-  },
-  dayNutritionDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 2,
-  },
   onboardingHint: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Spacing.md,
     padding: Spacing.md,
     borderRadius: Radius.lg,
-  },
-  dinnerPartyPromo: {
-    borderRadius: Radius.lg,
-    padding: Spacing.md,
-    marginBottom: Spacing.md,
-    gap: Spacing.md,
-  },
-  dinnerPartyPromoContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  dinnerPartyPromoCTA: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.full,
   },
   toast: {
     position: 'absolute',
@@ -1596,20 +1600,21 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   weekDayCard: {
-    borderRadius: 28,
-    padding: 10,
+    borderRadius: Radius.xl,
+    padding: Spacing.md,
     overflow: 'hidden',
   },
   weekDayHeader: {
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   weekEmptyCard: {
-    borderRadius: 28,
-    padding: 10,
+    borderRadius: Radius.xl,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 52,
+    minHeight: 64,
   },
   weekAddCircle: {
     width: 40,
@@ -1631,7 +1636,7 @@ const styles = StyleSheet.create({
   weekMealSlot: {
     borderRadius: Radius.lg,
     overflow: 'hidden',
-    aspectRatio: 2.5,
+    aspectRatio: 2.2,
   },
   weekMealImage: {
     width: '100%',
@@ -1639,9 +1644,9 @@ const styles = StyleSheet.create({
   },
   weekMealAction: {
     position: 'absolute',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(255,255,255,0.85)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1666,15 +1671,15 @@ const styles = StyleSheet.create({
   weekAddCoursePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
     borderWidth: 1,
   },
   pastDayCard: {
-    borderRadius: 28,
-    padding: 16,
+    borderRadius: Radius.xl,
+    padding: Spacing.md,
     overflow: 'hidden',
   },
   pastDayHeader: {

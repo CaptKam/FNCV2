@@ -199,13 +199,12 @@ export default function GroceryScreen() {
     [recipeServingsMap, app.useMetric]
   );
 
-  // Group items by category in specified order, sorted: unchecked first
+  // Group items by category in specified order
   const groupedItems = useMemo(() => {
     return CATEGORY_ORDER
       .map((cat) => {
         const items = groceryItems
-          .filter((item) => item.category === cat.key)
-          .sort((a, b) => (a.checked === b.checked ? 0 : a.checked ? 1 : -1));
+          .filter((item) => item.category === cat.key);
         return { ...cat, color: categoryColors[cat.key], items };
       })
       .filter((group) => group.items.length > 0);

@@ -13,6 +13,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { Checkbox } from '@/components/Checkbox';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
@@ -248,9 +249,9 @@ export default function OnboardingScreen() {
                     >
                       {option.label}
                     </Text>
-                    {isSelected && (
-                      <MaterialCommunityIcons name="check-circle" size={20} color={colors.primary} />
-                    )}
+                    <View pointerEvents="none">
+                      <Checkbox checked={isSelected} onToggle={() => {}} size="sm" />
+                    </View>
                   </Pressable>
                 );
               })}
@@ -305,9 +306,9 @@ export default function OnboardingScreen() {
                       {lvl.desc}
                     </Text>
                   </View>
-                  {isActive && (
-                    <MaterialCommunityIcons name="check-circle" size={20} color={colors.primary} />
-                  )}
+                  <View pointerEvents="none">
+                    <Checkbox checked={isActive} onToggle={() => {}} size="sm" />
+                  </View>
                 </Pressable>
               );
             })}
