@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -175,7 +176,7 @@ export default function BookmarksScreen() {
                 <View style={styles.listGroup}>
                   {savedRecipes.slice(0, 3).map((recipe, index) => (
                     <AnimatedListItem key={recipe.id} index={index}>
-                    <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)} style={styles.itemRow} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}>
+                    <PressableScale onPress={() => router.push(`/recipe/${recipe.id}`)} style={styles.itemRow} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`} scaleDown={0.98}>
                       <View style={[styles.itemThumb, { backgroundColor: colors.surfaceContainer }]}>
                         <Image source={{ uri: recipe.image }} style={styles.itemImage} contentFit="cover" transition={200} accessibilityLabel={recipe.title} />
                       </View>
@@ -185,7 +186,7 @@ export default function BookmarksScreen() {
                         <Text style={[styles.itemMeta, { color: colors.onSurfaceVariant }]} numberOfLines={1}>{recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}</Text>
                       </View>
                       <AnimatedHeart filled={true} onToggle={() => toggleBookmark(recipe.id)} size={20} filledColor={colors.primary} outlineColor={colors.outline} style={styles.heartBtn} accessibilityLabel={`Remove ${recipe.title} from bookmarks`} />
-                    </Pressable>
+                    </PressableScale>
                     </AnimatedListItem>
                   ))}
                 </View>
@@ -201,7 +202,7 @@ export default function BookmarksScreen() {
                 <View style={styles.listGroup}>
                   {savedRecipes.slice(3).map((recipe, index) => (
                     <AnimatedListItem key={recipe.id} index={index}>
-                    <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)} style={styles.itemRow} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}>
+                    <PressableScale onPress={() => router.push(`/recipe/${recipe.id}`)} style={styles.itemRow} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`} scaleDown={0.98}>
                       <View style={[styles.itemThumb, { backgroundColor: colors.surfaceContainer }]}>
                         <Image source={{ uri: recipe.image }} style={styles.itemImage} contentFit="cover" transition={200} accessibilityLabel={recipe.title} />
                       </View>
@@ -211,7 +212,7 @@ export default function BookmarksScreen() {
                         <Text style={[styles.itemMeta, { color: colors.onSurfaceVariant }]} numberOfLines={1}>{recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}</Text>
                       </View>
                       <AnimatedHeart filled={true} onToggle={() => toggleBookmark(recipe.id)} size={20} filledColor={colors.primary} outlineColor={colors.outline} style={styles.heartBtn} accessibilityLabel={`Remove ${recipe.title} from bookmarks`} />
-                    </Pressable>
+                    </PressableScale>
                     </AnimatedListItem>
                   ))}
                 </View>
@@ -232,7 +233,7 @@ export default function BookmarksScreen() {
                 <View style={styles.listGroup}>
                   {savedRecipes.map((recipe, index) => (
                     <AnimatedListItem key={recipe.id} index={index}>
-                    <Pressable onPress={() => router.push(`/recipe/${recipe.id}`)} style={styles.itemRow} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`}>
+                    <PressableScale onPress={() => router.push(`/recipe/${recipe.id}`)} style={styles.itemRow} accessibilityRole="button" accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes`} scaleDown={0.98}>
                       <View style={[styles.itemThumb, { backgroundColor: colors.surfaceContainer }]}>
                         <Image source={{ uri: recipe.image }} style={styles.itemImage} contentFit="cover" transition={200} accessibilityLabel={recipe.title} />
                       </View>
@@ -242,7 +243,7 @@ export default function BookmarksScreen() {
                         <Text style={[styles.itemMeta, { color: colors.onSurfaceVariant }]} numberOfLines={1}>{recipe.difficulty} · {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.category}</Text>
                       </View>
                       <AnimatedHeart filled={true} onToggle={() => toggleBookmark(recipe.id)} size={20} filledColor={colors.primary} outlineColor={colors.outline} style={styles.heartBtn} accessibilityLabel={`Remove ${recipe.title} from bookmarks`} />
-                    </Pressable>
+                    </PressableScale>
                     </AnimatedListItem>
                   ))}
                 </View>

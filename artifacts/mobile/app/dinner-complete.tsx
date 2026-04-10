@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -170,9 +171,9 @@ export default function DinnerCompleteScreen() {
 
       {/* Bottom CTA */}
       <View style={[styles.bottomCTA, { paddingBottom: insets.bottom + 16 }]}>
-        <Pressable onPress={handleDone} style={[styles.doneBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel="Done">
+        <PressableScale onPress={handleDone} style={[styles.doneBtn, { backgroundColor: colors.primary }]} accessibilityRole="button" accessibilityLabel="Done" scaleDown={0.95} haptic="medium">
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Done</Text>
-        </Pressable>
+        </PressableScale>
       </View>
     </View>
   );

@@ -1,5 +1,6 @@
 import { Tabs, usePathname } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Haptics from 'expo-haptics';
 import React, { useEffect, useMemo, useCallback, createContext, useContext } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
@@ -150,7 +151,7 @@ export default function TabLayout() {
             <AnimatedIcon name="compass-outline" color={color} focused={focused} colors={colors} />
           ),
         }}
-        listeners={{ tabPress: () => { if (pathname === '/') trigger('index'); } }}
+        listeners={{ tabPress: () => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {} if (pathname === '/') trigger('index'); } }}
       />
       <Tabs.Screen
         name="search"
@@ -161,7 +162,7 @@ export default function TabLayout() {
             <AnimatedIcon name="magnify" color={color} focused={focused} colors={colors} />
           ),
         }}
-        listeners={{ tabPress: () => { if (pathname === '/search') trigger('search'); } }}
+        listeners={{ tabPress: () => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {} if (pathname === '/search') trigger('search'); } }}
       />
       <Tabs.Screen
         name="plan"
@@ -173,7 +174,7 @@ export default function TabLayout() {
             <AnimatedIcon name="calendar-month-outline" color={color} focused={focused} colors={colors} />
           ),
         }}
-        listeners={{ tabPress: () => { if (pathname === '/plan') trigger('plan'); } }}
+        listeners={{ tabPress: () => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {} if (pathname === '/plan') trigger('plan'); } }}
       />
       <Tabs.Screen
         name="grocery"
@@ -186,7 +187,7 @@ export default function TabLayout() {
             <AnimatedIcon name="cart-outline" color={color} focused={focused} colors={colors} />
           ),
         }}
-        listeners={{ tabPress: () => { if (pathname === '/grocery') trigger('grocery'); } }}
+        listeners={{ tabPress: () => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {} if (pathname === '/grocery') trigger('grocery'); } }}
       />
       <Tabs.Screen
         name="cook"
@@ -198,7 +199,7 @@ export default function TabLayout() {
             <AnimatedIcon name="chef-hat" color={color} focused={focused} colors={colors} />
           ),
         }}
-        listeners={{ tabPress: () => { if (pathname === '/cook') trigger('cook'); } }}
+        listeners={{ tabPress: () => { try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {} if (pathname === '/cook') trigger('cook'); } }}
       />
     </Tabs>
     </ScrollToTopContext.Provider>

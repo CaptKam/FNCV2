@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -35,11 +36,12 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
   const hasConflict = hasUserAllergenConflict || hasDietaryConflict;
 
   return (
-    <Pressable
+    <PressableScale
       onPress={() => router.push(`/recipe/${recipe.id}`)}
       style={[styles.card, { backgroundColor: colors.surfaceContainer, width: CARD_WIDTH }]}
       accessibilityRole="button"
       accessibilityLabel={`${recipe.title}, ${formatCookTime(recipe.prepTime + recipe.cookTime)}, ${recipe.difficulty}`}
+      scaleDown={0.97}
     >
       <View style={styles.imageContainer}>
         <Image
@@ -128,7 +130,7 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
           </View>
         )}
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 
