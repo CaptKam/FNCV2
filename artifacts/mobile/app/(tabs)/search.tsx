@@ -227,10 +227,10 @@ export default function SearchScreen() {
               <MaterialCommunityIcons name="magnify" size={28} color={colors.outlineVariant} />
             </View>
             <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
-              No matches found
+              No matches
             </Text>
             <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, textAlign: 'center' }]}>
-              Try different keywords or browse by mood
+              Try different keywords or pick a mood above
             </Text>
             <Text style={[Typography.labelLarge, { color: colors.outline, marginTop: Spacing.xl }]}>
               OR EXPLORE THESE COUNTRIES

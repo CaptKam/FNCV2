@@ -454,6 +454,14 @@ export default function CookScreen() {
                 Recipes cooked
               </Text>
             </View>
+            <View style={{ gap: Spacing.sm, alignItems: 'flex-end' }}>
+            <Pressable
+              onPress={() => router.push('/passport')}
+              accessibilityRole="button"
+              accessibilityLabel="View passport"
+            >
+              <Text style={[Typography.titleSmall, { color: colors.primary }]}>View Passport</Text>
+            </Pressable>
             <Pressable
               onPress={() => router.push('/bookmarks')}
               accessibilityRole="button"
@@ -461,6 +469,7 @@ export default function CookScreen() {
             >
               <Text style={[Typography.titleSmall, { color: colors.primary }]}>View Saved</Text>
             </Pressable>
+            </View>
           </View>
         </View>
       </ScrollView>

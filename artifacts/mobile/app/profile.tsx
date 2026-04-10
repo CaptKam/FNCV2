@@ -402,7 +402,7 @@ export default function ProfileScreen() {
             accessibilityLabel="Sign out"
           >
             <MaterialCommunityIcons name="logout" size={20} color={colors.error} />
-            <Text style={[Typography.titleSmall, { color: colors.error }]}>Sign Out</Text>
+            <Text style={[Typography.titleSmall, { color: colors.error }]}>Sign Out (see you soon)</Text>
           </Pressable>
         </View>
 

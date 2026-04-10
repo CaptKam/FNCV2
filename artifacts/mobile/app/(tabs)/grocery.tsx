@@ -272,7 +272,7 @@ export default function GroceryScreen() {
       "Remove all grocery items? This can't be undone.",
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Clear All', style: 'destructive', onPress: () => {
+        { text: 'Start Fresh', style: 'destructive', onPress: () => {
           try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } catch {}
           app.clearAllGroceryItems();
         } },
@@ -289,10 +289,10 @@ export default function GroceryScreen() {
             <MaterialCommunityIcons name="cart-outline" size={28} color={colors.outlineVariant} />
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
-            No ingredients yet
+            Your kitchen awaits
           </Text>
           <Text style={[Typography.body, { color: colors.outline, textAlign: 'center', paddingHorizontal: Spacing.xl }]}>
-            Plan some meals or add items manually.
+            Plan some meals and we'll build your list.
           </Text>
           <View style={[styles.manualInputWrap, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, marginHorizontal: Spacing.xl, marginTop: Spacing.md }]}>
             <MaterialCommunityIcons name="plus" size={20} color={colors.outline} />
@@ -592,7 +592,7 @@ export default function GroceryScreen() {
             >
               <MaterialCommunityIcons name="delete-outline" size={16} color={colors.error} />
               <Text style={[Typography.titleSmall, { color: colors.error }]}>
-                Clear All
+                Start Fresh
               </Text>
             </PressableScale>
           </View>

@@ -147,10 +147,10 @@ export default function BookmarksScreen() {
               <MaterialCommunityIcons name="heart-outline" size={28} color={colors.outlineVariant} />
             </View>
             <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>
-              Your collection is empty
+              Nothing saved yet
             </Text>
             <Text style={[styles.emptyBody, { color: colors.outline }]}>
-              Heart any recipe to save it here for later.
+              Heart any recipe to keep it here.
             </Text>
             <Pressable
               onPress={() => router.back()}

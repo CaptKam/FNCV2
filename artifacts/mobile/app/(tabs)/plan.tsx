@@ -742,7 +742,7 @@ export default function PlanScreen() {
                           <MaterialCommunityIcons name="silverware-variant" size={28} color={colors.primary} />
                         </View>
                         <Text style={[Typography.bodySmall, { color: colors.outline }]}>
-                          No meal planned yet — let's find something delicious
+                          Nothing cooking yet — let's find something delicious
                         </Text>
                         <Pressable
                           onPress={() => openPicker(selectedDate, 'main')}
@@ -751,7 +751,7 @@ export default function PlanScreen() {
                           accessibilityLabel="Browse recipes"
                         >
                           <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
-                            Browse Recipes
+                            Find a Recipe
                           </Text>
                         </Pressable>
                       </View>
