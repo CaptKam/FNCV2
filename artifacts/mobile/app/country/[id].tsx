@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -192,11 +193,12 @@ export default function CountryDetailScreen() {
           ) : (
             filteredRecipes.map((recipe, index) => (
               <AnimatedListItem key={recipe.id} index={index}>
-                <Pressable
+                <PressableScale
                   onPress={() => router.push(`/recipe/${recipe.id}`)}
                   style={[styles.recipeRow, { backgroundColor: colors.surfaceContainerLow }]}
                   accessibilityRole="button"
                   accessibilityLabel={`${recipe.title}, ${recipe.cookTime} minutes, ${recipe.difficulty}`}
+                  scaleDown={0.98}
                 >
                   <Image
                     source={{ uri: recipe.image }}
@@ -223,7 +225,7 @@ export default function CountryDetailScreen() {
                   >
                     <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
                   </Pressable>
-                </Pressable>
+                </PressableScale>
               </AnimatedListItem>
             ))
           )}

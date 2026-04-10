@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, Modal, Pressable, FlatList, TextInput, StyleSheet } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -84,11 +85,12 @@ export function RecipePickerSheet({ visible, onDismiss, onSelect }: RecipePicker
             renderItem={({ item }) => {
               const country = countries.find((c) => c.id === item.countryId);
               return (
-                <Pressable
+                <PressableScale
                   onPress={() => handleSelect(item)}
                   style={[styles.row, { backgroundColor: colors.surfaceContainerLow }]}
                   accessibilityRole="button"
                   accessibilityLabel={`${item.title}, ${item.cookTime} minutes`}
+                  scaleDown={0.98}
                 >
                   <Image
                     source={{ uri: item.image }}
@@ -105,7 +107,7 @@ export function RecipePickerSheet({ visible, onDismiss, onSelect }: RecipePicker
                     </Text>
                   </View>
                   <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
-                </Pressable>
+                </PressableScale>
               );
             }}
           />
