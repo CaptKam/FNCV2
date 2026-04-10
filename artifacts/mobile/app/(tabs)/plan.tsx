@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated, Platform, AppState } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown, useReducedMotion, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -303,7 +303,16 @@ export default function PlanScreen() {
   }, [plannedCount, showPlanHint]);
 
   // ─── Week navigation ───
-  const currentMonday = useMemo(() => dateToLocal(getMonday(new Date())), []);
+  const [currentMonday, setCurrentMonday] = useState(() => dateToLocal(getMonday(new Date())));
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        const now = dateToLocal(getMonday(new Date()));
+        setCurrentMonday((prev) => (prev !== now ? now : prev));
+      }
+    });
+    return () => sub.remove();
+  }, []);
   const shiftWeek = useCallback((delta: number) => {
     setWeekStartDate((prev) => {
       const next = addDays(prev, delta * 7);
