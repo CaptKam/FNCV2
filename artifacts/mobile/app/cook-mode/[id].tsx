@@ -16,6 +16,8 @@ import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { convertAmount } from '@/data/helpers';
 import { highlightCulinaryVerbs } from '@/utils/textFormatting';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '@/context/AppContext';
 
 const TIMER_SIZE = 220;
@@ -49,6 +51,7 @@ export default function CookModeScreen() {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [totalDuration, setTotalDuration] = useState(0);
+  const [checkedIngredients, setCheckedIngredients] = useState<Record<number, Set<string>>>({});
 
   useEffect(() => {
     if (session?.activeTimerStart && session?.activeTimerDuration) {
@@ -190,6 +193,16 @@ export default function CookModeScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, [isDinnerMode, dinnerEventIndex, session, app]);
 
+  const toggleStepIngredient = useCallback((stepIdx: number, ingredientName: string) => {
+    setCheckedIngredients(prev => {
+      const stepSet = new Set(prev[stepIdx] ?? []);
+      if (stepSet.has(ingredientName)) stepSet.delete(ingredientName);
+      else stepSet.add(ingredientName);
+      return { ...prev, [stepIdx]: stepSet };
+    });
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+  }, []);
+
   const t = {
     bg: colors.surface,
     headerBg: colors.glassOverlay,
@@ -293,19 +306,54 @@ export default function CookModeScreen() {
         </Pressable>
       </View>
 
+      {/* Progress bar */}
+      <View style={[styles.progressBar, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
+        <Animated.View style={[styles.progressFill, { backgroundColor: isLastStep ? colors.success : colors.primary, width: `${((currentStep + 1) / totalSteps) * 100}%` }]} />
+      </View>
+
       <ScrollView
         style={styles.scrollContent}
         contentContainerStyle={[styles.scrollInner, { paddingBottom: insets.bottom + 120 }]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Step image - uses recipe hero as fallback */}
+        <View style={styles.stepImageWrap}>
+          <Image
+            source={{ uri: recipe.image }}
+            style={styles.stepImage}
+            contentFit="cover"
+            transition={300}
+            accessible={false}
+          />
+          <LinearGradient
+            colors={['transparent', t.bg]}
+            style={styles.stepImageGradient}
+          />
+        </View>
+
         {matchedIngredients.length > 0 && (
-          <View style={styles.pillCluster}>
-            {matchedIngredients.map((ing, idx) => (
-              <View key={idx} style={[styles.ingredientPill, { backgroundColor: t.pillBg, borderColor: t.pillBorder }]}>
-                <Text style={[styles.pillLabel, { color: t.pillLabelColor }]}>Ingredient</Text>
-                <Text style={[styles.pillValue, { color: t.pillValueColor }]}>{convertAmount(ing.amount, app.useMetric)} {ing.name}</Text>
-              </View>
-            ))}
+          <View style={styles.ingredientSection}>
+            <Text style={[styles.ingredientHeader, { color: 'rgba(255,255,255,0.4)' }]}>INGREDIENTS</Text>
+            {matchedIngredients.map((ing, idx) => {
+              const isChecked = checkedIngredients[currentStep]?.has(ing.name) ?? false;
+              return (
+                <Pressable
+                  key={idx}
+                  onPress={() => toggleStepIngredient(currentStep, ing.name)}
+                  style={styles.ingredientRow}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: isChecked }}
+                  accessibilityLabel={`${convertAmount(ing.amount, app.useMetric)} ${ing.name}`}
+                >
+                  <View style={[styles.ingredientCheck, { backgroundColor: isChecked ? colors.primary : 'transparent', borderColor: isChecked ? colors.primary : 'rgba(255,255,255,0.3)' }]}>
+                    {isChecked && <MaterialCommunityIcons name="check" size={14} color="#FFFFFF" />}
+                  </View>
+                  <Text style={[styles.ingredientText, { color: isChecked ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.9)', textDecorationLine: isChecked ? 'line-through' : 'none' }]}>
+                    {ing.amount ? `${convertAmount(ing.amount, app.useMetric)} ` : ''}{ing.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         )}
 
@@ -410,7 +458,7 @@ export default function CookModeScreen() {
             accessibilityLabel={isLastStep ? 'Finish cooking' : 'Next step'}
           >
             <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>
-              {isLastStep ? 'Finish' : 'Next'}
+              {isLastStep ? 'Finish Cooking' : 'Next'}
             </Text>
             <MaterialCommunityIcons
               name={isLastStep ? 'check' : 'arrow-right'}
@@ -682,5 +730,57 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xxxl,
     paddingVertical: Spacing.md,
     borderRadius: Radius.full,
+  },
+  progressBar: {
+    height: 4,
+    width: '100%',
+  },
+  progressFill: {
+    height: '100%',
+  },
+  stepImageWrap: {
+    width: '100%',
+    height: 200,
+    marginBottom: Spacing.md,
+  },
+  stepImage: {
+    width: '100%',
+    height: '100%',
+  },
+  stepImageGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+  },
+  ingredientSection: {
+    paddingHorizontal: Spacing.page,
+    paddingTop: 20,
+    paddingBottom: 12,
+  },
+  ingredientHeader: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 2,
+    marginBottom: 12,
+  },
+  ingredientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 44,
+    gap: 12,
+  },
+  ingredientCheck: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ingredientText: {
+    fontSize: 16,
+    fontFamily: 'Inter_400Regular',
   },
 });
