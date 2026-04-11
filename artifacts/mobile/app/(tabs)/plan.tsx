@@ -687,7 +687,7 @@ export default function PlanScreen() {
           multipleMeals ? (
             /* ── Daily: multiple meals timeline ── */
             <>
-              <View style={styles.timeline}>
+              <View style={[styles.timeline, isSelectedPast && { opacity: 0.5 }]}>
                 <View style={[styles.timelineLine, { backgroundColor: colors.primarySoft }]} />
                 {dailyMeals.map((slot, idx) => {
                   const meal = slot.meal;
@@ -754,7 +754,7 @@ export default function PlanScreen() {
           ) : (
             /* ── Daily: single meal (primary dinner) + course slots ── */
             <>
-              <View style={styles.timeline}>
+              <View style={[styles.timeline, isSelectedPast && { opacity: 0.5 }]}>
                 <View style={[styles.timelineLine, { backgroundColor: colors.primarySoft }]} />
 
                 <View style={styles.dayRow}>
