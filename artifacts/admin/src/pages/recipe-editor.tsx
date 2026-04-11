@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link, useLocation } from "wouter";
-import { useGetAdminRecipe, useUpdateAdminRecipe, useGetCountries } from "@workspace/api-client-react";
+import {
+  useGetAdminRecipe,
+  useUpdateAdminRecipe,
+  useGetCountries,
+  getGetAdminRecipeQueryKey,
+} from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,15 +37,42 @@ export default function RecipeEditor() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: recipe, isLoading } = useGetAdminRecipe(id || "", { 
-    query: { enabled: !isNew && !!id } 
+  const { data: recipe, isLoading } = useGetAdminRecipe(id || "", {
+    query: {
+      queryKey: getGetAdminRecipeQueryKey(id || ""),
+      enabled: !isNew && !!id,
+    },
   });
   const { data: countries } = useGetCountries();
 
   const updateRecipe = useUpdateAdminRecipe();
-  
+
+  // Form shape is a flexible superset of AdminRecipe because this
+  // editor mirrors the REST payload rather than the API type. The
+  // array fields (tips, ingredients, steps) use open records so the
+  // admin can add/remove rows without TypeScript fighting the draft
+  // state. On save we stringify back to the API shape.
+  interface FormDataState {
+    title: string;
+    description: string;
+    countryId: string;
+    region: string;
+    category: string;
+    difficulty: string;
+    prepTime: string | number;
+    cookTime: string | number;
+    servings: number;
+    culturalNote: string;
+    image: string;
+    status: string;
+    countryName?: string;
+    tips: string[];
+    ingredients: Array<Record<string, unknown>>;
+    steps: Array<Record<string, unknown>>;
+  }
+
   // Local state for editing
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<FormDataState>({
     title: "",
     description: "",
     countryId: "",
@@ -111,7 +143,12 @@ export default function RecipeEditor() {
       setLocation("/recipes");
     } else {
       updateRecipe.mutate(
-        { id: id!, data: formData },
+        // FormDataState is a flexible superset of AdminRecipeUpdate —
+        // the array-field types (ingredients/steps) intentionally use
+        // open records so draft editing doesn't fight the compiler.
+        // At save time we coerce to the API type; the server zod
+        // schema rejects anything malformed.
+        { id: id!, data: formData as unknown as Parameters<typeof updateRecipe.mutate>[0]["data"] },
         {
           onSuccess: (updatedRecipe) => {
             toast({ title: "Recipe saved successfully" });

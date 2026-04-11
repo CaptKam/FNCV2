@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Pressable, StyleProp, ViewStyle } from 'react-native';
+import { Pressable, StyleProp, ViewStyle, type GestureResponderEvent } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -41,7 +41,7 @@ export function AnimatedHeart({
     transform: [{ scale: scale.value }],
   }));
 
-  const handlePress = (e?: any) => {
+  const handlePress = (e?: GestureResponderEvent) => {
     if (e?.stopPropagation) e.stopPropagation();
     if (!reduceMotion) {
       scale.value = withSequence(

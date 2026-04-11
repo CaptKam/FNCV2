@@ -226,17 +226,12 @@ export default function DiscoverScreen() {
   // XP/Level data — computed from level_thresholds so the progress
   // bar fills toward the NEXT threshold, not a hardcoded 300.
   const { xp, level, totalRecipesCooked, passportStamps } = app;
-  const levelName = app.getCookingLevelName();
   const currentThreshold = thresholds[Math.max(0, level - 1)] ?? 0;
   const nextThreshold = thresholds[level] ?? currentThreshold + 500;
   const xpIntoLevel = Math.max(0, xp - currentThreshold);
   const xpSpan = Math.max(1, nextThreshold - currentThreshold);
   const progress = Math.max(0, Math.min(1, xpIntoLevel / xpSpan));
-  const xpToNext = Math.max(0, nextThreshold - xp);
   const exploredCountries = Object.keys(passportStamps).length;
-  const stampFlags = Object.keys(passportStamps)
-    .slice(0, 3)
-    .map((cid) => countries.find((c) => c.id === cid)?.flag ?? '🌍');
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -261,7 +256,7 @@ export default function DiscoverScreen() {
     router.push(`/cook-mode/${tonightRecipe.id}`);
   }, [tonightRecipe, app, router]);
 
-  const handleScroll = useCallback((e: any) => {
+  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
     if (contentOffset.y + layoutMeasurement.height > contentSize.height - 300) {
       setVisibleCount((prev) => Math.min(prev + 8, gridRecipes.length));

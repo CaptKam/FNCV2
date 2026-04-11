@@ -215,7 +215,7 @@ export default function SearchScreen() {
               return (
                 <PressableScale
                   key={mood}
-                  haptic="selection"
+                  haptic="light"
                   onPress={() => setActiveMood(mood)}
                   style={[
                     styles.moodPill,

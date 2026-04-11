@@ -14,6 +14,7 @@ import { PressableScale } from '@/components/PressableScale';
 import { useApp } from '@/context/AppContext';
 import { DinnerParty, DinnerGuest, DietaryConflict } from '@/types/dinnerParty';
 import { countries } from '@/data/countries';
+import { recipes, type Recipe } from '@/data/recipes';
 import { parseDateLocal } from '@/utils/dates';
 
 // ─── Helpers ───
@@ -86,11 +87,12 @@ export default function DinnerSetupScreen() {
       // Auto-create
       const itDay = app.itinerary.find((d) => d.date === date);
       const mainRecipe = itDay?.courses.main;
-      const countryId = mainRecipe ? (countries.find((c) => {
-        const { recipes } = require('@/data/recipes');
-        const recipe = recipes.find((r: any) => r.id === mainRecipe.recipeId);
-        return recipe?.countryId === c.id;
-      })?.id ?? '') : '';
+      const countryId = mainRecipe
+        ? (countries.find((c) => {
+            const recipe = recipes.find((r) => r.id === mainRecipe.recipeId);
+            return recipe?.countryId === c.id;
+          })?.id ?? '')
+        : '';
       const country = countries.find((c) => c.id === countryId);
       const dayName = getDayName(date);
       const title = `${dayName} Night ${country?.name ?? 'Dinner'}`;
@@ -117,11 +119,10 @@ export default function DinnerSetupScreen() {
   // Estimate cook start time
   const totalCookMinutes = useMemo(() => {
     if (!party) return 0;
-    const { recipes } = require('@/data/recipes');
     let total = 0;
     for (const course of Object.values(party.menu)) {
       if (course) {
-        const recipe = recipes.find((r: any) => r.id === course.recipeId);
+        const recipe = recipes.find((r) => r.id === course.recipeId);
         if (recipe) total += recipe.prepTime + recipe.cookTime;
       }
     }
@@ -207,11 +208,10 @@ export default function DinnerSetupScreen() {
     app.updateDinnerParty(partyId, { status: 'invites_sent' });
 
     // Navigate forward
-    const { recipes } = require('@/data/recipes');
     const dinnerRecipes = Object.values(party.menu)
-      .filter(Boolean)
-      .map((m: any) => recipes.find((r: any) => r.id === m.recipeId))
-      .filter(Boolean);
+      .filter((m): m is NonNullable<typeof m> => Boolean(m))
+      .map((m) => recipes.find((r) => r.id === m.recipeId))
+      .filter((r): r is Recipe => r !== undefined);
     if (dinnerRecipes.length > 0) {
       const target = new Date();
       target.setHours(servingHour, servingMinute, 0, 0);
@@ -225,11 +225,10 @@ export default function DinnerSetupScreen() {
   const handleJustCook = () => {
     if (!partyId || !party) return;
     app.startDinnerPartyCooking(partyId);
-    const { recipes } = require('@/data/recipes');
     const dinnerRecipes = Object.values(party.menu)
-      .filter(Boolean)
-      .map((m: any) => recipes.find((r: any) => r.id === m.recipeId))
-      .filter(Boolean);
+      .filter((m): m is NonNullable<typeof m> => Boolean(m))
+      .map((m) => recipes.find((r) => r.id === m.recipeId))
+      .filter((r): r is Recipe => r !== undefined);
     if (dinnerRecipes.length > 0) {
       const target = new Date();
       target.setHours(servingHour, servingMinute, 0, 0);

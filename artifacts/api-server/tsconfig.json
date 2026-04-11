@@ -2,10 +2,15 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
     "types": ["node"]
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "../mobile/data/recipes.ts",
+    "../mobile/data/countries.ts",
+    "../mobile/data/nutrition.ts",
+    "../mobile/utils/allergens.ts"
+  ],
   "references": [
     {
       "path": "../../lib/db"

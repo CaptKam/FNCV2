@@ -129,6 +129,10 @@ function Calendar({
           return (
             <div
               data-slot="calendar"
+              // @ts-expect-error — react-day-picker's rootRef type comes
+              // from a different copy of @types/react than the div's
+              // expected Ref<HTMLDivElement>. Known pnpm hoist quirk
+              // (19.1.17 via expo-router ← radix vs 19.2.14 via admin).
               ref={rootRef}
               className={cn(className)}
               {...props}
