@@ -41,3 +41,9 @@ id = "GzqNa_pFtUXJuVaiw9hrg"
 uri = "file://artifacts/mobile/APP_PAGES_AND_FLOW_MAP.md"
 type = "text"
 title = "Fork & Compass — Complete Page & Flow Map"
+
+[[outputs]]
+id = "mD54J3LKLXyI4TRc1QDdG"
+uri = "file://SYSTEM_AUDIT.md"
+type = "text"
+title = "Fork & Compass — Complete System Audit"
