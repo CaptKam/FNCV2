@@ -1332,6 +1332,7 @@ export default function PlanScreen() {
         visible={pickerVisible}
         onDismiss={() => setPickerVisible(false)}
         onSelect={handlePickRecipe}
+        courseType={pickerTarget?.courseType}
       />
 
       {/* Grocery handoff card */}

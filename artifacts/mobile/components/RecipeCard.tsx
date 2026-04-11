@@ -10,12 +10,19 @@ import { Radius } from '@/constants/radius';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { Recipe } from '@/data/recipes';
+import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
 import { ALLERGEN_INFO, AllergenType, getDietaryConflicts } from '@/utils/allergens';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { AnimatedHeart } from './AnimatedHeart';
 import { AddToPlanButton } from './AddToPlanSheet';
+
+const DIFFICULTY_COLORS: Record<string, string> = {
+  Easy: '#3DAF6F',
+  Medium: '#E08C00',
+  Hard: '#C0392B',
+};
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -34,6 +41,9 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
   const hasUserAllergenConflict = userAllergens.length > 0 && recipeAllergens.some((a) => userAllergens.includes(a));
   const hasDietaryConflict = getDietaryConflicts(recipeAllergens, dietaryFlags).length > 0;
   const hasConflict = hasUserAllergenConflict || hasDietaryConflict;
+
+  const country = countries.find((c) => c.id === recipe.countryId);
+  const diffColor = DIFFICULTY_COLORS[recipe.difficulty] ?? colors.outline;
 
   return (
     <PressableScale
@@ -81,6 +91,15 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
         <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18 }]} numberOfLines={2}>
           {recipe.title}
         </Text>
+
+        {country && (
+          <View style={styles.countryChip}>
+            <Text style={[Typography.caption, { color: colors.outline, fontSize: 11 }]}>
+              {country.flag} {country.name}
+            </Text>
+          </View>
+        )}
+
         <View style={styles.badgeRow}>
           <View style={[styles.timeBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
             <MaterialCommunityIcons name="clock-outline" size={16} color={colors.outline} />
@@ -88,6 +107,13 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
               {formatCookTime(recipe.prepTime + recipe.cookTime)}
             </Text>
           </View>
+
+          <View style={[styles.difficultyBadge, { backgroundColor: `${diffColor}18` }]}>
+            <Text style={[Typography.caption, { color: diffColor, fontSize: 10, fontWeight: '700' }]}>
+              {recipe.difficulty}
+            </Text>
+          </View>
+
           {hasConflict && (
             <View style={[styles.allergenBadge, { backgroundColor: `${colors.error}18` }]}>
               <MaterialCommunityIcons name="alert-circle" size={16} color={colors.error} />
@@ -166,6 +192,9 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: Spacing.sm,
   },
+  countryChip: {
+    alignSelf: 'flex-start',
+  },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -176,6 +205,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.full,
+  },
+  difficultyBadge: {
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: Radius.full,

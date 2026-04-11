@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal, FlatList } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -25,6 +25,8 @@ import { PressableScale } from '@/components/PressableScale';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { dateToLocal, addDays, getMonday, getDayLabelFull as getDayLabel, formatDateShort } from '@/utils/dates';
 
+const CULTURAL_TEASER_LENGTH = 160;
+
 function getStepInstruction(step: Step, level: string): string {
   if (level === 'beginner' && step.instructionFirstSteps) return step.instructionFirstSteps;
   if (level === 'chef' && step.instructionChefsTable) return step.instructionChefsTable;
@@ -42,13 +44,15 @@ export default function RecipeDetailScreen() {
   const country = recipe ? countries.find((c) => c.id === recipe.countryId) : null;
   const isSaved = recipe ? isBookmarked(recipe.id) : false;
 
+  const scrollRef = useRef<ScrollView>(null);
+  const culturalNoteY = useRef<number>(0);
+
   const [servings, setServings] = useState(recipe?.servings ?? 1);
   const [showPlanSheet, setShowPlanSheet] = useState(false);
   const [planCourseType, setPlanCourseType] = useState<'appetizer' | 'main' | 'dessert'>('main');
   const [checkedIngredients, setCheckedIngredients] = useState<Set<string>>(new Set());
   const [expandedSubs, setExpandedSubs] = useState<Set<string>>(new Set());
 
-  // Generate the next 14 days for the "Add to Plan" sheet
   const planDays = useMemo(() => {
     const start = dateToLocal(getMonday(new Date()));
     return Array.from({ length: 14 }, (_, i) => {
@@ -73,6 +77,11 @@ export default function RecipeDetailScreen() {
     () => getDietaryConflicts(recipeAllergens, app.dietaryFlags),
     [recipeAllergens, app.dietaryFlags]
   );
+
+  const culturalTeaser = recipe.culturalNote.length > CULTURAL_TEASER_LENGTH
+    ? recipe.culturalNote.slice(0, CULTURAL_TEASER_LENGTH).replace(/\s+\S*$/, '') + '…'
+    : recipe.culturalNote;
+  const hasTeaserTruncation = recipe.culturalNote.length > CULTURAL_TEASER_LENGTH;
 
   const ingredientGroups = recipe.ingredients.reduce(
     (acc, ing) => {
@@ -111,6 +120,10 @@ export default function RecipeDetailScreen() {
     setShowPlanSheet(false);
   };
 
+  const scrollToCulturalNote = () => {
+    scrollRef.current?.scrollTo({ y: culturalNoteY.current - 24, animated: true });
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <HeaderBar
@@ -130,7 +143,11 @@ export default function RecipeDetailScreen() {
           </View>
         }
       />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Spacing.tabClearance }}>
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 88 + Spacing.lg }}
+      >
         <View style={styles.heroContainer}>
           <Image
             source={{ uri: recipe.image }}
@@ -171,6 +188,26 @@ export default function RecipeDetailScreen() {
               <Text style={[Typography.caption, { color: colors.outline }]}>{currentServings}</Text>
             </View>
           </View>
+
+          {/* Cultural teaser — above the fold, between stats and ingredients */}
+          <Pressable
+            onPress={hasTeaserTruncation ? scrollToCulturalNote : undefined}
+            style={[styles.culturalTeaser, { backgroundColor: `${colors.primary}10`, borderLeftColor: colors.primary }]}
+            accessibilityRole={hasTeaserTruncation ? 'button' : 'text'}
+            accessibilityLabel={hasTeaserTruncation ? 'Read cultural note' : recipe.culturalNote}
+          >
+            <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4 }]}>
+              Cultural Note
+            </Text>
+            <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, lineHeight: 20 }]}>
+              {culturalTeaser}
+              {hasTeaserTruncation && (
+                <Text style={{ color: colors.primary, fontWeight: '600' }}>
+                  {' '}Read more ↓
+                </Text>
+              )}
+            </Text>
+          </Pressable>
 
           {recipe.nutrition && (
             <View style={[styles.nutritionRow, { backgroundColor: colors.surfaceContainerLow }]}>
@@ -267,18 +304,6 @@ export default function RecipeDetailScreen() {
               )}
             </View>
           )}
-
-          {/* Plan This button */}
-          <PressableScale
-            onPress={() => setShowPlanSheet(true)}
-            haptic="light"
-            style={[styles.addToPlanBtn, { backgroundColor: colors.primary }]}
-            accessibilityRole="button"
-            accessibilityLabel="Plan this recipe"
-          >
-            <MaterialCommunityIcons name="calendar-plus" size={20} color={colors.onPrimary} />
-            <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Plan This</Text>
-          </PressableScale>
 
           <View style={{ marginTop: Spacing.xl }}>
             <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
@@ -386,7 +411,6 @@ export default function RecipeDetailScreen() {
               Instructions
             </Text>
 
-            {/* Cooking level indicator */}
             {app.cookingLevel !== 'home_cook' && recipe.steps.some((s) =>
               (app.cookingLevel === 'beginner' && s.instructionFirstSteps) ||
               (app.cookingLevel === 'chef' && s.instructionChefsTable)
@@ -426,7 +450,9 @@ export default function RecipeDetailScreen() {
             ))}
           </View>
 
+          {/* Full cultural note section */}
           <View
+            onLayout={(e) => { culturalNoteY.current = e.nativeEvent.layout.y; }}
             style={[
               styles.culturalNote,
               {
@@ -445,18 +471,31 @@ export default function RecipeDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom CTA: Start Cooking */}
+      {/* Sticky bottom CTA: Plan This (secondary) + Start Cooking (primary) */}
       <GlassView style={[styles.cookCTA, { bottom: 0, paddingBottom: insets.bottom + 16, paddingTop: Spacing.md, paddingHorizontal: Spacing.page }]}>
-        <PressableScale
-          onPress={handleStartCooking}
-          haptic="medium"
-          style={[styles.cookButton, { backgroundColor: colors.primary }]}
-          accessibilityRole="button"
-          accessibilityLabel={`Start cooking ${recipe.title}`}
-        >
-          <MaterialCommunityIcons name="play" size={20} color={colors.onPrimary} />
-          <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
-        </PressableScale>
+        <View style={styles.ctaRow}>
+          <PressableScale
+            onPress={() => setShowPlanSheet(true)}
+            haptic="light"
+            style={[styles.planButton, { borderColor: colors.primary, borderWidth: 1.5 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Plan this recipe"
+          >
+            <MaterialCommunityIcons name="calendar-plus" size={18} color={colors.primary} />
+            <Text style={[Typography.titleSmall, { color: colors.primary }]}>Plan This</Text>
+          </PressableScale>
+
+          <PressableScale
+            onPress={handleStartCooking}
+            haptic="medium"
+            style={[styles.cookButton, { backgroundColor: colors.primary, flex: 1 }]}
+            accessibilityRole="button"
+            accessibilityLabel={`Start cooking ${recipe.title}`}
+          >
+            <MaterialCommunityIcons name="play" size={20} color={colors.onPrimary} />
+            <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
+          </PressableScale>
+        </View>
       </GlassView>
 
       {/* Add to Plan bottom sheet */}
@@ -476,7 +515,6 @@ export default function RecipeDetailScreen() {
               Add to Plan
             </Text>
 
-            {/* Course type selector */}
             <View style={styles.courseTypeRow}>
               {(['appetizer', 'main', 'dessert'] as const).map((ct) => {
                 const isActive = planCourseType === ct;
@@ -500,7 +538,6 @@ export default function RecipeDetailScreen() {
               })}
             </View>
 
-            {/* Day list */}
             <FlatList
               data={planDays}
               keyExtractor={(item) => item.date}
@@ -558,6 +595,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   stat: { alignItems: 'center', gap: 4 },
+  culturalTeaser: {
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    borderLeftWidth: 3,
+    marginBottom: Spacing.lg,
+  },
   nutritionRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -582,6 +625,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.lg,
+    marginTop: Spacing.md,
   },
   servingBtn: {
     width: 40,
@@ -589,15 +633,6 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  addToPlanBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.full,
-    marginTop: Spacing.md,
   },
   ingredientRow: {
     flexDirection: 'row',
@@ -661,6 +696,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
+  },
+  ctaRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    alignItems: 'center',
+  },
+  planButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.full,
+    backgroundColor: 'transparent',
   },
   cookButton: {
     flexDirection: 'row',
