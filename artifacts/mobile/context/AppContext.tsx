@@ -20,6 +20,7 @@ export interface PlannedMeal {
   countryFlag: string;
   cookTime: number;
   addedAt: string;
+  servings?: number;
 }
 
 export interface ItineraryDay {
@@ -77,7 +78,7 @@ interface AppContextValue {
   removeCourseFromDay: (date: string, courseType: CourseType) => void;
   removeRecipeFromPlanByName: (recipeName: string) => void;
   toggleDinnerParty: (date: string) => void;
-  autoGenerateWeek: (selectedDates: string[], coursePreference: CoursePreference) => void;
+  autoGenerateWeek: (selectedDates: string[], coursePreference: CoursePreference) => string[];
   restoreItinerary: (snapshot: ItineraryDay[]) => void;
   restoreGrocery: (snapshot: GroceryItem[]) => void;
   clearDay: (date: string) => void;
@@ -267,7 +268,7 @@ function aggregateAmounts(existingAmount: string, newAmount: string): string {
   return existingAmount + ', ' + newAmount;
 }
 
-function recipeToPlannedMeal(recipe: Recipe): PlannedMeal {
+function recipeToPlannedMeal(recipe: Recipe, servings?: number): PlannedMeal {
   const country = countries.find((c) => c.id === recipe.countryId);
   return {
     recipeId: recipe.id,
@@ -276,6 +277,7 @@ function recipeToPlannedMeal(recipe: Recipe): PlannedMeal {
     countryFlag: country?.flag ?? '',
     cookTime: recipe.cookTime,
     addedAt: new Date().toISOString(),
+    servings: servings ?? recipe.servings ?? 4,
   };
 }
 
@@ -286,6 +288,16 @@ function makeEmptyDay(date: string): ItineraryDay {
     courses: {},
     hasDinnerParty: false,
   };
+}
+
+/** Fisher-Yates (Knuth) shuffle — produces uniformly random permutations. */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 // ═══════════════════════════════════════════
@@ -710,7 +722,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const autoGenerateWeek = useCallback(
-    (selectedDates: string[], pref: CoursePreference) => {
+    (selectedDates: string[], pref: CoursePreference): string[] => {
       const allRecipes: Recipe[] = require('@/data/recipes').recipes;
 
       const MEAT_TERMS = ['chicken', 'beef', 'pork', 'lamb', 'duck', 'veal', 'bacon', 'prosciutto', 'pancetta', 'sausage', 'steak', 'meatball', 'ground meat', 'chorizo', 'ham', 'turkey', 'oxtail', 'bone marrow', 'lard'];
@@ -754,14 +766,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       };
 
       const dietaryFiltered = allRecipes.filter(isCompatible);
-      const afterLevelFilter = dietaryFiltered;
 
-      const recentRecipeIds = new Set<string>();
-      itinerary.forEach((day) => {
-        if (day.courses.main) recentRecipeIds.add(day.courses.main.recipeId);
-        if (day.courses.appetizer) recentRecipeIds.add(day.courses.appetizer.recipeId);
-        if (day.courses.dessert) recentRecipeIds.add(day.courses.dessert.recipeId);
+      // Cooking level filter: beginner = Easy only, home_cook = Easy+Medium, chef = all
+      let afterLevelFilter = dietaryFiltered.filter((recipe) => {
+        switch (cookingLevel) {
+          case 'beginner':
+            return recipe.difficulty === 'Easy';
+          case 'home_cook':
+            return recipe.difficulty === 'Easy' || recipe.difficulty === 'Medium';
+          case 'chef':
+            return true;
+          default:
+            return true;
+        }
       });
+      if (afterLevelFilter.length < 3) {
+        console.warn('Level filter too restrictive, using dietary-only pool');
+        afterLevelFilter = dietaryFiltered;
+      }
+
+      // Recency filter: only look at the last 14 days of itinerary
+      const recencyCutoff = addDaysLocal(todayLocal(), -14);
+      const recentRecipeIds = new Set<string>();
+      itinerary
+        .filter((d) => d.date >= recencyCutoff)
+        .forEach((day) => {
+          if (day.courses.main) recentRecipeIds.add(day.courses.main.recipeId);
+          if (day.courses.appetizer) recentRecipeIds.add(day.courses.appetizer.recipeId);
+          if (day.courses.dessert) recentRecipeIds.add(day.courses.dessert.recipeId);
+        });
       const afterRecencyFilter = afterLevelFilter.filter((r) => !recentRecipeIds.has(r.id));
 
       const today = todayLocal();
@@ -770,7 +803,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       const eligible = afterRecencyFilter.length >= futureDates.length ? afterRecencyFilter : afterLevelFilter;
 
-      const shuffled = [...eligible].sort(() => Math.random() - 0.5);
+      // Fisher-Yates shuffle (proper uniform random)
+      const shuffled = shuffleArray(eligible);
       const usedIds = new Set<string>();
       const usedCountries = new Set<string>();
 
@@ -795,25 +829,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       const plan: { date: string; courses: Record<string, ReturnType<typeof recipeToPlannedMeal>> }[] = [];
       const groceryBatch: { recipe: Recipe; date: string }[] = [];
+      const generatedMainNames: string[] = [];
 
       for (const date of futureDates) {
         const entry: typeof plan[number] = { date, courses: {} };
 
         const mainRecipe = pickRecipe('main');
         if (mainRecipe) {
-          entry.courses.main = recipeToPlannedMeal(mainRecipe);
+          entry.courses.main = recipeToPlannedMeal(mainRecipe, defaultServings);
           groceryBatch.push({ recipe: mainRecipe, date });
+          generatedMainNames.push(mainRecipe.title);
         }
 
         if (pref === 'full') {
           const appRecipe = pickRecipe('appetizer');
           if (appRecipe) {
-            entry.courses.appetizer = recipeToPlannedMeal(appRecipe);
+            entry.courses.appetizer = recipeToPlannedMeal(appRecipe, defaultServings);
             groceryBatch.push({ recipe: appRecipe, date });
           }
           const dessRecipe = pickRecipe('dessert');
           if (dessRecipe) {
-            entry.courses.dessert = recipeToPlannedMeal(dessRecipe);
+            entry.courses.dessert = recipeToPlannedMeal(dessRecipe, defaultServings);
             groceryBatch.push({ recipe: dessRecipe, date });
           }
         }
@@ -838,8 +874,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       for (const { recipe, date } of groceryBatch) {
         addToGrocery(recipe, date);
       }
+
+      return generatedMainNames;
     },
-    [findOrCreateDay, addToGrocery, dietaryFlags, itinerary]
+    [findOrCreateDay, addToGrocery, dietaryFlags, cookingLevel, defaultServings, itinerary]
   );
 
   const restoreItinerary = useCallback((snapshot: ItineraryDay[]) => {

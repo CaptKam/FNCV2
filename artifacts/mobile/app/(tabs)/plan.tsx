@@ -1143,10 +1143,17 @@ export default function PlanScreen() {
               itinerary: JSON.parse(JSON.stringify(app.itinerary)),
               grocery: JSON.parse(JSON.stringify(app.groceryItems)),
             };
-            app.autoGenerateWeek(emptyDates, app.coursePreference);
+            const names = app.autoGenerateWeek(emptyDates, app.coursePreference);
             try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
-            const weekLabel = selectedWeek === 'next-week' ? 'next week' : 'this week';
-            showToast(`Planned ${emptyDates.length} meals for ${weekLabel}`, true);
+            const preview = names.length === 0
+              ? ''
+              : names.length <= 3
+                ? names.join(', ')
+                : `${names.slice(0, 3).join(', ')} + ${names.length - 3} more`;
+            showToast(
+              names.length > 0 ? `Planned ${names.length} meals: ${preview}` : `Planned ${emptyDates.length} meals`,
+              true
+            );
             // Check grocery handoff conditions
             setTimeout(() => {
               const mealsPlanned = weekDays.filter(d => d.courses.main).length;
