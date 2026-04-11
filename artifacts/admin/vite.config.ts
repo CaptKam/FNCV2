@@ -68,12 +68,30 @@ export default defineConfig({
     // proxy is only active in `vite dev`; production deploys should serve
     // the admin static build and the api-server from the same origin.
     //
+    // We target 127.0.0.1 (not "localhost") because Node 17+ resolves
+    // "localhost" to IPv6 ::1 first, and Express apps that bind with
+    // app.listen(port) usually only listen on IPv4. Using localhost
+    // would silently 502 every request on Replit.
+    //
     // Override via env var `API_PROXY_TARGET` if you run api-server on a
-    // different port or host.
+    // different port or host (e.g. a dedicated dev backend URL).
     proxy: {
       "/api": {
-        target: process.env.API_PROXY_TARGET || "http://localhost:3001",
+        target: process.env.API_PROXY_TARGET || "http://127.0.0.1:3001",
         changeOrigin: true,
+        // Surface proxy errors in the Vite console. Without this, a
+        // downed api-server just hangs the browser until timeout and
+        // the only clue is a 504 in the network tab.
+        configure: (proxy) => {
+          proxy.on("error", (err, req) => {
+            // eslint-disable-next-line no-console
+            console.warn(
+              `[vite proxy] ${req.method} ${req.url} → ${
+                (err as Error & { code?: string }).code ?? "error"
+              }: ${(err as Error).message}`,
+            );
+          });
+        },
       },
     },
     fs: {

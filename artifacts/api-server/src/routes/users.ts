@@ -503,25 +503,71 @@ router.post(
     // level = floor(xp / 300) + 1 — matches the mobile app's formula
     // in AppContext.completeCookSessionInternal().
     //
-    // We use jsonb_set + coalesce so the stamp increments cleanly
-    // whether or not the country already has an entry in the JSON.
-    const [row] = await db
+    // Postgres evaluates each SET expression against the OLD row,
+    // so both `xp + :xpAward` references yield the same new xp value
+    // and the level calculation is consistent.
+    //
+    // For the passport stamp we use the jsonb `||` operator together
+    // with `jsonb_build_object`. This is equivalent to jsonb_set with
+    // create_missing=true but avoids passing a text[] path as a bound
+    // parameter, which can trip Postgres's type inference and 500 on
+    // the first real call. Keeping both sides of the concat as
+    // explicit jsonb makes the parameter types unambiguous.
+    const result = await db
       .update(userHistoryTable)
       .set({
         totalRecipesCooked: sql`${userHistoryTable.totalRecipesCooked} + 1`,
         xp: sql`${userHistoryTable.xp} + ${xpAward}`,
         level: sql`((${userHistoryTable.xp} + ${xpAward}) / 300) + 1`,
-        passportStamps: sql`jsonb_set(
-          ${userHistoryTable.passportStamps},
-          array[${countryId}],
-          to_jsonb(coalesce((${userHistoryTable.passportStamps} ->> ${countryId})::int, 0) + 1)
-        )`,
+        passportStamps: sql`${userHistoryTable.passportStamps} || jsonb_build_object(
+          ${countryId}::text,
+          coalesce((${userHistoryTable.passportStamps} ->> ${countryId})::int, 0) + 1
+        )::jsonb`,
         updatedAt: sql`now()`,
       })
       .where(eq(userHistoryTable.userId, userId))
       .returning();
 
-    res.json({ history: row });
+    if (result.length === 0) {
+      // Edge case: the user_history row doesn't exist. It should
+      // always be created alongside the user in /register, but if
+      // that transaction ever rolled back or a user arrived via a
+      // direct DB insert, this endpoint would silently 0-row.
+      //
+      // Create the row with the post-cook values so this endpoint is
+      // self-healing rather than returning `{ history: undefined }`.
+      const initialStamps: Record<string, number> = { [countryId]: 1 };
+      const [created] = await db
+        .insert(userHistoryTable)
+        .values({
+          userId,
+          totalRecipesCooked: 1,
+          xp: xpAward,
+          level: Math.floor(xpAward / 300) + 1,
+          passportStamps: initialStamps,
+        })
+        .onConflictDoNothing({ target: userHistoryTable.userId })
+        .returning();
+      if (created) {
+        res.json({ history: created });
+        return;
+      }
+      // If onConflictDoNothing was triggered, another request won
+      // the race and we can re-read the row.
+      const [existing] = await db
+        .select()
+        .from(userHistoryTable)
+        .where(eq(userHistoryTable.userId, userId))
+        .limit(1);
+      if (!existing) {
+        res.status(500).json({ error: "Failed to update cook history" });
+        return;
+      }
+      res.json({ history: existing });
+      return;
+    }
+
+    res.json({ history: result[0] });
   }),
 );
 

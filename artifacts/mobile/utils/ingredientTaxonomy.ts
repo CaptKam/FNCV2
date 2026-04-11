@@ -34,6 +34,7 @@
  *     the fetch completes.
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getApiBaseUrl } from "./apiBaseUrl";
 
 const CACHE_KEY = "@fork_compass_ingredient_taxonomy_v1";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -172,15 +173,9 @@ export function getTaxonomyEntries(): readonly TaxonomyEntry[] {
   return entries;
 }
 
-function getBaseUrl(): string {
-  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
-  if (fromEnv && fromEnv.length > 0) return fromEnv.replace(/\/+$/, "");
-  return "http://localhost:3001";
-}
-
 async function fetchFromNetwork(): Promise<TaxonomyEntry[] | null> {
   try {
-    const response = await fetch(`${getBaseUrl()}/api/ingredients`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/ingredients`, {
       method: "GET",
       headers: { accept: "application/json" },
     });

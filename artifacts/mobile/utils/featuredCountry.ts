@@ -20,6 +20,7 @@
  * then switches to the override once this fetch resolves.
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getApiBaseUrl } from "./apiBaseUrl";
 
 const CACHE_KEY = "@fork_compass_featured_today_v1";
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -37,12 +38,6 @@ interface CachedOverride {
   fetchedAt: number;
   /** The local date when this was cached, so we invalidate across midnight. */
   cachedForDate: string;
-}
-
-function getBaseUrl(): string {
-  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
-  if (fromEnv && fromEnv.length > 0) return fromEnv.replace(/\/+$/, "");
-  return "http://localhost:3001";
 }
 
 function todayLocal(): string {
@@ -87,7 +82,7 @@ async function writeCache(override: FeaturedTodayOverride | null): Promise<void>
 
 async function fetchFromNetwork(): Promise<FeaturedTodayOverride | null | undefined> {
   try {
-    const response = await fetch(`${getBaseUrl()}/api/featured/today`, {
+    const response = await fetch(`${getApiBaseUrl()}/api/featured/today`, {
       method: "GET",
       headers: { accept: "application/json" },
     });
