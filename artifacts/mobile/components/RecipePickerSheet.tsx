@@ -254,10 +254,8 @@ export function RecipePickerSheet({
               'clock-outline'
             )}
             <View style={styles.filterDivider} />
-            {renderPill('Beginner', difficultyFilter === 'easy', () =>
-              setDifficultyFilter(difficultyFilter === 'easy' ? 'any' : 'easy'),
-              'chart-bar'
-            )}
+            {renderPill('Any Difficulty', difficultyFilter === 'any', () => setDifficultyFilter('any'))}
+            {renderPill('Beginner', difficultyFilter === 'easy', () => setDifficultyFilter('easy'), 'chart-bar')}
             {hasUserDiet && renderPill(
               'My Diet',
               myDietActive,
