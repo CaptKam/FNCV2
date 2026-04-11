@@ -1,14 +1,15 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { 
-  LayoutDashboard, 
-  UtensilsCrossed, 
-  Star, 
-  Users, 
-  Settings, 
+import {
+  LayoutDashboard,
+  UtensilsCrossed,
+  Star,
+  Users,
+  Settings,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Leaf,
 } from "lucide-react";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -18,6 +19,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Recipes', href: '/recipes', icon: UtensilsCrossed },
     { name: 'Featured', href: '/featured', icon: Star },
+    { name: 'Ingredients', href: '/ingredients', icon: Leaf },
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
