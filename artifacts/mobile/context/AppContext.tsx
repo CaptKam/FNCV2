@@ -8,6 +8,31 @@ import { DinnerPlan } from '@/types/kitchen';
 import { DinnerParty, DinnerGuest, DietaryConflict, DinnerPartyMenu } from '@/types/dinnerParty';
 import { buildDinnerTimeline } from '@/utils/timelineEngine';
 import { todayLocal, dateToLocal, addDays as addDaysLocal, getDayLabelFull, parseDateLocal } from '@/utils/dates';
+import { bootstrapSync } from '@/utils/syncBootstrap';
+import {
+  syncItineraryDay,
+  syncDeleteItineraryDay,
+  syncGroceryItem,
+  syncDeleteGroceryItem,
+  syncCookCompletion,
+  syncPreferences,
+} from '@/utils/syncClient';
+
+/**
+ * Wraps a sync call in fire-and-forget semantics: it runs in the
+ * background, silently ignores failures, and never blocks the UI.
+ * Local state is always authoritative; the server is a passive backup.
+ *
+ * When we add the offline retry queue (Phase 2.2), this helper
+ * becomes the single place to hook in enqueue-on-failure.
+ */
+function fireSync(promise: Promise<unknown>): void {
+  promise.catch((err) => {
+    if (__DEV__) {
+      console.warn('[sync] request failed:', err?.message ?? err);
+    }
+  });
+}
 
 // ═══════════════════════════════════════════
 // TYPES
@@ -471,6 +496,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       hydrated.current = true;
       setIsHydrated(true);
+
+      // Fire-and-forget sync bootstrap: generates a device ID if
+      // needed, registers an anonymous account with the api-server,
+      // and stores the returned auth token. If the server is
+      // unreachable the app stays in local-only mode until the next
+      // launch retries.
+      bootstrapSync().catch(() => {
+        /* already logged inside bootstrapSync */
+      });
     })();
   }, []);
 
@@ -491,6 +525,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (hydrated.current)
       Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, defaultServings, dietaryFlags, allergens, hasCompletedOnboarding, displayName, avatarId });
+  }, [cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, defaultServings, dietaryFlags, allergens, hasCompletedOnboarding, displayName, avatarId]);
+
+  // Sync preferences to the server, debounced 1.5s so rapid
+  // changes (e.g. the servings stepper) collapse into one request.
+  useEffect(() => {
+    if (!hydrated.current) return;
+    const timer = setTimeout(() => {
+      fireSync(
+        syncPreferences({
+          cookingLevel,
+          coursePreference,
+          groceryPartner,
+          zipCode,
+          useMetric,
+          defaultServings,
+          dietaryFlags,
+          allergens,
+          hasCompletedOnboarding,
+          displayName,
+          avatarId,
+        }),
+      );
+    }, 1500);
+    return () => clearTimeout(timer);
   }, [cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, defaultServings, dietaryFlags, allergens, hasCompletedOnboarding, displayName, avatarId]);
 
   useEffect(() => {
@@ -647,9 +705,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleGroceryItem = useCallback((id: string) => {
-    setGroceryItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item))
-    );
+    let syncItem: GroceryItem | null = null;
+    setGroceryItems((prev) => {
+      const next = prev.map((item) =>
+        item.id === id ? { ...item, checked: !item.checked } : item,
+      );
+      syncItem = next.find((item) => item.id === id) ?? null;
+      return next;
+    });
+    if (syncItem) {
+      const item = syncItem as GroceryItem;
+      fireSync(
+        syncGroceryItem({
+          stableId: item.id,
+          name: item.name,
+          amount: item.amount,
+          unit: item.unit,
+          category: item.category,
+          recipeNames: item.recipeNames,
+          sourceAmounts: item.sourceAmounts,
+          sourceDates: item.sourceDates ?? {},
+          checked: item.checked,
+          excluded: item.excluded,
+        }),
+      );
+    }
   }, []);
 
   const clearCheckedItems = useCallback(() => {
@@ -682,6 +762,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addCourseToDay = useCallback(
     (date: string, courseType: CourseType, recipe: Recipe) => {
       const meal = recipeToPlannedMeal(recipe);
+      // Capture the post-update day shape inside the updater so the
+      // sync call sees the canonical new state (not the stale closure).
+      // In strict-mode dev React invokes the updater twice; assigning
+      // to `syncDay` is idempotent so the outer fireSync still runs once.
+      let syncDay: { dayLabel: string; hasDinnerParty: boolean; courses: ItineraryDay['courses'] } | null = null;
       setItinerary((prev) => {
         const [days, day] = findOrCreateDay(prev, date);
         const updated = days.map((d) =>
@@ -689,26 +774,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ? { ...d, courses: { ...d.courses, [courseType]: meal } }
             : d
         );
+        const target = updated.find((d) => d.date === date);
+        if (target) {
+          syncDay = {
+            dayLabel: target.dayLabel,
+            hasDinnerParty: target.hasDinnerParty,
+            courses: target.courses,
+          };
+        }
         return updated;
       });
       addToGrocery(recipe, date);
+      if (syncDay) fireSync(syncItineraryDay(date, syncDay as { dayLabel: string; hasDinnerParty: boolean; courses: Record<string, unknown> }));
     },
     [findOrCreateDay, addToGrocery]
   );
 
   const removeCourseFromDay = useCallback(
     (date: string, courseType: CourseType) => {
+      let syncDay: { dayLabel: string; hasDinnerParty: boolean; courses: ItineraryDay['courses'] } | null = null;
+      let dayNowEmpty = false;
       setItinerary((prev) => {
         const day = prev.find((d) => d.date === date);
         const meal = day?.courses[courseType];
         if (meal) removeGroceryItemsByRecipe(meal.recipeName, date);
-        return prev.map((d) => {
+        const updated = prev.map((d) => {
           if (d.date !== date) return d;
           const courses = { ...d.courses };
           delete courses[courseType];
           return { ...d, courses };
         });
+        const target = updated.find((d) => d.date === date);
+        if (target) {
+          const courseKeys = Object.keys(target.courses);
+          dayNowEmpty = courseKeys.length === 0 && !target.hasDinnerParty;
+          syncDay = {
+            dayLabel: target.dayLabel,
+            hasDinnerParty: target.hasDinnerParty,
+            courses: target.courses,
+          };
+        }
+        return updated;
       });
+      // If the day is completely empty now, delete it on the server
+      // so the user's account doesn't accumulate empty day rows.
+      // Otherwise push the updated day with one course removed.
+      if (dayNowEmpty) {
+        fireSync(syncDeleteItineraryDay(date));
+      } else if (syncDay) {
+        fireSync(syncItineraryDay(date, syncDay as { dayLabel: string; hasDinnerParty: boolean; courses: Record<string, unknown> }));
+      }
     },
     [removeGroceryItemsByRecipe]
   );
@@ -931,6 +1046,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const completeCookSessionInternal = useCallback(() => {
     // Use functional setState to avoid stale closure over activeCookSession
+    let syncRecipe: { id: string; countryId: string; title: string } | null = null;
     setActiveCookSession((prev) => {
       if (prev) {
         setTotalRecipesCooked((c) => c + 1);
@@ -946,14 +1062,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ...s,
             [recipe.countryId]: (s[recipe.countryId] ?? 0) + 1,
           }));
+          syncRecipe = { id: recipe.id, countryId: recipe.countryId, title: recipe.title };
         }
       }
       return null;
     });
+    // Sync cook completion to the server. The server-side /cook
+    // endpoint does the same atomic XP/level/stamp update, matching
+    // the formula above.
+    if (syncRecipe) {
+      const r = syncRecipe as { id: string; countryId: string; title: string };
+      fireSync(syncCookCompletion(r.id, r.countryId, { recipeName: r.title, xpAward: 50 }));
+    }
   }, []);
 
   const startCookSession = useCallback((recipe: Recipe, servings: number) => {
     // If a session exists, complete it first (awards XP) via functional check
+    let staleSyncRecipe: { id: string; countryId: string; title: string } | null = null;
     setActiveCookSession((prev) => {
       if (prev) {
         setTotalRecipesCooked((c) => c + 1);
@@ -969,6 +1094,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ...s,
             [oldRecipe.countryId]: (s[oldRecipe.countryId] ?? 0) + 1,
           }));
+          staleSyncRecipe = { id: oldRecipe.id, countryId: oldRecipe.countryId, title: oldRecipe.title };
         }
       }
       // Return the new session
@@ -986,6 +1112,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         status: 'active' as const,
       };
     });
+    // If starting a new session auto-completed a stale one, sync
+    // that completion too.
+    if (staleSyncRecipe) {
+      const r = staleSyncRecipe as { id: string; countryId: string; title: string };
+      fireSync(syncCookCompletion(r.id, r.countryId, { recipeName: r.title, xpAward: 50 }));
+    }
   }, []);
 
   const advanceStepRef = useRef(false);
