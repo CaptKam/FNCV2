@@ -22,7 +22,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Recipes', href: '/recipes', icon: UtensilsCrossed },
     { name: 'Featured', href: '/featured', icon: Star },
-    { name: 'Featured Country', href: '/featured-country', icon: Globe },
+    { name: 'Country of the Day', href: '/featured-country', icon: Globe },
     { name: 'Ingredients', href: '/ingredients', icon: Leaf },
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Feature Flags', href: '/feature-flags', icon: ToggleLeft },

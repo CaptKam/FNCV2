@@ -255,12 +255,14 @@ export default function FeaturedCountryPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-serif tracking-tight text-foreground">
-            Featured Country
+            Country of the Day Schedule
           </h1>
           <p className="text-muted-foreground mt-1">
             Pin a specific country to a specific date — seasonal dishes, holidays,
             partner promos. Overrides the mobile Discover tab's default
-            day-of-year rotation.
+            day-of-year rotation. For day-to-day country management (which
+            countries are eligible for the default rotation, region assignments,
+            etc.) see the <strong>Countries</strong> page.
           </p>
         </div>
         <Button onClick={openCreate} disabled={loadingCountries}>
