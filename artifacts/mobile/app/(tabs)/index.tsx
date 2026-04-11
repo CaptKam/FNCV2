@@ -84,8 +84,8 @@ export default function DiscoverScreen() {
   // Add to plan sheet state
   const [addSheetRecipe, setAddSheetRecipe] = useState<Recipe | null>(null);
 
-  // Country filter
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  // Category filter (replaces country filter chips)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Recipe pagination
   const [visibleCount, setVisibleCount] = useState(8);
@@ -187,14 +187,14 @@ export default function DiscoverScreen() {
     heroListRef.current?.scrollToIndex({ index: idx, animated: true });
   }, []);
 
-  // Filtered recipe grid
+  // Filtered recipe grid — now by category
   const gridRecipes = useMemo(() => {
-    const pool = selectedCountry
-      ? recipes.filter((r) => r.countryId === selectedCountry)
+    const pool = selectedCategory
+      ? recipes.filter((r) => r.category === selectedCategory)
       : [...recipes].sort(() => Math.random() - 0.5);
     return pool;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCountry, shuffleSeed]);
+  }, [selectedCategory, shuffleSeed]);
 
   // XP/Level data — computed from level_thresholds so the progress
   // bar fills toward the NEXT threshold, not a hardcoded 300.
@@ -395,7 +395,60 @@ export default function DiscoverScreen() {
           </View>
         </Animated.View>
 
-        {/* ═══ ROW 3B: XP + STATS (2-column row) ═══
+        {/* ═══ ROW 3B: COUNTRY CIRCLES ═══ */}
+        <Animated.View entering={enterDelay(90)}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.circleRow, { paddingHorizontal: GRID_PAD }]}
+            style={{ marginBottom: GRID_GAP }}
+          >
+            {countries.map((c, ci) => {
+              const isActive = ci === heroIndex;
+              return (
+                <PressableScale
+                  key={c.id}
+                  haptic="light"
+                  onPress={() => router.push(`/country/${c.id}`)}
+                  style={styles.circleWrap}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Explore ${c.name}`}
+                >
+                  <View style={[
+                    styles.circleRing,
+                    { borderColor: isActive ? colors.primary : 'transparent' },
+                  ]}>
+                    <Image
+                      source={{ uri: c.landmarkImage }}
+                      style={styles.circleImg}
+                      contentFit="cover"
+                      transition={200}
+                      accessible={false}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      Typography.caption,
+                      {
+                        color: isActive ? colors.onSurface : colors.outline,
+                        fontSize: 10,
+                        fontWeight: '600',
+                        textAlign: 'center',
+                        letterSpacing: 0.2,
+                        marginTop: 4,
+                      },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {c.name}
+                  </Text>
+                </PressableScale>
+              );
+            })}
+          </ScrollView>
+        </Animated.View>
+
+        {/* ═══ ROW 3C: XP + STATS (2-column row) ═══
             Both cards are gated. When neither xp_system nor passport_stamps
             is enabled we drop the whole row so the layout collapses cleanly. */}
         {(showXp || showPassport) && (
@@ -438,40 +491,55 @@ export default function DiscoverScreen() {
           </View>
         )}
 
-        {/* ═══ ROW 4: CUISINE FILTER CHIPS ═══ */}
+        {/* ═══ ROW 4: CATEGORY FILTER PILLS ═══ */}
         <Animated.View entering={enterDelay(200)}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={[styles.chipRow, { paddingHorizontal: GRID_PAD }]}
           >
-            <Pressable
-              onPress={() => setSelectedCountry(null)}
-              style={[
-                styles.chip,
-                { backgroundColor: selectedCountry === null ? colors.primary : colors.surfaceContainerHigh },
-              ]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: selectedCountry === null }}
-            >
-              <Text style={[Typography.labelSmall, { color: selectedCountry === null ? colors.onPrimary : colors.onSurfaceVariant, letterSpacing: 0 }]}>All</Text>
-            </Pressable>
-            {countries.map((c) => (
-              <Pressable
-                key={c.id}
-                onPress={() => setSelectedCountry(c.id)}
-                style={[
-                  styles.chip,
-                  { backgroundColor: selectedCountry === c.id ? colors.primary : colors.surfaceContainerHigh },
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel={`Filter by ${c.name}`}
-                accessibilityState={{ selected: selectedCountry === c.id }}
-              >
-                <Text style={{ fontSize: 14 }}>{c.flag}</Text>
-                <Text style={[Typography.labelSmall, { color: selectedCountry === c.id ? colors.onPrimary : colors.onSurfaceVariant, letterSpacing: 0 }]}>{c.name}</Text>
-              </Pressable>
-            ))}
+            {([
+              { key: null,         label: 'All' },
+              { key: 'main',       label: 'Entrées' },
+              { key: 'appetizer',  label: 'Appetizers' },
+              { key: 'dessert',    label: 'Desserts' },
+              { key: 'drink',      label: 'Drinks' },
+            ] as { key: string | null; label: string }[]).map((item) => {
+              const isActive = selectedCategory === item.key;
+              return (
+                <Pressable
+                  key={item.label}
+                  onPress={() => { setSelectedCategory(item.key); setVisibleCount(8); }}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: isActive ? colors.primary : colors.surface,
+                      borderWidth: 1,
+                      borderColor: isActive ? colors.primary : colors.outlineVariant,
+                      shadowColor: isActive ? colors.primary : 'transparent',
+                      shadowOpacity: isActive ? 0.25 : 0,
+                      shadowRadius: 4,
+                      shadowOffset: { width: 0, height: 2 },
+                      elevation: isActive ? 3 : 0,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Filter by ${item.label}`}
+                  accessibilityState={{ selected: isActive }}
+                >
+                  <Text style={[
+                    Typography.labelSmall,
+                    {
+                      color: isActive ? colors.onPrimary : colors.onSurfaceVariant,
+                      letterSpacing: 0,
+                      fontWeight: '600',
+                    },
+                  ]}>
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </ScrollView>
         </Animated.View>
 
@@ -603,6 +671,30 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  // Country circles
+  circleRow: {
+    flexDirection: 'row',
+    gap: 16,
+    paddingVertical: Spacing.xs,
+  },
+  circleWrap: {
+    alignItems: 'center',
+    width: 64,
+  },
+  circleRing: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2.5,
+    padding: 2,
+    overflow: 'hidden',
+  },
+  circleImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
   },
 
   // Row 3: Hero + XP

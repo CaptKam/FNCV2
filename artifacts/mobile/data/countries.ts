@@ -4,6 +4,7 @@ export interface Country {
   flag: string;
   tagline: string;
   heroImage: string;
+  landmarkImage: string;
   cuisineLabel: string;
   region: string;
   description: string;
@@ -16,6 +17,7 @@ export const countries: Country[] = [
     flag: '🇮🇹',
     tagline: 'Where every meal is a love letter',
     heroImage: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800&h=600&fit=crop',
+    landmarkImage: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=300&h=300&fit=crop',
     cuisineLabel: 'Italian Cuisine',
     region: 'Southern Europe',
     description: 'Italian cuisine is a celebration of simplicity and quality ingredients. From the sun-drenched pasta dishes of the south to the rich risottos of the north, every region tells its own culinary story through generations of family recipes.',
@@ -26,6 +28,7 @@ export const countries: Country[] = [
     flag: '🇫🇷',
     tagline: 'The art of eating well',
     heroImage: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop',
+    landmarkImage: 'https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?w=300&h=300&fit=crop',
     cuisineLabel: 'French Cuisine',
     region: 'Western Europe',
     description: 'French cuisine is the foundation of Western culinary tradition. Its emphasis on technique, seasonal ingredients, and the art of the table has influenced chefs worldwide for centuries.',
@@ -36,6 +39,7 @@ export const countries: Country[] = [
     flag: '🇯🇵',
     tagline: 'Harmony in every bite',
     heroImage: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=800&h=600&fit=crop',
+    landmarkImage: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=300&h=300&fit=crop',
     cuisineLabel: 'Japanese Cuisine',
     region: 'East Asia',
     description: 'Japanese cuisine embodies the philosophy of harmony, seasonality, and respect for ingredients. From delicate sushi to warming ramen, each dish reflects centuries of culinary refinement.',
@@ -46,6 +50,7 @@ export const countries: Country[] = [
     flag: '🇲🇽',
     tagline: 'Flavor without boundaries',
     heroImage: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&h=600&fit=crop',
+    landmarkImage: 'https://images.unsplash.com/photo-1518638150340-f706e86654de?w=300&h=300&fit=crop',
     cuisineLabel: 'Mexican Cuisine',
     region: 'North America',
     description: 'Mexican cuisine is a vibrant tapestry of ancient Mesoamerican traditions and Spanish colonial influences. Its complex moles, fresh salsas, and corn-based staples form one of the world\'s most beloved food cultures.',
@@ -56,6 +61,7 @@ export const countries: Country[] = [
     flag: '🇹🇭',
     tagline: 'The balance of five flavors',
     heroImage: 'https://images.unsplash.com/photo-1562565652-a0d8f0c59eb4?w=800&h=600&fit=crop',
+    landmarkImage: 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=300&h=300&fit=crop',
     cuisineLabel: 'Thai Cuisine',
     region: 'Southeast Asia',
     description: 'Thai cuisine is a masterful balancing act of sweet, sour, salty, bitter, and spicy. Street food culture meets royal court traditions in dishes that explode with aromatic herbs and bold flavors.',
@@ -66,6 +72,7 @@ export const countries: Country[] = [
     flag: '🇲🇦',
     tagline: 'Spices that tell stories',
     heroImage: 'https://images.unsplash.com/photo-1541518763-a2d3e3f2f1f0?w=800&h=600&fit=crop',
+    landmarkImage: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=300&h=300&fit=crop',
     cuisineLabel: 'Moroccan Cuisine',
     region: 'North Africa',
     description: 'Moroccan cuisine is a sensory journey through ancient spice routes. Tagines slow-cooked to perfection, fluffy couscous, and preserved lemons create dishes that are both deeply aromatic and soul-satisfying.',
@@ -76,6 +83,7 @@ export const countries: Country[] = [
     flag: '🇮🇳',
     tagline: 'A subcontinent of flavors',
     heroImage: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&h=600&fit=crop',
+    landmarkImage: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=300&h=300&fit=crop',
     cuisineLabel: 'Indian Cuisine',
     region: 'South Asia',
     description: 'Indian cuisine is a vast universe of regional traditions, each with its own spice palette and cooking techniques. From the tandoor ovens of the north to the coconut curries of the south, India offers an unmatched depth of culinary diversity.',
@@ -86,6 +94,7 @@ export const countries: Country[] = [
     flag: '🇪🇸',
     tagline: 'Life around the table',
     heroImage: 'https://images.unsplash.com/photo-1515443961218-a51367888e4b?w=800&h=600&fit=crop',
+    landmarkImage: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=300&h=300&fit=crop',
     cuisineLabel: 'Spanish Cuisine',
     region: 'Southern Europe',
     description: 'Spanish cuisine is built on the joy of sharing. From tapas bars to paella pans, eating in Spain is a social ritual that celebrates fresh seafood, cured meats, and the finest olive oil in the world.',

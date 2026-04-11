@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import {
   View,
@@ -18,22 +18,34 @@ import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
-import { DestinationCard } from '@/components/DestinationCard';
-import { recipes } from '@/data/recipes';
+import { AnimatedHeart } from '@/components/AnimatedHeart';
+import { AnimatedListItem } from '@/components/AnimatedListItem';
+import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
+import { OVERLAY_BUTTON } from '@/constants/icons';
+import { recipes, Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
 import { ALLERGEN_INFO, AllergenType } from '@/utils/allergens';
 import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { AnimatedListItem } from '@/components/AnimatedListItem';
-import { AnimatedHeart } from '@/components/AnimatedHeart';
-import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
-import { OVERLAY_BUTTON } from '@/constants/icons';
 import { todayLocal, getDayLabel } from '@/utils/dates';
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
 const MOODS = ['All Moods', 'Quick & Easy', 'Comfort Food', 'Date Night', 'Adventurous', 'Healthy', 'Sweet'];
-const ALLERGEN_FILTERS: AllergenType[] = ['milk', 'egg', 'wheat', 'peanuts', 'tree_nuts', 'fish', 'shellfish', 'soy', 'sesame'];
+const ALLERGEN_FILTERS: AllergenType[] = ['peanuts', 'milk', 'wheat', 'shellfish', 'egg', 'tree_nuts', 'fish', 'soy'];
+
+const INGREDIENT_CIRCLES = [
+  { label: 'Chicken', query: 'chicken', image: 'https://images.unsplash.com/photo-1604503468506-a8da13d11bbc?w=200&h=200&fit=crop' },
+  { label: 'Egg',     query: 'egg',     image: 'https://images.unsplash.com/photo-1607690424560-35d967d6ad7f?w=200&h=200&fit=crop' },
+  { label: 'Pasta',   query: 'pasta',   image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=200&h=200&fit=crop' },
+  { label: 'Lemon',   query: 'lemon',   image: 'https://images.unsplash.com/photo-1571735360272-e0427f4dc97f?w=200&h=200&fit=crop' },
+  { label: 'Rice',    query: 'rice',    image: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=200&h=200&fit=crop' },
+  { label: 'Tomato',  query: 'tomato',  image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200&h=200&fit=crop' },
+];
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function SearchScreen() {
   const { width } = useWindowDimensions();
@@ -42,14 +54,15 @@ export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const app = useApp();
-  const { allergens: userAllergens } = app;
   const { isBookmarked, toggleBookmark } = useBookmarks();
+  const inputRef = useRef<TextInput>(null);
+
   const [query, setQuery] = useState('');
   const [activeMood, setActiveMood] = useState('All Moods');
   const [excludedAllergens, setExcludedAllergens] = useState<AllergenType[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const toastTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [addSheetRecipe, setAddSheetRecipe] = useState<typeof recipes[0] | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [addSheetRecipe, setAddSheetRecipe] = useState<Recipe | null>(null);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -72,31 +85,36 @@ export default function SearchScreen() {
   }, [addSheetRecipe, app, showToast]);
 
   const toggleAllergenFilter = useCallback((a: AllergenType) => {
+    try { Haptics.selectionAsync(); } catch {}
     setExcludedAllergens((prev) =>
       prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
     );
+  }, []);
+
+  const handleIngredientPress = useCallback((ingredientQuery: string) => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    setQuery(ingredientQuery);
+    inputRef.current?.focus();
   }, []);
 
   const filteredRecipes = useMemo(() => {
     let results = recipes;
 
     if (activeMood !== 'All Moods') {
-      const moodMap: Record<string, (r: typeof recipes[0]) => boolean> = {
+      const moodMap: Record<string, (r: Recipe) => boolean> = {
         'Quick & Easy': (r) => r.prepTime + r.cookTime <= 30 && r.difficulty === 'Easy',
         'Comfort Food': (r) => r.category === 'main' && r.cookTime >= 30,
-        'Date Night': (r) => r.difficulty === 'Hard' || r.cookTime >= 60,
-        'Adventurous': (r) => ['japan', 'thailand', 'morocco', 'india', 'mexico'].includes(r.countryId),
-        'Healthy': (r) => r.ingredients.some((i) => i.category === 'Produce'),
-        'Sweet': (r) => r.category === 'dessert',
+        'Date Night':   (r) => r.difficulty === 'Hard' || r.cookTime >= 60,
+        'Adventurous':  (r) => ['japan', 'thailand', 'morocco', 'india', 'mexico'].includes(r.countryId),
+        'Healthy':      (r) => r.ingredients.some((i) => i.category === 'Produce'),
+        'Sweet':        (r) => r.category === 'dessert',
       };
       const filter = moodMap[activeMood];
       if (filter) results = results.filter(filter);
     }
 
     if (excludedAllergens.length > 0) {
-      results = results.filter((r) => {
-        return !excludedAllergens.some((a) => r.allergens.includes(a));
-      });
+      results = results.filter((r) => !excludedAllergens.some((a) => r.allergens.includes(a)));
     }
 
     if (query.trim()) {
@@ -116,184 +134,231 @@ export default function SearchScreen() {
       <HeaderBar />
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 }}
       >
-        <View style={{ paddingHorizontal: Spacing.page }}>
-          <Text style={[Typography.displayMedium, { color: colors.onSurface }]}>
-            Search
-          </Text>
-        </View>
-
-        <View style={[styles.searchContainer, { paddingHorizontal: Spacing.page }]}>
-          <View style={[styles.searchInput, { backgroundColor: colors.surfaceContainerLow }]}>
-            <MaterialCommunityIcons name="magnify" size={20} color={colors.outline} />
+        {/* Search bar */}
+        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
+          <View style={[styles.searchBar, { backgroundColor: colors.surfaceContainerHigh }]}>
+            <MaterialCommunityIcons name="magnify" size={22} color={colors.outline} />
             <TextInput
+              ref={inputRef}
               value={query}
               onChangeText={setQuery}
               placeholder="Ingredients, dishes, or moods..."
               placeholderTextColor={colors.outline}
               style={[Typography.body, { color: colors.onSurface, flex: 1 }]}
-              accessibilityLabel="Search recipes or countries"
+              returnKeyType="search"
+              accessibilityLabel="Search recipes"
             />
+            {query.length > 0 && (
+              <Pressable onPress={() => setQuery('')} hitSlop={8}>
+                <MaterialCommunityIcons name="close-circle" size={18} color={colors.outline} />
+              </Pressable>
+            )}
           </View>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipContainer}
-        >
-          {MOODS.map((mood) => (
-            <Pressable
-              key={mood}
-              onPress={() => setActiveMood(mood)}
-              style={[
-                styles.chip,
-                {
-                  backgroundColor:
-                    activeMood === mood ? colors.primary : colors.surfaceContainerHigh,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={`Filter by ${mood}`}
-              accessibilityState={{ selected: activeMood === mood }}
-            >
-              <Text
-                style={[
-                  Typography.titleSmall,
-                  {
-                    color: activeMood === mood ? colors.onPrimary : colors.onSurface,
-                  },
-                ]}
-              >
-                {mood}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
-            <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1, marginBottom: Spacing.sm }]}>
-              EXCLUDE ALLERGENS
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.sm }}>
-              {ALLERGEN_FILTERS.map((a) => {
-                const info = ALLERGEN_INFO[a];
-                const isActive = excludedAllergens.includes(a);
-                const isUserAllergen = userAllergens.includes(a);
-                return (
-                  <Pressable
-                    key={a}
-                    onPress={() => toggleAllergenFilter(a)}
-                    style={[
-                      styles.allergenChip,
-                      {
-                        backgroundColor: isActive ? `${colors.error}20` : colors.surfaceContainerHigh,
-                        borderWidth: isActive ? 1 : isUserAllergen ? 1 : 0,
-                        borderColor: isActive ? colors.error : isUserAllergen ? colors.primary : 'transparent',
-                      },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${isActive ? 'Include' : 'Exclude'} ${info.label}`}
-                    accessibilityState={{ selected: isActive }}
-                  >
-                    <MaterialCommunityIcons
-                      name={isActive ? 'close-circle' : info.icon}
-                      size={16}
-                      color={isActive ? colors.error : colors.onSurfaceVariant}
-                    />
-                    <Text style={[Typography.caption, { color: isActive ? colors.error : colors.onSurfaceVariant }]}>
-                      {info.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
+        {/* Exclude Allergens */}
+        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.lg }}>
+          <Text style={[styles.sectionLabel, { color: colors.outline }]}>EXCLUDE ALLERGENS</Text>
+          <View style={styles.allergenWrap}>
+            {ALLERGEN_FILTERS.map((a) => {
+              const info = ALLERGEN_INFO[a];
+              const isActive = excludedAllergens.includes(a);
+              return (
+                <Pressable
+                  key={a}
+                  onPress={() => toggleAllergenFilter(a)}
+                  style={[
+                    styles.allergenChip,
+                    {
+                      backgroundColor: isActive ? `${colors.error}18` : colors.surfaceContainerHigh,
+                      borderWidth: 1,
+                      borderColor: isActive ? colors.error : colors.outlineVariant,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isActive }}
+                >
+                  <Text style={[Typography.caption, {
+                    color: isActive ? colors.error : colors.onSurfaceVariant,
+                    fontWeight: isActive ? '600' : '400',
+                  }]}>
+                    {info.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
+        </View>
 
-        {/* Result count */}
-        {query.trim().length > 0 && filteredRecipes.length > 0 && (
-          <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
-            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
-              {filteredRecipes.length} recipe{filteredRecipes.length !== 1 ? 's' : ''} found
-            </Text>
-          </View>
-        )}
+        {/* Moods */}
+        <View style={{ marginBottom: Spacing.lg }}>
+          <Text style={[styles.sectionLabel, { color: colors.outline, paddingHorizontal: Spacing.page }]}>MOODS</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[styles.pillRow, { paddingHorizontal: Spacing.page }]}
+          >
+            {MOODS.map((mood) => {
+              const isActive = activeMood === mood;
+              return (
+                <PressableScale
+                  key={mood}
+                  haptic="selection"
+                  onPress={() => setActiveMood(mood)}
+                  style={[
+                    styles.moodPill,
+                    {
+                      backgroundColor: isActive ? colors.primary : colors.surfaceContainerHigh,
+                      shadowColor: isActive ? colors.primary : 'transparent',
+                      shadowOpacity: isActive ? 0.25 : 0,
+                      shadowRadius: 4,
+                      shadowOffset: { width: 0, height: 2 },
+                      elevation: isActive ? 3 : 0,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isActive }}
+                >
+                  <Text style={[Typography.labelSmall, {
+                    color: isActive ? colors.onPrimary : colors.onSurface,
+                    fontWeight: '600',
+                  }]}>
+                    {mood}
+                  </Text>
+                </PressableScale>
+              );
+            })}
+          </ScrollView>
+        </View>
 
-        {/* Empty state when searching with no results */}
-        {query.trim().length > 0 && filteredRecipes.length === 0 ? (
-          <View style={styles.emptyState}>
-            <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialCommunityIcons name="magnify" size={28} color={colors.outlineVariant} />
-            </View>
-            <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
-              No matches
-            </Text>
-            <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, textAlign: 'center' }]}>
-              Try different keywords or pick a mood above
-            </Text>
-            <Text style={[Typography.labelLarge, { color: colors.outline, marginTop: Spacing.xl }]}>
-              OR EXPLORE THESE COUNTRIES
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.md, paddingHorizontal: Spacing.page, paddingTop: Spacing.md }}>
-              {countries.slice(0, 4).map((country) => (
-                <DestinationCard key={country.id} country={country} />
-              ))}
-            </ScrollView>
-          </View>
-        ) : (
-        <View style={styles.grid}>
-          {filteredRecipes.map((recipe, index) => (
-            <AnimatedListItem key={recipe.id} index={index}>
+        {/* Search by Ingredient */}
+        <View style={[styles.ingredientSection, { backgroundColor: colors.surfaceContainerLow }]}>
+          <Text style={[Typography.headline, { color: colors.onSurface, paddingHorizontal: Spacing.page, marginBottom: Spacing.md }]}>
+            Search by Ingredient
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: Spacing.page, gap: 20, paddingBottom: Spacing.sm }}
+          >
+            {INGREDIENT_CIRCLES.map((ing) => (
               <PressableScale
-                onPress={() => router.push(`/recipe/${recipe.id}`)}
-                style={[styles.card, { width: CARD_WIDTH }]}
+                key={ing.label}
+                haptic="light"
+                onPress={() => handleIngredientPress(ing.query)}
+                style={styles.ingredientCircleWrap}
                 accessibilityRole="button"
-                accessibilityLabel={`${recipe.title}, ${recipe.prepTime + recipe.cookTime} minutes, ${recipe.difficulty}`}
-                scaleDown={0.97}
+                accessibilityLabel={`Search by ${ing.label}`}
               >
-                <View style={styles.imageWrapper}>
+                <View style={[styles.ingredientCircle, {
+                  shadowColor: '#000',
+                  shadowOpacity: 0.12,
+                  shadowRadius: 8,
+                  shadowOffset: { width: 0, height: 2 },
+                  elevation: 3,
+                }]}>
                   <Image
-                    source={{ uri: recipe.image }}
-                    style={styles.cardImage}
+                    source={{ uri: ing.image }}
+                    style={styles.ingredientImg}
                     contentFit="cover"
-                    transition={300}
-                    accessibilityLabel={recipe.title}
+                    transition={200}
+                    accessible={false}
                   />
-                  <View style={styles.overlayStack}>
-                    <Pressable
-                      onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
-                      hitSlop={8}
-                      accessibilityRole="button"
-                      accessibilityLabel={isBookmarked(recipe.id) ? `Remove ${recipe.title} from bookmarks` : `Save ${recipe.title} to bookmarks`}
-                    >
-                      <View style={styles.heartGlass}>
-                        <AnimatedHeart
-                          filled={isBookmarked(recipe.id)}
-                          onToggle={() => toggleBookmark(recipe.id)}
-                          size={20}
-                          filledColor={colors.primary}
-                          outlineColor={OVERLAY_BUTTON.iconColor}
-                          hitSlop={0}
-                        />
-                      </View>
-                    </Pressable>
-                    <AddToPlanButton onPress={() => setAddSheetRecipe(recipe)} recipeName={recipe.title} variant="overlay" />
-                  </View>
                 </View>
-                <View style={styles.cardContent}>
-                  <Text style={[Typography.title, { color: colors.onSurface }]} numberOfLines={2}>
-                    {recipe.title}
-                  </Text>
-                  <Text style={[Typography.labelSmall, { color: colors.outline }]}>
-                    {recipe.difficulty} {'\u00B7'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
-                  </Text>
-                </View>
+                <Text style={[Typography.caption, { color: colors.onSurfaceVariant, fontWeight: '500', textAlign: 'center' }]}>
+                  {ing.label}
+                </Text>
               </PressableScale>
-            </AnimatedListItem>
-          ))}
+            ))}
+          </ScrollView>
         </View>
-        )}
+
+        {/* Recipe results */}
+        <View style={{ paddingHorizontal: Spacing.page, paddingTop: Spacing.lg }}>
+          <View style={styles.sectionHeader}>
+            <Text style={[Typography.headline, { color: colors.onSurface }]}>
+              {query.trim() ? 'Results' : 'Curated for You'}
+            </Text>
+            {filteredRecipes.length > 0 && (
+              <Text style={[Typography.caption, { color: colors.outline }]}>
+                {filteredRecipes.length} recipes
+              </Text>
+            )}
+          </View>
+
+          {filteredRecipes.length === 0 ? (
+            <View style={styles.emptyState}>
+              <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
+                <MaterialCommunityIcons name="magnify" size={28} color={colors.outlineVariant} />
+              </View>
+              <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>No matches</Text>
+              <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, textAlign: 'center' }]}>
+                Try different keywords or adjust your filters
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.recipeGrid}>
+              {filteredRecipes.map((recipe, index) => (
+                <AnimatedListItem key={recipe.id} index={index}>
+                  <PressableScale
+                    onPress={() => router.push(`/recipe/${recipe.id}`)}
+                    style={[styles.recipeCard, { width: CARD_WIDTH, backgroundColor: colors.surfaceContainerLow }]}
+                    accessibilityRole="button"
+                    accessibilityLabel={recipe.title}
+                    scaleDown={0.97}
+                  >
+                    <View style={styles.recipeImageWrap}>
+                      <Image
+                        source={{ uri: recipe.image }}
+                        style={styles.recipeImage}
+                        contentFit="cover"
+                        transition={300}
+                        accessible={false}
+                      />
+                      <View style={styles.overlayStack}>
+                        <Pressable
+                          onPress={(e) => { e.stopPropagation(); toggleBookmark(recipe.id); }}
+                          style={[styles.overlayBtn, {
+                            backgroundColor: OVERLAY_BUTTON.background,
+                            borderWidth: OVERLAY_BUTTON.borderWidth,
+                            borderColor: OVERLAY_BUTTON.borderColor,
+                          }]}
+                          hitSlop={8}
+                          accessibilityRole="button"
+                          accessibilityLabel={isBookmarked(recipe.id) ? 'Remove from saved' : 'Save recipe'}
+                        >
+                          <AnimatedHeart
+                            filled={isBookmarked(recipe.id)}
+                            onToggle={() => toggleBookmark(recipe.id)}
+                            size={OVERLAY_BUTTON.iconSize}
+                            filledColor={colors.primary}
+                            outlineColor={OVERLAY_BUTTON.iconColor}
+                            hitSlop={0}
+                          />
+                        </Pressable>
+                        <AddToPlanButton onPress={() => setAddSheetRecipe(recipe)} recipeName={recipe.title} variant="overlay" />
+                      </View>
+                    </View>
+                    <View style={styles.recipeCardContent}>
+                      <Text style={[Typography.titleSmall, { color: colors.onSurface }]} numberOfLines={2}>
+                        {recipe.title}
+                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={{ fontSize: 12 }}>{countries.find((c) => c.id === recipe.countryId)?.flag}</Text>
+                        <Text style={[Typography.caption, { color: colors.outline }]}>
+                          {formatCookTime(recipe.prepTime + recipe.cookTime)} · {recipe.difficulty}
+                        </Text>
+                      </View>
+                    </View>
+                  </PressableScale>
+                </AnimatedListItem>
+              ))}
+            </View>
+          )}
+        </View>
       </ScrollView>
 
       {toastMessage && (
@@ -313,58 +378,91 @@ export default function SearchScreen() {
   );
 }
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  searchContainer: { marginTop: Spacing.md, marginBottom: Spacing.md },
-  searchInput: {
+
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderRadius: Radius.full,
+    height: 52,
+    borderRadius: Radius.xl,
   },
-  chipContainer: {
-    paddingHorizontal: Spacing.page,
-    gap: Spacing.sm,
-    marginBottom: Spacing.lg,
+
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    marginBottom: Spacing.sm,
   },
-  chip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.full,
-    marginRight: Spacing.sm,
-  },
-  allergenChip: {
+  sectionHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.full,
+    marginBottom: Spacing.md,
   },
-  grid: {
+
+  allergenWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.page,
+    gap: Spacing.sm,
   },
-  card: {
-    borderRadius: Radius.lg,
+  allergenChip: {
+    paddingHorizontal: Spacing.sm + 4,
+    paddingVertical: 7,
+    borderRadius: Radius.full,
+  },
+
+  pillRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    paddingVertical: 4,
+  },
+  moodPill: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 10,
+    borderRadius: Radius.full,
+  },
+
+  ingredientSection: {
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.lg,
+  },
+  ingredientCircleWrap: {
+    alignItems: 'center',
+    gap: 6,
+    width: 64,
+  },
+  ingredientCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     overflow: 'hidden',
-    marginBottom: 12,
+    backgroundColor: '#fff',
+  },
+  ingredientImg: {
+    width: '100%',
+    height: '100%',
+  },
+
+  recipeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  recipeCard: {
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+  },
+  recipeImageWrap: {
     position: 'relative',
   },
-  cardImage: {
+  recipeImage: {
     width: '100%',
     height: 160,
-  },
-  cardContent: {
-    padding: 12,
-    gap: 6,
-  },
-  imageWrapper: {
-    position: 'relative',
   },
   overlayStack: {
     position: 'absolute',
@@ -373,30 +471,33 @@ const styles = StyleSheet.create({
     gap: 6,
     alignItems: 'center',
   },
-  heartGlass: {
+  overlayBtn: {
     width: OVERLAY_BUTTON.size,
     height: OVERLAY_BUTTON.size,
     borderRadius: Radius.full,
-    backgroundColor: OVERLAY_BUTTON.background,
-    borderWidth: OVERLAY_BUTTON.borderWidth,
-    borderColor: OVERLAY_BUTTON.borderColor,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  recipeCardContent: {
+    padding: Spacing.sm,
+    gap: 4,
+  },
+
   emptyState: {
     alignItems: 'center',
     paddingTop: Spacing.xxl,
-    paddingHorizontal: Spacing.page,
+    paddingBottom: Spacing.xxl,
     gap: Spacing.md,
   },
   emptyIcon: {
-    width: 80,
-    height: 80,
+    width: 72,
+    height: 72,
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.sm,
   },
+
   toast: {
     position: 'absolute',
     bottom: 100,
