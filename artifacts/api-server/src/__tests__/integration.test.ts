@@ -37,6 +37,7 @@ import {
   request,
   startTestServer,
   stopTestServer,
+  trackFlag,
   trackIngredient,
   trackOverride,
 } from "./helpers";
@@ -386,7 +387,8 @@ describe("cook completion (fix #1)", () => {
     const history = asObject(body.history);
     assert.equal(history.totalRecipesCooked, 1);
     assert.equal(history.xp, 50);
-    assert.equal(history.level, 1); // floor(50 / 300) + 1 = 1
+    // xp 50 < thresholds[1] = 100 → still level 1
+    assert.equal(history.level, 1);
     assert.deepEqual(history.passportStamps, { italy: 1 });
   });
 
@@ -428,21 +430,24 @@ describe("cook completion (fix #1)", () => {
     assert.equal(history.xp, 150);
   });
 
-  test("level recomputes across 300-xp threshold", async () => {
+  test("level recomputes from app_settings thresholds", async () => {
     const { token } = await registerTestUser();
-    // Cook 6 times @ 50xp each = 300xp → level 2
+    // Cook 6 times @ 50 XP each (server-authoritative) = 300 XP.
+    // With the seeded level_thresholds [0,100,250,500,1000,...]:
+    //   xp 300 satisfies >= 250 but not >= 500 → level 3.
+    // If the seed hasn't run, the server falls back to the same
+    // default thresholds, so this test is stable either way.
     for (let i = 0; i < 6; i++) {
       await request("POST", "/api/users/me/cook", {
         token,
-        body: { recipeId: `it-${i}`, countryId: "italy", xpAward: 50 },
+        body: { recipeId: `it-${i}`, countryId: "italy" },
       });
     }
     const meRes = await request("GET", "/api/users/me", { token });
     const me = asObject(meRes.body);
     const history = asObject(me.history);
     assert.equal(history.xp, 300);
-    // 300/300 + 1 = 2 (integer division)
-    assert.equal(history.level, 2);
+    assert.equal(history.level, 3);
     assert.deepEqual(history.passportStamps, { italy: 6 });
   });
 
@@ -670,5 +675,172 @@ describe("featured country overrides", () => {
       token,
     });
     assert.equal(res.status, 404);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// Remote config — feature flags + app settings
+// ═══════════════════════════════════════════════════════════════════
+
+describe("remote config", () => {
+  test("GET /api/config is public and returns flags + settings", async () => {
+    const res = await request("GET", "/api/config");
+    assert.equal(res.status, 200);
+    const body = asObject(res.body);
+    assert.equal(typeof body.flags, "object");
+    assert.equal(typeof body.settings, "object");
+    assert.equal(typeof body.version, "string");
+    assert.equal(typeof body.updated_at, "string");
+  });
+
+  test("GET /api/admin/feature-flags requires auth", async () => {
+    const res = await request("GET", "/api/admin/feature-flags");
+    assert.equal(res.status, 401);
+  });
+
+  test("GET /api/admin/feature-flags returns an array", async () => {
+    const token = await adminLogin();
+    const res = await request("GET", "/api/admin/feature-flags", { token });
+    assert.equal(res.status, 200);
+    const body = asObject(res.body);
+    assert.equal(Array.isArray(body.flags), true);
+  });
+
+  test("POST /api/admin/feature-flags creates a new flag", async () => {
+    const token = await adminLogin();
+    const key = `test_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    trackFlag(key);
+    const res = await request("POST", "/api/admin/feature-flags", {
+      token,
+      body: {
+        key,
+        label: "Test Flag",
+        description: "integration test",
+        category: "Testing",
+        enabled: false,
+      },
+    });
+    assert.equal(res.status, 200);
+    const body = asObject(res.body);
+    assert.equal(body.key, key);
+    assert.equal(body.enabled, false);
+  });
+
+  test("POST duplicate flag key returns 409", async () => {
+    const token = await adminLogin();
+    const key = `test_dup_${Date.now()}`;
+    trackFlag(key);
+    await request("POST", "/api/admin/feature-flags", {
+      token,
+      body: { key, label: "First", enabled: true },
+    });
+    const res = await request("POST", "/api/admin/feature-flags", {
+      token,
+      body: { key, label: "Second", enabled: true },
+    });
+    assert.equal(res.status, 409);
+  });
+
+  test("PATCH /api/admin/feature-flags/:key flips enabled", async () => {
+    const token = await adminLogin();
+    const key = `test_patch_${Date.now()}`;
+    trackFlag(key);
+    await request("POST", "/api/admin/feature-flags", {
+      token,
+      body: { key, label: "Patch", enabled: true },
+    });
+    const res = await request("PATCH", `/api/admin/feature-flags/${key}`, {
+      token,
+      body: { enabled: false },
+    });
+    assert.equal(res.status, 200);
+    const body = asObject(res.body);
+    assert.equal(body.enabled, false);
+  });
+
+  test("PATCH nonexistent feature flag returns 404", async () => {
+    const token = await adminLogin();
+    const res = await request(
+      "PATCH",
+      "/api/admin/feature-flags/test_definitely_nonexistent_xxx",
+      { token, body: { enabled: true } },
+    );
+    assert.equal(res.status, 404);
+  });
+
+  test("GET /api/admin/app-settings requires auth", async () => {
+    const res = await request("GET", "/api/admin/app-settings");
+    assert.equal(res.status, 401);
+  });
+
+  test("GET /api/admin/app-settings returns an array", async () => {
+    const token = await adminLogin();
+    const res = await request("GET", "/api/admin/app-settings", { token });
+    assert.equal(res.status, 200);
+    const body = asObject(res.body);
+    assert.equal(Array.isArray(body.settings), true);
+  });
+
+  test("PATCH /api/admin/app-settings/:key updates a number setting", async () => {
+    const token = await adminLogin();
+    // Requires the seed to have run — xp_per_recipe is a seeded row.
+    // Skip gracefully if the seed wasn't applied.
+    const before = await request("GET", "/api/admin/app-settings", { token });
+    const beforeBody = asObject(before.body) as { settings: Array<{ key: string; value: string }> };
+    const existing = beforeBody.settings.find((s) => s.key === "xp_per_recipe");
+    if (!existing) {
+      // Can't test without a seeded setting — note and move on.
+      return;
+    }
+    const original = existing.value;
+    const res = await request("PATCH", "/api/admin/app-settings/xp_per_recipe", {
+      token,
+      body: { value: "75" },
+    });
+    assert.equal(res.status, 200);
+    const body = asObject(res.body);
+    assert.equal(body.value, "75");
+    // Put it back so we don't leave the DB polluted for other tests.
+    await request("PATCH", "/api/admin/app-settings/xp_per_recipe", {
+      token,
+      body: { value: original },
+    });
+  });
+
+  test("PATCH app-setting with invalid number returns 400", async () => {
+    const token = await adminLogin();
+    const before = await request("GET", "/api/admin/app-settings", { token });
+    const beforeBody = asObject(before.body) as { settings: Array<{ key: string }> };
+    if (!beforeBody.settings.find((s) => s.key === "xp_per_recipe")) return;
+    const res = await request("PATCH", "/api/admin/app-settings/xp_per_recipe", {
+      token,
+      body: { value: "not-a-number" },
+    });
+    assert.equal(res.status, 400);
+  });
+
+  test("PATCH nonexistent app setting returns 404", async () => {
+    const token = await adminLogin();
+    const res = await request(
+      "PATCH",
+      "/api/admin/app-settings/test_definitely_nonexistent_xxx",
+      { token, body: { value: "1" } },
+    );
+    assert.equal(res.status, 404);
+  });
+
+  test("GET /api/config parses number + json_array settings correctly", async () => {
+    const res = await request("GET", "/api/config");
+    assert.equal(res.status, 200);
+    const body = asObject(res.body);
+    const settings = body.settings as Record<string, unknown>;
+    // Only assert shape if the seed has run — otherwise these keys
+    // simply won't be present and there's nothing to verify.
+    if (settings.xp_per_recipe !== undefined) {
+      assert.equal(typeof settings.xp_per_recipe, "number");
+    }
+    if (settings.level_thresholds !== undefined) {
+      assert.equal(Array.isArray(settings.level_thresholds), true);
+    }
   });
 });

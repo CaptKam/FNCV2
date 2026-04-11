@@ -12,3 +12,7 @@ export * from "./dinnerParties";
 // Global taxonomy + admin overrides
 export * from "./ingredients";
 export * from "./featuredOverrides";
+
+// Remote-config: feature toggles + tunable values
+export * from "./featureFlags";
+export * from "./appSettings";
