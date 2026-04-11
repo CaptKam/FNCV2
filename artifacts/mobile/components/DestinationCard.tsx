@@ -8,6 +8,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { Country } from '@/data/countries';
+import { getDisplayRegion } from '@/utils/countryMetadata';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
 interface DestinationCardProps {
@@ -34,7 +35,7 @@ export function DestinationCard({ country }: DestinationCardProps) {
       onPress={() => router.push(`/country/${country.id}`)}
       style={[styles.card, { width: CARD_WIDTH }]}
       accessibilityRole="button"
-      accessibilityLabel={`Explore ${country.region}, ${country.name}`}
+      accessibilityLabel={`Explore ${getDisplayRegion(country.id)}, ${country.name}`}
     >
       <AnimatedImage
         source={{ uri: country.heroImage }}
@@ -49,7 +50,7 @@ export function DestinationCard({ country }: DestinationCardProps) {
       />
       <View style={styles.textContainer}>
         <Text style={[Typography.labelSmall, { color: 'rgba(255,255,255,0.8)' }]}>
-          {country.flag} {country.region}
+          {country.flag} {getDisplayRegion(country.id)}
         </Text>
         <Text style={[Typography.headline, { color: colors.textOnImage, fontSize: 18 }]} numberOfLines={1}>
           {country.name}

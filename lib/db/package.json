@@ -11,7 +11,9 @@
     "push": "drizzle-kit push --config ./drizzle.config.ts",
     "push-force": "drizzle-kit push --force --config ./drizzle.config.ts",
     "seed:ingredients": "tsx ./src/seed/ingredients.ts",
-    "seed:remote-config": "tsx ./src/seed/remoteConfig.ts"
+    "seed:remote-config": "tsx ./src/seed/remoteConfig.ts",
+    "seed:curated-collections": "tsx ./src/seed/curatedCollections.ts",
+    "seed:regions": "tsx ./src/seed/regions.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",

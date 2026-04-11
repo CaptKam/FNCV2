@@ -38,6 +38,7 @@ import { todayLocal, addDays, getDayLabel, formatDateShort } from '@/utils/dates
 import { calculateCookReadiness } from '@/utils/cookReadiness';
 import { getTodaysFeaturedOverride } from '@/utils/featuredCountry';
 import { useFeatureFlag, useAppSetting } from '@/hooks/useRemoteConfig';
+import { useFeaturedCountries } from '@/hooks/useFeaturedCountries';
 
 // ─── Helpers ───
 
@@ -88,7 +89,10 @@ export default function DiscoverScreen() {
   const [shuffleSeed, setShuffleSeed] = useState(0);
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
-    setHeroIndex((prev) => (prev + 1) % countries.length);
+    // Wrap-around length is read off the current ref via
+    // functional setState — heroCountries is defined below and
+    // setHeroIndex is stable, so the closure is safe.
+    setHeroIndex((prev) => (prev + 1) % Math.max(1, heroCountriesRef.current.length));
     setShuffleSeed((s) => s + 1);
     setVisibleCount(8);
     setTimeout(() => setIsRefreshing(false), 800);
@@ -142,19 +146,36 @@ export default function DiscoverScreen() {
   }, [todayDate]);
 
   // Featured country — swipeable, tappable dots, starts with daily rotation.
+  // The hero carousel rotates through countries the admin has
+  // marked as "featured" in the Countries admin page. Countries
+  // unchecked by the admin are hidden from the rotation (but still
+  // discoverable through chips, search, and recipe filters — the
+  // featured flag is only about the editorial rotation).
+  //
+  // The list dynamically updates when country metadata finishes
+  // loading via useFeaturedCountries. Until metadata lands we
+  // fall back to the full country list so the hero doesn't flash.
+  const heroCountries = useFeaturedCountries();
+  // Mirrored ref so handleRefresh (stable callback, empty deps) can
+  // read the latest length without a stale closure.
+  const heroCountriesRef = useRef(heroCountries);
+  useEffect(() => {
+    heroCountriesRef.current = heroCountries;
+  }, [heroCountries]);
+
   // If an admin has scheduled a featured-country override for today
-  // (via the Admin Panel → Featured Country page), fetch it on mount
+  // (via the Admin Panel → Country of the Day page), fetch it on mount
   // and switch the hero carousel to that country once it resolves.
   // The algorithmic default renders immediately so there's no flash
   // of loading state, and non-existent countryIds silently fall back.
-  const [heroIndex, setHeroIndex] = useState(() => getDayOfYear() % countries.length);
+  const [heroIndex, setHeroIndex] = useState(() => getDayOfYear() % Math.max(1, heroCountries.length));
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const override = await getTodaysFeaturedOverride();
         if (cancelled || !override) return;
-        const overrideIdx = countries.findIndex((c) => c.id === override.countryId);
+        const overrideIdx = heroCountries.findIndex((c) => c.id === override.countryId);
         if (overrideIdx >= 0) {
           setHeroIndex(overrideIdx);
           heroListRef.current?.scrollToIndex({ index: overrideIdx, animated: false });
@@ -166,13 +187,26 @@ export default function DiscoverScreen() {
     return () => {
       cancelled = true;
     };
+    // heroCountries intentionally excluded from deps — the override
+    // only fires once on mount; the hero list itself re-renders
+    // independently when metadata loads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const featuredCountry = countries[heroIndex];
+
+  // Clamp heroIndex into range whenever the featured list shrinks
+  // (e.g. admin unfeatures the currently-displayed country).
+  useEffect(() => {
+    if (heroCountries.length === 0) return;
+    if (heroIndex >= heroCountries.length) {
+      setHeroIndex(heroCountries.length - 1);
+    }
+  }, [heroCountries.length, heroIndex]);
+  const featuredCountry = heroCountries[heroIndex] ?? heroCountries[0] ?? countries[0]!;
   const featuredRecipeCount = recipes.filter((r) => r.countryId === featuredCountry.id).length;
 
   const handleHeroScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - GRID_PAD * 2));
-    if (idx >= 0 && idx < countries.length) setHeroIndex(idx);
+    if (idx >= 0 && idx < heroCountriesRef.current.length) setHeroIndex(idx);
   }, [SCREEN_WIDTH]);
 
   const scrollToHero = useCallback((idx: number) => {
@@ -315,13 +349,13 @@ export default function DiscoverScreen() {
           <View style={[styles.heroCarousel, { marginHorizontal: GRID_PAD, height: 300 }]}>
             <FlatList
               ref={heroListRef}
-              data={countries}
+              data={heroCountries}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
               onScroll={handleHeroScroll}
               scrollEventThrottle={16}
-              initialScrollIndex={heroIndex}
+              initialScrollIndex={Math.min(heroIndex, Math.max(0, heroCountries.length - 1))}
               getItemLayout={(_, index) => ({ length: HERO_CARD_WIDTH, offset: HERO_CARD_WIDTH * index, index })}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
@@ -361,7 +395,7 @@ export default function DiscoverScreen() {
                         <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700' }]}>Let's Go</Text>
                       </Pressable>
                       <View style={styles.heroDots}>
-                        {countries.map((c, di) => (
+                        {heroCountries.map((c, di) => (
                           <Pressable
                             key={c.id}
                             onPress={(e) => { e.stopPropagation(); scrollToHero(di); }}

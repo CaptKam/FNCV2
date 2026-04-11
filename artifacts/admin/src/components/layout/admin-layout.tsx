@@ -13,6 +13,8 @@ import {
   Globe,
   ToggleLeft,
   Sliders,
+  Layers,
+  Flag,
 } from "lucide-react";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -22,9 +24,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Recipes', href: '/recipes', icon: UtensilsCrossed },
     { name: 'Featured', href: '/featured', icon: Star },
-    { name: 'Featured Country', href: '/featured-country', icon: Globe },
+    { name: 'Country of the Day', href: '/featured-country', icon: Globe },
+    { name: 'Countries', href: '/countries', icon: Flag },
     { name: 'Ingredients', href: '/ingredients', icon: Leaf },
     { name: 'Users', href: '/users', icon: Users },
+    { name: 'Curated Collections', href: '/curated-collections', icon: Layers },
     { name: 'Feature Flags', href: '/feature-flags', icon: ToggleLeft },
     { name: 'App Settings', href: '/app-settings', icon: Sliders },
     { name: 'Settings', href: '/settings', icon: Settings },
