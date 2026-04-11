@@ -17,6 +17,7 @@ import {
   syncCookCompletion,
   syncPreferences,
 } from '@/utils/syncClient';
+import { normalizeIngredient } from '@/utils/ingredientTaxonomy';
 
 /**
  * Wraps a sync call in fire-and-forget semantics: it runs in the
@@ -222,18 +223,12 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
 }
 
-function categorizeIngredient(name: string): GroceryItem['category'] {
-  const n = name.toLowerCase();
-  if (/chicken|beef|lamb|fish|shrimp|pork|salmon|tofu/.test(n)) return 'protein';
-  if (/tomato|onion|garlic|pepper|lettuce|basil|lemon|carrot|potato|mushroom|avocado|cilantro|ginger/.test(n)) return 'produce';
-  if (/milk|cheese|butter|cream|yogurt|egg/.test(n)) return 'dairy';
-  if (/cumin|paprika|cinnamon|saffron|turmeric|oregano|thyme|salt|pepper|chili/.test(n)) return 'spice';
-  return 'pantry';
-}
-
-function ingredientStableId(name: string): string {
-  return 'ingredient-' + name.toLowerCase().trim();
-}
+// The old categorizeIngredient() regex and ingredientStableId()
+// helpers were removed in Phase 3 — their replacement is
+// `normalizeIngredient` from utils/ingredientTaxonomy.ts, which
+// looks up canonical entries from the server-seeded taxonomy and
+// falls back to the same regex logic when an ingredient isn't
+// in the taxonomy or when the taxonomy hasn't loaded yet.
 
 function parseAmountParts(amount: string): { qty: number; unit: string } | null {
   const match = amount.trim().match(/^([\d./]+)\s*(.*)/);
@@ -579,7 +574,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setGroceryItems((prev) => {
       const next = [...prev];
       for (const ing of recipe.ingredients) {
-        const sid = ingredientStableId(ing.name);
+        // Normalize via the canonical taxonomy. If the taxonomy
+        // hasn't loaded yet (first launch before /api/ingredients
+        // returns), this falls back to the regex-based slug so the
+        // behavior still matches the pre-Phase-3 implementation.
+        const normalized = normalizeIngredient(ing.name);
+        const sid = normalized.stableId;
         const existing = next.find((g) => g.id === sid);
         if (existing) {
           if (!existing.recipeNames.includes(recipe.title)) {
@@ -595,10 +595,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } else {
           next.push({
             id: sid,
-            name: ing.name,
+            // Display the canonical name on the grocery list (e.g.
+            // "Red Onion") not the raw recipe ingredient name
+            // (e.g. "onions, red"). Falls through to raw name when
+            // the taxonomy isn't loaded.
+            name: normalized.canonicalName,
             amount: ing.amount,
             unit: '',
-            category: categorizeIngredient(ing.name),
+            category: normalized.aisle,
             recipeNames: [recipe.title],
             sourceAmounts: { [recipe.title]: ing.amount },
             sourceDates: { [recipe.title]: date },
@@ -615,16 +619,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const trimmed = name.trim();
     if (!trimmed) return;
     setGroceryItems((prev) => {
-      const sid = 'manual-' + trimmed.toLowerCase();
+      // Try to normalize against the canonical taxonomy first so
+      // manually-added items like "Red Onion" dedupe with auto-added
+      // ones from recipes. Falls back to a "manual-" prefixed slug
+      // if the name isn't in the taxonomy.
+      const normalized = normalizeIngredient(trimmed);
+      const sid = normalized.canonical
+        ? normalized.stableId
+        : 'manual-' + trimmed.toLowerCase();
       if (prev.some((g) => g.id === sid)) return prev;
       return [
         ...prev,
         {
           id: sid,
-          name: trimmed,
+          name: normalized.canonical ? normalized.canonicalName : trimmed,
           amount: '',
           unit: '',
-          category: category ?? categorizeIngredient(trimmed),
+          category: category ?? normalized.aisle,
           recipeNames: [],
           sourceAmounts: {},
           sourceDates: {},
