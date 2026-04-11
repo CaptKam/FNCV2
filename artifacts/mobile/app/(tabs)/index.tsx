@@ -411,57 +411,63 @@ export default function DiscoverScreen() {
           </View>
         </Animated.View>
 
-        {/* ═══ ROW 3B: COUNTRY CIRCLES ═══ */}
+        {/* ═══ ROW 3B: COUNTRY CIRCLES (3-per-row grid) ═══ */}
         <Animated.View entering={enterDelay(90)}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[styles.circleRow, { paddingHorizontal: GRID_PAD }]}
-            style={{ marginBottom: GRID_GAP }}
-          >
-            {countries.map((c, ci) => {
-              const isActive = ci === heroIndex;
-              return (
-                <PressableScale
-                  key={c.id}
-                  haptic="light"
-                  onPress={() => router.push(`/country/${c.id}`)}
-                  style={styles.circleWrap}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Explore ${c.name}`}
-                >
-                  <View style={[
-                    styles.circleRing,
-                    { borderColor: isActive ? colors.primary : 'transparent' },
-                  ]}>
-                    <Image
-                      source={{ uri: c.landmarkImage }}
-                      style={styles.circleImg}
-                      contentFit="cover"
-                      transition={200}
-                      accessible={false}
-                    />
-                  </View>
-                  <Text
-                    style={[
-                      Typography.caption,
-                      {
-                        color: isActive ? colors.onSurface : colors.outline,
-                        fontSize: 11,
-                        fontWeight: '600',
-                        textAlign: 'center',
-                        letterSpacing: 0.2,
-                        marginTop: 4,
-                      },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {c.name}
-                  </Text>
-                </PressableScale>
-              );
-            })}
-          </ScrollView>
+          {(() => {
+            const CIRCLE_SIZE = Math.floor((SCREEN_WIDTH - GRID_PAD * 2 - 12 * 2) / 3);
+            const RING_RADIUS = CIRCLE_SIZE / 2;
+            return (
+              <View style={[styles.circleGrid, { paddingHorizontal: GRID_PAD, marginBottom: GRID_GAP }]}>
+                {countries.map((c, ci) => {
+                  const isActive = ci === heroIndex;
+                  return (
+                    <PressableScale
+                      key={c.id}
+                      haptic="light"
+                      onPress={() => router.push(`/country/${c.id}`)}
+                      style={[styles.circleWrap, { width: CIRCLE_SIZE }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Explore ${c.name}`}
+                    >
+                      <View style={[
+                        styles.circleRing,
+                        {
+                          width: CIRCLE_SIZE,
+                          height: CIRCLE_SIZE,
+                          borderRadius: RING_RADIUS,
+                          borderColor: isActive ? colors.primary : 'transparent',
+                        },
+                      ]}>
+                        <Image
+                          source={{ uri: c.landmarkImage }}
+                          style={[styles.circleImg, { borderRadius: RING_RADIUS - 2 }]}
+                          contentFit="cover"
+                          transition={200}
+                          accessible={false}
+                        />
+                      </View>
+                      <Text
+                        style={[
+                          Typography.caption,
+                          {
+                            color: isActive ? colors.onSurface : colors.outline,
+                            fontSize: 11,
+                            fontWeight: '600',
+                            textAlign: 'center',
+                            letterSpacing: 0.2,
+                            marginTop: 5,
+                          },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {c.name}
+                      </Text>
+                    </PressableScale>
+                  );
+                })}
+              </View>
+            );
+          })()}
         </Animated.View>
 
         {/* ═══ ROW 3C: XP + STATS (2-column row) ═══
@@ -690,9 +696,10 @@ const styles = StyleSheet.create({
   },
 
   // Country circles
-  circleRow: {
+  circleGrid: {
     flexDirection: 'row',
-    gap: 16,
+    flexWrap: 'wrap',
+    gap: 12,
     paddingVertical: Spacing.xs,
   },
   circleWrap: {
