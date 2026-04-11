@@ -447,7 +447,7 @@ export default function DiscoverScreen() {
                       Typography.caption,
                       {
                         color: isActive ? colors.onSurface : colors.outline,
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: '600',
                         textAlign: 'center',
                         letterSpacing: 0.2,
@@ -697,12 +697,12 @@ const styles = StyleSheet.create({
   },
   circleWrap: {
     alignItems: 'center',
-    width: 64,
+    width: 84,
   },
   circleRing: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 84,
+    height: 84,
+    borderRadius: 42,
     borderWidth: 2.5,
     padding: 2,
     overflow: 'hidden',
@@ -710,7 +710,7 @@ const styles = StyleSheet.create({
   circleImg: {
     width: '100%',
     height: '100%',
-    borderRadius: 30,
+    borderRadius: 40,
   },
 
   // Row 3: Hero + XP
