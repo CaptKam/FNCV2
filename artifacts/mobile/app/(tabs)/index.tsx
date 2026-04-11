@@ -374,7 +374,7 @@ export default function DiscoverScreen() {
                     { borderColor: isActive ? colors.primary : 'transparent' },
                   ]}>
                     <Image
-                      source={{ uri: c.heroImage }}
+                      source={{ uri: c.landmarkImage }}
                       style={styles.circleImg}
                       contentFit="cover"
                       transition={200}
