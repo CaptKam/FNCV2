@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>The Culinary Editorial - My Groceries</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Noto Serif and Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Serif:wght@700&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ochre: {
+              light: '#FEF9F3',
+              accent: '#9A4100',
+              text: '#1A1A1A',
+              muted: '#6B7280',
+            }
+          },
+          fontFamily: {
+            serif: ['"Noto Serif"', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-styling">
+    body {
+      background-color: #FEF9F3;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+    
+    /* Liquid Glass Navigation Bar Styling */
+    .liquid-glass-nav {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .pill-toggle-active {
+      background-color: #9A4100;
+      color: white;
+    }
+
+    /* Subtle border for the input bar */
+    .input-bar-border {
+      border: 1px solid rgba(154, 65, 0, 0.15);
+    }
+  </style>
+</head>
+<body class="font-sans text-ochre-text min-h-screen flex flex-col">
+<!-- BEGIN: Custom Shell Header -->
+<header class="sticky top-0 z-50 bg-[#FEF9F3]/80 backdrop-blur-md px-6 pt-12 pb-4 flex items-center justify-between" data-purpose="main-header">
+<div class="flex items-center">
+<!-- Profile Avatar -->
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-ochre-accent">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOX4TX7rjJuTHOgUu40ISrFA6TPsQpHXZVDCB72KeAl6vBTS3sTsGKVmWugKJOH5bWI1svlY_azbCZ3bA8nLzQtssuAg3kBmHrgfsrc8oZoj7Z5KhZU0FolIszrV2ahArQFhZmowNixuHJY8yL8mVW32nVeCAEl1f1ckKgx_75Aa7HT3uujPJ9kkbCCLbE3v-TURuFsg-8slBCSX7-YqtwZukDK-AeFd-gjfq-piC3bcFN_BNeElbFNeuGqeLw9_fyrDj_7opYwSUq"/>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<!-- Bookmark Icon -->
+<button aria-label="Bookmarks" class="text-ochre-accent">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Shopping Cart Icon with Badge -->
+<button aria-label="Cart" class="relative text-ochre-accent">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute -top-1 -right-1 bg-ochre-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+</button>
+</div>
+</header>
+<!-- END: Custom Shell Header -->
+<main class="flex-grow px-6 pb-24" data-purpose="grocery-content">
+<!-- BEGIN: Title and Toggle Area -->
+<section class="mt-4 flex flex-col gap-4">
+<div class="flex justify-between items-end">
+<h1 class="font-serif text-3xl font-bold text-ochre-accent">My Groceries</h1>
+<!-- Online | In-Store Toggle -->
+<div class="flex bg-white/50 p-1 rounded-full border border-ochre-accent/10" data-purpose="toggle-switch">
+<button class="px-4 py-1 text-xs font-semibold rounded-full transition-colors">Online</button>
+<button class="px-4 py-1 text-xs font-semibold rounded-full transition-colors pill-toggle-active">In-Store</button>
+</div>
+</div>
+<p class="text-ochre-muted text-sm font-medium">0 Recipes • 0 Items</p>
+</section>
+<!-- END: Title and Toggle Area -->
+<!-- BEGIN: Input Bar -->
+<section class="mt-8">
+<div class="w-full h-16 bg-white rounded-2xl flex items-center px-6 input-bar-border shadow-sm">
+<span class="text-ochre-accent mr-4">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<input class="w-full border-none focus:ring-0 text-sm font-bold tracking-widest text-ochre-accent bg-transparent placeholder-ochre-accent/60 uppercase" placeholder="ADD YOUR OWN ITEMS" type="text"/>
+</div>
+</section>
+<!-- END: Input Bar -->
+<!-- BEGIN: Empty State Body -->
+<section class="mt-12 flex flex-col items-center text-center justify-center py-12">
+<!-- Large Illustration Placeholder -->
+<div class="space-y-3 px-4 mb-12">
+<h2 class="font-serif text-2xl text-ochre-accent">Ready for your next journey?</h2>
+<p class="text-ochre-muted leading-relaxed max-w-xs mx-auto">
+          Plan a dinner or add recipes to your week to auto-populate your shopping list.
+        </p>
+</div>
+<!-- Primary CTA -->
+<button class="w-full py-4 bg-ochre-accent text-white font-semibold rounded-xl shadow-lg shadow-ochre-accent/20 active:scale-[0.98] transition-transform">
+        Start My Plan
+      </button>
+</section>
+<!-- END: Empty State Body -->
+</main>
+<!-- BEGIN: Global Navigation (Liquid Glass) -->
+<nav class="fixed bottom-0 left-0 right-0 h-20 liquid-glass-nav flex items-center justify-around px-2 z-50" data-purpose="liquid-glass-nav">
+<div class="flex flex-col items-center opacity-40">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Discover</span>
+</div>
+<div class="flex flex-col items-center opacity-40">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Search</span>
+</div>
+<div class="flex flex-col items-center opacity-40">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Plan</span>
+</div>
+<div class="flex flex-col items-center text-ochre-accent">
+<svg class="h-6 w-6" fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"></path>
+</svg>
+<span class="text-[10px] mt-1 font-bold">Groceries</span>
+</div>
+<div class="flex flex-col items-center opacity-40">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Cook</span>
+</div>
+</nav>
+<!-- END: Global Navigation -->
+</body></html>
