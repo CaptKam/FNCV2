@@ -20,12 +20,14 @@ import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
+import { PlanAddMethodSheet } from '@/components/PlanAddMethodSheet';
 import { SmartCookBar } from '@/components/SmartCookBar';
 import { BottomSheet } from '@/components/BottomSheet';
 import { SelectionPill, ActionButton } from '@/components/SelectionPill';
 import { useFeatureFlag } from '@/hooks/useRemoteConfig';
 
 import { useApp, ItineraryDay, PlannedMeal, GroceryItem } from '@/context/AppContext';
+import { useBookmarks } from '@/context/BookmarksContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
 import { todayLocal, dateToLocal, addDays, getMonday, formatDateShort as formatDateLabel, isPast } from '@/utils/dates';
@@ -252,6 +254,37 @@ export default function PlanScreen() {
   // Recipe picker state
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerTarget, setPickerTarget] = useState<{ date: string; courseType: 'appetizer' | 'main' | 'dessert' } | null>(null);
+  const [pickerFilterIds, setPickerFilterIds] = useState<string[] | undefined>(undefined);
+  const [pickerTitle, setPickerTitle] = useState<string | undefined>(undefined);
+
+  // Add-method sheet state (weekly view "+" → choice between saved / all)
+  const [addMethodVisible, setAddMethodVisible] = useState(false);
+  const [addMethodTarget, setAddMethodTarget] = useState<{ date: string; courseType: 'appetizer' | 'main' | 'dessert' } | null>(null);
+
+  const { bookmarkedIds, bookmarkCount } = useBookmarks();
+
+  const openAddMethodSheet = useCallback((date: string, courseType: 'appetizer' | 'main' | 'dessert') => {
+    setAddMethodTarget({ date, courseType });
+    setAddMethodVisible(true);
+  }, []);
+
+  const handleAddMethodSaved = useCallback(() => {
+    if (!addMethodTarget) return;
+    setAddMethodVisible(false);
+    setPickerTarget(addMethodTarget);
+    setPickerFilterIds(bookmarkedIds);
+    setPickerTitle('Saved Recipes');
+    setPickerVisible(true);
+  }, [addMethodTarget, bookmarkedIds]);
+
+  const handleAddMethodAll = useCallback(() => {
+    if (!addMethodTarget) return;
+    setAddMethodVisible(false);
+    setPickerTarget(addMethodTarget);
+    setPickerFilterIds(undefined);
+    setPickerTitle(undefined);
+    setPickerVisible(true);
+  }, [addMethodTarget]);
 
   // First-time auto-generate explanation
   const [hasSeenAutoGen, setHasSeenAutoGen] = useState(true); // default true to avoid flash
@@ -907,7 +940,7 @@ export default function PlanScreen() {
                   return (
                     <Pressable
                       key={day.date}
-                      onPress={() => openPicker(day.date, 'main')}
+                      onPress={() => openAddMethodSheet(day.date, 'main')}
                       style={[
                         styles.weekEmptyCard,
                         { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40`, borderWidth: 1, opacity: 0.6 },
@@ -1019,7 +1052,7 @@ export default function PlanScreen() {
                 return (
                   <Pressable
                     key={day.date}
-                    onPress={() => openPicker(day.date, 'main')}
+                    onPress={goToDayView}
                     onLayout={isToday ? (e) => scrollToTodayCard(e.nativeEvent.layout.y) : undefined}
                     style={[
                       styles.weekEmptyCard,
@@ -1031,7 +1064,7 @@ export default function PlanScreen() {
                       },
                     ]}
                     accessibilityRole="button"
-                    accessibilityLabel={`Add meal for ${day.dayLabel}`}
+                    accessibilityLabel={`View ${day.dayLabel}`}
                   >
                     <View>
                       {isToday && (
@@ -1046,9 +1079,15 @@ export default function PlanScreen() {
                         {isPastDay ? 'Nothing logged' : 'Nothing cooking yet'}
                       </Text>
                     </View>
-                    <View style={[styles.weekAddCircle, { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40` }]}>
+                    <Pressable
+                      onPress={(e) => { e.stopPropagation(); openAddMethodSheet(day.date, 'main'); }}
+                      style={[styles.weekAddCircle, { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40` }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add meal for ${day.dayLabel}`}
+                      hitSlop={8}
+                    >
                       <MaterialCommunityIcons name="plus" size={24} color={isToday ? colors.primary : isPastDay ? `${colors.primary}44` : `${colors.primary}99`} />
-                    </View>
+                    </Pressable>
                   </Pressable>
                 );
               }
@@ -1123,7 +1162,7 @@ export default function PlanScreen() {
                           pointerEvents="none"
                         />
                         <Pressable
-                          onPress={(e) => { e.stopPropagation(); openPicker(day.date, slot.courseType); }}
+                          onPress={(e) => { e.stopPropagation(); openAddMethodSheet(day.date, slot.courseType); }}
                           style={[styles.weekMealAction, { left: Spacing.sm, top: Spacing.sm }]}
                           accessibilityRole="button"
                           accessibilityLabel={`Swap ${slot.label}`}
@@ -1159,7 +1198,7 @@ export default function PlanScreen() {
                           {missingSlots.map((slot) => (
                             <Pressable
                               key={slot.courseType}
-                              onPress={(e) => { e.stopPropagation(); openPicker(day.date, slot.courseType); }}
+                              onPress={(e) => { e.stopPropagation(); openAddMethodSheet(day.date, slot.courseType); }}
                               style={[styles.weekAddCoursePill, { borderColor: `${colors.outline}30`, backgroundColor: `${colors.secondary}08` }]}
                               accessibilityRole="button"
                               accessibilityLabel={`Add ${slot.label}`}
@@ -1336,8 +1375,19 @@ export default function PlanScreen() {
       {/* Recipe picker bottom sheet */}
       <RecipePickerSheet
         visible={pickerVisible}
-        onDismiss={() => setPickerVisible(false)}
+        onDismiss={() => { setPickerVisible(false); setPickerFilterIds(undefined); setPickerTitle(undefined); }}
         onSelect={handlePickRecipe}
+        courseType={pickerTarget?.courseType}
+        filterIds={pickerFilterIds}
+        title={pickerTitle}
+      />
+
+      <PlanAddMethodSheet
+        visible={addMethodVisible}
+        onClose={() => setAddMethodVisible(false)}
+        bookmarkCount={bookmarkCount}
+        onSelectSaved={handleAddMethodSaved}
+        onSelectAll={handleAddMethodAll}
       />
 
       {/* Grocery handoff card */}
