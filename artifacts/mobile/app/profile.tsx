@@ -163,8 +163,7 @@ export default function ProfileScreen() {
     app.setDietaryFlags(next);
   };
 
-  // Default servings derived from coursePreference context (main = standard, full = larger)
-  const [defaultServings, setDefaultServings] = useState(4);
+  const { defaultServings, setDefaultServings: setServings } = app;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -265,13 +264,36 @@ export default function ProfileScreen() {
         {/* ═══ SETTINGS (Grouped Card) ═══ */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
           <View style={[styles.settingsCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <SettingRow
-              icon="silverware-fork-knife"
-              label="Dietary Preferences"
-              subtitle={dietaryFlags.length > 0 ? dietaryFlags.map(d => DIETARY_OPTIONS.find(o => o.id === d)?.label).filter(Boolean).join(', ') : 'None set'}
-              onPress={() => Alert.alert('Dietary Preferences', 'You can update your dietary preferences during onboarding or by editing your profile above.')}
-              colors={colors}
-            />
+            <View style={[styles.settingRow, { backgroundColor: colors.surfaceContainerLow, flexDirection: 'column', alignItems: 'stretch', gap: Spacing.sm }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md }}>
+                <View style={[styles.settingIcon, { backgroundColor: colors.primaryMuted }]}>
+                  <MaterialCommunityIcons name="silverware-fork-knife" size={20} color={colors.primary} />
+                </View>
+                <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Dietary Preferences</Text>
+              </View>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>
+                {DIETARY_OPTIONS.map((opt) => {
+                  const active = dietaryFlags.includes(opt.id);
+                  return (
+                    <Pressable
+                      key={opt.id}
+                      onPress={() => app.toggleDietaryFlag(opt.id)}
+                      style={[styles.dietaryChip, {
+                        backgroundColor: active ? `${colors.primary}20` : colors.surfaceContainerHigh,
+                        borderColor: active ? colors.primary : 'transparent',
+                        borderWidth: 1.5,
+                      }]}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: active }}
+                      accessibilityLabel={opt.label}
+                    >
+                      <Text style={{ fontSize: 14 }}>{opt.emoji}</Text>
+                      <Text style={[Typography.labelSmall, { color: active ? colors.primary : colors.onSurfaceVariant }]}>{opt.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
             <SettingRow
               icon="palette-outline"
               label="Appearance"
@@ -490,7 +512,7 @@ export default function ProfileScreen() {
                   <Pressable
                     key={n}
                     onPress={() => {
-                      setDefaultServings(n);
+                      setServings(n);
                       setShowServingsModal(false);
                     }}
                     style={[
@@ -779,6 +801,14 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     borderRadius: Radius.full,
     borderWidth: 1,
+  },
+  dietaryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: Radius.full,
   },
   editBadge: {
     position: 'absolute',

@@ -16,7 +16,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { View, ActivityIndicator, StyleSheet, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -37,6 +37,8 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const { hasCompletedOnboarding, isHydrated } = useApp();
   const router = useRouter();
   const segments = useSegments();
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
 
   React.useEffect(() => {
     if (!isHydrated) return;
@@ -50,8 +52,8 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 
   if (!isHydrated) {
     return (
-      <View style={hydrationStyles.container}>
-        <ActivityIndicator size="large" color="#9A4100" />
+      <View style={[hydrationStyles.container, { backgroundColor: isDark ? '#161412' : '#FEF9F3' }]}>
+        <ActivityIndicator size="large" color={isDark ? '#FFB690' : '#9A4100'} />
       </View>
     );
   }
@@ -60,19 +62,19 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
 }
 
 const hydrationStyles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FEF9F3' },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
 
 const FADE_SLIDE = {
   animation: 'fade_from_bottom' as const,
   animationDuration: 240,
-  contentStyle: { backgroundColor: '#FEF9F3' },
+  contentStyle: { backgroundColor: 'transparent' },
 };
 
 const SLIDE = {
   animation: 'slide_from_right' as const,
   animationDuration: 280,
-  contentStyle: { backgroundColor: '#FEF9F3' },
+  contentStyle: { backgroundColor: 'transparent' },
 };
 
 function RootLayoutNav() {
