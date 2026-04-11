@@ -302,7 +302,7 @@ export default function PlanScreen() {
   const todaysMeals = app.getTodaysMeals();
   const selectedDay = weekDays[selectedDayIndex];
   const selectedDate = selectedDay?.date ?? '';
-  const isSelectedPast = isDailyView && !!selectedDate && selectedDate < todayISO;
+  const isSelectedPast = isDailyView && !!selectedDate && isPast(selectedDate);
 
   const plannedCount = useMemo(
     () => weekDays.filter((d) => d.courses.appetizer || d.courses.main || d.courses.dessert).length,
@@ -340,11 +340,13 @@ export default function PlanScreen() {
 
   const jumpToToday = useCallback(() => {
     try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-    setWeekStartDate(currentMonday);
+    const todaysMonday = dateToLocal(getMonday(new Date()));
+    setCurrentMonday(todaysMonday);
+    setWeekStartDate(todaysMonday);
     setSelectedWeek('this-week');
     const dayOfWeek = new Date().getDay();
     setSelectedDayIndex(dayOfWeek === 0 ? 6 : dayOfWeek - 1);
-  }, [currentMonday]);
+  }, []);
 
   // ─── Recipe picker ───
   const openPicker = useCallback((date: string, courseType: 'appetizer' | 'main' | 'dessert') => {
