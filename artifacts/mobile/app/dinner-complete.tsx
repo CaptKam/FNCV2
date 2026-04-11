@@ -12,8 +12,8 @@ import Animated, {
   withSpring,
   withDelay,
   withTiming,
-  useReducedMotion,
 } from 'react-native-reanimated';
+import { useReducedMotion } from '@/utils/motion';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';

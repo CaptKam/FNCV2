@@ -4,8 +4,8 @@ import Animated, {
   useSharedValue,
   useAnimatedProps,
   withTiming,
-  useReducedMotion,
 } from 'react-native-reanimated';
+import { useReducedMotion } from '@/utils/motion';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 

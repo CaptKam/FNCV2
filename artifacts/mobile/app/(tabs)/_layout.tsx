@@ -7,8 +7,8 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  useReducedMotion,
 } from "react-native-reanimated";
+import { useReducedMotion } from "@/utils/motion";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassView } from "@/components/GlassView";
 import { useThemeColors } from "@/hooks/useThemeColors";

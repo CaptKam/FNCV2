@@ -5,10 +5,10 @@ import Animated, {
   useAnimatedStyle,
   withDelay,
   withSpring,
-  useReducedMotion,
   LinearTransition,
   FadeOut,
 } from 'react-native-reanimated';
+import { useReducedMotion } from '@/utils/motion';
 
 const ENTRANCE_SPRING = { damping: 20, stiffness: 180, mass: 0.8 };
 const STAGGER_MS = 60;

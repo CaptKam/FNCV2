@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeInUp, FadeOutUp, useReducedMotion } from 'react-native-reanimated';
+import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
+import { useReducedMotion } from '@/utils/motion';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useThemeColors } from '@/hooks/useThemeColors';

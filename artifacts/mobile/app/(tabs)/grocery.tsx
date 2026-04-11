@@ -2,7 +2,8 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import * as Haptics from 'expo-haptics';
 import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Animated as RNAnimated } from 'react-native';
 import { Image } from 'expo-image';
-import Animated, { FadeInDown, FadeOutDown, FadeOut, LinearTransition, useReducedMotion } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutDown, FadeOut, LinearTransition } from 'react-native-reanimated';
+import { useReducedMotion } from '@/utils/motion';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
