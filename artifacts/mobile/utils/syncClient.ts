@@ -19,17 +19,9 @@
  * of env vars and login state works without restarting the app.
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getApiBaseUrl } from "./apiBaseUrl";
 
 const TOKEN_KEY = "@fork_compass_mobile_token";
-
-/** Default to a local dev server. Override with EXPO_PUBLIC_API_URL. */
-function getBaseUrl(): string {
-  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
-  if (fromEnv && fromEnv.length > 0) return fromEnv.replace(/\/+$/, "");
-  // Local dev default. Replit usually exposes a forwarded URL via
-  // EXPO_PUBLIC_API_URL; this fallback keeps the simulator working.
-  return "http://localhost:3001";
-}
 
 export class SyncNetworkError extends Error {
   readonly name = "SyncNetworkError";
@@ -90,7 +82,7 @@ async function syncFetch<T>(options: FetchOptions): Promise<T> {
     if (token) headers["authorization"] = `Bearer ${token}`;
   }
 
-  const url = `${getBaseUrl()}${options.path}`;
+  const url = `${getApiBaseUrl()}${options.path}`;
 
   let response: Response;
   try {

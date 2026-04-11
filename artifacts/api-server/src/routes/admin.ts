@@ -2,8 +2,8 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { recipes as mobileRecipes } from "../../../mobile/data/recipes";
 import { countries as mobileCountries } from "../../../mobile/data/countries";
 import { requireAdminAuth, signAdminToken, verifyAdminCredentials } from "../middlewares/auth";
-import { db, ingredientsTable } from "@workspace/db";
-import { asc, eq, sql } from "drizzle-orm";
+import { db, ingredientsTable, featuredOverridesTable } from "@workspace/db";
+import { asc, desc, eq, gte, sql } from "drizzle-orm";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -41,6 +41,22 @@ const updateIngredientSchema = z
     canonicalName: z.string().min(1).max(200).optional(),
     aisle: ingredientAisleSchema.optional(),
     synonyms: z.array(z.string().min(1).max(200)).max(50).optional(),
+  })
+  .strict();
+
+// ═══════════════════════════════════════════════════════════════════
+// Featured country override schemas (Phase 4)
+// ═══════════════════════════════════════════════════════════════════
+
+const dateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, {
+  message: "Expected YYYY-MM-DD",
+});
+
+const upsertFeaturedOverrideSchema = z
+  .object({
+    date: dateStringSchema,
+    countryId: z.string().min(1).max(100),
+    reason: z.string().max(500).optional().nullable(),
   })
   .strict();
 
@@ -415,6 +431,127 @@ router.delete("/admin/ingredients/:id", requireAdminAuth, async (req: Request, r
     res.status(500).json({ error: "Failed to delete ingredient", details: String(err) });
   }
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// Featured country overrides (Phase 4)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Public: returns today's override row if one exists, else 404.
+ * Mobile clients call this on app launch to decide whether to use
+ * the admin-pinned country or fall back to the day-of-year algorithm.
+ */
+router.get("/featured/today", async (_req: Request, res: Response) => {
+  try {
+    // Use the server's local date (UTC). The mobile app sends its
+    // own local date in the future if we need per-timezone accuracy;
+    // for now a single global "today" is fine — admins curating
+    // "Valentine's Day Italy" don't care about UTC rollover edge cases.
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = await db
+      .select()
+      .from(featuredOverridesTable)
+      .where(eq(featuredOverridesTable.date, today))
+      .limit(1);
+    if (rows.length === 0) {
+      res.status(404).json({ error: "No override for today" });
+      return;
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch today's override", details: String(err) });
+  }
+});
+
+/**
+ * Admin: list all overrides. Returns upcoming and today first,
+ * past overrides sorted oldest-to-newest after — most useful
+ * ordering for the admin UI which focuses on future scheduling.
+ */
+router.get("/admin/featured-overrides", requireAdminAuth, async (_req: Request, res: Response) => {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const upcoming = await db
+      .select()
+      .from(featuredOverridesTable)
+      .where(gte(featuredOverridesTable.date, today))
+      .orderBy(asc(featuredOverridesTable.date));
+    const past = await db
+      .select()
+      .from(featuredOverridesTable)
+      .where(sql`${featuredOverridesTable.date} < ${today}`)
+      .orderBy(desc(featuredOverridesTable.date));
+    res.json({ upcoming, past });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch overrides", details: String(err) });
+  }
+});
+
+/**
+ * Admin: upsert an override for a date. Unique constraint on date
+ * means either a new insert or an update of the existing row.
+ */
+router.post(
+  "/admin/featured-overrides",
+  requireAdminAuth,
+  async (req: Request, res: Response) => {
+    const parsed = upsertFeaturedOverrideSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
+      return;
+    }
+    try {
+      const authedReq = req as Request & { adminSub?: string };
+      const { date, countryId, reason } = parsed.data;
+      const [row] = await db
+        .insert(featuredOverridesTable)
+        .values({
+          date,
+          countryId,
+          reason: reason ?? null,
+          createdBy: authedReq.adminSub ?? null,
+        })
+        .onConflictDoUpdate({
+          target: featuredOverridesTable.date,
+          set: {
+            countryId,
+            reason: reason ?? null,
+            createdBy: authedReq.adminSub ?? null,
+          },
+        })
+        .returning();
+      res.json(row);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to save override", details: String(err) });
+    }
+  },
+);
+
+/** Admin: delete an override for a specific date. */
+router.delete(
+  "/admin/featured-overrides/:date",
+  requireAdminAuth,
+  async (req: Request, res: Response) => {
+    const date = req.params.date;
+    if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      res.status(400).json({ error: "Invalid date parameter" });
+      return;
+    }
+    try {
+      const result = await db
+        .delete(featuredOverridesTable)
+        .where(eq(featuredOverridesTable.date, date))
+        .returning({ id: featuredOverridesTable.id });
+      if (result.length === 0) {
+        res.status(404).json({ error: "Override not found" });
+        return;
+      }
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to delete override", details: String(err) });
+    }
+  },
+);
 
 router.get("/admin/recipes", requireAdminAuth, (req: Request, res: Response) => {
   const {

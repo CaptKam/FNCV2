@@ -36,6 +36,7 @@ import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { todayLocal, addDays, getDayLabel, formatDateShort } from '@/utils/dates';
 import { calculateCookReadiness } from '@/utils/cookReadiness';
+import { getTodaysFeaturedOverride } from '@/utils/featuredCountry';
 
 // ─── Helpers ───
 
@@ -134,8 +135,32 @@ export default function DiscoverScreen() {
     AsyncStorage.setItem(`@fork_compass_tonight_dismissed_${todayDate}`, 'true');
   }, [todayDate]);
 
-  // Featured country — swipeable, tappable dots, starts with daily rotation
+  // Featured country — swipeable, tappable dots, starts with daily rotation.
+  // If an admin has scheduled a featured-country override for today
+  // (via the Admin Panel → Featured Country page), fetch it on mount
+  // and switch the hero carousel to that country once it resolves.
+  // The algorithmic default renders immediately so there's no flash
+  // of loading state, and non-existent countryIds silently fall back.
   const [heroIndex, setHeroIndex] = useState(() => getDayOfYear() % countries.length);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const override = await getTodaysFeaturedOverride();
+        if (cancelled || !override) return;
+        const overrideIdx = countries.findIndex((c) => c.id === override.countryId);
+        if (overrideIdx >= 0) {
+          setHeroIndex(overrideIdx);
+          heroListRef.current?.scrollToIndex({ index: overrideIdx, animated: false });
+        }
+      } catch {
+        /* graceful degradation — stay on algorithmic default */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const featuredCountry = countries[heroIndex];
   const featuredRecipeCount = recipes.filter((r) => r.countryId === featuredCountry.id).length;
 
