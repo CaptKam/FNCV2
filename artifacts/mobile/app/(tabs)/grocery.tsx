@@ -303,27 +303,30 @@ export default function GroceryScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76, paddingHorizontal: Spacing.page }}
         >
-          {/* Title row */}
+          {/* Title row — toggle container is gated on online_grocery
+              so the empty-state also respects the flag. */}
           <View style={styles.titleRow}>
             <Text style={[Typography.display, { color: colors.primary }]}>My Groceries</Text>
-            <View style={[styles.toggleContainer, { backgroundColor: colors.surfaceContainerLow }]}>
-              <PressableScale
-                onPress={() => setActiveTab('online')}
-                style={[styles.togglePill, activeTab === 'online' && { backgroundColor: colors.primary }]}
-                accessibilityRole="button"
-                accessibilityLabel="Online shopping"
-              >
-                <Text style={[Typography.titleSmall, { color: activeTab === 'online' ? colors.onPrimary : colors.outline }]}>Online</Text>
-              </PressableScale>
-              <PressableScale
-                onPress={() => setActiveTab('instore')}
-                style={[styles.togglePill, activeTab === 'instore' && { backgroundColor: colors.primary }]}
-                accessibilityRole="button"
-                accessibilityLabel="In-store shopping"
-              >
-                <Text style={[Typography.titleSmall, { color: activeTab === 'instore' ? colors.onPrimary : colors.outline }]}>In-Store</Text>
-              </PressableScale>
-            </View>
+            {showOnlineGrocery && (
+              <View style={[styles.toggleContainer, { backgroundColor: colors.surfaceContainerLow }]}>
+                <PressableScale
+                  onPress={() => setActiveTab('online')}
+                  style={[styles.togglePill, activeTab === 'online' && { backgroundColor: colors.primary }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Online shopping"
+                >
+                  <Text style={[Typography.titleSmall, { color: activeTab === 'online' ? colors.onPrimary : colors.outline }]}>Online</Text>
+                </PressableScale>
+                <PressableScale
+                  onPress={() => setActiveTab('instore')}
+                  style={[styles.togglePill, activeTab === 'instore' && { backgroundColor: colors.primary }]}
+                  accessibilityRole="button"
+                  accessibilityLabel="In-store shopping"
+                >
+                  <Text style={[Typography.titleSmall, { color: activeTab === 'instore' ? colors.onPrimary : colors.outline }]}>In-Store</Text>
+                </PressableScale>
+              </View>
+            )}
           </View>
           <Text style={[Typography.bodySmall, { color: colors.outline, marginBottom: Spacing.xl }]}>
             0 Recipes • 0 Items
