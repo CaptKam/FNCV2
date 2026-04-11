@@ -20,6 +20,7 @@ import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
+import { SmartCookBar } from '@/components/SmartCookBar';
 
 import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
@@ -1118,6 +1119,8 @@ export default function PlanScreen() {
         )}
       </Animated.ScrollView>
 
+      {/* SmartCookBar — floating above FAB when today has meals */}
+      <SmartCookBar variant="floating" />
 
       {/* Auto-generate FAB — only visible when there are empty days to fill */}
       {(() => {

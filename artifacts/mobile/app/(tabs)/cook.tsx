@@ -22,6 +22,7 @@ import { Checkbox } from '@/components/Checkbox';
 import { todayLocal, addDays, getDayLabelFull } from '@/utils/dates';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
 import { Recipe } from '@/data/recipes';
+import { SmartCookBar } from '@/components/SmartCookBar';
 
 import { TECHNIQUES } from '@/data/techniques';
 
@@ -283,6 +284,9 @@ export default function CookScreen() {
             ))}
           </View>
         </View>
+
+        {/* SmartCookBar — state-aware cook readiness */}
+        <SmartCookBar variant="inline" />
 
         {heroRecipe && (
           <View style={styles.ctaSection}>

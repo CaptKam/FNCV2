@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { AppState } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Storage } from '@/utils/storage';
 import { Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
@@ -115,12 +116,15 @@ interface AppContextValue {
   hasCompletedOnboarding: boolean;
   displayName: string;
   avatarId: string;
+  defaultServings: number;
   setCookingLevel: (level: CookingLevel) => void;
   setCoursePreference: (pref: CoursePreference) => void;
   setGroceryPartner: (partner: GroceryPartner) => void;
   setZipCode: (zip: string) => void;
   setUseMetric: (metric: boolean) => void;
+  setDefaultServings: (count: number) => void;
   setDietaryFlags: (flags: string[]) => void;
+  toggleDietaryFlag: (flag: string) => void;
   setAllergens: (allergens: string[]) => void;
   setHasCompletedOnboarding: (v: boolean) => void;
   setDisplayName: (name: string) => void;
@@ -294,6 +298,7 @@ const defaultPreferences = {
   groceryPartner: 'instacart' as GroceryPartner,
   zipCode: '',
   useMetric: true,
+  defaultServings: 4,
   dietaryFlags: [] as string[],
   allergens: [] as string[],
   hasCompletedOnboarding: false,
@@ -328,6 +333,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [groceryPartner, setGroceryPartnerState] = useState<GroceryPartner>(defaultPreferences.groceryPartner);
   const [zipCode, setZipCodeState] = useState(defaultPreferences.zipCode);
   const [useMetric, setUseMetricState] = useState(defaultPreferences.useMetric);
+  const [defaultServings, setDefaultServingsState] = useState(defaultPreferences.defaultServings);
   const [dietaryFlags, setDietaryFlagsState] = useState<string[]>(defaultPreferences.dietaryFlags);
   const [allergens, setAllergensState] = useState<string[]>(defaultPreferences.allergens);
   const [hasCompletedOnboarding, setHasCompletedOnboardingState] = useState(defaultPreferences.hasCompletedOnboarding);
@@ -431,6 +437,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (pr.groceryPartner) setGroceryPartnerState(pr.groceryPartner);
       if (pr.zipCode != null) setZipCodeState(pr.zipCode);
       if (pr.useMetric != null) setUseMetricState(pr.useMetric);
+      if (pr.defaultServings != null) setDefaultServingsState(pr.defaultServings);
       if (pr.dietaryFlags) setDietaryFlagsState(pr.dietaryFlags);
       if (pr.allergens) setAllergensState(pr.allergens);
       if (pr.hasCompletedOnboarding != null) setHasCompletedOnboardingState(pr.hasCompletedOnboarding);
@@ -440,6 +447,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (hi.xp != null) setXp(hi.xp);
       if (hi.level != null) setLevel(hi.level);
       if (hi.passportStamps) setPassportStamps(hi.passportStamps);
+      // Clean up old "tonight dismissed" keys (keep only last 7 days)
+      try {
+        const allKeys = await AsyncStorage.getAllKeys();
+        const dismissedPrefix = '@fork_compass_tonight_dismissed_';
+        const dismissedKeys = allKeys.filter((k) => k.startsWith(dismissedPrefix));
+        const dismissCutoff = addDaysLocal(today, -7);
+        const oldDismissed = dismissedKeys.filter((k) => k.replace(dismissedPrefix, '') < dismissCutoff);
+        if (oldDismissed.length > 0) await AsyncStorage.multiRemove(oldDismissed);
+      } catch {}
+
       hydrated.current = true;
       setIsHydrated(true);
     })();
@@ -461,8 +478,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (hydrated.current)
-      Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, dietaryFlags, allergens, hasCompletedOnboarding, displayName, avatarId });
-  }, [cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, dietaryFlags, allergens, hasCompletedOnboarding, displayName, avatarId]);
+      Storage.set(KEYS.preferences, { cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, defaultServings, dietaryFlags, allergens, hasCompletedOnboarding, displayName, avatarId });
+  }, [cookingLevel, coursePreference, groceryPartner, zipCode, useMetric, defaultServings, dietaryFlags, allergens, hasCompletedOnboarding, displayName, avatarId]);
 
   useEffect(() => {
     if (hydrated.current)
@@ -1010,7 +1027,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setGroceryPartner = useCallback((p: GroceryPartner) => setGroceryPartnerState(p), []);
   const setZipCode = useCallback((z: string) => setZipCodeState(z), []);
   const setUseMetric = useCallback((m: boolean) => setUseMetricState(m), []);
+  const setDefaultServings = useCallback((c: number) => setDefaultServingsState(c), []);
   const setDietaryFlags = useCallback((f: string[]) => setDietaryFlagsState(f), []);
+  const toggleDietaryFlag = useCallback((flag: string) => {
+    setDietaryFlagsState((prev) => prev.includes(flag) ? prev.filter((f) => f !== flag) : [...prev, flag]);
+  }, []);
   const setAllergens = useCallback((a: string[]) => setAllergensState(a), []);
   const setHasCompletedOnboarding = useCallback((v: boolean) => setHasCompletedOnboardingState(v), []);
   const setDisplayName = useCallback((name: string) => setDisplayNameState(name), []);
@@ -1299,7 +1320,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     zipCode,
     setZipCode,
     setUseMetric,
+    defaultServings,
+    setDefaultServings,
     setDietaryFlags,
+    toggleDietaryFlag,
     setAllergens,
     setHasCompletedOnboarding,
     setDisplayName,

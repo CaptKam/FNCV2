@@ -35,6 +35,7 @@ import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { todayLocal, addDays, getDayLabel, formatDateShort } from '@/utils/dates';
+import { calculateCookReadiness } from '@/utils/cookReadiness';
 
 // ─── Helpers ───
 
@@ -112,6 +113,21 @@ export default function DiscoverScreen() {
       setTonightDismissed(val === 'true');
     });
   }, [todayDate]);
+  // Cook readiness for tonight CTA
+  const tonightReadiness = useMemo(() => {
+    if (!todaysMeals.length) return null;
+    const totalMinutes = todaysMeals.reduce((sum, m) => {
+      const r = recipes.find((rec) => rec.id === m.recipeId);
+      return sum + (r ? r.prepTime + r.cookTime : 0);
+    }, 0);
+    return calculateCookReadiness({
+      todaysMeals,
+      activeCookSession: app.activeCookSession,
+      groceryItems: app.groceryItems,
+      totalCookMinutes: totalMinutes,
+    });
+  }, [todaysMeals, app.activeCookSession, app.groceryItems]);
+
   const showTonightStrip = tonightRecipe != null && isAfterNoon && !tonightDismissed;
   const dismissTonightStrip = useCallback(() => {
     setTonightDismissed(true);
@@ -235,12 +251,19 @@ export default function DiscoverScreen() {
                   {formatCookTime(tonightRecipe.prepTime + tonightRecipe.cookTime)} · {tonightRecipe.difficulty}
                 </Text>
                 <Pressable
-                  onPress={handleCookTonight}
+                  onPress={tonightReadiness?.state === 'groceries_needed' || tonightReadiness?.state === 'almost_ready'
+                    ? () => router.push('/(tabs)/grocery')
+                    : handleCookTonight}
                   style={[styles.tonightCTA, { backgroundColor: colors.primary }]}
                   accessibilityRole="button"
-                  accessibilityLabel="Cook tonight"
+                  accessibilityLabel={tonightReadiness?.cta || 'Cook tonight'}
                 >
-                  <Text style={[Typography.labelSmall, { color: colors.onPrimary }]}>Cook</Text>
+                  <Text style={[Typography.labelSmall, { color: colors.onPrimary }]}>
+                    {tonightReadiness?.state === 'groceries_needed' ? 'Get Ingredients'
+                      : tonightReadiness?.state === 'time_to_start' || tonightReadiness?.state === 'running_late' ? 'Cook Now'
+                      : tonightReadiness?.state === 'good_timing' ? 'Start Cooking'
+                      : 'Cook'}
+                  </Text>
                 </Pressable>
               </View>
               <Pressable

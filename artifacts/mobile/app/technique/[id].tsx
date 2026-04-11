@@ -13,11 +13,8 @@ import { TECHNIQUES } from '@/data/techniques';
 import { recipes } from '@/data/recipes';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 
-const DIFFICULTY_COLORS = {
-  beginner: '#2D6A4F',
-  intermediate: '#BA7517',
-  advanced: '#BA1A1A',
-};
+// Difficulty colors are resolved at render time via useThemeColors()
+// See difficultyColor() below
 
 type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 const CATEGORY_ICONS: Record<string, MCIconName> = {
@@ -49,7 +46,9 @@ export default function TechniqueDetailScreen() {
     .map((rid) => recipes.find((r) => r.id === rid))
     .filter((r): r is (typeof recipes)[0] => r != null);
 
-  const difficultyColor = DIFFICULTY_COLORS[technique.difficulty];
+  const difficultyColor = technique.difficulty === 'beginner' ? colors.success
+    : technique.difficulty === 'advanced' ? colors.error
+    : colors.warning;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
