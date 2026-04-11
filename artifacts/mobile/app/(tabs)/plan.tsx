@@ -348,6 +348,14 @@ export default function PlanScreen() {
     setSelectedDayIndex(dayOfWeek === 0 ? 6 : dayOfWeek - 1);
   }, []);
 
+  const jumpToThisWeek = useCallback(() => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    const todaysMonday = dateToLocal(getMonday(new Date()));
+    setCurrentMonday(todaysMonday);
+    setWeekStartDate(todaysMonday);
+    setSelectedWeek('this-week');
+  }, []);
+
   // ─── Recipe picker ───
   const openPicker = useCallback((date: string, courseType: 'appetizer' | 'main' | 'dessert') => {
     setPickerTarget({ date, courseType });
@@ -1366,6 +1374,28 @@ export default function PlanScreen() {
             <MaterialCommunityIcons name="calendar-today" size={16} color={colors.onPrimary} />
             <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700', letterSpacing: 0.4 }]}>
               Jump to Today
+            </Text>
+          </Pressable>
+        </Animated.View>
+      )}
+
+      {/* Jump to This Week floating pill — shown in weekly view when not on this week */}
+      {!isDailyView && weekStartDate !== currentMonday && (
+        <Animated.View
+          entering={reduceMotion ? undefined : FadeInDown.springify().damping(20)}
+          exiting={reduceMotion ? undefined : FadeOutDown.duration(200)}
+          style={styles.jumpTodayPill}
+          pointerEvents="box-none"
+        >
+          <Pressable
+            onPress={jumpToThisWeek}
+            style={[styles.jumpTodayBtn, { backgroundColor: colors.primary }]}
+            accessibilityRole="button"
+            accessibilityLabel="Jump to this week"
+          >
+            <MaterialCommunityIcons name="calendar-week" size={16} color={colors.onPrimary} />
+            <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700', letterSpacing: 0.4 }]}>
+              Jump to This Week
             </Text>
           </Pressable>
         </Animated.View>
