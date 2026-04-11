@@ -21,6 +21,7 @@ import {
   usersTable,
   ingredientsTable,
   featuredOverridesTable,
+  featureFlagsTable,
 } from "@workspace/db";
 
 // ═══════════════════════════════════════════════════════════════════
@@ -87,6 +88,7 @@ export function getBaseUrl(): string {
 const createdUserIds: string[] = [];
 const createdIngredientIds: string[] = [];
 const createdOverrideDates: string[] = [];
+const createdFlagKeys: string[] = [];
 
 export function trackUser(id: string): void {
   createdUserIds.push(id);
@@ -96,6 +98,9 @@ export function trackIngredient(id: string): void {
 }
 export function trackOverride(date: string): void {
   createdOverrideDates.push(date);
+}
+export function trackFlag(key: string): void {
+  createdFlagKeys.push(key);
 }
 
 /**
@@ -120,9 +125,16 @@ export async function cleanupAll(): Promise<void> {
       .where(inArray(featuredOverridesTable.date, createdOverrideDates));
     createdOverrideDates.length = 0;
   }
-  // Belt-and-suspenders: remove any leftover "test_" ingredients from
-  // previous interrupted runs so the ingredients table stays clean.
+  if (createdFlagKeys.length > 0) {
+    await db
+      .delete(featureFlagsTable)
+      .where(inArray(featureFlagsTable.key, createdFlagKeys));
+    createdFlagKeys.length = 0;
+  }
+  // Belt-and-suspenders: remove any leftover "test_" ingredients and
+  // "test_" feature flags from previous interrupted runs.
   await db.delete(ingredientsTable).where(like(ingredientsTable.id, "test\\_%"));
+  await db.delete(featureFlagsTable).where(like(featureFlagsTable.key, "test\\_%"));
 }
 
 // ═══════════════════════════════════════════════════════════════════

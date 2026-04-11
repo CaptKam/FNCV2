@@ -26,6 +26,7 @@ import { Recipe } from '@/data/recipes';
 import { SmartCookBar } from '@/components/SmartCookBar';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { AnimatedProgressBar } from '@/components/AnimatedProgressBar';
+import { useFeatureFlag, useAppSetting } from '@/hooks/useRemoteConfig';
 
 import { TECHNIQUES } from '@/data/techniques';
 
@@ -45,7 +46,26 @@ export default function CookScreen() {
   const { activeCookSession, xp, level } = app;
   const levelName = app.getCookingLevelName();
   const todaysMeals = app.getTodaysMeals();
-  const progress = (xp % 300) / 300;
+
+  // Feature flags — guard UI sections we can remotely disable.
+  const showXp = useFeatureFlag('xp_system');
+  const showPassport = useFeatureFlag('passport_stamps');
+  const showSmartCookBar = useFeatureFlag('smart_cook_bar');
+  const showTechniqueLibrary = useFeatureFlag('technique_library');
+
+  // Level progress is computed from the configured level_thresholds
+  // array so the progress bar fills toward the NEXT level, not the
+  // old hardcoded 300-XP divisor.
+  const thresholds = useAppSetting<number[]>(
+    'level_thresholds',
+    [0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 12000],
+  );
+  const currentThreshold = thresholds[Math.max(0, level - 1)] ?? 0;
+  const nextThreshold = thresholds[level] ?? currentThreshold + 500;
+  const progress =
+    nextThreshold > currentThreshold
+      ? Math.max(0, Math.min(1, (xp - currentThreshold) / (nextThreshold - currentThreshold)))
+      : 1;
 
   const sessionRecipe = activeCookSession
     ? recipes.find((r) => r.id === activeCookSession.recipeId)
@@ -300,7 +320,7 @@ export default function CookScreen() {
         </View>
 
         {/* SmartCookBar — state-aware cook readiness */}
-        <SmartCookBar variant="inline" />
+        {showSmartCookBar && <SmartCookBar variant="inline" />}
 
         {heroRecipe && (
           <View style={styles.ctaSection}>
@@ -404,33 +424,36 @@ export default function CookScreen() {
           </View>
         )}
 
-        <View style={styles.levelSection}>
-          <View style={styles.levelHeader}>
-            <Text style={[Typography.labelLarge, { color: colors.outline }]}>Your Progress</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-              <AnimatedCounter
-                value={xp}
-                style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}
-              />
-              <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}> points</Text>
+        {showXp && (
+          <View style={styles.levelSection}>
+            <View style={styles.levelHeader}>
+              <Text style={[Typography.labelLarge, { color: colors.outline }]}>Your Progress</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+                <AnimatedCounter
+                  value={xp}
+                  style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}
+                />
+                <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}> points</Text>
+              </View>
             </View>
+            <Text style={[Typography.headline, { color: colors.onSurface }]}>{levelName}</Text>
+            <View style={styles.levelBarRow}>
+              <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>Level {level}</Text>
+              <AnimatedProgressBar
+                progress={progress}
+                trackColor={colors.surfaceContainerHigh}
+                fillColor={colors.primary}
+                height={6}
+                style={{ flex: 1 }}
+              />
+            </View>
+            <Text style={[Typography.caption, { color: colors.onSurfaceVariant, marginTop: Spacing.xs }]}>
+              Cook recipes to earn points and level up
+            </Text>
           </View>
-          <Text style={[Typography.headline, { color: colors.onSurface }]}>{levelName}</Text>
-          <View style={styles.levelBarRow}>
-            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>Level {level}</Text>
-            <AnimatedProgressBar
-              progress={progress}
-              trackColor={colors.surfaceContainerHigh}
-              fillColor={colors.primary}
-              height={6}
-              style={{ flex: 1 }}
-            />
-          </View>
-          <Text style={[Typography.caption, { color: colors.onSurfaceVariant, marginTop: Spacing.xs }]}>
-            Cook recipes to earn points and level up
-          </Text>
-        </View>
+        )}
 
+        {showTechniqueLibrary && (
         <View style={styles.techSection}>
           <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.md }}>
             <Text style={[Typography.labelLarge, { color: colors.outline }]}>COOKING TIPS</Text>
@@ -471,6 +494,7 @@ export default function CookScreen() {
             ))}
           </ScrollView>
         </View>
+        )}
 
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xxl }}>
           <View style={[styles.statsCard, { backgroundColor: colors.surfaceContainerLow }]}>
@@ -484,13 +508,15 @@ export default function CookScreen() {
               </Text>
             </View>
             <View style={{ gap: Spacing.sm, alignItems: 'flex-end' }}>
-            <Pressable
-              onPress={() => router.push('/passport')}
-              accessibilityRole="button"
-              accessibilityLabel="View passport"
-            >
-              <Text style={[Typography.titleSmall, { color: colors.primary }]}>View Passport</Text>
-            </Pressable>
+            {showPassport && (
+              <Pressable
+                onPress={() => router.push('/passport')}
+                accessibilityRole="button"
+                accessibilityLabel="View passport"
+              >
+                <Text style={[Typography.titleSmall, { color: colors.primary }]}>View Passport</Text>
+              </Pressable>
+            )}
             <Pressable
               onPress={() => router.push('/bookmarks')}
               accessibilityRole="button"

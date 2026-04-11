@@ -21,6 +21,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
 import { SmartCookBar } from '@/components/SmartCookBar';
+import { useFeatureFlag } from '@/hooks/useRemoteConfig';
 
 import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
@@ -156,6 +157,12 @@ export default function PlanScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const app = useApp();
+
+  // Feature flags for UI surfaces we can remotely disable.
+  const showAutoGenerateFab = useFeatureFlag('auto_generate_fab');
+  const showSmartCookBar = useFeatureFlag('smart_cook_bar');
+  const showDinnerParty = useFeatureFlag('dinner_party_system');
+  const showPullToRefresh = useFeatureFlag('pull_to_refresh');
 
   const todayISO = todayLocal();
   const [weekStartDate, setWeekStartDate] = useState(() => dateToLocal(getMonday(new Date())));
@@ -608,7 +615,9 @@ export default function PlanScreen() {
         onScroll={scrollHandler}
         contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: HEADER_BOTTOM }}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+          showPullToRefresh ? (
+            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+          ) : undefined
         }
       >
         <Animated.View style={contentSpacerStyle} />
@@ -729,20 +738,22 @@ export default function PlanScreen() {
                       <Text style={[Typography.labelLarge, { color: colors.primary, letterSpacing: 1.5 }]}>
                         07:30 PM {'\u2022'} Primary Meal (Dinner)
                       </Text>
-                      <Pressable
-                        onPress={() => app.toggleDinnerParty(selectedDate)}
-                        style={[
-                          styles.dinnerPartyBadge,
-                          { backgroundColor: selectedDay?.hasDinnerParty ? colors.primarySoft : colors.primaryMuted },
-                        ]}
-                        accessibilityRole="button"
-                        accessibilityLabel={selectedDay?.hasDinnerParty ? 'Disable dinner party' : 'Enable dinner party'}
-                      >
-                        <MaterialCommunityIcons name="account-group" size={16} color={colors.primary} />
-                        <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.3 }]}>
-                          Dinner Party
-                        </Text>
-                      </Pressable>
+                      {showDinnerParty && (
+                        <Pressable
+                          onPress={() => app.toggleDinnerParty(selectedDate)}
+                          style={[
+                            styles.dinnerPartyBadge,
+                            { backgroundColor: selectedDay?.hasDinnerParty ? colors.primarySoft : colors.primaryMuted },
+                          ]}
+                          accessibilityRole="button"
+                          accessibilityLabel={selectedDay?.hasDinnerParty ? 'Disable dinner party' : 'Enable dinner party'}
+                        >
+                          <MaterialCommunityIcons name="account-group" size={16} color={colors.primary} />
+                          <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.3 }]}>
+                            Dinner Party
+                          </Text>
+                        </Pressable>
+                      )}
                     </View>
                     {primaryMeal ? (
                       <MealCard
@@ -1129,10 +1140,11 @@ export default function PlanScreen() {
       </Animated.ScrollView>
 
       {/* SmartCookBar — floating above FAB when today has meals */}
-      <SmartCookBar variant="floating" />
+      {showSmartCookBar && <SmartCookBar variant="floating" />}
 
-      {/* Auto-generate FAB — only visible when there are empty days to fill */}
-      {(() => {
+      {/* Auto-generate FAB — only visible when there are empty days to fill
+          AND the auto_generate_fab flag is on. */}
+      {showAutoGenerateFab && (() => {
         const emptyDayCount = weekDays.filter((d) => !d.courses.main).length;
         if (emptyDayCount === 0) return null;
 

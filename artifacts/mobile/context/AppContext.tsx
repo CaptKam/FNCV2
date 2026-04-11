@@ -18,6 +18,7 @@ import {
   syncPreferences,
 } from '@/utils/syncClient';
 import { normalizeIngredient } from '@/utils/ingredientTaxonomy';
+import { refreshRemoteConfig, getSetting as getRemoteSetting } from '@/utils/remoteConfig';
 
 /**
  * Wraps a sync call in fire-and-forget semantics: it runs in the
@@ -33,6 +34,36 @@ function fireSync(promise: Promise<unknown>): void {
       console.warn('[sync] request failed:', err?.message ?? err);
     }
   });
+}
+
+// ═══════════════════════════════════════════
+// REMOTE-CONFIG READERS — used for optimistic client-side XP/level
+// updates in-between server syncs. These delegate to the module-level
+// remoteConfig store, which reads from the admin panel's app_settings
+// table. The server /cook endpoint is the source of truth and will
+// overwrite these values on its next response, but the UI needs
+// sensible numbers for the instant feedback after a cook completes.
+// ═══════════════════════════════════════════
+
+function xpAwardPerRecipe(): number {
+  return getRemoteSetting<number>("xp_per_recipe", 50);
+}
+
+function xpAwardPerDinnerParty(): number {
+  return getRemoteSetting<number>("xp_per_dinner_party", 100);
+}
+
+function computeLevelFromXp(xp: number): number {
+  const thresholds = getRemoteSetting<number[]>(
+    "level_thresholds",
+    [0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 12000],
+  );
+  let level = 1;
+  for (let i = 0; i < thresholds.length; i++) {
+    const t = thresholds[i];
+    if (typeof t === "number" && xp >= t) level = i + 1;
+  }
+  return level;
 }
 
 // ═══════════════════════════════════════════
@@ -385,11 +416,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const hydrated = useRef(false);
 
-  // Reactive "today" — updates on foreground resume and periodic midnight check
+  // Reactive "today" — updates on foreground resume and periodic midnight check.
+  // Also re-fetches remote config on foreground so admin flag flips land
+  // for users who leave the app open for days.
   const [appDate, setAppDate] = useState(todayLocal);
   useEffect(() => {
     const refresh = () => setAppDate((prev) => { const now = todayLocal(); return now !== prev ? now : prev; });
-    const sub = AppState.addEventListener('change', (s) => { if (s === 'active') refresh(); });
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') {
+        refresh();
+        void refreshRemoteConfig();
+      }
+    });
     const interval = setInterval(refresh, 30_000);
     return () => { sub.remove(); clearInterval(interval); };
   }, []);
@@ -406,9 +444,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         Storage.get(KEYS.history, defaultHistory),
         Storage.get<{ plan: DinnerPlan | null; eventIndex: number }>(KEYS.dinnerPlan, { plan: null, eventIndex: 0 }),
       ]);
-      // Clean up itinerary entries older than 28 days
+      // Clean up itinerary entries older than the configured cleanup window.
+      // Defaults to 28 days; admins can tune via app_settings.grocery_cleanup_days.
       const today = todayLocal();
-      const cutoff = addDaysLocal(today, -28);
+      const cleanupDays = getRemoteSetting<number>("grocery_cleanup_days", 28);
+      const cutoff = addDaysLocal(today, -cleanupDays);
       const removedDates = new Set(it.filter((d: ItineraryDay) => d.date < cutoff).map((d: ItineraryDay) => d.date));
       const cleanedItinerary = it.filter((d: ItineraryDay) => d.date >= cutoff);
       setItinerary(cleanedItinerary);
@@ -911,8 +951,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         afterLevelFilter = dietaryFiltered;
       }
 
-      // Recency filter: only look at the last 14 days of itinerary
-      const recencyCutoff = addDaysLocal(todayLocal(), -14);
+      // Recency filter: only look at recipes cooked in the last N days.
+      // Defaults to 14; admins can tune via app_settings.recency_avoidance_days.
+      const recencyDays = getRemoteSetting<number>("recency_avoidance_days", 14);
+      const recencyCutoff = addDaysLocal(todayLocal(), -recencyDays);
       const recentRecipeIds = new Set<string>();
       itinerary
         .filter((d) => d.date >= recencyCutoff)
@@ -1058,12 +1100,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const completeCookSessionInternal = useCallback(() => {
     // Use functional setState to avoid stale closure over activeCookSession
     let syncRecipe: { id: string; countryId: string; title: string } | null = null;
+    const award = xpAwardPerRecipe();
     setActiveCookSession((prev) => {
       if (prev) {
         setTotalRecipesCooked((c) => c + 1);
         setXp((prevXp) => {
-          const newXp = prevXp + 50;
-          setLevel(Math.floor(newXp / 300) + 1);
+          const newXp = prevXp + award;
+          setLevel(computeLevelFromXp(newXp));
           return newXp;
         });
         const allRecipes: Recipe[] = require('@/data/recipes').recipes;
@@ -1078,24 +1121,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       return null;
     });
-    // Sync cook completion to the server. The server-side /cook
-    // endpoint does the same atomic XP/level/stamp update, matching
-    // the formula above.
+    // Sync cook completion to the server. The server is authoritative
+    // for xp/level via app_settings, so we don't send xpAward anymore
+    // (field is still accepted for backward compat but ignored).
     if (syncRecipe) {
       const r = syncRecipe as { id: string; countryId: string; title: string };
-      fireSync(syncCookCompletion(r.id, r.countryId, { recipeName: r.title, xpAward: 50 }));
+      fireSync(syncCookCompletion(r.id, r.countryId, { recipeName: r.title }));
     }
   }, []);
 
   const startCookSession = useCallback((recipe: Recipe, servings: number) => {
     // If a session exists, complete it first (awards XP) via functional check
     let staleSyncRecipe: { id: string; countryId: string; title: string } | null = null;
+    const award = xpAwardPerRecipe();
     setActiveCookSession((prev) => {
       if (prev) {
         setTotalRecipesCooked((c) => c + 1);
         setXp((prevXp) => {
-          const newXp = prevXp + 50;
-          setLevel(Math.floor(newXp / 300) + 1);
+          const newXp = prevXp + award;
+          setLevel(computeLevelFromXp(newXp));
           return newXp;
         });
         const allRecipes: Recipe[] = require('@/data/recipes').recipes;
@@ -1226,7 +1270,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const awardXP = useCallback((amount: number) => {
     setXp((prev) => {
       const newXp = prev + amount;
-      setLevel(Math.floor(newXp / 300) + 1);
+      setLevel(computeLevelFromXp(newXp));
       return newXp;
     });
   }, []);
@@ -1277,9 +1321,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Award XP and stamps for each recipe in the plan
     const recipeCount = activeDinnerPlan.recipes.length;
     setTotalRecipesCooked((prev) => prev + recipeCount);
+    const perRecipe = xpAwardPerRecipe();
     setXp((prevXp) => {
-      const newXp = prevXp + (50 * recipeCount);
-      setLevel(Math.floor(newXp / 300) + 1);
+      const newXp = prevXp + (perRecipe * recipeCount);
+      setLevel(computeLevelFromXp(newXp));
       return newXp;
     });
     for (const r of activeDinnerPlan.recipes) {
@@ -1371,10 +1416,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const completeDinnerPartyAction = useCallback((partyId: string) => {
     setDinnerParties((prev) => prev.map((p) => p.id === partyId ? { ...p, status: 'completed' as const } : p));
     setActiveDinnerParty(null);
-    // Award 100 XP for hosting
+    // Award XP for hosting a dinner party (configurable via admin).
+    const partyAward = xpAwardPerDinnerParty();
     setXp((prevXp) => {
-      const newXp = prevXp + 100;
-      setLevel(Math.floor(newXp / 300) + 1);
+      const newXp = prevXp + partyAward;
+      setLevel(computeLevelFromXp(newXp));
       return newXp;
     });
     const party = dinnerParties.find((p) => p.id === partyId);

@@ -36,6 +36,7 @@ import {
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { requireMobileAuth, signMobileToken, type MobileAuthedRequest } from "../middlewares/mobileAuth";
+import { getSettingNumber, getSettingNumberArray } from "../lib/settingsCache";
 
 const router: IRouter = Router();
 
@@ -114,9 +115,29 @@ const cookCompletionSchema = z
     recipeId: z.string(),
     countryId: z.string(),
     recipeName: z.string().optional(),
-    xpAward: z.number().int().positive().max(1000).default(50),
+    // Legacy: early clients sent their own xpAward. Kept optional for
+    // backward compatibility but the server now ignores this field
+    // and reads `xp_per_recipe` from app_settings instead so XP is
+    // server-authoritative. Max cap stays for DoS protection.
+    xpAward: z.number().int().positive().max(1000).optional(),
   })
   .strict();
+
+/**
+ * Compute a user's level from their XP using the configured
+ * thresholds. `thresholds[i]` is the minimum XP to reach level i+1.
+ * Example: [0, 100, 250, 500, ...] → xp 0-99 is level 1, xp 100-249
+ * is level 2, etc. Levels are 1-indexed.
+ */
+function computeLevel(xp: number, thresholds: number[]): number {
+  if (thresholds.length === 0) return 1;
+  let level = 1;
+  for (let i = 0; i < thresholds.length; i++) {
+    const t = thresholds[i];
+    if (typeof t === "number" && xp >= t) level = i + 1;
+  }
+  return level;
+}
 
 const dinnerGuestSchema: z.ZodType<DinnerGuest> = z.object({
   id: z.string(),
@@ -495,17 +516,24 @@ router.post(
       return;
     }
     const userId = getUserId(req);
-    const { countryId, xpAward } = parsed.data;
+    const { countryId } = parsed.data;
 
-    // Single atomic update: bump cook count, XP, recompute level,
-    // and increment the passport stamp for this country.
-    //
-    // level = floor(xp / 300) + 1 — matches the mobile app's formula
-    // in AppContext.completeCookSessionInternal().
-    //
-    // Postgres evaluates each SET expression against the OLD row,
-    // so both `xp + :xpAward` references yield the same new xp value
-    // and the level calculation is consistent.
+    // Server-authoritative XP: read `xp_per_recipe` and
+    // `level_thresholds` from app_settings (in-memory cached,
+    // 60s TTL) so an admin can flip these values in the admin
+    // panel and every user instantly earns the new amount.
+    // The client's `xpAward` field is ignored — it was the
+    // legacy API and is kept optional for backward compatibility.
+    const xpPerRecipe = await getSettingNumber("xp_per_recipe", 50);
+    const levelThresholds = await getSettingNumberArray(
+      "level_thresholds",
+      [0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 12000],
+    );
+
+    // Atomic step 1: increment xp + totalRecipesCooked + passport
+    // stamp in a single UPDATE. The returned row gives us the new
+    // xp, from which we compute the correct level in JS and
+    // (possibly) fix up the level column in step 2.
     //
     // For the passport stamp we use the jsonb `||` operator together
     // with `jsonb_build_object`. This is equivalent to jsonb_set with
@@ -517,8 +545,7 @@ router.post(
       .update(userHistoryTable)
       .set({
         totalRecipesCooked: sql`${userHistoryTable.totalRecipesCooked} + 1`,
-        xp: sql`${userHistoryTable.xp} + ${xpAward}`,
-        level: sql`((${userHistoryTable.xp} + ${xpAward}) / 300) + 1`,
+        xp: sql`${userHistoryTable.xp} + ${xpPerRecipe}`,
         passportStamps: sql`${userHistoryTable.passportStamps} || jsonb_build_object(
           ${countryId}::text,
           coalesce((${userHistoryTable.passportStamps} ->> ${countryId})::int, 0) + 1
@@ -537,13 +564,14 @@ router.post(
       // Create the row with the post-cook values so this endpoint is
       // self-healing rather than returning `{ history: undefined }`.
       const initialStamps: Record<string, number> = { [countryId]: 1 };
+      const newLevel = computeLevel(xpPerRecipe, levelThresholds);
       const [created] = await db
         .insert(userHistoryTable)
         .values({
           userId,
           totalRecipesCooked: 1,
-          xp: xpAward,
-          level: Math.floor(xpAward / 300) + 1,
+          xp: xpPerRecipe,
+          level: newLevel,
           passportStamps: initialStamps,
         })
         .onConflictDoNothing({ target: userHistoryTable.userId })
@@ -567,7 +595,25 @@ router.post(
       return;
     }
 
-    res.json({ history: result[0] });
+    // Step 2: recompute level from the new xp using the configured
+    // thresholds and fix up the row if it differs. Same-row UPDATEs
+    // are serialized by Postgres's row lock so this is safe under
+    // concurrent cooks from the same user.
+    const updated = result[0]!;
+    const correctLevel = computeLevel(updated.xp, levelThresholds);
+    if (correctLevel !== updated.level) {
+      const [relevelled] = await db
+        .update(userHistoryTable)
+        .set({ level: correctLevel })
+        .where(eq(userHistoryTable.userId, userId))
+        .returning();
+      if (relevelled) {
+        res.json({ history: relevelled });
+        return;
+      }
+    }
+
+    res.json({ history: updated });
   }),
 );
 
