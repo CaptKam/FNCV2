@@ -1050,7 +1050,7 @@ export default function PlanScreen() {
                 return (
                   <Pressable
                     key={day.date}
-                    onPress={() => openAddMethodSheet(day.date, 'main')}
+                    onPress={goToDayView}
                     onLayout={isToday ? (e) => scrollToTodayCard(e.nativeEvent.layout.y) : undefined}
                     style={[
                       styles.weekEmptyCard,
@@ -1062,7 +1062,7 @@ export default function PlanScreen() {
                       },
                     ]}
                     accessibilityRole="button"
-                    accessibilityLabel={`Add meal for ${day.dayLabel}`}
+                    accessibilityLabel={`View ${day.dayLabel}`}
                   >
                     <View>
                       {isToday && (
@@ -1077,9 +1077,15 @@ export default function PlanScreen() {
                         {isPastDay ? 'Nothing logged' : 'Nothing cooking yet'}
                       </Text>
                     </View>
-                    <View style={[styles.weekAddCircle, { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40` }]}>
+                    <Pressable
+                      onPress={(e) => { e.stopPropagation(); openAddMethodSheet(day.date, 'main'); }}
+                      style={[styles.weekAddCircle, { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40` }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add meal for ${day.dayLabel}`}
+                      hitSlop={8}
+                    >
                       <MaterialCommunityIcons name="plus" size={24} color={isToday ? colors.primary : isPastDay ? `${colors.primary}44` : `${colors.primary}99`} />
-                    </View>
+                    </Pressable>
                   </Pressable>
                 );
               }
