@@ -1079,7 +1079,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       for (let i = 0; i < 7; i++) {
         const date = addDaysLocal(startDate, i);
         const existing = itinerary.find((d) => d.date === date);
-        week.push(existing ?? makeEmptyDay(date));
+        // Always re-derive dayLabel from the date string — never trust the
+        // stored value, which can be stale if the entry was created during
+        // a previous session with a timezone or calculation mismatch.
+        week.push(existing
+          ? { ...existing, dayLabel: getDayLabelFull(date) }
+          : makeEmptyDay(date));
       }
       return week;
     },
