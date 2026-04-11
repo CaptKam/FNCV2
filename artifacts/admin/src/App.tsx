@@ -1,8 +1,11 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
+import { setAuthTokenGetter, ApiError } from "@workspace/api-client-react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AdminLayout } from "@/components/layout/admin-layout";
+import { getAdminToken, clearAdminToken } from "@/lib/auth";
 
 // Pages
 import NotFound from "@/pages/not-found";
@@ -15,27 +18,75 @@ import UserDetail from "@/pages/user-detail";
 import FeaturedManager from "@/pages/featured-manager";
 import Settings from "@/pages/settings";
 
-const queryClient = new QueryClient();
+// Register the auth token getter so every API request carries
+// `Authorization: Bearer <token>` when a token is stored.
+setAuthTokenGetter(() => getAdminToken());
+
+// On any 401 from the API, clear the stale token so the next route
+// render will redirect to /login. We can't call setLocation here
+// because this runs outside React, but clearing localStorage is
+// enough — the ProtectedRoute will handle the redirect on next render
+// (and the QueryClient retries/re-renders will re-check).
+function handleApiError(error: unknown): void {
+  if (error instanceof ApiError && error.status === 401) {
+    clearAdminToken();
+    // Force a full reload so the ProtectedRoute below redirects to /login.
+    if (typeof window !== "undefined" && !window.location.pathname.endsWith("/login")) {
+      window.location.assign(
+        (import.meta.env.BASE_URL.replace(/\/$/, "") || "") + "/login",
+      );
+    }
+  }
+}
+
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({ onError: handleApiError }),
+  mutationCache: new MutationCache({ onError: handleApiError }),
+});
+
+/**
+ * Gate component: if no valid token exists, redirect to /login
+ * instead of rendering the children.
+ */
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const [location] = useLocation();
+  const authed = getAdminToken() !== null;
+
+  useEffect(() => {
+    // Re-check on location change in case the token was cleared
+    // (e.g. by a 401 handler) while a protected page was mounted.
+    if (!authed) {
+      // no-op; Redirect below handles it
+    }
+  }, [location, authed]);
+
+  if (!authed) {
+    return <Redirect to="/login" />;
+  }
+  return <>{children}</>;
+}
 
 function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
-      
+
       {/* Protected Routes wrapped in Layout */}
       <Route>
-        <AdminLayout>
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/recipes" component={RecipesList} />
-            <Route path="/recipes/:id" component={RecipeEditor} />
-            <Route path="/featured" component={FeaturedManager} />
-            <Route path="/users" component={UsersList} />
-            <Route path="/users/:id" component={UserDetail} />
-            <Route path="/settings" component={Settings} />
-            <Route component={NotFound} />
-          </Switch>
-        </AdminLayout>
+        <ProtectedRoute>
+          <AdminLayout>
+            <Switch>
+              <Route path="/" component={Dashboard} />
+              <Route path="/recipes" component={RecipesList} />
+              <Route path="/recipes/:id" component={RecipeEditor} />
+              <Route path="/featured" component={FeaturedManager} />
+              <Route path="/users" component={UsersList} />
+              <Route path="/users/:id" component={UserDetail} />
+              <Route path="/settings" component={Settings} />
+              <Route component={NotFound} />
+            </Switch>
+          </AdminLayout>
+        </ProtectedRoute>
       </Route>
     </Switch>
   );

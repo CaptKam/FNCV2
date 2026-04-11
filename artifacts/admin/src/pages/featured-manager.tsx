@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { 
   useGetCountries, 
   useGetFeaturedRecipes, 
@@ -77,17 +77,15 @@ function CountryFeaturedSection({ country }: { country: any }) {
     { query: { enabled: isSearching && searchQuery.length > 2 } }
   );
 
-  // Sync local state when data loads
-  useState(() => {
+  // Sync local state when fetched recipes change (and no local changes exist).
+  // Previously used `useState(() => ...)` which only fires on mount, and a
+  // render-body state setter which caused warnings and potential infinite
+  // loops. Moving to a proper effect fixes both bugs.
+  useEffect(() => {
     if (featuredRecipes && !hasChanges) {
       setLocalRecipes([...featuredRecipes]);
     }
-  });
-
-  // Effect to update local recipes when fetched recipes change (and no local changes exist)
-  if (featuredRecipes && localRecipes.length === 0 && !hasChanges && featuredRecipes.length > 0) {
-    setLocalRecipes([...featuredRecipes]);
-  }
+  }, [featuredRecipes, hasChanges]);
 
   const handleMoveUp = (index: number) => {
     if (index === 0) return;

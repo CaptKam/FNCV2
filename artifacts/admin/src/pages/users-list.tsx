@@ -213,7 +213,7 @@ export default function UsersList() {
         {totalPages > 1 && (
           <div className="p-4 border-t border-border flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              Showing {(page - 1) * 20 + 1} to Math.min(page * 20, total) of {total} entries
+              Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} entries
             </div>
             <div className="flex items-center space-x-2">
               <Button 

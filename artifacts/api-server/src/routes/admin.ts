@@ -1,6 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { recipes as mobileRecipes } from "../../../mobile/data/recipes";
 import { countries as mobileCountries } from "../../../mobile/data/countries";
+import { requireAdminAuth, signAdminToken, verifyAdminCredentials } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -205,17 +206,18 @@ router.post("/admin/login", (req: Request, res: Response) => {
     email?: string;
     password?: string;
   };
-  if (email === "admin@forkandcompass.com" && password === "admin123") {
-    res.json({
-      token: "mock-jwt-token-" + Date.now(),
-      user: { email, role: "admin" },
-    });
+  const subject = verifyAdminCredentials(email ?? "", password ?? "");
+  if (!subject) {
+    res.status(401).json({ error: "Invalid credentials" });
     return;
   }
-  res.status(401).json({ error: "Invalid credentials" });
+  res.json({
+    token: signAdminToken(subject),
+    user: { email: subject, role: "admin" },
+  });
 });
 
-router.get("/admin/stats", (_req: Request, res: Response) => {
+router.get("/admin/stats", requireAdminAuth, (_req: Request, res: Response) => {
   const regions = new Set(mobileCountries.map((c) => c.region));
   res.json({
     totalRecipes: adminRecipes.length,
@@ -241,7 +243,7 @@ router.get("/countries", (_req: Request, res: Response) => {
   );
 });
 
-router.get("/admin/recipes", (req: Request, res: Response) => {
+router.get("/admin/recipes", requireAdminAuth, (req: Request, res: Response) => {
   const {
     search,
     countryId,
@@ -285,7 +287,7 @@ router.get("/admin/recipes", (req: Request, res: Response) => {
   });
 });
 
-router.get("/admin/recipes/:id", (req: Request, res: Response) => {
+router.get("/admin/recipes/:id", requireAdminAuth, (req: Request, res: Response) => {
   const recipe = adminRecipes.find((r) => r.id === req.params.id);
   if (!recipe) {
     res.status(404).json({ error: "Recipe not found" });
@@ -294,7 +296,7 @@ router.get("/admin/recipes/:id", (req: Request, res: Response) => {
   res.json(recipe);
 });
 
-router.patch("/admin/recipes/:id", (req: Request, res: Response) => {
+router.patch("/admin/recipes/:id", requireAdminAuth, (req: Request, res: Response) => {
   const idx = adminRecipes.findIndex((r) => r.id === req.params.id);
   if (idx === -1) {
     res.status(404).json({ error: "Recipe not found" });
@@ -305,7 +307,7 @@ router.patch("/admin/recipes/:id", (req: Request, res: Response) => {
   res.json(adminRecipes[idx]);
 });
 
-router.delete("/admin/recipes/:id", (req: Request, res: Response) => {
+router.delete("/admin/recipes/:id", requireAdminAuth, (req: Request, res: Response) => {
   const idx = adminRecipes.findIndex((r) => r.id === req.params.id);
   if (idx === -1) {
     res.status(404).json({ error: "Recipe not found" });
@@ -315,7 +317,7 @@ router.delete("/admin/recipes/:id", (req: Request, res: Response) => {
   res.json({ success: true });
 });
 
-router.post("/admin/recipes/:id/feature", (req: Request, res: Response) => {
+router.post("/admin/recipes/:id/feature", requireAdminAuth, (req: Request, res: Response) => {
   const recipe = adminRecipes.find((r) => r.id === req.params.id);
   if (!recipe) {
     res.status(404).json({ error: "Recipe not found" });
@@ -340,7 +342,7 @@ router.post("/admin/recipes/:id/feature", (req: Request, res: Response) => {
   res.json(recipe);
 });
 
-router.patch("/admin/recipes/:id/status", (req: Request, res: Response) => {
+router.patch("/admin/recipes/:id/status", requireAdminAuth, (req: Request, res: Response) => {
   const recipe = adminRecipes.find((r) => r.id === req.params.id);
   if (!recipe) {
     res.status(404).json({ error: "Recipe not found" });
@@ -353,7 +355,7 @@ router.patch("/admin/recipes/:id/status", (req: Request, res: Response) => {
   res.json(recipe);
 });
 
-router.post("/admin/recipes/:id/duplicate", (req: Request, res: Response) => {
+router.post("/admin/recipes/:id/duplicate", requireAdminAuth, (req: Request, res: Response) => {
   const original = adminRecipes.find((r) => r.id === req.params.id);
   if (!original) {
     res.status(404).json({ error: "Recipe not found" });
@@ -373,7 +375,7 @@ router.post("/admin/recipes/:id/duplicate", (req: Request, res: Response) => {
   res.json(duplicate);
 });
 
-router.patch("/admin/recipes/bulk", (req: Request, res: Response) => {
+router.patch("/admin/recipes/bulk", requireAdminAuth, (req: Request, res: Response) => {
   const { ids, status } = req.body as {
     ids: string[];
     status: "live" | "hidden" | "draft";
@@ -389,7 +391,7 @@ router.patch("/admin/recipes/bulk", (req: Request, res: Response) => {
   res.json({ success: true, count });
 });
 
-router.delete("/admin/recipes/bulk", (req: Request, res: Response) => {
+router.delete("/admin/recipes/bulk", requireAdminAuth, (req: Request, res: Response) => {
   const { ids } = req.body as { ids: string[] };
   let count = 0;
   for (const id of ids) {
@@ -404,6 +406,7 @@ router.delete("/admin/recipes/bulk", (req: Request, res: Response) => {
 
 router.get(
   "/admin/featured/:countryId",
+  requireAdminAuth,
   (req: Request, res: Response) => {
     const { countryId } = req.params;
     const ids = featuredMap.get(countryId) ?? [];
@@ -419,6 +422,7 @@ router.get(
 
 router.put(
   "/admin/featured/:countryId",
+  requireAdminAuth,
   (req: Request, res: Response) => {
     const { countryId } = req.params;
     const { recipeIds } = req.body as { recipeIds: string[] };
@@ -431,7 +435,7 @@ router.put(
   }
 );
 
-router.get("/admin/users", (req: Request, res: Response) => {
+router.get("/admin/users", requireAdminAuth, (req: Request, res: Response) => {
   const {
     search,
     level,
@@ -471,7 +475,7 @@ router.get("/admin/users", (req: Request, res: Response) => {
   });
 });
 
-router.get("/admin/users/:id", (req: Request, res: Response) => {
+router.get("/admin/users/:id", requireAdminAuth, (req: Request, res: Response) => {
   const user = mockUsers.find((u) => u.id === req.params.id);
   if (!user) {
     res.status(404).json({ error: "User not found" });
@@ -480,7 +484,7 @@ router.get("/admin/users/:id", (req: Request, res: Response) => {
   res.json(user);
 });
 
-router.get("/admin/settings", (_req: Request, res: Response) => {
+router.get("/admin/settings", requireAdminAuth, (_req: Request, res: Response) => {
   res.json({
     admins: [
       { email: "admin@forkandcompass.com", role: "admin" },
@@ -494,7 +498,7 @@ router.get("/admin/settings", (_req: Request, res: Response) => {
   });
 });
 
-router.patch("/admin/settings", (req: Request, res: Response) => {
+router.patch("/admin/settings", requireAdminAuth, (req: Request, res: Response) => {
   const updates = req.body as {
     defaultMeasurement?: string;
     defaultCookingTier?: string;
