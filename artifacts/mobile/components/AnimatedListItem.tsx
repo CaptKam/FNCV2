@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
-import { ViewStyle, StyleProp } from 'react-native';
+import { ViewStyle, StyleProp, Easing } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withDelay,
   withSpring,
   useReducedMotion,
+  LinearTransition,
+  FadeOut,
 } from 'react-native-reanimated';
 
 const ENTRANCE_SPRING = { damping: 20, stiffness: 180, mass: 0.8 };
@@ -40,7 +42,11 @@ export function AnimatedListItem({ index, children, style }: AnimatedListItemPro
   }));
 
   return (
-    <Animated.View style={[animatedStyle, style]}>
+    <Animated.View
+      layout={reduceMotion ? undefined : LinearTransition.springify().damping(18).stiffness(150)}
+      exiting={reduceMotion ? undefined : FadeOut.duration(200)}
+      style={[animatedStyle, style]}
+    >
       {children}
     </Animated.View>
   );

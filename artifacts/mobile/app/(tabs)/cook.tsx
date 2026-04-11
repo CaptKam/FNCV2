@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
@@ -76,6 +77,14 @@ export default function CookScreen() {
   const lastCookCount = useRef(app.totalRecipesCooked);
   const [tomorrowPickerVisible, setTomorrowPickerVisible] = useState(false);
 
+  // Pull-to-refresh
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    setTimeout(() => setIsRefreshing(false), 600);
+  }, []);
+
   // First-time cook hint
   const [showCookHint, setShowCookHint] = useState(false);
   useEffect(() => {
@@ -125,6 +134,9 @@ export default function CookScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 }}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+        }
       >
 
         {heroRecipe ? (

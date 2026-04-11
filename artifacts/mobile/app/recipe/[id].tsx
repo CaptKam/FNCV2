@@ -268,16 +268,17 @@ export default function RecipeDetailScreen() {
             </View>
           )}
 
-          {/* Add to Plan button */}
-          <Pressable
+          {/* Plan This button */}
+          <PressableScale
             onPress={() => setShowPlanSheet(true)}
+            haptic="light"
             style={[styles.addToPlanBtn, { backgroundColor: colors.primary }]}
             accessibilityRole="button"
-            accessibilityLabel="Add to meal plan"
+            accessibilityLabel="Plan this recipe"
           >
             <MaterialCommunityIcons name="calendar-plus" size={20} color={colors.onPrimary} />
-            <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Add to Plan</Text>
-          </Pressable>
+            <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Plan This</Text>
+          </PressableScale>
 
           <View style={{ marginTop: Spacing.xl }}>
             <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.xs }]}>
