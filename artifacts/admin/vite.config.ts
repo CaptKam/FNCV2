@@ -62,6 +62,20 @@ export default defineConfig({
     port,
     host: "0.0.0.0",
     allowedHosts: true,
+    // Forward /api/* requests to the Express api-server. The api-server
+    // runs as a separate process (usually on port 3001 in dev) and owns
+    // routes like /api/admin/login, /api/countries, /api/users/*. This
+    // proxy is only active in `vite dev`; production deploys should serve
+    // the admin static build and the api-server from the same origin.
+    //
+    // Override via env var `API_PROXY_TARGET` if you run api-server on a
+    // different port or host.
+    proxy: {
+      "/api": {
+        target: process.env.API_PROXY_TARGET || "http://localhost:3001",
+        changeOrigin: true,
+      },
+    },
     fs: {
       strict: true,
       deny: ["**/.*"],
