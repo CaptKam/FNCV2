@@ -41,13 +41,6 @@ import { useFeatureFlag, useAppSetting } from '@/hooks/useRemoteConfig';
 
 // ─── Helpers ───
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  if (hour < 21) return 'Good evening';
-  return 'Late night cravings?';
-}
 
 function getDayOfYear(): number {
   const now = new Date();
@@ -257,14 +250,7 @@ export default function DiscoverScreen() {
           ) : undefined
         }
       >
-        {/* ═══ ROW 1: GREETING ═══ */}
-        <View style={{ paddingHorizontal: GRID_PAD, marginBottom: Spacing.md }}>
-          <Text style={[Typography.title, { color: colors.onSurfaceVariant, fontStyle: 'italic' }]}>
-            {getGreeting()}
-          </Text>
-        </View>
-
-        {/* ═══ ROW 2: TONIGHT'S PLAN (conditional) ═══ */}
+        {/* ═══ ROW 1: TONIGHT'S PLAN (conditional) ═══ */}
         {showTonightStrip && tonightMeal && tonightRecipe && (
           <Animated.View entering={enterDelay(0)} style={{ paddingHorizontal: GRID_PAD, marginBottom: GRID_GAP }}>
             <PressableScale

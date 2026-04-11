@@ -27,7 +27,7 @@ import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
 import { NutritionInfo } from '@/data/nutrition';
-import { todayLocal, dateToLocal, addDays, getMonday, formatDateShort as formatDateLabel } from '@/utils/dates';
+import { todayLocal, dateToLocal, addDays, getMonday, formatDateShort as formatDateLabel, isPast } from '@/utils/dates';
 
 // ─── Helpers ───
 
@@ -304,6 +304,7 @@ export default function PlanScreen() {
   const todaysMeals = app.getTodaysMeals();
   const selectedDay = weekDays[selectedDayIndex];
   const selectedDate = selectedDay?.date ?? '';
+  const isSelectedPast = isDailyView && !!selectedDate && isPast(selectedDate);
 
   const plannedCount = useMemo(
     () => weekDays.filter((d) => d.courses.appetizer || d.courses.main || d.courses.dessert).length,
@@ -338,6 +339,24 @@ export default function PlanScreen() {
       return next;
     });
   }, [currentMonday]);
+
+  const jumpToToday = useCallback(() => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    const todaysMonday = dateToLocal(getMonday(new Date()));
+    setCurrentMonday(todaysMonday);
+    setWeekStartDate(todaysMonday);
+    setSelectedWeek('this-week');
+    const dayOfWeek = new Date().getDay();
+    setSelectedDayIndex(dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+  }, []);
+
+  const jumpToThisWeek = useCallback(() => {
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    const todaysMonday = dateToLocal(getMonday(new Date()));
+    setCurrentMonday(todaysMonday);
+    setWeekStartDate(todaysMonday);
+    setSelectedWeek('this-week');
+  }, []);
 
   // ─── Recipe picker ───
   const openPicker = useCallback((date: string, courseType: 'appetizer' | 'main' | 'dessert') => {
@@ -433,13 +452,20 @@ export default function PlanScreen() {
           <View style={styles.navTitleLine}>
             <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18, lineHeight: 24 }]}>
               {isDailyView
-                ? `${selectedDay?.dayLabel ?? ''}, ${formatDateLabel(selectedDate)}`
+                ? `${selectedDay?.dayLabel ?? ''}`
                 : weekLabels[selectedWeek]}
             </Text>
             {isDailyView && selectedDate === todayISO && (
               <View style={[styles.todayTag, { backgroundColor: colors.primaryMuted }]}>
                 <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700', fontSize: 10, lineHeight: 14 }]}>
                   TODAY
+                </Text>
+              </View>
+            )}
+            {isDailyView && isSelectedPast && (
+              <View style={[styles.pastTag, { backgroundColor: colors.surfaceContainerHigh }]}>
+                <Text style={[Typography.caption, { color: colors.outline, fontWeight: '700', fontSize: 10, lineHeight: 14 }]}>
+                  PAST
                 </Text>
               </View>
             )}
@@ -527,6 +553,8 @@ export default function PlanScreen() {
             const day = weekDays[i];
             const hasRecipe = !!(day?.courses.appetizer || day?.courses.main || day?.courses.dessert);
             const isToday = day?.date === todayISO;
+            const isDayPast = day?.date ? isPast(day.date) : false;
+            const dateNum = day?.date ? String(parseInt(day.date.slice(-2), 10)) : '';
             return (
               <Pressable
                 key={i}
@@ -537,19 +565,25 @@ export default function PlanScreen() {
                 style={[
                   styles.dayCircle,
                   isActive && { backgroundColor: colors.primary },
-                  !isActive && hasRecipe && { backgroundColor: colors.primaryMuted },
+                  !isActive && hasRecipe && !isDayPast && { backgroundColor: colors.primaryMuted },
                   !isActive && isToday && { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.primaryTint },
+                  !isActive && isDayPast && { opacity: 0.45 },
                 ]}
                 accessibilityRole="button"
-                accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}`}
+                accessibilityLabel={`${day?.dayLabel ?? ''}${isToday ? ', today' : ''}${isDayPast ? ', past' : ''}`}
                 accessibilityState={{ selected: isActive }}
               >
                 <Text style={[
-                  Typography.caption,
-                  { fontWeight: '600' },
-                  isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary, fontWeight: '700' } : { color: colors.outline },
+                  { fontSize: 9, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' },
+                  isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary } : { color: colors.outline },
                 ]}>
                   {letter}
+                </Text>
+                <Text style={[
+                  { fontSize: 15, fontWeight: '700', lineHeight: 18 },
+                  isActive ? { color: colors.onPrimary } : isToday ? { color: colors.primary } : { color: colors.onSurface },
+                ]}>
+                  {dateNum}
                 </Text>
               </Pressable>
             );
@@ -664,7 +698,7 @@ export default function PlanScreen() {
           (multipleMeals && showMultipleMealsToggle) ? (
             /* ── Daily: multiple meals timeline ── */
             <>
-              <View style={styles.timeline}>
+              <View style={[styles.timeline, isSelectedPast && { opacity: 0.5 }]}>
                 <View style={[styles.timelineLine, { backgroundColor: colors.primarySoft }]} />
                 {dailyMeals.map((slot, idx) => {
                   const meal = slot.meal;
@@ -691,8 +725,8 @@ export default function PlanScreen() {
                             badgeLabel={slot.label.toUpperCase()}
                             headlineFontSize={22}
                             onPress={() => router.push(`/recipe/${meal.recipeId}`)}
-                            onSwap={() => openPicker(selectedDate, slot.courseType)}
-                            onRemove={() => handleRemoveCourse(selectedDate, slot.courseType)}
+                            onSwap={isSelectedPast ? undefined : () => openPicker(selectedDate, slot.courseType)}
+                            onRemove={isSelectedPast ? undefined : () => handleRemoveCourse(selectedDate, slot.courseType)}
                             colors={colors}
                           />
                         ) : (
@@ -704,20 +738,22 @@ export default function PlanScreen() {
                                 color={colors.outline}
                               />
                               <Text style={[Typography.bodySmall, { color: colors.outline, fontStyle: 'italic' }]}>
-                                {slot.label} unassigned...
+                                {isSelectedPast ? 'Nothing logged' : `${slot.label} unassigned...`}
                               </Text>
                             </View>
-                            <Pressable
-                              onPress={() => openPicker(selectedDate, slot.courseType)}
-                              style={styles.addMealBtn}
-                              accessibilityRole="button"
-                              accessibilityLabel={`Add ${slot.label}`}
-                            >
-                              <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
-                              <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5 }]}>
-                                Add Meal
-                              </Text>
-                            </Pressable>
+                            {!isSelectedPast && (
+                              <Pressable
+                                onPress={() => openPicker(selectedDate, slot.courseType)}
+                                style={styles.addMealBtn}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Add ${slot.label}`}
+                              >
+                                <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+                                <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5 }]}>
+                                  Add Meal
+                                </Text>
+                              </Pressable>
+                            )}
                           </View>
                         )}
                       </View>
@@ -729,7 +765,7 @@ export default function PlanScreen() {
           ) : (
             /* ── Daily: single meal (primary dinner) + course slots ── */
             <>
-              <View style={styles.timeline}>
+              <View style={[styles.timeline, isSelectedPast && { opacity: 0.5 }]}>
                 <View style={[styles.timelineLine, { backgroundColor: colors.primarySoft }]} />
 
                 <View style={styles.dayRow}>
@@ -765,28 +801,30 @@ export default function PlanScreen() {
                         badgeLabel="DINNER"
                         headlineFontSize={24}
                         onPress={() => router.push(`/recipe/${primaryMeal.recipeId}`)}
-                        onSwap={() => openPicker(selectedDate, 'main')}
-                        onRemove={() => handleRemoveCourse(selectedDate, 'main')}
+                        onSwap={isSelectedPast ? undefined : () => openPicker(selectedDate, 'main')}
+                        onRemove={isSelectedPast ? undefined : () => handleRemoveCourse(selectedDate, 'main')}
                         colors={colors}
                       />
                     ) : (
                       <View style={[styles.emptyCard, { borderColor: colors.outlineVariant }]}>
                         <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
-                          <MaterialCommunityIcons name="silverware-variant" size={28} color={colors.primary} />
+                          <MaterialCommunityIcons name="silverware-variant" size={28} color={isSelectedPast ? colors.outline : colors.primary} />
                         </View>
                         <Text style={[Typography.bodySmall, { color: colors.outline }]}>
-                          Nothing cooking yet — let's find something delicious
+                          {isSelectedPast ? 'Nothing was logged for this day' : "Nothing cooking yet — let's find something delicious"}
                         </Text>
-                        <Pressable
-                          onPress={() => openPicker(selectedDate, 'main')}
-                          style={[styles.browseBtn, { backgroundColor: colors.primary }]}
-                          accessibilityRole="button"
-                          accessibilityLabel="Browse recipes"
-                        >
-                          <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
-                            Find a Recipe
-                          </Text>
-                        </Pressable>
+                        {!isSelectedPast && (
+                          <Pressable
+                            onPress={() => openPicker(selectedDate, 'main')}
+                            style={[styles.browseBtn, { backgroundColor: colors.primary }]}
+                            accessibilityRole="button"
+                            accessibilityLabel="Browse recipes"
+                          >
+                            <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
+                              Find a Recipe
+                            </Text>
+                          </Pressable>
+                        )}
                       </View>
                     )}
                   </View>
@@ -811,8 +849,8 @@ export default function PlanScreen() {
                             badgeLabel={course.label.toUpperCase()}
                             headlineFontSize={20}
                             onPress={() => router.push(`/recipe/${courseMeal.recipeId}`)}
-                            onSwap={() => openPicker(selectedDate, course.courseType)}
-                            onRemove={() => handleRemoveCourse(selectedDate, course.courseType)}
+                            onSwap={isSelectedPast ? undefined : () => openPicker(selectedDate, course.courseType)}
+                            onRemove={isSelectedPast ? undefined : () => handleRemoveCourse(selectedDate, course.courseType)}
                             colors={colors}
                           />
                         ) : (
@@ -828,19 +866,21 @@ export default function PlanScreen() {
                                   color={colors.outlineMuted}
                                 />
                                 <Text style={[Typography.bodySmall, { color: colors.outlineMuted, fontStyle: 'italic' }]}>
-                                  {course.placeholder}
+                                  {isSelectedPast ? 'Nothing logged' : course.placeholder}
                                 </Text>
                               </View>
-                              <Pressable
-                                onPress={() => openPicker(selectedDate, course.courseType)}
-                                style={[styles.addCircle, {
-                                  backgroundColor: colors.glassOverlay,
-                                }]}
-                                accessibilityRole="button"
-                                accessibilityLabel={`Add ${course.label}`}
-                              >
-                                <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
-                              </Pressable>
+                              {!isSelectedPast && (
+                                <Pressable
+                                  onPress={() => openPicker(selectedDate, course.courseType)}
+                                  style={[styles.addCircle, {
+                                    backgroundColor: colors.glassOverlay,
+                                  }]}
+                                  accessibilityRole="button"
+                                  accessibilityLabel={`Add ${course.label}`}
+                                >
+                                  <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+                                </Pressable>
+                              )}
                             </View>
                           </View>
                         )}
@@ -1320,6 +1360,50 @@ export default function PlanScreen() {
         </Animated.View>
       )}
 
+      {/* Jump to Today floating pill — shown in daily view when not on today */}
+      {isDailyView && selectedDate !== todayISO && (
+        <Animated.View
+          entering={reduceMotion ? undefined : FadeInDown.springify().damping(20)}
+          exiting={reduceMotion ? undefined : FadeOutDown.duration(200)}
+          style={styles.jumpTodayPill}
+          pointerEvents="box-none"
+        >
+          <Pressable
+            onPress={jumpToToday}
+            style={[styles.jumpTodayBtn, { backgroundColor: colors.primary }]}
+            accessibilityRole="button"
+            accessibilityLabel="Jump to today"
+          >
+            <MaterialCommunityIcons name="calendar-today" size={16} color={colors.onPrimary} />
+            <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700', letterSpacing: 0.4 }]}>
+              Jump to Today
+            </Text>
+          </Pressable>
+        </Animated.View>
+      )}
+
+      {/* Jump to This Week floating pill — shown in weekly view when not on this week */}
+      {!isDailyView && weekStartDate !== currentMonday && (
+        <Animated.View
+          entering={reduceMotion ? undefined : FadeInDown.springify().damping(20)}
+          exiting={reduceMotion ? undefined : FadeOutDown.duration(200)}
+          style={styles.jumpTodayPill}
+          pointerEvents="box-none"
+        >
+          <Pressable
+            onPress={jumpToThisWeek}
+            style={[styles.jumpTodayBtn, { backgroundColor: colors.primary }]}
+            accessibilityRole="button"
+            accessibilityLabel="Jump to this week"
+          >
+            <MaterialCommunityIcons name="calendar-week" size={16} color={colors.onPrimary} />
+            <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontWeight: '700', letterSpacing: 0.4 }]}>
+              Jump to This Week
+            </Text>
+          </Pressable>
+        </Animated.View>
+      )}
+
       {/* Toast with optional undo */}
       {toastMessage && (
         <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
@@ -1378,6 +1462,11 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: Radius.full,
   },
+  pastTag: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+  },
   navRight: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1392,10 +1481,27 @@ const styles = StyleSheet.create({
   },
   dayCircle: {
     width: 40,
-    height: 40,
-    borderRadius: 20,
+    height: 54,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 1,
+  },
+  jumpTodayPill: {
+    position: 'absolute',
+    bottom: 108,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    pointerEvents: 'box-none',
+  },
+  jumpTodayBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 10,
+    borderRadius: Radius.full,
   },
   segmentedControl: {
     flexDirection: 'row',

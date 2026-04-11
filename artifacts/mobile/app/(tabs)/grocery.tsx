@@ -299,26 +299,48 @@ export default function GroceryScreen() {
     return (
       <View style={[styles.container, { backgroundColor: colors.surface }]}>
         <HeaderBar />
-        <View style={styles.emptyRoot}>
-          <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle }]}>
-            <MaterialCommunityIcons name="cart-outline" size={28} color={colors.outlineVariant} />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76, paddingHorizontal: Spacing.page }}
+        >
+          {/* Title row */}
+          <View style={styles.titleRow}>
+            <Text style={[Typography.display, { color: colors.primary }]}>My Groceries</Text>
+            <View style={[styles.toggleContainer, { backgroundColor: colors.surfaceContainerLow }]}>
+              <PressableScale
+                onPress={() => setActiveTab('online')}
+                style={[styles.togglePill, activeTab === 'online' && { backgroundColor: colors.primary }]}
+                accessibilityRole="button"
+                accessibilityLabel="Online shopping"
+              >
+                <Text style={[Typography.titleSmall, { color: activeTab === 'online' ? colors.onPrimary : colors.outline }]}>Online</Text>
+              </PressableScale>
+              <PressableScale
+                onPress={() => setActiveTab('instore')}
+                style={[styles.togglePill, activeTab === 'instore' && { backgroundColor: colors.primary }]}
+                accessibilityRole="button"
+                accessibilityLabel="In-store shopping"
+              >
+                <Text style={[Typography.titleSmall, { color: activeTab === 'instore' ? colors.onPrimary : colors.outline }]}>In-Store</Text>
+              </PressableScale>
+            </View>
           </View>
-          <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
-            Your kitchen awaits
+          <Text style={[Typography.bodySmall, { color: colors.outline, marginBottom: Spacing.xl }]}>
+            0 Recipes • 0 Items
           </Text>
-          <Text style={[Typography.body, { color: colors.outline, textAlign: 'center', paddingHorizontal: Spacing.xl }]}>
-            Plan some meals and we'll build your list.
-          </Text>
-          <View style={[styles.manualInputWrap, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, marginHorizontal: Spacing.xl, marginTop: Spacing.md }]}>
-            <MaterialCommunityIcons name="plus" size={20} color={colors.outline} />
+
+          {/* Input bar */}
+          <View style={[styles.inputCard, { backgroundColor: colors.surfaceContainerLowest ?? '#FFFFFF', borderColor: `${colors.primary}22` }]}>
+            <MaterialCommunityIcons name="plus" size={24} color={colors.primary} />
             <TextInput
               value={manualItemName}
               onChangeText={setManualItemName}
-              placeholder="Add item (eggs, bread...)"
-              placeholderTextColor={colors.outline}
-              style={[Typography.body, { flex: 1, color: colors.onSurface, padding: 0 }]}
+              placeholder="ADD YOUR OWN ITEMS"
+              placeholderTextColor={`${colors.primary}88`}
+              style={[Typography.body, { flex: 1, color: colors.primary, padding: 0, fontWeight: '700', letterSpacing: 2 }]}
               returnKeyType="done"
               onSubmitEditing={handleAddManualItem}
+              autoCapitalize="characters"
             />
             {manualItemName.trim().length > 0 && (
               <Pressable onPress={handleAddManualItem} accessibilityRole="button" accessibilityLabel="Add item">
@@ -328,15 +350,25 @@ export default function GroceryScreen() {
               </Pressable>
             )}
           </View>
-          <Pressable
-            onPress={() => router.push('/(tabs)')}
-            style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
-            accessibilityRole="button"
-            accessibilityLabel="Browse recipes"
-          >
-            <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Browse Recipes</Text>
-          </Pressable>
-        </View>
+
+          {/* Empty body */}
+          <View style={styles.emptyBody}>
+            <Text style={[Typography.headline, { color: colors.primary, textAlign: 'center', marginBottom: Spacing.sm }]}>
+              Ready for your next journey?
+            </Text>
+            <Text style={[Typography.body, { color: colors.outline, textAlign: 'center', lineHeight: 22, marginBottom: Spacing.xxl, paddingHorizontal: Spacing.sm }]}>
+              Plan a dinner or add recipes to your week to auto-populate your shopping list.
+            </Text>
+            <Pressable
+              onPress={() => router.push('/(tabs)/plan')}
+              style={[styles.emptyBtn, { backgroundColor: colors.primary, width: '100%' }]}
+              accessibilityRole="button"
+              accessibilityLabel="Go to meal plan"
+            >
+              <Text style={[Typography.titleSmall, { color: colors.onPrimary, textAlign: 'center' }]}>Start My Plan</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
 
         {toastMessage && (
           <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
@@ -360,86 +392,52 @@ export default function GroceryScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 }}
       >
-        <View style={styles.titleSection}>
-          <Text style={[Typography.labelLarge, { color: colors.outline, textAlign: 'center', marginBottom: Spacing.xs }]}>
-            SHOPPING LIST
-          </Text>
-          <Text style={[Typography.display, { color: colors.onSurface, textAlign: 'center' }]}>
-            My Groceries
-          </Text>
-          <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', marginTop: Spacing.xs }]}>
-            {recipeCards.length > 0 ? `${recipeCards.length} Recipes  •  ` : ''}{totalCount} Items
-          </Text>
+        {/* Title row — the toggle container is gated on online_grocery
+            so users aren't confused by a one-option picker when the
+            Online tab is disabled. My Groceries heading is always
+            visible. */}
+        <View style={[styles.titleRow, { paddingHorizontal: Spacing.page }]}>
+          <Text style={[Typography.display, { color: colors.primary }]}>My Groceries</Text>
+          {showOnlineGrocery && (
+            <View style={[styles.toggleContainer, { backgroundColor: colors.surfaceContainerLow }]}>
+              <PressableScale
+                onPress={() => setActiveTab('online')}
+                style={[styles.togglePill, activeTab === 'online' && { backgroundColor: colors.primary }]}
+                accessibilityRole="button"
+                accessibilityLabel="Online shopping"
+                accessibilityState={{ selected: activeTab === 'online' }}
+              >
+                <Text style={[Typography.titleSmall, { color: activeTab === 'online' ? colors.onPrimary : colors.outline }]}>Online</Text>
+              </PressableScale>
+              <PressableScale
+                onPress={() => setActiveTab('instore')}
+                style={[styles.togglePill, activeTab === 'instore' && { backgroundColor: colors.primary }]}
+                accessibilityRole="button"
+                accessibilityLabel="In-store shopping"
+                accessibilityState={{ selected: activeTab === 'instore' }}
+              >
+                <Text style={[Typography.titleSmall, { color: activeTab === 'instore' ? colors.onPrimary : colors.outline }]}>In-Store</Text>
+              </PressableScale>
+            </View>
+          )}
         </View>
-
-        {/* Online/In-Store toggle — hidden entirely when online_grocery
-            is off so users aren't confused by a one-option picker.
-            The in-store view becomes the only option. */}
-        {showOnlineGrocery && (
-          <View style={[styles.toggleContainer, { backgroundColor: colors.surfaceContainerLow }]}>
-            <PressableScale
-              onPress={() => setActiveTab('online')}
-              style={[
-                styles.togglePill,
-                activeTab === 'online' && { backgroundColor: colors.primary },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="Online shopping"
-              accessibilityState={{ selected: activeTab === 'online' }}
-            >
-              <MaterialCommunityIcons
-                name="truck-delivery-outline"
-                size={16}
-                color={activeTab === 'online' ? colors.onPrimary : colors.outline}
-              />
-              <Text
-                style={[
-                  Typography.titleSmall,
-                  { color: activeTab === 'online' ? colors.onPrimary : colors.outline },
-                ]}
-              >
-                Online
-              </Text>
-            </PressableScale>
-            <PressableScale
-              onPress={() => setActiveTab('instore')}
-              style={[
-                styles.togglePill,
-                activeTab === 'instore' && { backgroundColor: colors.primary },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="In-store shopping"
-              accessibilityState={{ selected: activeTab === 'instore' }}
-            >
-              <MaterialCommunityIcons
-                name="store-outline"
-                size={16}
-                color={activeTab === 'instore' ? colors.onPrimary : colors.outline}
-              />
-              <Text
-                style={[
-                  Typography.titleSmall,
-                  { color: activeTab === 'instore' ? colors.onPrimary : colors.outline },
-                ]}
-              >
-                In-Store
-              </Text>
-            </PressableScale>
-          </View>
-        )}
+        <Text style={[Typography.bodySmall, { color: colors.outline, paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }]}>
+          {recipeCards.length > 0 ? `${recipeCards.length} Recipes  •  ` : ''}{totalCount} Items
+        </Text>
 
         {/* Manual item entry */}
         <View style={[styles.manualEntryRow, { paddingHorizontal: Spacing.page }]}>
-          <View style={[styles.manualInputWrap, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-            <MaterialCommunityIcons name="plus" size={20} color={colors.outline} />
+          <View style={[styles.inputCard, { backgroundColor: colors.surfaceContainerLowest ?? '#FFFFFF', borderColor: `${colors.primary}22` }]}>
+            <MaterialCommunityIcons name="plus" size={24} color={colors.primary} />
             <TextInput
               value={manualItemName}
               onChangeText={setManualItemName}
-              placeholder="Add item (eggs, bread, paper towels...)"
-              placeholderTextColor={colors.outline}
-              style={[Typography.body, { flex: 1, color: colors.onSurface, padding: 0 }]}
+              placeholder="ADD YOUR OWN ITEMS"
+              placeholderTextColor={`${colors.primary}88`}
+              style={[Typography.body, { flex: 1, color: colors.primary, padding: 0, fontWeight: '700', letterSpacing: 2 }]}
               returnKeyType="done"
               onSubmitEditing={handleAddManualItem}
+              autoCapitalize="characters"
             />
             {manualItemName.trim().length > 0 && (
               <Pressable onPress={handleAddManualItem} accessibilityRole="button" accessibilityLabel="Add item">
@@ -557,7 +555,7 @@ export default function GroceryScreen() {
         {activeTab === 'online' && (
           <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
             <GlassView style={{ padding: Spacing.xl, alignItems: 'center', borderRadius: Radius.lg }}>
-              <View style={[styles.emptyIconCircle, { backgroundColor: colors.primarySubtle, marginBottom: Spacing.md }]}>
+              <View style={[{ width: 96, height: 96, borderRadius: 9999, alignItems: 'center', justifyContent: 'center' }, { backgroundColor: colors.primarySubtle, marginBottom: Spacing.md }]}>
                 <MaterialCommunityIcons name="truck-delivery-outline" size={40} color={colors.primary} />
               </View>
               <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center', marginBottom: Spacing.xs }]}>
@@ -823,26 +821,39 @@ export default function GroceryScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  titleSection: {
-    paddingHorizontal: Spacing.page,
-    marginBottom: Spacing.lg,
-    alignItems: 'center',
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.xs,
   },
   toggleContainer: {
     flexDirection: 'row',
-    marginHorizontal: Spacing.page,
     borderRadius: Radius.full,
     padding: 4,
-    marginBottom: Spacing.xl,
   },
   togglePill: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.xs,
-    paddingVertical: 10,
+    paddingVertical: 6,
+    paddingHorizontal: Spacing.md,
     borderRadius: Radius.full,
+  },
+  inputCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 16,
+    borderRadius: Radius.xl,
+    borderWidth: 1,
+    marginBottom: Spacing.xl,
+  },
+  emptyBody: {
+    alignItems: 'center',
+    paddingTop: Spacing.xxl,
   },
   recipeCarousel: {
     paddingHorizontal: Spacing.page,
@@ -1001,26 +1012,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: Radius.full,
   },
-  emptyRoot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.md,
-    paddingBottom: 100,
-  },
-  emptyIconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 9999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
   emptyBtn: {
     paddingHorizontal: Spacing.xl,
-    paddingVertical: 14,
-    borderRadius: 9999,
-    marginTop: Spacing.md,
+    paddingVertical: 16,
+    borderRadius: Radius.xl,
   },
   manualEntryRow: {
     marginBottom: Spacing.lg,
