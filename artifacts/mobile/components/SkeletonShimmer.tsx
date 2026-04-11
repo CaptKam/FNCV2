@@ -5,9 +5,9 @@ import Animated, {
   useAnimatedStyle,
   withRepeat,
   withTiming,
-  useReducedMotion,
 } from 'react-native-reanimated';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useReducedMotion } from '@/utils/motion';
 
 interface SkeletonShimmerProps {
   width?: number | `${number}%`;

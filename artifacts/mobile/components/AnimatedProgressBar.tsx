@@ -5,8 +5,8 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   Easing,
-  useReducedMotion,
 } from 'react-native-reanimated';
+import { useReducedMotion } from '@/utils/motion';
 
 interface AnimatedProgressBarProps {
   /** Value 0-1 (or 0-100 if `outOf100` is true) */

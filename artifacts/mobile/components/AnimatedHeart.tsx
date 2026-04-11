@@ -5,10 +5,10 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withSequence,
-  useReducedMotion,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useReducedMotion } from '@/utils/motion';
 
 const BOUNCE_SPRING = { damping: 8, stiffness: 400, mass: 0.6 };
 const SETTLE_SPRING = { damping: 14, stiffness: 200 };

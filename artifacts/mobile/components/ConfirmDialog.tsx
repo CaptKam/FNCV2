@@ -36,6 +36,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
+import { useReducedMotion } from '@/utils/motion';
 
 interface ConfirmDialogProps {
   visible: boolean;
@@ -67,6 +68,7 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const colors = useThemeColors();
+  const reduceMotion = useReducedMotion();
   const isInfo = !cancelLabel;
 
   const handleOverlayPress = () => {
@@ -84,7 +86,7 @@ export function ConfirmDialog({
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType={reduceMotion ? 'none' : 'fade'}
       onRequestClose={isInfo ? onConfirm : (onCancel ?? onConfirm)}
       statusBarTranslucent
     >

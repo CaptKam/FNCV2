@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { View, Text, StyleSheet, Pressable, Animated as RNAnimated, Platform, AppState, RefreshControl } from 'react-native';
-import Animated, { FadeInDown, FadeOutDown, useReducedMotion, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutDown, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
+import { useReducedMotion } from '@/utils/motion';
 import { BlurView } from 'expo-blur';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';

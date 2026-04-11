@@ -57,6 +57,7 @@ import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
+import { useReducedMotion } from '@/utils/motion';
 
 export type BottomSheetSize = 'small' | 'medium' | 'full';
 
@@ -100,30 +101,40 @@ export function BottomSheet({
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const { height: screenHeight } = useWindowDimensions();
+  const reduceMotion = useReducedMotion();
 
   const sheetHeight = screenHeight * SIZE_FRACTIONS[size];
 
   // Translation for drag-to-dismiss. Starts off-screen (= full
   // sheetHeight) and springs to 0 when the sheet opens. We drag the
   // sheet downward as a delta on top of this.
-  const translateY = useRef(new Animated.Value(sheetHeight)).current;
+  //
+  // When reduceMotion is true (motion kill-switch flipped on), we
+  // skip the spring entirely and snap to 0 on open / sheetHeight on
+  // close. Drag-to-dismiss gestures still work because PanResponder
+  // sets translateY directly, independent of this effect.
+  const translateY = useRef(new Animated.Value(reduceMotion ? 0 : sheetHeight)).current;
 
   useEffect(() => {
     if (visible) {
-      Animated.spring(translateY, {
-        toValue: 0,
-        useNativeDriver: true,
-        damping: 20,
-        stiffness: 300,
-        mass: 1,
-      }).start();
+      if (reduceMotion) {
+        translateY.setValue(0);
+      } else {
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 20,
+          stiffness: 300,
+          mass: 1,
+        }).start();
+      }
     } else {
       // Pre-position so the NEXT open animates from the bottom again.
-      translateY.setValue(sheetHeight);
+      translateY.setValue(reduceMotion ? 0 : sheetHeight);
     }
     // translateY is a ref; sheetHeight changes with size/screen.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, sheetHeight]);
+  }, [visible, sheetHeight, reduceMotion]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -143,21 +154,29 @@ export function BottomSheet({
       },
       onPanResponderRelease: (_e, g) => {
         if (g.dy > DISMISS_THRESHOLD_PX || g.vy > DISMISS_VELOCITY) {
-          // Animate out then call onDismiss so the caller can flip
-          // `visible` to false.
-          Animated.timing(translateY, {
-            toValue: sheetHeight,
-            duration: 180,
-            useNativeDriver: true,
-          }).start(() => onDismiss());
+          // Dismiss. With motion disabled we skip the slide-out
+          // animation and just call onDismiss immediately.
+          if (reduceMotion) {
+            onDismiss();
+          } else {
+            Animated.timing(translateY, {
+              toValue: sheetHeight,
+              duration: 180,
+              useNativeDriver: true,
+            }).start(() => onDismiss());
+          }
         } else {
           // Snap back to open position.
-          Animated.spring(translateY, {
-            toValue: 0,
-            useNativeDriver: true,
-            damping: 20,
-            stiffness: 300,
-          }).start();
+          if (reduceMotion) {
+            translateY.setValue(0);
+          } else {
+            Animated.spring(translateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              damping: 20,
+              stiffness: 300,
+            }).start();
+          }
         }
       },
     }),
@@ -167,7 +186,7 @@ export function BottomSheet({
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType={reduceMotion ? 'none' : 'fade'}
       onRequestClose={onDismiss}
       statusBarTranslucent
     >
