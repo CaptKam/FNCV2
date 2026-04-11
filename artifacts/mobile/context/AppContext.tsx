@@ -139,6 +139,7 @@ interface AppContextValue {
   xp: number;
   level: number;
   passportStamps: Record<string, number>;
+  categoryCounts: Record<string, number>;
   awardXP: (amount: number) => void;
   addPassportStamp: (countryId: string) => void;
   getCookingLevelName: () => string;
@@ -323,6 +324,7 @@ const defaultHistory = {
   xp: 0,
   level: 1,
   passportStamps: {} as Record<string, number>,
+  categoryCounts: { appetizer: 0, main: 0, dessert: 0 } as Record<string, number>,
 };
 
 // ═══════════════════════════════════════════
@@ -355,6 +357,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [xp, setXp] = useState(defaultHistory.xp);
   const [level, setLevel] = useState(defaultHistory.level);
   const [passportStamps, setPassportStamps] = useState<Record<string, number>>(defaultHistory.passportStamps);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>(defaultHistory.categoryCounts);
   const [kitchenChecks, setKitchenChecksState] = useState<boolean[]>([false, false, false]);
   const [pendingDinnerPlan, setPendingDinnerPlan] = useState<DinnerPlan | null>(null);
   const [dinnerParties, setDinnerParties] = useState<DinnerParty[]>([]);
@@ -459,6 +462,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (hi.xp != null) setXp(hi.xp);
       if (hi.level != null) setLevel(hi.level);
       if (hi.passportStamps) setPassportStamps(hi.passportStamps);
+      if (hi.categoryCounts) setCategoryCounts(hi.categoryCounts);
       // Clean up old "tonight dismissed" keys (keep only last 7 days)
       try {
         const allKeys = await AsyncStorage.getAllKeys();
@@ -495,8 +499,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (hydrated.current)
-      Storage.set(KEYS.history, { totalRecipesCooked, xp, level, passportStamps });
-  }, [totalRecipesCooked, xp, level, passportStamps]);
+      Storage.set(KEYS.history, { totalRecipesCooked, xp, level, passportStamps, categoryCounts });
+  }, [totalRecipesCooked, xp, level, passportStamps, categoryCounts]);
 
   useEffect(() => {
     if (hydrated.current)
@@ -946,6 +950,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ...s,
             [recipe.countryId]: (s[recipe.countryId] ?? 0) + 1,
           }));
+          setCategoryCounts((s) => ({
+            ...s,
+            [recipe.category]: (s[recipe.category] ?? 0) + 1,
+          }));
         }
       }
       return null;
@@ -968,6 +976,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setPassportStamps((s) => ({
             ...s,
             [oldRecipe.countryId]: (s[oldRecipe.countryId] ?? 0) + 1,
+          }));
+          setCategoryCounts((s) => ({
+            ...s,
+            [oldRecipe.category]: (s[oldRecipe.category] ?? 0) + 1,
           }));
         }
       }
@@ -1373,6 +1385,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     xp,
     level,
     passportStamps,
+    categoryCounts,
     awardXP,
     addPassportStamp,
     getCookingLevelName,
