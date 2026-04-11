@@ -110,6 +110,7 @@ export default function GroceryScreen() {
   const [manualItemName, setManualItemName] = useState('');
   const [showMealPlanHint, setShowMealPlanHint] = useState(false);
   const [showCookHandoff, setShowCookHandoff] = useState(false);
+  const [cookHandoffHasMeal, setCookHandoffHasMeal] = useState(false);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -145,13 +146,16 @@ export default function GroceryScreen() {
   // Cook handoff: watch uncheckedCount to detect shopping completion
   const prevUnchecked = useRef(uncheckedCount);
   useEffect(() => {
-    if (prevUnchecked.current > 0 && uncheckedCount === 0 && app.getTodaysMeals().length > 0) {
+    if (prevUnchecked.current > 0 && uncheckedCount === 0 && totalCount > 0) {
+      const hasMealToday = app.getTodaysMeals().length > 0;
       try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+      setCookHandoffHasMeal(hasMealToday);
       setTimeout(() => setShowCookHandoff(true), 500);
-      setTimeout(() => setShowCookHandoff(false), 10000);
+      // 10s with CTA, 4s for standalone success
+      setTimeout(() => setShowCookHandoff(false), hasMealToday ? 10000 : 4000);
     }
     prevUnchecked.current = uncheckedCount;
-  }, [uncheckedCount]);
+  }, [uncheckedCount, totalCount]);
 
   // Derive unique recipe names from grocery items
   const recipeSourceNames = useMemo(() => {
@@ -738,16 +742,20 @@ export default function GroceryScreen() {
           <MaterialCommunityIcons name="check-circle" size={24} color={colors.success} />
           <View style={{ flex: 1 }}>
             <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>Shopping complete!</Text>
-            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>You've got everything for tonight.</Text>
+            <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>
+              {cookHandoffHasMeal ? "You've got everything for tonight." : "Nice work — everything is checked off."}
+            </Text>
           </View>
-          <Pressable
-            onPress={() => { setShowCookHandoff(false); router.push('/(tabs)/cook'); }}
-            style={[styles.cookHandoffBtn, { backgroundColor: colors.primary }]}
-            accessibilityRole="button"
-            accessibilityLabel="Start cooking"
-          >
-            <Text style={[Typography.labelSmall, { color: colors.onPrimary }]}>Start Cooking</Text>
-          </Pressable>
+          {cookHandoffHasMeal && (
+            <Pressable
+              onPress={() => { setShowCookHandoff(false); router.push('/(tabs)/cook'); }}
+              style={[styles.cookHandoffBtn, { backgroundColor: colors.primary }]}
+              accessibilityRole="button"
+              accessibilityLabel="Start cooking"
+            >
+              <Text style={[Typography.labelSmall, { color: colors.onPrimary }]}>Start Cooking</Text>
+            </Pressable>
+          )}
         </Animated.View>
       )}
 

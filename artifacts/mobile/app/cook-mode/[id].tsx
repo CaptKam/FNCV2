@@ -104,6 +104,9 @@ export default function CookModeScreen() {
     transform: [{ scale: celebrationScale.value }],
   }));
   const completedRecipeRef = useRef<{ title: string; countryId: string; countryName: string; countryFlag: string } | null>(null);
+  // Capture whether this is the user's first-ever cook (before completion runs)
+  const initialCookCountRef = useRef(app.totalRecipesCooked);
+  const [isFirstEverCook, setIsFirstEverCook] = useState(false);
 
   useEffect(() => {
     if (session && recipe) {
@@ -123,6 +126,7 @@ export default function CookModeScreen() {
       if (activeParty) {
         router.replace('/dinner-complete');
       } else {
+        if (initialCookCountRef.current === 0) setIsFirstEverCook(true);
         setShowCelebration(true);
         if (!reduceMotion) {
           celebrationScale.value = withSpring(1, { damping: 12, stiffness: 180 });
@@ -137,6 +141,7 @@ export default function CookModeScreen() {
       if (activeParty) {
         router.replace('/dinner-complete');
       } else {
+        if (initialCookCountRef.current === 0) setIsFirstEverCook(true);
         setShowCelebration(true);
         if (!reduceMotion) {
           celebrationScale.value = withSpring(1, { damping: 12, stiffness: 180 });
@@ -505,9 +510,12 @@ export default function CookModeScreen() {
                 <Text style={[Typography.titleMedium, { color: t.instructionColor, textAlign: 'center', marginTop: Spacing.sm, opacity: 0.8 }]}>
                   {completedRecipeRef.current.title}
                 </Text>
-                <Text style={{ fontSize: 32, textAlign: 'center', marginTop: Spacing.md }}>
-                  {completedRecipeRef.current.countryFlag}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, marginTop: Spacing.md }}>
+                  <Text style={{ fontSize: 32 }}>{completedRecipeRef.current.countryFlag}</Text>
+                  <Text style={[Typography.body, { color: t.instructionColor, opacity: 0.7 }]}>
+                    {completedRecipeRef.current.countryName}
+                  </Text>
+                </View>
               </Animated.View>
             )}
             <Animated.View entering={reduceMotion ? undefined : FadeIn.delay(500).duration(300)} style={{ alignItems: 'center', marginTop: Spacing.lg }}>
@@ -515,6 +523,11 @@ export default function CookModeScreen() {
               <Text style={[Typography.bodySmall, { color: t.instructionColor, opacity: 0.6, marginTop: Spacing.xs }]}>
                 {completedRecipeRef.current?.countryName} cuisine explored 🌍
               </Text>
+              {isFirstEverCook && (
+                <Text style={[Typography.body, { color: t.instructionColor, opacity: 0.7, fontStyle: 'italic', textAlign: 'center', marginTop: Spacing.md }]}>
+                  Your culinary journey begins!
+                </Text>
+              )}
             </Animated.View>
             <Animated.View entering={reduceMotion ? undefined : FadeIn.delay(700).duration(300)} style={{ marginTop: Spacing.xxl }}>
               <Pressable
