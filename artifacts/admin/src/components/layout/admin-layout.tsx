@@ -11,6 +11,8 @@ import {
   ChevronRight,
   Leaf,
   Globe,
+  ToggleLeft,
+  Sliders,
 } from "lucide-react";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +25,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { name: 'Featured Country', href: '/featured-country', icon: Globe },
     { name: 'Ingredients', href: '/ingredients', icon: Leaf },
     { name: 'Users', href: '/users', icon: Users },
+    { name: 'Feature Flags', href: '/feature-flags', icon: ToggleLeft },
+    { name: 'App Settings', href: '/app-settings', icon: Sliders },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
