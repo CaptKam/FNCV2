@@ -22,6 +22,8 @@ import { getOrCreateDeviceId } from "./deviceId";
 import { getMobileToken, setMobileToken, syncRegister } from "./syncClient";
 import { loadIngredientTaxonomy } from "./ingredientTaxonomy";
 import { loadRemoteConfig } from "./remoteConfig";
+import { loadCuratedCollections } from "./curatedCollections";
+import { loadCountryMetadata } from "./countryMetadata";
 
 let bootstrapPromise: Promise<BootstrapResult> | null = null;
 
@@ -41,12 +43,14 @@ function platformTag(): "ios" | "android" | "web" {
 }
 
 async function runBootstrap(): Promise<BootstrapResult> {
-  // Kick off the ingredient taxonomy + remote-config loads in
-  // parallel with registration. Both endpoints are public (no
-  // auth) so they start immediately and populate their in-memory
-  // stores even if registration fails.
+  // Kick off all public loads in parallel with registration. Every
+  // one of these endpoints is public (no auth) so they start
+  // immediately and populate their in-memory stores even if
+  // registration fails.
   void loadIngredientTaxonomy();
   void loadRemoteConfig();
+  void loadCuratedCollections();
+  void loadCountryMetadata();
 
   // Step 1: ensure we have a device ID. This always succeeds (falls
   // back to an in-memory ID if AsyncStorage is broken).

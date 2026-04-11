@@ -14,6 +14,7 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { countries } from '@/data/countries';
+import { getDisplayRegion } from '@/utils/countryMetadata';
 import { recipes } from '@/data/recipes';
 import { REGION_IMAGES, RECIPE_REGION_MAP } from '@/data/maps';
 import { formatCookTime } from '@/data/helpers';
@@ -80,7 +81,7 @@ export default function CountryDetailScreen() {
           <View style={styles.heroText}>
             <GlassView style={styles.flagPill}>
               <Text style={{ fontSize: 16 }}>{country.flag}</Text>
-              <Text style={[Typography.caption, { color: colors.textOnImage }]}>{country.region}</Text>
+              <Text style={[Typography.caption, { color: colors.textOnImage }]}>{getDisplayRegion(country.id)}</Text>
             </GlassView>
             <Text style={[Typography.displayMedium, { color: colors.textOnImage }]}>{country.name}</Text>
           </View>
