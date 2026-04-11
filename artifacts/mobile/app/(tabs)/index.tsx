@@ -104,7 +104,13 @@ export default function DiscoverScreen() {
   // Feature flags and settings controlling the Discover tab.
   const tonightStripEnabled = useFeatureFlag('tonight_strip');
   const showPullToRefresh = useFeatureFlag('pull_to_refresh');
+  const showXp = useFeatureFlag('xp_system');
+  const showPassport = useFeatureFlag('passport_stamps');
   const tonightStartHour = useAppSetting<number>('tonight_strip_start_hour', 12);
+  const thresholds = useAppSetting<number[]>(
+    'level_thresholds',
+    [0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 12000],
+  );
 
   // Tonight's plan
   const todaysMeals = app.getTodaysMeals();
@@ -190,11 +196,16 @@ export default function DiscoverScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCountry, shuffleSeed]);
 
-  // XP/Level data
+  // XP/Level data — computed from level_thresholds so the progress
+  // bar fills toward the NEXT threshold, not a hardcoded 300.
   const { xp, level, totalRecipesCooked, passportStamps } = app;
   const levelName = app.getCookingLevelName();
-  const progress = (xp % 300) / 300;
-  const xpToNext = 300 - (xp % 300);
+  const currentThreshold = thresholds[Math.max(0, level - 1)] ?? 0;
+  const nextThreshold = thresholds[level] ?? currentThreshold + 500;
+  const xpIntoLevel = Math.max(0, xp - currentThreshold);
+  const xpSpan = Math.max(1, nextThreshold - currentThreshold);
+  const progress = Math.max(0, Math.min(1, xpIntoLevel / xpSpan));
+  const xpToNext = Math.max(0, nextThreshold - xp);
   const exploredCountries = Object.keys(passportStamps).length;
   const stampFlags = Object.keys(passportStamps)
     .slice(0, 3)
@@ -384,42 +395,48 @@ export default function DiscoverScreen() {
           </View>
         </Animated.View>
 
-        {/* ═══ ROW 3B: XP + STATS (2-column row) ═══ */}
-        <View style={[styles.bentoRow, { paddingHorizontal: GRID_PAD, gap: GRID_GAP, marginBottom: GRID_GAP }]}>
-          {/* XP Card */}
-          <Animated.View entering={enterDelay(120)} style={{ flex: 1 }}>
-            <PressableScale
-              onPress={() => router.push('/profile')}
-              style={[styles.xpCard, { backgroundColor: colors.surfaceContainerLow }]}
-              accessibilityRole="button"
-              accessibilityLabel={`Level ${level}, ${xp} XP`}
-              scaleDown={0.97}
-            >
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: Spacing.xs }}>
-                <Text style={[Typography.labelSmall, { color: colors.warning, letterSpacing: 1 }]}>LEVEL {level}</Text>
-                <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{xp % 300} XP</Text>
-              </View>
-              <View style={[styles.xpBarTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
-                <View style={[styles.xpBarFill, { backgroundColor: colors.warning, width: `${progress * 100}%` }]} />
-              </View>
-            </PressableScale>
-          </Animated.View>
+        {/* ═══ ROW 3B: XP + STATS (2-column row) ═══
+            Both cards are gated. When neither xp_system nor passport_stamps
+            is enabled we drop the whole row so the layout collapses cleanly. */}
+        {(showXp || showPassport) && (
+          <View style={[styles.bentoRow, { paddingHorizontal: GRID_PAD, gap: GRID_GAP, marginBottom: GRID_GAP }]}>
+            {showXp && (
+              <Animated.View entering={enterDelay(120)} style={{ flex: 1 }}>
+                <PressableScale
+                  onPress={() => router.push('/profile')}
+                  style={[styles.xpCard, { backgroundColor: colors.surfaceContainerLow }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Level ${level}, ${xp} XP`}
+                  scaleDown={0.97}
+                >
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: Spacing.xs }}>
+                    <Text style={[Typography.labelSmall, { color: colors.warning, letterSpacing: 1 }]}>LEVEL {level}</Text>
+                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>{xpIntoLevel} XP</Text>
+                  </View>
+                  <View style={[styles.xpBarTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
+                    <View style={[styles.xpBarFill, { backgroundColor: colors.warning, width: `${progress * 100}%` }]} />
+                  </View>
+                </PressableScale>
+              </Animated.View>
+            )}
 
-          {/* Stats/Streak Card */}
-          <Animated.View entering={enterDelay(180)} style={{ flex: 1 }}>
-            <PressableScale
-              onPress={() => router.push('/profile')}
-              style={[styles.streakCard, { backgroundColor: colors.primary }]}
-              accessibilityRole="button"
-              accessibilityLabel={`${totalRecipesCooked} recipes cooked`}
-              scaleDown={0.97}
-            >
-              <MaterialCommunityIcons name="fire" size={24} color="#FFFFFF" />
-              <Text style={[Typography.headline, { color: '#FFFFFF', fontSize: 20 }]}>{totalRecipesCooked} cooked</Text>
-              <Text style={[Typography.caption, { color: 'rgba(255,255,255,0.7)', letterSpacing: 1 }]}>{exploredCountries} COUNTRIES</Text>
-            </PressableScale>
-          </Animated.View>
-        </View>
+            {showPassport && (
+              <Animated.View entering={enterDelay(180)} style={{ flex: 1 }}>
+                <PressableScale
+                  onPress={() => router.push('/profile')}
+                  style={[styles.streakCard, { backgroundColor: colors.primary }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${totalRecipesCooked} recipes cooked`}
+                  scaleDown={0.97}
+                >
+                  <MaterialCommunityIcons name="fire" size={24} color="#FFFFFF" />
+                  <Text style={[Typography.headline, { color: '#FFFFFF', fontSize: 20 }]}>{totalRecipesCooked} cooked</Text>
+                  <Text style={[Typography.caption, { color: 'rgba(255,255,255,0.7)', letterSpacing: 1 }]}>{exploredCountries} COUNTRIES</Text>
+                </PressableScale>
+              </Animated.View>
+            )}
+          </View>
+        )}
 
         {/* ═══ ROW 4: CUISINE FILTER CHIPS ═══ */}
         <Animated.View entering={enterDelay(200)}>
