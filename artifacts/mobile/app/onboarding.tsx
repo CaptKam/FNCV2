@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Checkbox } from '@/components/Checkbox';
+import { PressableScale } from '@/components/PressableScale';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
@@ -317,8 +318,9 @@ export default function OnboardingScreen() {
       </ScrollView>
 
       <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16 }]}>
-        <Pressable
+        <PressableScale
           onPress={handleNext}
+          haptic="medium"
           style={[styles.continueBtn, { backgroundColor: colors.primary }]}
           accessibilityRole="button"
           accessibilityLabel={step === 2 ? 'Get started' : 'Continue'}
@@ -331,7 +333,7 @@ export default function OnboardingScreen() {
             size={20}
             color={colors.onPrimary}
           />
-        </Pressable>
+        </PressableScale>
       </View>
     </KeyboardAvoidingView>
   );

@@ -23,6 +23,8 @@ import { todayLocal, addDays, getDayLabelFull } from '@/utils/dates';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
 import { Recipe } from '@/data/recipes';
 import { SmartCookBar } from '@/components/SmartCookBar';
+import { AnimatedCounter } from '@/components/AnimatedCounter';
+import { AnimatedProgressBar } from '@/components/AnimatedProgressBar';
 
 import { TECHNIQUES } from '@/data/techniques';
 
@@ -393,14 +395,24 @@ export default function CookScreen() {
         <View style={styles.levelSection}>
           <View style={styles.levelHeader}>
             <Text style={[Typography.labelLarge, { color: colors.outline }]}>Your Progress</Text>
-            <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>{xp} points</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+              <AnimatedCounter
+                value={xp}
+                style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}
+              />
+              <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}> points</Text>
+            </View>
           </View>
           <Text style={[Typography.headline, { color: colors.onSurface }]}>{levelName}</Text>
           <View style={styles.levelBarRow}>
             <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]}>Level {level}</Text>
-            <View style={[styles.progressBar, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <View style={[styles.progressFill, { backgroundColor: colors.primary, width: `${progress * 100}%` }]} />
-            </View>
+            <AnimatedProgressBar
+              progress={progress}
+              trackColor={colors.surfaceContainerHigh}
+              fillColor={colors.primary}
+              height={6}
+              style={{ flex: 1 }}
+            />
           </View>
           <Text style={[Typography.caption, { color: colors.onSurfaceVariant, marginTop: Spacing.xs }]}>
             Cook recipes to earn points and level up
@@ -451,9 +463,10 @@ export default function CookScreen() {
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.xxl }}>
           <View style={[styles.statsCard, { backgroundColor: colors.surfaceContainerLow }]}>
             <View style={{ flex: 1 }}>
-              <Text style={[Typography.headlineLarge, { color: colors.onSurface }]}>
-                {app.totalRecipesCooked}
-              </Text>
+              <AnimatedCounter
+                value={app.totalRecipesCooked}
+                style={[Typography.headlineLarge, { color: colors.onSurface }]}
+              />
               <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant }]}>
                 Recipes cooked
               </Text>

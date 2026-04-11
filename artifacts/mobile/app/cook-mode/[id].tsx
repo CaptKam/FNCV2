@@ -5,13 +5,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeIn, useReducedMotion, withSpring, useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
+import Animated, { FadeIn, SlideInRight, useReducedMotion, withSpring, useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { GlassView } from '@/components/GlassView';
+import { PressableScale } from '@/components/PressableScale';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { convertAmount } from '@/data/helpers';
@@ -257,6 +258,20 @@ export default function CookModeScreen() {
   const hasTimer = step.duration && step.duration > 0;
   const timerProgress = totalDuration > 0 ? timerSeconds / totalDuration : 0;
 
+  // Smoothly animate the step progress bar as user advances through steps
+  const stepProgress = useSharedValue((currentStep + 1) / totalSteps);
+  useEffect(() => {
+    const target = (currentStep + 1) / totalSteps;
+    if (reduceMotion) {
+      stepProgress.value = target;
+    } else {
+      stepProgress.value = withTiming(target, { duration: 400, easing: Easing.out(Easing.cubic) });
+    }
+  }, [currentStep, totalSteps, reduceMotion]);
+  const stepProgressBarStyle = useAnimatedStyle(() => ({
+    width: `${stepProgress.value * 100}%`,
+  }));
+
   // In dinner mode, materials come from the event; in single mode, from ingredient matching
   const matchedIngredients = isDinnerMode
     ? (dinnerEvent?.materials ?? []).map((m) => ({ name: m, amount: '' }))
@@ -308,7 +323,7 @@ export default function CookModeScreen() {
 
       {/* Progress bar */}
       <View style={[styles.progressBar, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
-        <Animated.View style={[styles.progressFill, { backgroundColor: isLastStep ? colors.success : colors.primary, width: `${((currentStep + 1) / totalSteps) * 100}%` }]} />
+        <Animated.View style={[styles.progressFill, { backgroundColor: isLastStep ? colors.success : colors.primary }, stepProgressBarStyle]} />
       </View>
 
       <ScrollView
@@ -316,6 +331,10 @@ export default function CookModeScreen() {
         contentContainerStyle={[styles.scrollInner, { paddingBottom: insets.bottom + 120 }]}
         showsVerticalScrollIndicator={false}
       >
+        <Animated.View
+          key={currentStep}
+          entering={reduceMotion ? undefined : SlideInRight.duration(250).easing(Easing.out(Easing.cubic))}
+        >
         {/* Step image - uses recipe hero as fallback */}
         <View style={styles.stepImageWrap}>
           <Image
@@ -434,25 +453,28 @@ export default function CookModeScreen() {
             </View>
           </View>
         )}
+        </Animated.View>
       </ScrollView>
 
       <View style={[styles.bottomNav, { paddingBottom: insets.bottom + 16 }]}>
         <GlassView style={[styles.bottomNavInner, !isDark && { borderWidth: 1, borderColor: t.navDivider }]} intensity={isDark ? 40 : 32}>
-          <Pressable
+          <PressableScale
             onPress={goPrev}
             disabled={currentStep === 0}
+            scaleDown={0.95}
             style={[styles.prevBtn, { opacity: currentStep === 0 ? 0.3 : 1 }]}
             accessibilityRole="button"
             accessibilityLabel="Previous step"
           >
             <MaterialCommunityIcons name="arrow-left" size={20} color={t.prevIcon} />
             <Text style={[styles.prevBtnText, { color: t.prevText }]}>Previous</Text>
-          </Pressable>
+          </PressableScale>
 
           <View style={[styles.navDivider, { backgroundColor: t.navDivider }]} />
 
-          <Pressable
+          <PressableScale
             onPress={goNext}
+            scaleDown={0.95}
             style={[styles.nextBtn, { backgroundColor: isLastStep ? colors.success : colors.primary }]}
             accessibilityRole="button"
             accessibilityLabel={isLastStep ? 'Finish cooking' : 'Next step'}
@@ -465,7 +487,7 @@ export default function CookModeScreen() {
               size={20}
               color={colors.onPrimary}
             />
-          </Pressable>
+          </PressableScale>
         </GlassView>
       </View>
 
