@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Modal, FlatList } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, FlatList } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -10,6 +10,8 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
+import { BottomSheet } from '@/components/BottomSheet';
+import { SelectionPill } from '@/components/SelectionPill';
 import { countries } from '@/data/countries';
 import { recipes, Step } from '@/data/recipes';
 import { convertAmount, formatCookTime } from '@/data/helpers';
@@ -459,85 +461,61 @@ export default function RecipeDetailScreen() {
         </PressableScale>
       </GlassView>
 
-      {/* Add to Plan bottom sheet */}
-      <Modal
+      {/* Add to Plan — Standard B (medium) */}
+      <BottomSheet
         visible={showPlanSheet}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowPlanSheet(false)}
+        onDismiss={() => setShowPlanSheet(false)}
+        size="medium"
+        title="Add to Plan"
       >
-        <Pressable style={styles.sheetOverlay} onPress={() => setShowPlanSheet(false)}>
-          <Pressable
-            style={[styles.sheetContainer, { backgroundColor: colors.surface }]}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={[styles.sheetHandle, { backgroundColor: colors.handleBar }]} />
-            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
-              Add to Plan
-            </Text>
-
-            {/* Course type selector */}
-            <View style={styles.courseTypeRow}>
-              {(['appetizer', 'main', 'dessert'] as const).map((ct) => {
-                const isActive = planCourseType === ct;
-                return (
-                  <Pressable
-                    key={ct}
-                    onPress={() => setPlanCourseType(ct)}
-                    style={[
-                      styles.courseTypeChip,
-                      { backgroundColor: isActive ? colors.primary : colors.surfaceContainerHigh },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${ct} course`}
-                    accessibilityState={{ selected: isActive }}
-                  >
-                    <Text style={[Typography.titleSmall, { color: isActive ? colors.onPrimary : colors.onSurface }]}>
-                      {ct.charAt(0).toUpperCase() + ct.slice(1)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {/* Day list */}
-            <FlatList
-              data={planDays}
-              keyExtractor={(item) => item.date}
-              showsVerticalScrollIndicator={false}
-              style={{ maxHeight: 320 }}
-              renderItem={({ item }) => {
-                const dayIt = app.itinerary.find((d) => d.date === item.date);
-                const existingMain = dayIt?.courses?.main;
-                return (
-                  <Pressable
-                    onPress={() => handleAddToPlan(item.date)}
-                    style={[styles.dayRow, { backgroundColor: colors.surfaceContainerLow }]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${item.label}, ${item.short}${existingMain ? `, has ${existingMain.recipeName}` : ''}`}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
-                        {existingMain && (
-                          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary }} />
-                        )}
-                      </View>
-                      <Text style={[Typography.caption, { color: colors.outline }]}>{item.short}</Text>
-                      {existingMain && (
-                        <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
-                          {existingMain.recipeName}
-                        </Text>
-                      )}
-                    </View>
-                    <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
-                  </Pressable>
-                );
-              }}
+        {/* Course type selector — standardized pills */}
+        <View style={styles.courseTypeRow}>
+          {(['appetizer', 'main', 'dessert'] as const).map((ct) => (
+            <SelectionPill
+              key={ct}
+              label={ct.charAt(0).toUpperCase() + ct.slice(1)}
+              selected={planCourseType === ct}
+              onPress={() => setPlanCourseType(ct)}
             />
-          </Pressable>
-        </Pressable>
-      </Modal>
+          ))}
+        </View>
+
+        {/* Day list */}
+        <FlatList
+          data={planDays}
+          keyExtractor={(item) => item.date}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: Spacing.md }}
+          renderItem={({ item }) => {
+            const dayIt = app.itinerary.find((d) => d.date === item.date);
+            const existingMain = dayIt?.courses?.main;
+            return (
+              <Pressable
+                onPress={() => handleAddToPlan(item.date)}
+                style={[styles.dayRow, { backgroundColor: colors.surfaceContainerHigh }]}
+                accessibilityRole="button"
+                accessibilityLabel={`${item.label}, ${item.short}${existingMain ? `, has ${existingMain.recipeName}` : ''}`}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
+                    {existingMain && (
+                      <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary }} />
+                    )}
+                  </View>
+                  <Text style={[Typography.caption, { color: colors.outline }]}>{item.short}</Text>
+                  {existingMain && (
+                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
+                      {existingMain.recipeName}
+                    </Text>
+                  )}
+                </View>
+                <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+              </Pressable>
+            );
+          }}
+        />
+      </BottomSheet>
     </View>
   );
 }

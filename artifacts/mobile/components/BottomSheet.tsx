@@ -67,6 +67,13 @@ interface BottomSheetProps {
   title?: string;
   showCloseButton?: boolean;
   dismissOnOverlay?: boolean;
+  /**
+   * When true, content area gets zero horizontal padding so hero
+   * images or full-width banners can go edge-to-edge. Use for
+   * full-sheet category takeovers. Drag handle and header row are
+   * still padded normally.
+   */
+  fullBleed?: boolean;
   children: React.ReactNode;
 }
 
@@ -87,6 +94,7 @@ export function BottomSheet({
   title,
   showCloseButton = false,
   dismissOnOverlay = true,
+  fullBleed = false,
   children,
 }: BottomSheetProps) {
   const colors = useThemeColors();
@@ -238,7 +246,9 @@ export function BottomSheet({
             )}
 
             {/* Content area */}
-            <View style={styles.content}>{children}</View>
+            <View style={[styles.content, fullBleed && styles.contentFullBleed]}>
+              {children}
+            </View>
           </Pressable>
         </Animated.View>
       </Pressable>
@@ -288,5 +298,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.md,
+  },
+  contentFullBleed: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
   },
 });

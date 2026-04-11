@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Alert, Animated as RNAnimated } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Animated as RNAnimated } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, { FadeInDown, FadeOutDown, FadeOut, LinearTransition, useReducedMotion } from 'react-native-reanimated';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -19,6 +19,7 @@ import { PressableScale } from '@/components/PressableScale';
 import { Checkbox } from '@/components/Checkbox';
 import { useApp, GroceryItem, ItineraryDay } from '@/context/AppContext';
 import { useFeatureFlag } from '@/hooks/useRemoteConfig';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { recipes as allRecipes } from '@/data/recipes';
 import { convertAmount } from '@/data/helpers';
 import { computeScaledAmount } from '@/utils/groceryScaling';
@@ -238,6 +239,7 @@ export default function GroceryScreen() {
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showUndo, setShowUndo] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const undoSnapshot = useRef<{ itinerary: ItineraryDay[]; grocery: GroceryItem[] } | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -281,18 +283,11 @@ export default function GroceryScreen() {
     showToast(`Removed ${recipeTitle}`, true);
   }, [app, showToast]);
 
-  const handleClearAll = () => {
-    Alert.alert(
-      'Start fresh?',
-      "This clears everything on your list. It can't be undone.",
-      [
-        { text: 'Never mind', style: 'cancel' },
-        { text: 'Start Fresh', style: 'destructive', onPress: () => {
-          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } catch {}
-          app.clearAllGroceryItems();
-        } },
-      ]
-    );
+  const handleClearAll = () => setShowClearConfirm(true);
+  const handleConfirmClearAll = () => {
+    setShowClearConfirm(false);
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } catch {}
+    app.clearAllGroceryItems();
   };
 
   if (groceryItems.length === 0) {
@@ -818,6 +813,17 @@ export default function GroceryScreen() {
           )}
         </View>
       )}
+
+      <ConfirmDialog
+        visible={showClearConfirm}
+        title="Start fresh?"
+        body="This clears everything on your list. It can't be undone."
+        confirmLabel="Start Fresh"
+        cancelLabel="Never mind"
+        destructive
+        onConfirm={handleConfirmClearAll}
+        onCancel={() => setShowClearConfirm(false)}
+      />
     </View>
   );
 }
