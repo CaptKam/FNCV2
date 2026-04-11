@@ -634,7 +634,6 @@ export default function SearchScreen() {
               </View>
               <View style={styles.categoryGrid}>
                 {MEAL_CATEGORIES.map((cat) => {
-                  const count = recipes.filter(cat.filter).length;
                   return (
                     <PressableScale
                       key={cat.label}
@@ -657,9 +656,6 @@ export default function SearchScreen() {
                       </View>
                       <Text style={[styles.categoryLabel, { color: colors.onSurface }]} numberOfLines={1}>
                         {cat.label}
-                      </Text>
-                      <Text style={[Typography.caption, { color: colors.outline }]}>
-                        {count} recipes
                       </Text>
                     </PressableScale>
                   );
