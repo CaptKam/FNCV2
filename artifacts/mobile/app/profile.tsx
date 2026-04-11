@@ -137,7 +137,6 @@ export default function ProfileScreen() {
     level,
     totalRecipesCooked,
     passportStamps,
-    categoryCounts,
     dietaryFlags,
     allergens,
     cookingLevel,
@@ -233,76 +232,30 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* ═══ COUNTRY CIRCLES ═══ */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.countryCirclesContainer}
-          style={{ marginTop: Spacing.md }}
-        >
-          {countries.map((c) => {
-            const visited = (passportStamps[c.id] || 0) > 0;
-            return (
-              <PressableScale
-                key={c.id}
-                haptic="light"
-                onPress={() => router.push(`/country/${c.id}`)}
-                style={styles.countryCircleWrap}
-              >
-                <View
-                  style={[
-                    styles.countryCircle,
-                    {
-                      borderColor: visited ? colors.primary : 'transparent',
-                      opacity: visited ? 1 : 0.4,
-                    },
-                  ]}
-                >
-                  <Text style={{ fontSize: 28 }}>{c.flag}</Text>
-                </View>
-                <Text
-                  style={[
-                    Typography.caption,
-                    {
-                      color: visited ? colors.onSurface : colors.outline,
-                      fontSize: 10,
-                      textAlign: 'center',
-                    },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {c.name}
-                </Text>
-              </PressableScale>
-            );
-          })}
-        </ScrollView>
-
-        {/* ═══ YOUR PROGRESS (Food-Type Pills) ═══ */}
+        {/* ═══ YOUR PROGRESS (Passport Stamps) ═══ */}
         <View style={[styles.section, { paddingHorizontal: Spacing.page }]}>
           <View style={styles.sectionHeader}>
             <Text style={[Typography.headline, { color: colors.onSurface }]}>Your Progress</Text>
           </View>
           <Text style={[Typography.caption, { color: colors.outline, marginBottom: Spacing.md }]}>
-            Recipes cooked by category
+            Earned by mastering a regional week
           </Text>
-          <View style={styles.foodPillRow}>
-            {([
-              { key: 'appetizer', label: 'Appetizer', emoji: '🥗' },
-              { key: 'main', label: 'Main', emoji: '🍽️' },
-              { key: 'dessert', label: 'Dessert', emoji: '🍰' },
-            ] as const).map((item) => (
-              <GlassView key={item.key} style={styles.foodPill} intensity={40}>
-                <Text style={{ fontSize: 24 }}>{item.emoji}</Text>
-                <Text style={[Typography.titleSmall, { color: colors.onSurface }]}>{item.label}</Text>
-                <Text style={[Typography.headlineLarge, { color: colors.primary }]}>
-                  {categoryCounts[item.key] || 0}
-                </Text>
-                <Text style={[Typography.caption, { color: colors.outline, fontSize: 8, letterSpacing: 1 }]}>
-                  COOKED
-                </Text>
-              </GlassView>
-            ))}
+          <View style={styles.stampGrid}>
+            {countries.slice(0, 3).map((c) => {
+              const count = passportStamps[c.id] || 0;
+              const earned = count > 0;
+              return (
+                <GlassView key={c.id} style={styles.stampCard} intensity={40}>
+                  <View style={[styles.stampCircle, { borderColor: earned ? colors.primary : colors.outlineVariant }]}>
+                    <Text style={{ fontSize: 28 }}>{c.flag}</Text>
+                  </View>
+                  <Text style={[Typography.titleSmall, { color: colors.onSurface, fontStyle: 'italic' }]}>{c.name}</Text>
+                  <Text style={[Typography.caption, { color: colors.outline, fontSize: 8, letterSpacing: 1 }]}>
+                    {earned ? `${count} COOKED` : 'LOCKED'}
+                  </Text>
+                </GlassView>
+              );
+            })}
           </View>
         </View>
 
@@ -785,35 +738,28 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginBottom: Spacing.xs,
   },
-  countryCirclesContainer: {
-    paddingHorizontal: Spacing.page,
-    gap: Spacing.md,
-  },
-  countryCircleWrap: {
-    alignItems: 'center',
-    gap: 4,
-    width: 60,
-  },
-  countryCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 2.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  foodPillRow: {
+  stampGrid: {
     flexDirection: 'row',
     gap: Spacing.md,
   },
-  foodPill: {
+  stampCard: {
     flex: 1,
+    aspectRatio: 1,
     borderRadius: Radius.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.sm,
+    padding: Spacing.sm,
     gap: 4,
+  },
+  stampCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   settingsCard: {
     borderRadius: Radius.xl,
