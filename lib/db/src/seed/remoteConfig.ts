@@ -28,7 +28,7 @@ import {
 } from "../schema/appSettings";
 
 // ═══════════════════════════════════════════════════════════════════
-// Feature flags (16) — on/off toggles for app features
+// Feature flags (17) — on/off toggles for app features
 // ═══════════════════════════════════════════════════════════════════
 
 const SEED_FEATURE_FLAGS: InsertFeatureFlag[] = [
@@ -106,6 +106,14 @@ const SEED_FEATURE_FLAGS: InsertFeatureFlag[] = [
     description: "Floating action button that auto-fills the week's itinerary.",
     category: "Planning",
     enabled: true,
+  },
+  {
+    key: "multiple_meals_daily_view",
+    label: "Multiple Meals (Daily View)",
+    description:
+      "⚠ Needs design work. Toggle in the Plan tab's daily view that lets a user schedule multiple courses (appetizer / main / dessert) for a single day. Current UI is a placeholder — hide until redesigned.",
+    category: "Planning",
+    enabled: false,
   },
 
   // ─── Discovery ────────────────────────────────────────────────────
