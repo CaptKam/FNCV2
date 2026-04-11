@@ -30,6 +30,7 @@ import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { todayLocal, getDayLabel } from '@/utils/dates';
+import { useCuratedCollections } from '@/hooks/useCuratedCollections';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -63,6 +64,14 @@ export default function SearchScreen() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [addSheetRecipe, setAddSheetRecipe] = useState<Recipe | null>(null);
+
+  // Curated collections render as horizontal carousels above the
+  // search results — but only when the query is empty. Once the
+  // user starts typing or picks a filter, we hide the carousels
+  // so the full Results grid can breathe.
+  const curatedCollections = useCuratedCollections();
+  const showCollections =
+    !query.trim() && activeMood === 'All Moods' && curatedCollections.length > 0;
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -276,6 +285,72 @@ export default function SearchScreen() {
           </ScrollView>
         </View>
 
+        {/* ═══ Curated Collections — admin-editorial carousels
+               rendered only when the user hasn't typed anything yet
+               and no mood filter is active. Tap a card → recipe detail. */}
+        {showCollections && curatedCollections.map((collection) => {
+          const collectionRecipes = collection.recipeIds
+            .map((id) => recipes.find((r) => r.id === id))
+            .filter((r): r is Recipe => r !== undefined);
+          if (collectionRecipes.length === 0) return null;
+          return (
+            <View key={collection.slug} style={{ paddingTop: Spacing.lg }}>
+              <View style={[styles.sectionHeader, { paddingHorizontal: Spacing.page }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[Typography.headline, { color: colors.onSurface }]} numberOfLines={1}>
+                    {collection.title}
+                  </Text>
+                  {collection.subtitle && (
+                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
+                      {collection.subtitle}
+                    </Text>
+                  )}
+                </View>
+                <Text style={[Typography.caption, { color: colors.outline }]}>
+                  {collectionRecipes.length}
+                </Text>
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: Spacing.page, gap: 12, paddingTop: Spacing.sm }}
+              >
+                {collectionRecipes.map((recipe) => {
+                  const country = countries.find((c) => c.id === recipe.countryId);
+                  return (
+                    <PressableScale
+                      key={`${collection.slug}-${recipe.id}`}
+                      onPress={() => router.push(`/recipe/${recipe.id}`)}
+                      style={[styles.collectionCard, { backgroundColor: colors.surfaceContainerLow }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${recipe.title} from ${country?.name ?? recipe.countryId}`}
+                    >
+                      <Image
+                        source={{ uri: recipe.image }}
+                        style={styles.collectionCardImage}
+                        contentFit="cover"
+                        transition={200}
+                        accessible={false}
+                      />
+                      <View style={{ padding: 10 }}>
+                        <Text
+                          numberOfLines={2}
+                          style={[Typography.titleSmall, { color: colors.onSurface }]}
+                        >
+                          {recipe.title}
+                        </Text>
+                        <Text style={[Typography.caption, { color: colors.onSurfaceVariant, marginTop: 2 }]}>
+                          {country?.flag ?? '🌍'} {formatCookTime(recipe.prepTime + recipe.cookTime)}
+                        </Text>
+                      </View>
+                    </PressableScale>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          );
+        })}
+
         {/* Recipe results */}
         <View style={{ paddingHorizontal: Spacing.page, paddingTop: Spacing.lg }}>
           <View style={styles.sectionHeader}>
@@ -456,6 +531,15 @@ const styles = StyleSheet.create({
   recipeCard: {
     borderRadius: Radius.xl,
     overflow: 'hidden',
+  },
+  collectionCard: {
+    width: 180,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+  },
+  collectionCardImage: {
+    width: '100%',
+    height: 120,
   },
   recipeImageWrap: {
     position: 'relative',
