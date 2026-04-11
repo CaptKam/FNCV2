@@ -12,11 +12,18 @@
  *      production deploys (points at the real server) or to override
  *      any of the heuristics below.
  *
+ *   1b. `EXPO_PUBLIC_DOMAIN` env var — Replit dev. The mobile dev
+ *      script sets this to $REPLIT_DEV_DOMAIN, the main HTTPS dev
+ *      domain. Replit's proxy forwards /api/* from that domain to
+ *      the api-server on port 3001, so hitting `https://<domain>`
+ *      works. Building `http://<domain>:3001` like branch 2 would
+ *      fails because Replit doesn't expose arbitrary ports.
+ *
  *   2. Expo dev server host — when running in Expo Go or a dev
- *      client, `Constants.expoConfig.hostUri` is something like
- *      "192.168.1.42:8081" (the dev machine's LAN IP that the phone
- *      is already reaching to download the JS bundle). We reuse that
- *      IP with the api-server's port.
+ *      client on a local network (laptop + phone), `Constants.expoConfig.hostUri`
+ *      is something like "192.168.1.42:8081" (the dev machine's LAN
+ *      IP that the phone is already reaching to download the JS
+ *      bundle). We reuse that IP with the api-server's port.
  *
  *   3. Web — when running in the browser (Expo web), we can trust
  *      `window.location.origin`. In production deploys the web build
@@ -42,6 +49,24 @@ function resolveBaseUrl(): string {
   const envUrl = process.env.EXPO_PUBLIC_API_URL;
   if (envUrl && envUrl.length > 0) {
     return envUrl.replace(/\/+$/, "");
+  }
+
+  // 1b. Replit dev: the mobile dev script sets EXPO_PUBLIC_DOMAIN to
+  //     $REPLIT_DEV_DOMAIN (the main https dev domain). The api-server
+  //     is reachable at that domain through Replit's proxy, which
+  //     forwards /api/* to the api-server on port 3001. The phone
+  //     reaches the domain over HTTPS on 443 — direct http://host:3001
+  //     will NOT work because Replit doesn't expose arbitrary ports
+  //     externally.
+  //
+  //     This branch runs after the explicit EXPO_PUBLIC_API_URL check
+  //     so a consumer can always override, and BEFORE the hostUri
+  //     branch below, which on Replit would build an unreachable
+  //     `http://<replit-domain>:3001` URL.
+  const replitDomain = process.env.EXPO_PUBLIC_DOMAIN;
+  if (replitDomain && replitDomain.length > 0) {
+    const stripped = replitDomain.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+    return `https://${stripped}`;
   }
 
   // 2. Expo dev server: reuse the dev machine's LAN IP.
