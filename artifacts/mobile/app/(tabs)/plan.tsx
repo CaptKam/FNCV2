@@ -442,7 +442,7 @@ export default function PlanScreen() {
           <View style={styles.navTitleLine}>
             <Text style={[Typography.headline, { color: colors.onSurface, fontSize: 18, lineHeight: 24 }]}>
               {isDailyView
-                ? `${selectedDay?.dayLabel ?? ''}, ${formatDateLabel(selectedDate)}`
+                ? `${selectedDay?.dayLabel ?? ''}`
                 : weekLabels[selectedWeek]}
             </Text>
             {isDailyView && selectedDate === todayISO && (
