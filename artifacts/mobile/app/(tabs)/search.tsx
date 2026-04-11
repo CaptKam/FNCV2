@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TextInput,
   Pressable,
-  Modal,
   useWindowDimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -21,6 +20,7 @@ import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
+import { BottomSheet } from '@/components/BottomSheet';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { recipes, Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
@@ -172,48 +172,46 @@ interface CategoryModalProps {
   insets: { bottom: number; top: number };
 }
 
-function CategoryModal({ category, recipes: categoryRecipes, onClose, onRecipePress, onAddToPlan, isBookmarked, onBookmark, colors, insets }: CategoryModalProps) {
+function CategoryModal({ category, recipes: categoryRecipes, onClose, onRecipePress, onAddToPlan, isBookmarked, onBookmark, colors }: CategoryModalProps) {
   const { width } = useWindowDimensions();
   const CARD_W = (width - Spacing.page * 2 - 12) / 2;
 
+  // Rendered inside a BottomSheet with fullBleed=true, so this
+  // component is responsible for the hero + scroll content only.
+  // The outer sheet handles drag handle, overlay, animation.
   return (
-    <Pressable style={modalStyles.backdrop} onPress={onClose}>
-      <Pressable style={[modalStyles.sheet, { backgroundColor: colors.surface, paddingBottom: insets.bottom + Spacing.lg }]} onPress={(e) => e.stopPropagation()}>
-        {/* Handle */}
-        <View style={[modalStyles.handle, { backgroundColor: colors.outlineVariant }]} />
-
-        {/* Hero image */}
-        <View style={modalStyles.heroWrap}>
-          <Image source={{ uri: category.image }} style={modalStyles.heroImage} contentFit="cover" transition={300} accessible={false} />
-          <View style={modalStyles.heroGradient} />
-          <View style={modalStyles.heroContent}>
-            <Text style={[Typography.display, { color: '#FFFFFF' }]}>{category.label}</Text>
-            <Text style={[Typography.bodySmall, { color: 'rgba(255,255,255,0.8)' }]}>{categoryRecipes.length} recipes</Text>
-          </View>
-          <Pressable onPress={onClose} style={modalStyles.closeBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
-            <MaterialCommunityIcons name="close" size={20} color="#FFFFFF" />
-          </Pressable>
+    <>
+      {/* Hero image — goes edge-to-edge thanks to fullBleed */}
+      <View style={modalStyles.heroWrap}>
+        <Image source={{ uri: category.image }} style={modalStyles.heroImage} contentFit="cover" transition={300} accessible={false} />
+        <View style={modalStyles.heroGradient} />
+        <View style={modalStyles.heroContent}>
+          <Text style={[Typography.display, { color: '#FFFFFF' }]}>{category.label}</Text>
+          <Text style={[Typography.bodySmall, { color: 'rgba(255,255,255,0.8)' }]}>{categoryRecipes.length} recipes</Text>
         </View>
+        <Pressable onPress={onClose} style={modalStyles.closeBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
+          <MaterialCommunityIcons name="close" size={20} color="#FFFFFF" />
+        </Pressable>
+      </View>
 
-        {/* Recipe grid */}
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={modalStyles.gridContainer}>
-          <View style={modalStyles.grid}>
-            {categoryRecipes.map((recipe) => (
-              <RecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                cardWidth={CARD_W}
-                onPress={() => onRecipePress(recipe.id)}
-                isBookmarked={isBookmarked(recipe.id)}
-                onBookmark={() => onBookmark(recipe.id)}
-                onAddToPlan={() => onAddToPlan(recipe)}
-                colors={colors}
-              />
-            ))}
-          </View>
-        </ScrollView>
-      </Pressable>
-    </Pressable>
+      {/* Recipe grid */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={modalStyles.gridContainer}>
+        <View style={modalStyles.grid}>
+          {categoryRecipes.map((recipe) => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              cardWidth={CARD_W}
+              onPress={() => onRecipePress(recipe.id)}
+              isBookmarked={isBookmarked(recipe.id)}
+              onBookmark={() => onBookmark(recipe.id)}
+              onAddToPlan={() => onAddToPlan(recipe)}
+              colors={colors}
+            />
+          ))}
+        </View>
+      </ScrollView>
+    </>
   );
 }
 
@@ -594,12 +592,12 @@ export default function SearchScreen() {
         )}
       </ScrollView>
 
-      {/* ── Category Modal ── */}
-      <Modal
+      {/* ── Category — Standard C (full, fullBleed for hero image) ── */}
+      <BottomSheet
         visible={!!categoryModal}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setCategoryModal(null)}
+        onDismiss={() => setCategoryModal(null)}
+        size="full"
+        fullBleed
       >
         {categoryModal && (
           <CategoryModal
@@ -614,7 +612,7 @@ export default function SearchScreen() {
             insets={insets}
           />
         )}
-      </Modal>
+      </BottomSheet>
 
       {toastMessage && (
         <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>

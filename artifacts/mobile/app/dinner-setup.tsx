@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Modal, Alert, Share } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Share } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -12,6 +12,9 @@ import { Radius } from '@/constants/radius';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { PressableScale } from '@/components/PressableScale';
 import { useApp } from '@/context/AppContext';
+import { BottomSheet } from '@/components/BottomSheet';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { SelectionPill, ActionButton } from '@/components/SelectionPill';
 import { DinnerParty, DinnerGuest, DietaryConflict } from '@/types/dinnerParty';
 import { countries } from '@/data/countries';
 import { recipes, type Recipe } from '@/data/recipes';
@@ -69,6 +72,7 @@ export default function DinnerSetupScreen() {
   const [servingHour, setServingHour] = useState(19);
   const [servingMinute, setServingMinute] = useState(0);
   const [showAddGuest, setShowAddGuest] = useState(false);
+  const [removeGuestTarget, setRemoveGuestTarget] = useState<{ id: string; name: string } | null>(null);
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
@@ -171,10 +175,7 @@ export default function DinnerSetupScreen() {
   };
 
   const handleRemoveGuest = (guestId: string, name: string) => {
-    Alert.alert('Remove Guest', `Remove ${name} from the guest list?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: () => partyId && app.removeGuest(partyId, guestId) },
-    ]);
+    setRemoveGuestTarget({ id: guestId, name });
   };
 
   const handleCycleRsvp = (guestId: string, currentStatus: typeof RSVP_ORDER[number]) => {
@@ -419,85 +420,99 @@ export default function DinnerSetupScreen() {
         </PressableScale>
       </View>
 
-      {/* Add Guest Sheet */}
-      <Modal visible={showAddGuest} transparent animationType="slide" onRequestClose={() => setShowAddGuest(false)}>
-        <Pressable style={styles.sheetOverlay} onPress={() => setShowAddGuest(false)}>
-          <Pressable style={[styles.sheetContainer, { backgroundColor: colors.surface }]} onPress={(e) => e.stopPropagation()}>
-            <View style={[styles.sheetHandle, { backgroundColor: colors.handleBar }]} />
-            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>Add a Guest</Text>
+      {/* Add Guest — Standard B (medium form) */}
+      <BottomSheet
+        visible={showAddGuest}
+        onDismiss={() => setShowAddGuest(false)}
+        size="medium"
+        title="Add a Guest"
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: Spacing.md }}
+        >
+          <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs }]}>NAME *</Text>
+          <TextInput
+            value={guestName}
+            onChangeText={setGuestName}
+            placeholder="Guest name"
+            placeholderTextColor={colors.outline}
+            style={[styles.input, { backgroundColor: colors.surfaceContainerHigh, color: colors.onSurface }]}
+          />
 
-            <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs }]}>NAME *</Text>
-            <TextInput
-              value={guestName}
-              onChangeText={setGuestName}
-              placeholder="Guest name"
-              placeholderTextColor={colors.outline}
-              style={[styles.input, { backgroundColor: colors.surfaceContainerLow, color: colors.onSurface }]}
-            />
+          <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>PHONE (optional)</Text>
+          <TextInput
+            value={guestPhone}
+            onChangeText={(text) => setGuestPhone(text.startsWith('+') ? text : formatPhoneNumber(text))}
+            placeholder="(555) 555-0100"
+            placeholderTextColor={colors.outline}
+            keyboardType="phone-pad"
+            style={[styles.input, { backgroundColor: colors.surfaceContainerHigh, color: colors.onSurface }]}
+          />
 
-            <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>PHONE (optional)</Text>
-            <TextInput
-              value={guestPhone}
-              onChangeText={(text) => setGuestPhone(text.startsWith('+') ? text : formatPhoneNumber(text))}
-              placeholder="(555) 555-0100"
-              placeholderTextColor={colors.outline}
-              keyboardType="phone-pad"
-              style={[styles.input, { backgroundColor: colors.surfaceContainerLow, color: colors.onSurface }]}
-            />
+          <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>EMAIL (optional)</Text>
+          <TextInput
+            value={guestEmail}
+            onChangeText={setGuestEmail}
+            placeholder="guest@email.com"
+            placeholderTextColor={colors.outline}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            style={[styles.input, { backgroundColor: colors.surfaceContainerHigh, color: colors.onSurface }]}
+          />
 
-            <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>EMAIL (optional)</Text>
-            <TextInput
-              value={guestEmail}
-              onChangeText={setGuestEmail}
-              placeholder="guest@email.com"
-              placeholderTextColor={colors.outline}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              style={[styles.input, { backgroundColor: colors.surfaceContainerLow, color: colors.onSurface }]}
-            />
+          <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.sm, marginTop: Spacing.md }]}>DIETARY PREFERENCES</Text>
+          <View style={styles.dietaryChips}>
+            {['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Halal'].map((diet) => {
+              const key = diet.toLowerCase();
+              const selected = guestDietary.includes(key);
+              return (
+                <SelectionPill
+                  key={key}
+                  label={diet}
+                  variant="check"
+                  selected={selected}
+                  onPress={() => setGuestDietary((prev) => selected ? prev.filter((d) => d !== key) : [...prev, key])}
+                />
+              );
+            })}
+          </View>
 
-            <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>DIETARY PREFERENCES</Text>
-            <View style={styles.dietaryChips}>
-              {['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Halal'].map((diet) => {
-                const key = diet.toLowerCase();
-                const selected = guestDietary.includes(key);
-                return (
-                  <Pressable
-                    key={key}
-                    onPress={() => setGuestDietary((prev) => selected ? prev.filter((d) => d !== key) : [...prev, key])}
-                    style={[
-                      styles.dietaryChip,
-                      { backgroundColor: selected ? `${colors.primary}18` : colors.surfaceContainerLow, borderColor: selected ? colors.primary : 'transparent', borderWidth: 1.5 },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                  >
-                    <Text style={[Typography.caption, { color: selected ? colors.primary : colors.onSurface }]}>{diet}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+          <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>ALLERGENS (optional)</Text>
+          <TextInput
+            value={guestAllergens}
+            onChangeText={setGuestAllergens}
+            placeholder="e.g. peanuts, shellfish"
+            placeholderTextColor={colors.outline}
+            style={[styles.input, { backgroundColor: colors.surfaceContainerHigh, color: colors.onSurface }]}
+          />
 
-            <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>ALLERGENS (optional)</Text>
-            <TextInput
-              value={guestAllergens}
-              onChangeText={setGuestAllergens}
-              placeholder="e.g. peanuts, shellfish"
-              placeholderTextColor={colors.outline}
-              style={[styles.input, { backgroundColor: colors.surfaceContainerLow, color: colors.onSurface }]}
-            />
-
-            <Pressable
+          <View style={{ marginTop: Spacing.lg }}>
+            <ActionButton
+              label="Add Guest"
               onPress={handleAddGuest}
-              style={[styles.sheetCTA, { backgroundColor: colors.primary, opacity: guestName.trim() ? 1 : 0.5 }]}
               disabled={!guestName.trim()}
-              accessibilityRole="button"
-            >
-              <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Add</Text>
-            </Pressable>
-          </Pressable>
-        </Pressable>
-      </Modal>
+            />
+          </View>
+        </ScrollView>
+      </BottomSheet>
+
+      {/* Remove guest confirmation */}
+      <ConfirmDialog
+        visible={removeGuestTarget !== null}
+        title="Remove Guest"
+        body={`Remove ${removeGuestTarget?.name ?? ''} from the guest list?`}
+        confirmLabel="Remove"
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={() => {
+          if (partyId && removeGuestTarget) {
+            app.removeGuest(partyId, removeGuestTarget.id);
+          }
+          setRemoveGuestTarget(null);
+        }}
+        onCancel={() => setRemoveGuestTarget(null)}
+      />
     </View>
   );
 }

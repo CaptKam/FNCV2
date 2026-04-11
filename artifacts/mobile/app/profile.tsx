@@ -6,8 +6,6 @@ import {
   StyleSheet,
   Pressable,
   Switch,
-  Alert,
-  Modal,
   TextInput,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -22,6 +20,9 @@ import { Checkbox } from '@/components/Checkbox';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { PressableScale } from '@/components/PressableScale';
+import { BottomSheet } from '@/components/BottomSheet';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { SelectionPill, ActionButton } from '@/components/SelectionPill';
 import { useThemePreference, ThemePreference } from '@/context/ThemeContext';
 import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
@@ -128,6 +129,8 @@ export default function ProfileScreen() {
   const [showServingsModal, setShowServingsModal] = useState(false);
   const [showPartnerModal, setShowPartnerModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [infoDialog, setInfoDialog] = useState<{ title: string; body: string } | null>(null);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const anyModalOpen = showThemeModal || showServingsModal || showPartnerModal || showProfileModal;
   const [editName, setEditName] = useState(app.displayName);
   const [editAvatar, setEditAvatar] = useState(app.avatarId);
@@ -303,7 +306,12 @@ export default function ProfileScreen() {
               icon="information-outline"
               label="About"
               subtitle="Version 1.0.0"
-              onPress={() => Alert.alert('Fork & Compass', 'Version 1.0.0\n\nA culinary journey through world cuisines.\n\nvoyageapron.com')}
+              onPress={() =>
+                setInfoDialog({
+                  title: 'Fork & Compass',
+                  body: 'Version 1.0.0\n\nA culinary journey through world cuisines.\n\nvoyageapron.com',
+                })
+              }
               colors={colors}
             />
           </View>
@@ -393,19 +401,34 @@ export default function ProfileScreen() {
             <SettingRow
               icon="shield-check-outline"
               label="Privacy Policy"
-              onPress={() => Alert.alert('Privacy Policy', 'Our privacy policy will be available at voyageapron.com/privacy before public launch.')}
+              onPress={() =>
+                setInfoDialog({
+                  title: 'Privacy Policy',
+                  body: 'Our privacy policy will be available at voyageapron.com/privacy before public launch.',
+                })
+              }
               colors={colors}
             />
             <SettingRow
               icon="file-document-outline"
               label="Terms of Service"
-              onPress={() => Alert.alert('Terms of Service', 'Our terms of service will be available at voyageapron.com/terms before public launch.')}
+              onPress={() =>
+                setInfoDialog({
+                  title: 'Terms of Service',
+                  body: 'Our terms of service will be available at voyageapron.com/terms before public launch.',
+                })
+              }
               colors={colors}
             />
             <SettingRow
               icon="help-circle-outline"
               label="Help & Support"
-              onPress={() => Alert.alert('Help & Support', 'Need help? Email us at support@voyageapron.com')}
+              onPress={() =>
+                setInfoDialog({
+                  title: 'Help & Support',
+                  body: 'Need help? Email us at support@voyageapron.com',
+                })
+              }
               colors={colors}
             />
           </View>
@@ -413,10 +436,7 @@ export default function ProfileScreen() {
 
         <View style={{ paddingHorizontal: Spacing.page, marginTop: Spacing.sm }}>
           <Pressable
-            onPress={() => Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Sign Out', style: 'destructive' },
-            ])}
+            onPress={() => setShowSignOutConfirm(true)}
             style={[styles.signOutBtn, { borderColor: colors.error }]}
             accessibilityRole="button"
             accessibilityLabel="Sign out"
@@ -431,250 +451,232 @@ export default function ProfileScreen() {
         </Text>
       </ScrollView>
 
-      <Modal
+      <BottomSheet
         visible={showThemeModal}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => setShowThemeModal(false)}
+        onDismiss={() => setShowThemeModal(false)}
+        size="small"
+        title="Appearance"
       >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowThemeModal(false)} accessibilityRole="button" accessibilityLabel="Close appearance settings">
-          <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
-            <View style={[styles.modalHandle, { backgroundColor: colors.handleBar }]} />
-            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
-              Appearance
-            </Text>
-            {THEME_OPTIONS.map((option) => {
-              const isActive = preference === option.id;
-              return (
-                <Pressable
-                  key={option.id}
-                  onPress={() => {
-                    setPreference(option.id);
-                    setShowThemeModal(false);
-                  }}
-                  style={[
-                    styles.themeOption,
-                    {
-                      backgroundColor: isActive ? colors.primaryMuted : colors.surfaceContainerLow,
-                      borderColor: isActive ? colors.primary : 'transparent',
-                      borderWidth: 1,
-                    },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${option.label} theme, ${option.desc}`}
-                  accessibilityState={{ selected: isActive }}
-                >
-                  <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerHigh }]}>
-                    <MaterialCommunityIcons
-                      name={option.icon}
-                      size={20}
-                      color={isActive ? colors.primary : colors.outline}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[Typography.titleSmall, { color: isActive ? colors.primary : colors.onSurface }]}>
-                      {option.label}
-                    </Text>
-                    <Text style={[Typography.bodySmall, { color: colors.outline, fontSize: 12 }]}>
-                      {option.desc}
-                    </Text>
-                  </View>
-                  <View pointerEvents="none">
-                    <Checkbox checked={isActive} onToggle={() => {}} size="sm" />
-                  </View>
-                </Pressable>
-              );
-            })}
-          </Pressable>
-        </Pressable>
-      </Modal>
-
-      <Modal
-        visible={showServingsModal}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => setShowServingsModal(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowServingsModal(false)} accessibilityRole="button" accessibilityLabel="Close servings picker">
-          <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
-            <View style={[styles.modalHandle, { backgroundColor: colors.handleBar }]} />
-            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
-              Default Servings
-            </Text>
-            <View style={styles.servingsGrid}>
-              {SERVING_OPTIONS.map((n) => {
-                const isActive = defaultServings === n;
-                return (
-                  <Pressable
-                    key={n}
-                    onPress={() => {
-                      setServings(n);
-                      setShowServingsModal(false);
-                    }}
-                    style={[
-                      styles.servingOption,
-                      {
-                        backgroundColor: isActive ? colors.primary : colors.surfaceContainerLow,
-                      },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${n} servings`}
-                    accessibilityState={{ selected: isActive }}
-                  >
-                    <Text style={[Typography.titleMedium, { color: isActive ? colors.onPrimary : colors.onSurface }]}>
-                      {n}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
-
-      <Modal
-        visible={showPartnerModal}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => setShowPartnerModal(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowPartnerModal(false)} accessibilityRole="button" accessibilityLabel="Close grocery partner picker">
-          <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]}>
-            <View style={[styles.modalHandle, { backgroundColor: colors.handleBar }]} />
-            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
-              Grocery Partner
-            </Text>
-            {GROCERY_PARTNERS.map((partner) => {
-              const isActive = groceryPartner === partner.id;
-              return (
-                <Pressable
-                  key={partner.id}
-                  onPress={() => {
-                    app.setGroceryPartner(partner.id);
-                    setShowPartnerModal(false);
-                  }}
-                  style={[
-                    styles.themeOption,
-                    {
-                      backgroundColor: isActive ? colors.primaryMuted : colors.surfaceContainerLow,
-                      borderColor: isActive ? colors.primary : 'transparent',
-                      borderWidth: 1,
-                    },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={partner.label}
-                  accessibilityState={{ selected: isActive }}
-                >
-                  <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerHigh }]}>
-                    <MaterialCommunityIcons
-                      name={partner.icon}
-                      size={20}
-                      color={isActive ? colors.primary : colors.outline}
-                    />
-                  </View>
-                  <Text style={[Typography.titleSmall, { color: isActive ? colors.primary : colors.onSurface, flex: 1 }]}>
-                    {partner.label}
+        <View style={{ gap: Spacing.sm }}>
+          {THEME_OPTIONS.map((option) => {
+            const isActive = preference === option.id;
+            return (
+              <Pressable
+                key={option.id}
+                onPress={() => {
+                  setPreference(option.id);
+                  setShowThemeModal(false);
+                }}
+                style={[
+                  styles.themeOption,
+                  {
+                    backgroundColor: isActive ? colors.primaryMuted : colors.surfaceContainerHigh,
+                    borderColor: isActive ? colors.primary : colors.outlineVariant,
+                    borderWidth: 1,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={`${option.label} theme, ${option.desc}`}
+                accessibilityState={{ selected: isActive }}
+              >
+                <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerLow }]}>
+                  <MaterialCommunityIcons
+                    name={option.icon}
+                    size={20}
+                    color={isActive ? colors.primary : colors.outline}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[Typography.titleSmall, { color: isActive ? colors.primary : colors.onSurface }]}>
+                    {option.label}
                   </Text>
-                  <View pointerEvents="none">
-                    <Checkbox checked={isActive} onToggle={() => {}} size="sm" />
-                  </View>
+                  <Text style={[Typography.bodySmall, { color: colors.outline, fontSize: 12 }]}>
+                    {option.desc}
+                  </Text>
+                </View>
+                <View pointerEvents="none">
+                  <Checkbox checked={isActive} onToggle={() => {}} size="sm" />
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      </BottomSheet>
+
+      <BottomSheet
+        visible={showServingsModal}
+        onDismiss={() => setShowServingsModal(false)}
+        size="small"
+        title="Default Servings"
+      >
+        <View style={styles.servingsGrid}>
+          {SERVING_OPTIONS.map((n) => (
+            <SelectionPill
+              key={n}
+              label={String(n)}
+              selected={defaultServings === n}
+              onPress={() => {
+                setServings(n);
+                setShowServingsModal(false);
+              }}
+            />
+          ))}
+        </View>
+      </BottomSheet>
+
+      <BottomSheet
+        visible={showPartnerModal}
+        onDismiss={() => setShowPartnerModal(false)}
+        size="small"
+        title="Grocery Partner"
+      >
+        <View style={{ gap: Spacing.sm }}>
+          {GROCERY_PARTNERS.map((partner) => {
+            const isActive = groceryPartner === partner.id;
+            return (
+              <Pressable
+                key={partner.id}
+                onPress={() => {
+                  app.setGroceryPartner(partner.id);
+                  setShowPartnerModal(false);
+                }}
+                style={[
+                  styles.themeOption,
+                  {
+                    backgroundColor: isActive ? colors.primaryMuted : colors.surfaceContainerHigh,
+                    borderColor: isActive ? colors.primary : colors.outlineVariant,
+                    borderWidth: 1,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={partner.label}
+                accessibilityState={{ selected: isActive }}
+              >
+                <View style={[styles.themeIconWrap, { backgroundColor: isActive ? colors.primaryFaded : colors.surfaceContainerLow }]}>
+                  <MaterialCommunityIcons
+                    name={partner.icon}
+                    size={20}
+                    color={isActive ? colors.primary : colors.outline}
+                  />
+                </View>
+                <Text style={[Typography.titleSmall, { color: isActive ? colors.primary : colors.onSurface, flex: 1 }]}>
+                  {partner.label}
+                </Text>
+                <View pointerEvents="none">
+                  <Checkbox checked={isActive} onToggle={() => {}} size="sm" />
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
+      </BottomSheet>
+
+      <BottomSheet
+        visible={showProfileModal}
+        onDismiss={() => setShowProfileModal(false)}
+        size="medium"
+        title="Edit Profile"
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: Spacing.md }}
+        >
+          <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm }]}>
+            YOUR NAME
+          </Text>
+          <TextInput
+            value={editName}
+            onChangeText={setEditName}
+            placeholder="Enter your name"
+            placeholderTextColor={colors.outlineMuted}
+            style={[
+              styles.profileNameInput,
+              {
+                backgroundColor: colors.surfaceContainerHigh,
+                color: colors.onSurface,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+            autoCapitalize="words"
+            maxLength={30}
+          />
+          <Text style={[Typography.labelLarge, { color: colors.outline, marginTop: Spacing.lg, marginBottom: Spacing.sm }]}>
+            AVATAR
+          </Text>
+          <View style={styles.profileAvatarGrid}>
+            {AVATAR_OPTIONS.map((av) => {
+              const isActive = editAvatar === av.id;
+              return (
+                <Pressable
+                  key={av.id}
+                  onPress={() => setEditAvatar(av.id)}
+                  style={[
+                    styles.profileAvatarOption,
+                    {
+                      backgroundColor: isActive ? colors.primaryMuted : colors.surfaceContainerHigh,
+                      borderColor: isActive ? colors.primary : colors.outlineVariant,
+                      borderWidth: 2,
+                    },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${av.label} avatar`}
+                  accessibilityState={{ selected: isActive }}
+                >
+                  {av.icon ? (
+                    <MaterialCommunityIcons
+                      name={av.icon}
+                      size={24}
+                      color={isActive ? colors.primary : colors.outline}
+                    />
+                  ) : (
+                    <Text style={{ fontSize: 18, fontWeight: '700', color: isActive ? colors.primary : colors.outline }}>
+                      {(editName || displayName || 'A').charAt(0).toUpperCase()}
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 10, color: isActive ? colors.primary : colors.outline, marginTop: 2 }}>
+                    {av.label}
+                  </Text>
                 </Pressable>
               );
             })}
-          </Pressable>
-        </Pressable>
-      </Modal>
-
-      <Modal
-        visible={showProfileModal}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={() => setShowProfileModal(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowProfileModal(false)} accessibilityRole="button" accessibilityLabel="Close profile editor">
-          <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]} onPress={(e) => e.stopPropagation()}>
-            <View style={[styles.modalHandle, { backgroundColor: colors.handleBar }]} />
-            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.lg }]}>
-              Edit Profile
-            </Text>
-            <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm }]}>
-              YOUR NAME
-            </Text>
-            <TextInput
-              value={editName}
-              onChangeText={setEditName}
-              placeholder="Enter your name"
-              placeholderTextColor={colors.outlineMuted}
-              style={[
-                styles.profileNameInput,
-                {
-                  backgroundColor: colors.surfaceContainerLow,
-                  color: colors.onSurface,
-                  borderColor: colors.outlineVariant,
-                },
-              ]}
-              autoCapitalize="words"
-              maxLength={30}
-            />
-            <Text style={[Typography.labelLarge, { color: colors.outline, marginTop: Spacing.lg, marginBottom: Spacing.sm }]}>
-              AVATAR
-            </Text>
-            <View style={styles.profileAvatarGrid}>
-              {AVATAR_OPTIONS.map((av) => {
-                const isActive = editAvatar === av.id;
-                return (
-                  <Pressable
-                    key={av.id}
-                    onPress={() => setEditAvatar(av.id)}
-                    style={[
-                      styles.profileAvatarOption,
-                      {
-                        backgroundColor: isActive ? colors.primaryMuted : colors.surfaceContainerLow,
-                        borderColor: isActive ? colors.primary : 'transparent',
-                        borderWidth: 2,
-                      },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${av.label} avatar`}
-                    accessibilityState={{ selected: isActive }}
-                  >
-                    {av.icon ? (
-                      <MaterialCommunityIcons
-                        name={av.icon}
-                        size={24}
-                        color={isActive ? colors.primary : colors.outline}
-                      />
-                    ) : (
-                      <Text style={{ fontSize: 18, fontWeight: '700', color: isActive ? colors.primary : colors.outline }}>
-                        {(editName || displayName || 'A').charAt(0).toUpperCase()}
-                      </Text>
-                    )}
-                    <Text style={{ fontSize: 10, color: isActive ? colors.primary : colors.outline, marginTop: 2 }}>
-                      {av.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <Pressable
+          </View>
+          <View style={{ marginTop: Spacing.lg }}>
+            <ActionButton
+              label="Save"
               onPress={() => {
                 app.setDisplayName(editName.trim());
                 app.setAvatarId(editAvatar);
                 setShowProfileModal(false);
               }}
-              style={[styles.profileSaveBtn, { backgroundColor: colors.primary }]}
-              accessibilityRole="button"
-              accessibilityLabel="Save profile"
-            >
-              <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>Save</Text>
-            </Pressable>
-          </Pressable>
-        </Pressable>
-      </Modal>
+            />
+          </View>
+        </ScrollView>
+      </BottomSheet>
+
+      {/* Info dialog — used for app info, privacy, terms, help
+          (replaces Alert.alert so the dialog matches the app style) */}
+      <ConfirmDialog
+        visible={infoDialog !== null}
+        title={infoDialog?.title ?? ''}
+        body={infoDialog?.body}
+        confirmLabel="Got it"
+        onConfirm={() => setInfoDialog(null)}
+      />
+
+      {/* Sign out confirmation — destructive action */}
+      <ConfirmDialog
+        visible={showSignOutConfirm}
+        title="Sign Out"
+        body="Are you sure you want to sign out?"
+        confirmLabel="Sign Out"
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={() => {
+          setShowSignOutConfirm(false);
+          // TODO: wire actual sign-out once auth is hooked up.
+        }}
+        onCancel={() => setShowSignOutConfirm(false)}
+      />
     </View>
   );
 }

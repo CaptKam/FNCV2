@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  Modal,
   Pressable,
   FlatList,
   TextInput,
@@ -12,7 +11,6 @@ import {
 import { PressableScale } from '@/components/PressableScale';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
@@ -22,6 +20,7 @@ import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 import { getDietaryConflicts, AllergenType } from '@/utils/allergens';
+import { BottomSheet } from '@/components/BottomSheet';
 
 type CourseType = 'appetizer' | 'main' | 'dessert';
 type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -59,7 +58,6 @@ export function RecipePickerSheet({
   title,
 }: RecipePickerSheetProps) {
   const colors = useThemeColors();
-  const insets = useSafeAreaInsets();
   const app = useApp();
 
   const [query, setQuery] = useState('');
@@ -194,166 +192,143 @@ export function RecipePickerSheet({
   );
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleDismiss}>
-      <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.4)' }]}>
-        <Pressable style={styles.overlayDismiss} onPress={handleDismiss} />
-        <View
-          style={[
-            styles.sheet,
-            {
-              backgroundColor: colors.surface,
-              paddingBottom: insets.bottom + 16,
-            },
-          ]}
-        >
-          <View style={[styles.handle, { backgroundColor: colors.handleBar }]} />
-
-          <View style={styles.header}>
-            <Text style={[Typography.headline, { color: colors.onSurface }]}>
-              {sheetTitle}
-            </Text>
-            <Pressable
-              onPress={handleDismiss}
-              hitSlop={12}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-            >
-              <MaterialCommunityIcons name="close" size={20} color={colors.outline} />
-            </Pressable>
-          </View>
-
-          <View style={[styles.searchRow, { backgroundColor: colors.surfaceContainerLow }]}>
-            <MaterialCommunityIcons name="magnify" size={20} color={colors.outline} />
-            <TextInput
-              value={query}
-              onChangeText={setQuery}
-              placeholder="Search recipes..."
-              placeholderTextColor={colors.outline}
-              style={[Typography.body, { color: colors.onSurface, flex: 1, fontSize: 15 }]}
-              accessibilityLabel="Search recipes"
-            />
-            {query.length > 0 && (
-              <Pressable onPress={() => setQuery('')} hitSlop={8}>
-                <MaterialCommunityIcons name="close-circle" size={18} color={colors.outline} />
-              </Pressable>
-            )}
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterRow}
-          >
-            {renderPill('Any Time', timeFilter === 'any', () => setTimeFilter('any'))}
-            {renderPill('< 30 min', timeFilter === 'under30', () =>
-              setTimeFilter(timeFilter === 'under30' ? 'any' : 'under30'),
-              'clock-fast'
-            )}
-            {renderPill('< 60 min', timeFilter === 'under60', () =>
-              setTimeFilter(timeFilter === 'under60' ? 'any' : 'under60'),
-              'clock-outline'
-            )}
-            <View style={styles.filterDivider} />
-            {renderPill('Any Difficulty', difficultyFilter === 'any', () => setDifficultyFilter('any'))}
-            {renderPill('Beginner', difficultyFilter === 'easy', () => setDifficultyFilter('easy'), 'chart-bar')}
-            {hasUserDiet && renderPill(
-              'My Diet',
-              myDietActive,
-              () => setMyDietActive((v) => !v),
-              'heart-outline'
-            )}
-          </ScrollView>
-
-          {filtered.length === 0 ? (
-            <View style={styles.emptyState}>
-              <MaterialCommunityIcons name="chef-hat" size={40} color={colors.outline} />
-              <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', marginTop: Spacing.sm }]}>
-                No recipes match these filters
-              </Text>
-            </View>
-          ) : (
-            <FlatList
-              data={filtered}
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 24 }}
-              renderItem={({ item }) => {
-                const country = countries.find((c) => c.id === item.countryId);
-                const isConflicted = conflictSet.has(item.id);
-                const diffColor = DIFFICULTY_COLORS[item.difficulty] ?? colors.outline;
-                const totalTime = item.prepTime + item.cookTime;
-
-                return (
-                  <PressableScale
-                    onPress={() => handleSelect(item)}
-                    style={[
-                      styles.row,
-                      {
-                        backgroundColor: colors.surfaceContainerLow,
-                        opacity: isConflicted ? 0.7 : 1,
-                      },
-                    ]}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${item.title}, ${formatCookTime(totalTime)}`}
-                    scaleDown={0.98}
-                  >
-                    <View style={styles.thumbContainer}>
-                      <Image
-                        source={{ uri: item.image }}
-                        style={styles.thumb}
-                        contentFit="cover"
-                        transition={200}
-                      />
-                    </View>
-
-                    <View style={styles.rowText}>
-                      <Text
-                        style={[Typography.titleSmall, { color: colors.onSurface }]}
-                        numberOfLines={1}
-                      >
-                        {item.title}
-                      </Text>
-
-                      {country && (
-                        <Text style={[Typography.caption, { color: colors.outline, marginTop: 2 }]}>
-                          {country.flag} {country.name}
-                        </Text>
-                      )}
-
-                      <View style={styles.badgeRow}>
-                        <View style={[styles.timeBadge, { backgroundColor: `${colors.primary}18` }]}>
-                          <MaterialCommunityIcons name="clock-outline" size={12} color={colors.primary} />
-                          <Text style={[Typography.caption, { color: colors.primary, fontSize: 11 }]}>
-                            {formatCookTime(totalTime)}
-                          </Text>
-                        </View>
-
-                        <View style={[styles.diffBadge, { backgroundColor: `${diffColor}18` }]}>
-                          <Text style={[Typography.caption, { color: diffColor, fontSize: 11, fontWeight: '700' }]}>
-                            {item.difficulty}
-                          </Text>
-                        </View>
-
-                        {isConflicted && (
-                          <View style={[styles.diffBadge, { backgroundColor: `${colors.error}18` }]}>
-                            <MaterialCommunityIcons name="alert-circle-outline" size={12} color={colors.error} />
-                            <Text style={[Typography.caption, { color: colors.error, fontSize: 10 }]}>
-                              Contains allergen
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                    </View>
-
-                    <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
-                  </PressableScale>
-                );
-              }}
-            />
-          )}
-        </View>
+    <BottomSheet
+      visible={visible}
+      onDismiss={handleDismiss}
+      size="full"
+      title={sheetTitle}
+      showCloseButton
+    >
+      <View style={[styles.searchRow, { backgroundColor: colors.surfaceContainerHigh }]}>
+        <MaterialCommunityIcons name="magnify" size={20} color={colors.outline} />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search recipes..."
+          placeholderTextColor={colors.outline}
+          style={[Typography.body, { color: colors.onSurface, flex: 1, fontSize: 15 }]}
+          accessibilityLabel="Search recipes"
+        />
+        {query.length > 0 && (
+          <Pressable onPress={() => setQuery('')} hitSlop={8}>
+            <MaterialCommunityIcons name="close-circle" size={18} color={colors.outline} />
+          </Pressable>
+        )}
       </View>
-    </Modal>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterRow}
+      >
+        {renderPill('Any Time', timeFilter === 'any', () => setTimeFilter('any'))}
+        {renderPill('< 30 min', timeFilter === 'under30', () =>
+          setTimeFilter(timeFilter === 'under30' ? 'any' : 'under30'),
+          'clock-fast'
+        )}
+        {renderPill('< 60 min', timeFilter === 'under60', () =>
+          setTimeFilter(timeFilter === 'under60' ? 'any' : 'under60'),
+          'clock-outline'
+        )}
+        <View style={styles.filterDivider} />
+        {renderPill('Any Difficulty', difficultyFilter === 'any', () => setDifficultyFilter('any'))}
+        {renderPill('Beginner', difficultyFilter === 'easy', () => setDifficultyFilter('easy'), 'chart-bar')}
+        {hasUserDiet && renderPill(
+          'My Diet',
+          myDietActive,
+          () => setMyDietActive((v) => !v),
+          'heart-outline'
+        )}
+      </ScrollView>
+
+      {filtered.length === 0 ? (
+        <View style={styles.emptyState}>
+          <MaterialCommunityIcons name="chef-hat" size={40} color={colors.outline} />
+          <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', marginTop: Spacing.sm }]}>
+            No recipes match these filters
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          renderItem={({ item }) => {
+            const country = countries.find((c) => c.id === item.countryId);
+            const isConflicted = conflictSet.has(item.id);
+            const diffColor = DIFFICULTY_COLORS[item.difficulty] ?? colors.outline;
+            const totalTime = item.prepTime + item.cookTime;
+
+            return (
+              <PressableScale
+                onPress={() => handleSelect(item)}
+                style={[
+                  styles.row,
+                  {
+                    backgroundColor: colors.surfaceContainerHigh,
+                    opacity: isConflicted ? 0.7 : 1,
+                  },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={`${item.title}, ${formatCookTime(totalTime)}`}
+                scaleDown={0.98}
+              >
+                <View style={styles.thumbContainer}>
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.thumb}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                </View>
+
+                <View style={styles.rowText}>
+                  <Text
+                    style={[Typography.titleSmall, { color: colors.onSurface }]}
+                    numberOfLines={1}
+                  >
+                    {item.title}
+                  </Text>
+
+                  {country && (
+                    <Text style={[Typography.caption, { color: colors.outline, marginTop: 2 }]}>
+                      {country.flag} {country.name}
+                    </Text>
+                  )}
+
+                  <View style={styles.badgeRow}>
+                    <View style={[styles.timeBadge, { backgroundColor: `${colors.primary}18` }]}>
+                      <MaterialCommunityIcons name="clock-outline" size={12} color={colors.primary} />
+                      <Text style={[Typography.caption, { color: colors.primary, fontSize: 11 }]}>
+                        {formatCookTime(totalTime)}
+                      </Text>
+                    </View>
+
+                    <View style={[styles.diffBadge, { backgroundColor: `${diffColor}18` }]}>
+                      <Text style={[Typography.caption, { color: diffColor, fontSize: 11, fontWeight: '700' }]}>
+                        {item.difficulty}
+                      </Text>
+                    </View>
+
+                    {isConflicted && (
+                      <View style={[styles.diffBadge, { backgroundColor: `${colors.error}18` }]}>
+                        <MaterialCommunityIcons name="alert-circle-outline" size={12} color={colors.error} />
+                        <Text style={[Typography.caption, { color: colors.error, fontSize: 10 }]}>
+                          Contains allergen
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
+              </PressableScale>
+            );
+          }}
+        />
+      )}
+    </BottomSheet>
   );
 }
 

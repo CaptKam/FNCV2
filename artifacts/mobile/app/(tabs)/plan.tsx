@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated, Platform, AppState, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated as RNAnimated, Platform, AppState, RefreshControl } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown, useReducedMotion, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -22,6 +22,8 @@ import { PressableScale } from '@/components/PressableScale';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
 import { PlanAddMethodSheet } from '@/components/PlanAddMethodSheet';
 import { SmartCookBar } from '@/components/SmartCookBar';
+import { BottomSheet } from '@/components/BottomSheet';
+import { SelectionPill, ActionButton } from '@/components/SelectionPill';
 import { useFeatureFlag } from '@/hooks/useRemoteConfig';
 
 import { useApp, ItineraryDay, PlannedMeal, GroceryItem } from '@/context/AppContext';
@@ -1300,67 +1302,71 @@ export default function PlanScreen() {
               </PressableScale>
             </View>
 
-            {/* Auto-plan bottom sheet */}
-            <Modal visible={showQuickGen} transparent animationType="fade" onRequestClose={() => setShowQuickGen(false)}>
-              <Pressable style={styles.quickGenOverlay} onPress={() => setShowQuickGen(false)}>
-                <Pressable onPress={(e) => e.stopPropagation()} style={[styles.quickGenBottomSheet, {
-                  backgroundColor: colors.surfaceContainerLow,
-                  paddingBottom: insets.bottom + Spacing.lg,
-                }]}>
-                  <View style={styles.sheetHandle} />
-                  <Text style={[Typography.headline, { color: colors.onSurface, marginTop: Spacing.sm }]}>Auto-plan your week</Text>
-                  {!hasSeenAutoGen && (
-                    <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, marginTop: Spacing.xs }]}>
-                      We'll fill empty days with recipes that match your preferences.
-                    </Text>
-                  )}
-                  <View style={styles.sheetOptionsRow}>
-                    {[3, 5].map((n) => {
-                      const available = Math.min(n, emptyDayCount);
-                      if (available === 0 || available === emptyDayCount) return null;
-                      return (
-                        <PressableScale
-                          key={n}
-                          onPress={() => handleQuickGen(available)}
-                          haptic="light"
-                          style={[styles.sheetDayOption, { borderColor: colors.primary }]}
-                          accessibilityRole="button"
-                          accessibilityLabel={`Plan ${available} days`}
-                        >
-                          <Text style={[Typography.titleSmall, { color: colors.primary }]}>{available} days</Text>
-                        </PressableScale>
-                      );
-                    })}
-                    <PressableScale
-                      onPress={() => handleQuickGen(emptyDayCount)}
-                      haptic="medium"
-                      style={[styles.sheetFillAll, { backgroundColor: colors.primary }]}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Fill all ${emptyDayCount} empty days`}
-                    >
-                      <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
-                        Fill all {emptyDayCount}
-                      </Text>
-                    </PressableScale>
-                  </View>
-                  <View style={styles.sheetPrefsRow}>
-                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant, flex: 1 }]}>
-                      Your settings: {prefsSummary}
-                    </Text>
-                    <Pressable
-                      onPress={() => { setShowQuickGen(false); router.push('/profile'); }}
-                      hitSlop={8}
-                      accessibilityRole="button"
-                      accessibilityLabel="Change preferences"
-                    >
-                      <Text style={[Typography.caption, { color: colors.primary, fontWeight: '600' }]}>
-                        Change
-                      </Text>
-                    </Pressable>
-                  </View>
+            {/* Auto-plan bottom sheet — Standard A (small) */}
+            <BottomSheet
+              visible={showQuickGen}
+              onDismiss={() => setShowQuickGen(false)}
+              size="small"
+              title="Auto-plan your week"
+            >
+              {!hasSeenAutoGen && (
+                <Text
+                  style={[
+                    Typography.bodySmall,
+                    { color: colors.onSurfaceVariant, marginBottom: Spacing.md },
+                  ]}
+                >
+                  We'll fill empty days with recipes that match your preferences.
+                </Text>
+              )}
+              <View style={styles.sheetOptionsRow}>
+                {[3, 5].map((n) => {
+                  const available = Math.min(n, emptyDayCount);
+                  if (available === 0 || available === emptyDayCount) return null;
+                  return (
+                    <SelectionPill
+                      key={n}
+                      label={`${available} days`}
+                      selected={false}
+                      onPress={() => handleQuickGen(available)}
+                    />
+                  );
+                })}
+                <SelectionPill
+                  label={`Fill all ${emptyDayCount}`}
+                  selected
+                  onPress={() => handleQuickGen(emptyDayCount)}
+                />
+              </View>
+              <View style={styles.sheetPrefsRow}>
+                <Text
+                  style={[
+                    Typography.caption,
+                    { color: colors.onSurfaceVariant, flex: 1 },
+                  ]}
+                >
+                  Your settings: {prefsSummary}
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    setShowQuickGen(false);
+                    router.push('/profile');
+                  }}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Change preferences"
+                >
+                  <Text
+                    style={[
+                      Typography.caption,
+                      { color: colors.primary, fontWeight: '600' },
+                    ]}
+                  >
+                    Change
+                  </Text>
                 </Pressable>
-              </Pressable>
-            </Modal>
+              </View>
+            </BottomSheet>
           </>
         );
       })()}
