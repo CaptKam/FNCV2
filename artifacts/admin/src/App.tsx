@@ -16,6 +16,7 @@ import RecipeEditor from "@/pages/recipe-editor";
 import UsersList from "@/pages/users-list";
 import UserDetail from "@/pages/user-detail";
 import FeaturedManager from "@/pages/featured-manager";
+import IngredientsPage from "@/pages/ingredients";
 import Settings from "@/pages/settings";
 
 // Register the auth token getter so every API request carries
@@ -80,6 +81,7 @@ function Router() {
               <Route path="/recipes" component={RecipesList} />
               <Route path="/recipes/:id" component={RecipeEditor} />
               <Route path="/featured" component={FeaturedManager} />
+              <Route path="/ingredients" component={IngredientsPage} />
               <Route path="/users" component={UsersList} />
               <Route path="/users/:id" component={UserDetail} />
               <Route path="/settings" component={Settings} />

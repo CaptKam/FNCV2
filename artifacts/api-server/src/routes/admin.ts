@@ -2,8 +2,47 @@ import { Router, type IRouter, type Request, type Response } from "express";
 import { recipes as mobileRecipes } from "../../../mobile/data/recipes";
 import { countries as mobileCountries } from "../../../mobile/data/countries";
 import { requireAdminAuth, signAdminToken, verifyAdminCredentials } from "../middlewares/auth";
+import { db, ingredientsTable } from "@workspace/db";
+import { asc, eq, sql } from "drizzle-orm";
+import { z } from "zod";
 
 const router: IRouter = Router();
+
+// ═══════════════════════════════════════════════════════════════════
+// Ingredient taxonomy schemas (Phase 3)
+// ═══════════════════════════════════════════════════════════════════
+
+const ingredientAisleSchema = z.enum([
+  "produce",
+  "protein",
+  "dairy",
+  "pantry",
+  "spice",
+]);
+
+const createIngredientSchema = z
+  .object({
+    /** Slug ID — lowercase letters, digits, underscores only. */
+    id: z
+      .string()
+      .min(1)
+      .max(100)
+      .regex(/^[a-z0-9_]+$/, {
+        message: "id must be lowercase letters, digits, or underscores",
+      }),
+    canonicalName: z.string().min(1).max(200),
+    aisle: ingredientAisleSchema,
+    synonyms: z.array(z.string().min(1).max(200)).max(50).default([]),
+  })
+  .strict();
+
+const updateIngredientSchema = z
+  .object({
+    canonicalName: z.string().min(1).max(200).optional(),
+    aisle: ingredientAisleSchema.optional(),
+    synonyms: z.array(z.string().min(1).max(200)).max(50).optional(),
+  })
+  .strict();
 
 interface AdminRecipeRecord {
   id: string;
@@ -241,6 +280,140 @@ router.get("/countries", (_req: Request, res: Response) => {
       region: c.region,
     }))
   );
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// Ingredient taxonomy (Phase 3)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Public endpoint: returns the full ingredient taxonomy for mobile
+ * clients to normalize grocery items. Same privacy model as
+ * /countries — the taxonomy is editorial content, not user data.
+ *
+ * Sorted by aisle then canonical name so the mobile client can
+ * render the grocery list with predictable section ordering.
+ */
+router.get("/ingredients", async (_req: Request, res: Response) => {
+  try {
+    const rows = await db
+      .select()
+      .from(ingredientsTable)
+      .orderBy(asc(ingredientsTable.aisle), asc(ingredientsTable.canonicalName));
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch ingredients", details: String(err) });
+  }
+});
+
+/**
+ * Admin: list all ingredients with optional substring search.
+ *
+ *   GET /api/admin/ingredients
+ *   GET /api/admin/ingredients?search=onion
+ *
+ * Search matches against canonical_name (case-insensitive) or against
+ * any entry in the synonyms array.
+ */
+router.get("/admin/ingredients", requireAdminAuth, async (req: Request, res: Response) => {
+  try {
+    const search = typeof req.query.search === "string" ? req.query.search.trim().toLowerCase() : "";
+    const rows = await db
+      .select()
+      .from(ingredientsTable)
+      .orderBy(asc(ingredientsTable.aisle), asc(ingredientsTable.canonicalName));
+
+    if (!search) {
+      res.json(rows);
+      return;
+    }
+    const filtered = rows.filter((r) => {
+      if (r.canonicalName.toLowerCase().includes(search)) return true;
+      if (r.id.toLowerCase().includes(search)) return true;
+      return r.synonyms.some((s) => s.toLowerCase().includes(search));
+    });
+    res.json(filtered);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch ingredients", details: String(err) });
+  }
+});
+
+router.post("/admin/ingredients", requireAdminAuth, async (req: Request, res: Response) => {
+  const parsed = createIngredientSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
+    return;
+  }
+  try {
+    const [row] = await db
+      .insert(ingredientsTable)
+      .values(parsed.data)
+      .returning();
+    res.json(row);
+  } catch (err) {
+    // Unique violation on id → 409, everything else → 500
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.includes("duplicate key") || message.includes("unique")) {
+      res.status(409).json({ error: "Ingredient id already exists" });
+      return;
+    }
+    res.status(500).json({ error: "Failed to create ingredient", details: message });
+  }
+});
+
+router.patch("/admin/ingredients/:id", requireAdminAuth, async (req: Request, res: Response) => {
+  const id = req.params.id;
+  if (typeof id !== "string" || id.length === 0 || id.length > 100) {
+    res.status(400).json({ error: "Invalid id parameter" });
+    return;
+  }
+  const parsed = updateIngredientSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
+    return;
+  }
+  if (Object.keys(parsed.data).length === 0) {
+    res.status(400).json({ error: "At least one field must be provided" });
+    return;
+  }
+
+  try {
+    const [row] = await db
+      .update(ingredientsTable)
+      .set({ ...parsed.data, updatedAt: sql`now()` })
+      .where(eq(ingredientsTable.id, id))
+      .returning();
+
+    if (!row) {
+      res.status(404).json({ error: "Ingredient not found" });
+      return;
+    }
+    res.json(row);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update ingredient", details: String(err) });
+  }
+});
+
+router.delete("/admin/ingredients/:id", requireAdminAuth, async (req: Request, res: Response) => {
+  const id = req.params.id;
+  if (typeof id !== "string" || id.length === 0 || id.length > 100) {
+    res.status(400).json({ error: "Invalid id parameter" });
+    return;
+  }
+  try {
+    const result = await db
+      .delete(ingredientsTable)
+      .where(eq(ingredientsTable.id, id))
+      .returning({ id: ingredientsTable.id });
+
+    if (result.length === 0) {
+      res.status(404).json({ error: "Ingredient not found" });
+      return;
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete ingredient", details: String(err) });
+  }
 });
 
 router.get("/admin/recipes", requireAdminAuth, (req: Request, res: Response) => {
