@@ -304,7 +304,7 @@ export default function SearchScreen() {
   // so the full Results grid can breathe.
   const curatedCollections = useCuratedCollections();
   const showCollections =
-    !query.trim() && activeMood === 'All Moods' && curatedCollections.length > 0;
+    !query.trim() && activeDietaryFilters.length === 0 && curatedCollections.length > 0;
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -339,7 +339,6 @@ export default function SearchScreen() {
     inputRef.current?.focus();
   }, []);
 
-  const curatedCollections = useCuratedCollections();
   const isSearchActive = query.trim().length > 0 || activeDietaryFilters.length > 0;
 
   const filteredRecipes = useMemo(() => {
