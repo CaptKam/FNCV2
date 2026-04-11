@@ -367,12 +367,17 @@ router.post("/admin/ingredients", requireAdminAuth, async (req: Request, res: Re
       .returning();
     res.json(row);
   } catch (err) {
-    // Unique violation on id → 409, everything else → 500
-    const message = err instanceof Error ? err.message : String(err);
-    if (message.includes("duplicate key") || message.includes("unique")) {
+    // Postgres unique_violation (SQLSTATE 23505) → 409. node-postgres attaches
+    // `code` on the error object; drizzle re-throws it without altering the
+    // shape, so we can read it directly. Checking by SQLSTATE is more robust
+    // than message matching because Postgres's error text varies by version
+    // and locale.
+    const pgCode = (err as { code?: string } | null)?.code;
+    if (pgCode === "23505") {
       res.status(409).json({ error: "Ingredient id already exists" });
       return;
     }
+    const message = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: "Failed to create ingredient", details: message });
   }
 });
