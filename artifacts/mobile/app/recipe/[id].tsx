@@ -21,6 +21,7 @@ import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { HeaderBar } from '@/components/HeaderBar';
 import { Checkbox } from '@/components/Checkbox';
+import { PressableScale } from '@/components/PressableScale';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { dateToLocal, addDays, getMonday, getDayLabelFull as getDayLabel, formatDateShort } from '@/utils/dates';
 
@@ -445,15 +446,16 @@ export default function RecipeDetailScreen() {
 
       {/* Bottom CTA: Start Cooking */}
       <GlassView style={[styles.cookCTA, { bottom: 0, paddingBottom: insets.bottom + 16, paddingTop: Spacing.md, paddingHorizontal: Spacing.page }]}>
-        <Pressable
+        <PressableScale
           onPress={handleStartCooking}
+          haptic="medium"
           style={[styles.cookButton, { backgroundColor: colors.primary }]}
           accessibilityRole="button"
           accessibilityLabel={`Start cooking ${recipe.title}`}
         >
           <MaterialCommunityIcons name="play" size={20} color={colors.onPrimary} />
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>Start Cooking</Text>
-        </Pressable>
+        </PressableScale>
       </GlassView>
 
       {/* Add to Plan bottom sheet */}

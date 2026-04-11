@@ -20,6 +20,8 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { Checkbox } from '@/components/Checkbox';
 import { HeaderBar } from '@/components/HeaderBar';
+import { AnimatedCounter } from '@/components/AnimatedCounter';
+import { PressableScale } from '@/components/PressableScale';
 import { useThemePreference, ThemePreference } from '@/context/ThemeContext';
 import { useApp } from '@/context/AppContext';
 import { useBookmarks } from '@/context/BookmarksContext';
@@ -100,20 +102,16 @@ function SettingRow({ icon, label, subtitle, onPress, trailing, colors }: Settin
   }
 
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.settingRow,
-        {
-          backgroundColor: colors.surfaceContainerLow,
-          opacity: pressed && onPress ? 0.8 : 1,
-        },
-      ]}
+      scaleDown={0.98}
+      haptic="light"
+      style={[styles.settingRow, { backgroundColor: colors.surfaceContainerLow }]}
       accessibilityRole="button"
       accessibilityLabel={subtitle ? `${label}, ${subtitle}` : label}
     >
       {content}
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -215,19 +213,19 @@ export default function ProfileScreen() {
         {/* ═══ STATS BENTO ═══ */}
         <View style={[styles.statsRow, { paddingHorizontal: Spacing.page }]}>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Text style={[Typography.headlineLarge, { color: colors.primary }]}>{totalRecipesCooked}</Text>
+            <AnimatedCounter value={totalRecipesCooked} style={[Typography.headlineLarge, { color: colors.primary }]} />
             <Text style={[Typography.caption, { color: colors.outline, textAlign: 'center', fontSize: 10, letterSpacing: 0.5 }]}>
               {'RECIPES\nCOOKED'}
             </Text>
           </View>
           <View style={[styles.statCard, styles.statCardPrimary, { backgroundColor: colors.primary }]}>
-            <Text style={[Typography.headlineLarge, { color: colors.onPrimary }]}>{countriesExplored}</Text>
+            <AnimatedCounter value={countriesExplored} style={[Typography.headlineLarge, { color: colors.onPrimary }]} />
             <Text style={[Typography.caption, { color: colors.onPrimary, textAlign: 'center', fontSize: 10, letterSpacing: 0.5, opacity: 0.8 }]}>
               {'COUNTRIES\nVISITED'}
             </Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Text style={[Typography.headlineLarge, { color: colors.primary }]}>{bookmarkCount}</Text>
+            <AnimatedCounter value={bookmarkCount} style={[Typography.headlineLarge, { color: colors.primary }]} />
             <Text style={[Typography.caption, { color: colors.outline, textAlign: 'center', fontSize: 10, letterSpacing: 0.5 }]}>
               {'RECIPES\nSAVED'}
             </Text>

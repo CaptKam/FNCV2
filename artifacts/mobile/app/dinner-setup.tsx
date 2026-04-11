@@ -10,6 +10,7 @@ import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
 import { OVERLAY_BUTTON } from '@/constants/icons';
+import { PressableScale } from '@/components/PressableScale';
 import { useApp } from '@/context/AppContext';
 import { DinnerParty, DinnerGuest, DietaryConflict } from '@/types/dinnerParty';
 import { countries } from '@/data/countries';
@@ -407,11 +408,16 @@ export default function DinnerSetupScreen() {
 
       {/* Sticky bottom CTAs */}
       <View style={[styles.bottomCTA, { paddingBottom: insets.bottom + 16 }]}>
-        <Pressable onPress={handleJustCook} style={[styles.primaryBtn, { backgroundColor: colors.primary }]} accessibilityRole="button">
+        <PressableScale
+          onPress={handleJustCook}
+          haptic="medium"
+          style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+          accessibilityRole="button"
+        >
           <Text style={[Typography.titleMedium, { color: colors.onPrimary }]}>
             Let's Cook
           </Text>
-        </Pressable>
+        </PressableScale>
       </View>
 
       {/* Add Guest Sheet */}
