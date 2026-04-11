@@ -10,6 +10,7 @@ import {
   LogOut,
   ChevronRight,
   Leaf,
+  Globe,
 } from "lucide-react";
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -19,6 +20,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Recipes', href: '/recipes', icon: UtensilsCrossed },
     { name: 'Featured', href: '/featured', icon: Star },
+    { name: 'Featured Country', href: '/featured-country', icon: Globe },
     { name: 'Ingredients', href: '/ingredients', icon: Leaf },
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Settings', href: '/settings', icon: Settings },
