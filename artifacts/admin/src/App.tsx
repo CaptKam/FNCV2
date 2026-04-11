@@ -19,6 +19,7 @@ import FeaturedManager from "@/pages/featured-manager";
 import FeaturedCountryPage from "@/pages/featured-country";
 import IngredientsPage from "@/pages/ingredients";
 import CuratedCollectionsPage from "@/pages/curated-collections";
+import CountriesPage from "@/pages/countries";
 import FeatureFlagsPage from "@/pages/feature-flags";
 import AppSettingsPage from "@/pages/app-settings";
 import Settings from "@/pages/settings";
@@ -86,6 +87,7 @@ function Router() {
               <Route path="/recipes/:id" component={RecipeEditor} />
               <Route path="/featured" component={FeaturedManager} />
               <Route path="/featured-country" component={FeaturedCountryPage} />
+              <Route path="/countries" component={CountriesPage} />
               <Route path="/ingredients" component={IngredientsPage} />
               <Route path="/users" component={UsersList} />
               <Route path="/users/:id" component={UserDetail} />
