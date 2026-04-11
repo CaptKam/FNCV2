@@ -20,6 +20,7 @@
 import { Platform } from "react-native";
 import { getOrCreateDeviceId } from "./deviceId";
 import { getMobileToken, setMobileToken, syncRegister } from "./syncClient";
+import { loadIngredientTaxonomy } from "./ingredientTaxonomy";
 
 let bootstrapPromise: Promise<BootstrapResult> | null = null;
 
@@ -39,6 +40,12 @@ function platformTag(): "ios" | "android" | "web" {
 }
 
 async function runBootstrap(): Promise<BootstrapResult> {
+  // Kick off the ingredient taxonomy load in parallel with
+  // registration. The public endpoint doesn't need auth, so this
+  // can start immediately and populate the in-memory lookup even
+  // if registration fails.
+  void loadIngredientTaxonomy();
+
   // Step 1: ensure we have a device ID. This always succeeds (falls
   // back to an in-memory ID if AsyncStorage is broken).
   const deviceId = await getOrCreateDeviceId();
