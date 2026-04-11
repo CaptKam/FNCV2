@@ -37,6 +37,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { todayLocal, addDays, getDayLabel, formatDateShort } from '@/utils/dates';
 import { calculateCookReadiness } from '@/utils/cookReadiness';
 import { getTodaysFeaturedOverride } from '@/utils/featuredCountry';
+import { useFeatureFlag, useAppSetting } from '@/hooks/useRemoteConfig';
 
 // ─── Helpers ───
 
@@ -100,14 +101,19 @@ export default function DiscoverScreen() {
     setTimeout(() => setIsRefreshing(false), 800);
   }, []);
 
+  // Feature flags and settings controlling the Discover tab.
+  const tonightStripEnabled = useFeatureFlag('tonight_strip');
+  const showPullToRefresh = useFeatureFlag('pull_to_refresh');
+  const tonightStartHour = useAppSetting<number>('tonight_strip_start_hour', 12);
+
   // Tonight's plan
   const todaysMeals = app.getTodaysMeals();
   const todayDate = todayLocal();
   const tonightMeal = todaysMeals.length > 0 ? todaysMeals[0] : null;
   const tonightRecipe = tonightMeal ? recipes.find((r) => r.id === tonightMeal.recipeId) : null;
 
-  // Tonight strip: only show after noon + dismissible per day
-  const isAfterNoon = new Date().getHours() >= 12;
+  // Tonight strip: only show after the configured hour + dismissible per day.
+  const isAfterStartHour = new Date().getHours() >= tonightStartHour;
   const [tonightDismissed, setTonightDismissed] = useState(true);
   useEffect(() => {
     AsyncStorage.getItem(`@fork_compass_tonight_dismissed_${todayDate}`).then((val) => {
@@ -129,7 +135,8 @@ export default function DiscoverScreen() {
     });
   }, [todaysMeals, app.activeCookSession, app.groceryItems]);
 
-  const showTonightStrip = tonightRecipe != null && isAfterNoon && !tonightDismissed;
+  const showTonightStrip =
+    tonightStripEnabled && tonightRecipe != null && isAfterStartHour && !tonightDismissed;
   const dismissTonightStrip = useCallback(() => {
     setTonightDismissed(true);
     AsyncStorage.setItem(`@fork_compass_tonight_dismissed_${todayDate}`, 'true');
@@ -234,7 +241,9 @@ export default function DiscoverScreen() {
         scrollEventThrottle={200}
         contentContainerStyle={{ paddingTop: insets.top + 76, paddingBottom: Spacing.tabClearance }}
         refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+          showPullToRefresh ? (
+            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+          ) : undefined
         }
       >
         {/* ═══ ROW 1: GREETING ═══ */}

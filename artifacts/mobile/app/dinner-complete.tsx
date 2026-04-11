@@ -21,6 +21,7 @@ import { Radius } from '@/constants/radius';
 import { GlassView } from '@/components/GlassView';
 import { useApp } from '@/context/AppContext';
 import { countries } from '@/data/countries';
+import { useFeatureFlag } from '@/hooks/useRemoteConfig';
 
 function getInitials(name: string): string {
   return name.split(' ').map((w) => w[0]?.toUpperCase() ?? '').join('').slice(0, 2);
@@ -32,6 +33,7 @@ export default function DinnerCompleteScreen() {
   const router = useRouter();
   const app = useApp();
   const reduceMotion = useReducedMotion();
+  const showPassport = useFeatureFlag('passport_stamps');
 
   const party = app.activeDinnerParty;
   const country = party ? countries.find((c) => c.id === party.cuisineCountryId) : null;
@@ -99,9 +101,11 @@ export default function DinnerCompleteScreen() {
               Your first dinner party! The tradition begins.
             </Text>
           )}
-          <Text style={[Typography.caption, { color: colors.onSurfaceVariant, textAlign: 'center', marginTop: Spacing.md }]}>
-            Each country you cook from earns a passport stamp 🌍
-          </Text>
+          {showPassport && (
+            <Text style={[Typography.caption, { color: colors.onSurfaceVariant, textAlign: 'center', marginTop: Spacing.md }]}>
+              Each country you cook from earns a passport stamp 🌍
+            </Text>
+          )}
         </Animated.View>
 
         {/* Session Stats */}
