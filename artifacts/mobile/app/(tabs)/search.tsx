@@ -97,6 +97,29 @@ const MEAL_CATEGORIES: MealCategory[] = [
       )
     ),
   },
+  {
+    label: 'Seafood',
+    image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&h=600&fit=crop',
+    filter: (r) => r.ingredients.some(i =>
+      ['fish','shrimp','salmon','prawn','tuna','cod','anchovy','squid','clam','mussel','seafood'].some(s =>
+        i.name.toLowerCase().includes(s)
+      )
+    ),
+  },
+  {
+    label: 'Street Food',
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=600&fit=crop',
+    filter: (r) => r.category === 'appetizer' && r.prepTime + r.cookTime <= 45,
+  },
+  {
+    label: 'Soups',
+    image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&h=600&fit=crop',
+    filter: (r) =>
+      r.title.toLowerCase().includes('soup') ||
+      r.title.toLowerCase().includes('broth') ||
+      r.title.toLowerCase().includes('stew') ||
+      r.title.toLowerCase().includes('braise'),
+  },
 ];
 
 // ─── Dietary filter logic ─────────────────────────────────────────────────────
@@ -430,7 +453,7 @@ const bentoStyles = StyleSheet.create({
 export default function SearchScreen() {
   const { width } = useWindowDimensions();
   const CARD_WIDTH = (width - Spacing.page * 2 - 12) / 2;
-  const CATEGORY_COL = (width - Spacing.page * 2 - 12) / 2;
+  const CATEGORY_COL = (width - Spacing.page * 2 - 10 * 2) / 3;
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -847,7 +870,7 @@ const styles = StyleSheet.create({
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
   categoryItem: {
     alignItems: 'center',
@@ -866,7 +889,7 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
+    fontSize: 12,
     marginTop: 2,
   },
 
