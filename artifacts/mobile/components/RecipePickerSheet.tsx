@@ -24,6 +24,7 @@ import { useApp } from '@/context/AppContext';
 import { getDietaryConflicts, AllergenType } from '@/utils/allergens';
 
 type CourseType = 'appetizer' | 'main' | 'dessert';
+type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 type TimeFilter = 'any' | 'under30' | 'under60';
 type DifficultyFilter = 'any' | 'easy';
@@ -154,7 +155,7 @@ export function RecipePickerSheet({
     label: string,
     active: boolean,
     onPress: () => void,
-    icon?: string
+    icon?: MCIconName
   ) => (
     <Pressable
       key={label}
@@ -173,7 +174,7 @@ export function RecipePickerSheet({
     >
       {icon && (
         <MaterialCommunityIcons
-          name={icon as any}
+          name={icon}
           size={14}
           color={active ? colors.onPrimary : colors.outline}
         />
@@ -255,7 +256,7 @@ export function RecipePickerSheet({
             <View style={styles.filterDivider} />
             {renderPill('Beginner', difficultyFilter === 'easy', () =>
               setDifficultyFilter(difficultyFilter === 'easy' ? 'any' : 'easy'),
-              'signal'
+              'chart-bar'
             )}
             {hasUserDiet && renderPill(
               'My Diet',
@@ -339,7 +340,7 @@ export function RecipePickerSheet({
                           <View style={[styles.diffBadge, { backgroundColor: `${colors.error}18` }]}>
                             <MaterialCommunityIcons name="alert-circle-outline" size={12} color={colors.error} />
                             <Text style={[Typography.caption, { color: colors.error, fontSize: 10 }]}>
-                              Allergen
+                              Contains allergen
                             </Text>
                           </View>
                         )}
