@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: admin
+    description: Admin panel operations
+  - name: countries
+    description: Country operations
 paths:
   /healthz:
     get:
@@ -24,6 +28,450 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required: [email, password]
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                      role:
+                        type: string
+                    required: [email, role]
+                required: [token, user]
+        "401":
+          description: Invalid credentials
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Dashboard statistics
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /countries:
+    get:
+      operationId: getCountries
+      tags: [countries]
+      summary: List all countries
+      responses:
+        "200":
+          description: Countries list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Country"
+
+  /admin/recipes:
+    get:
+      operationId: getAdminRecipes
+      tags: [admin]
+      summary: List recipes with filters
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: countryId
+          in: query
+          schema:
+            type: string
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated recipes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedRecipes"
+
+  /admin/recipes/{id}:
+    get:
+      operationId: getAdminRecipe
+      tags: [admin]
+      summary: Get a single recipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recipe detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRecipe"
+    patch:
+      operationId: updateAdminRecipe
+      tags: [admin]
+      summary: Update a recipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminRecipeUpdate"
+      responses:
+        "200":
+          description: Updated recipe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRecipe"
+    delete:
+      operationId: deleteAdminRecipe
+      tags: [admin]
+      summary: Delete a recipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                required: [success]
+
+  /admin/recipes/{id}/feature:
+    post:
+      operationId: toggleRecipeFeature
+      tags: [admin]
+      summary: Toggle featured status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRecipe"
+
+  /admin/recipes/{id}/status:
+    patch:
+      operationId: updateRecipeStatus
+      tags: [admin]
+      summary: Update recipe status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [live, hidden, draft]
+              required: [status]
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRecipe"
+
+  /admin/recipes/{id}/duplicate:
+    post:
+      operationId: duplicateRecipe
+      tags: [admin]
+      summary: Duplicate a recipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Duplicated recipe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRecipe"
+
+  /admin/recipes/bulk:
+    patch:
+      operationId: bulkUpdateRecipes
+      tags: [admin]
+      summary: Bulk update recipe status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                status:
+                  type: string
+                  enum: [live, hidden, draft]
+              required: [ids, status]
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                required: [success, count]
+    delete:
+      operationId: bulkDeleteRecipes
+      tags: [admin]
+      summary: Bulk delete recipes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+              required: [ids]
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                required: [success, count]
+
+  /admin/featured/{countryId}:
+    get:
+      operationId: getFeaturedRecipes
+      tags: [admin]
+      summary: Get featured recipes for a country
+      parameters:
+        - name: countryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Featured recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeaturedRecipe"
+    put:
+      operationId: updateFeaturedRecipes
+      tags: [admin]
+      summary: Update featured recipes order
+      parameters:
+        - name: countryId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipeIds:
+                  type: array
+                  items:
+                    type: string
+              required: [recipeIds]
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeaturedRecipe"
+
+  /admin/users:
+    get:
+      operationId: getAdminUsers
+      tags: [admin]
+      summary: List users with filters
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: level
+          in: query
+          schema:
+            type: string
+        - name: plan
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedUsers"
+
+  /admin/users/{id}:
+    get:
+      operationId: getAdminUser
+      tags: [admin]
+      summary: Get user detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+
+  /admin/settings:
+    get:
+      operationId: getAdminSettings
+      tags: [admin]
+      summary: Get admin settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSettings"
+    patch:
+      operationId: updateAdminSettings
+      tags: [admin]
+      summary: Update admin settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                defaultMeasurement:
+                  type: string
+                defaultCookingTier:
+                  type: string
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSettings"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +482,306 @@ components:
       required:
         - status
 
+    Country:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        flag:
+          type: string
+        region:
+          type: string
+      required: [id, name, flag, region]
+
+    DashboardStats:
+      type: object
+      properties:
+        totalRecipes:
+          type: integer
+        totalUsers:
+          type: integer
+        totalCountries:
+          type: integer
+        totalRegions:
+          type: integer
+        recentRecipes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              title:
+                type: string
+              createdAt:
+                type: string
+            required: [id, title, createdAt]
+      required: [totalRecipes, totalUsers, totalCountries, totalRegions, recentRecipes]
+
+    AdminIngredient:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: string
+        category:
+          type: string
+      required: [name, amount]
+
+    AdminRecipeStep:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        instruction:
+          type: string
+        instructionFirstSteps:
+          type: string
+        instructionChefsTable:
+          type: string
+        materials:
+          type: array
+          items:
+            type: string
+        duration:
+          type: number
+      required: [id, instruction]
+
+    AdminRecipe:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        countryId:
+          type: string
+        countryName:
+          type: string
+        region:
+          type: string
+        category:
+          type: string
+        difficulty:
+          type: string
+        prepTime:
+          type: string
+        cookTime:
+          type: string
+        servings:
+          type: integer
+        culturalNote:
+          type: string
+        image:
+          type: string
+        status:
+          type: string
+          enum: [live, hidden, draft]
+        featured:
+          type: boolean
+        featuredOrder:
+          type: integer
+        cookCount:
+          type: integer
+        tips:
+          type: array
+          items:
+            type: string
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminIngredient"
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminRecipeStep"
+        createdAt:
+          type: string
+      required: [id, title, countryId, category, difficulty, servings, status]
+
+    AdminRecipeUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        countryId:
+          type: string
+        region:
+          type: string
+        category:
+          type: string
+        difficulty:
+          type: string
+        prepTime:
+          type: string
+        cookTime:
+          type: string
+        servings:
+          type: integer
+        culturalNote:
+          type: string
+        image:
+          type: string
+        status:
+          type: string
+        featured:
+          type: boolean
+        featuredOrder:
+          type: integer
+        tips:
+          type: array
+          items:
+            type: string
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminIngredient"
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminRecipeStep"
+
+    FeaturedRecipe:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        order:
+          type: integer
+      required: [id, title, order]
+
+    PaginatedRecipes:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminRecipe"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [items, total, page, limit]
+
+    CookingHistoryEntry:
+      type: object
+      properties:
+        recipeId:
+          type: string
+        recipeTitle:
+          type: string
+        completedAt:
+          type: string
+        rating:
+          type: integer
+        cookTimeMinutes:
+          type: integer
+      required: [recipeId, recipeTitle, completedAt, rating, cookTimeMinutes]
+
+    FeedbackEntry:
+      type: object
+      properties:
+        recipeId:
+          type: string
+        recipeTitle:
+          type: string
+        comment:
+          type: string
+        rating:
+          type: integer
+        createdAt:
+          type: string
+      required: [recipeId, recipeTitle, comment, rating, createdAt]
+
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        cookingLevel:
+          type: string
+        subscriptionPlan:
+          type: string
+        recipesCooked:
+          type: integer
+        cuisinesExplored:
+          type: integer
+        measurementSystem:
+          type: string
+        temperatureUnit:
+          type: string
+        groceryPartner:
+          type: string
+        joinedAt:
+          type: string
+        lastActiveAt:
+          type: string
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/CookingHistoryEntry"
+        feedback:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedbackEntry"
+      required: [id, email, name, cookingLevel, subscriptionPlan, recipesCooked, cuisinesExplored, joinedAt, lastActiveAt]
+
+    PaginatedUsers:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUser"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [items, total, page, limit]
+
+    AdminAccount:
+      type: object
+      properties:
+        email:
+          type: string
+        role:
+          type: string
+      required: [email, role]
+
+    AdminSettings:
+      type: object
+      properties:
+        admins:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminAccount"
+        defaultMeasurement:
+          type: string
+        defaultCookingTier:
+          type: string
+        totalRecipes:
+          type: integer
+        totalUsers:
+          type: integer
+        totalCountries:
+          type: integer
+      required: [admins, defaultMeasurement, defaultCookingTier, totalRecipes, totalUsers, totalCountries]

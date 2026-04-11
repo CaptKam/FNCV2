@@ -8,3 +8,246 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface Country {
+  id: string;
+  name: string;
+  flag: string;
+  region: string;
+}
+
+export type DashboardStatsRecentRecipesItem = {
+  id: string;
+  title: string;
+  createdAt: string;
+};
+
+export interface DashboardStats {
+  totalRecipes: number;
+  totalUsers: number;
+  totalCountries: number;
+  totalRegions: number;
+  recentRecipes: DashboardStatsRecentRecipesItem[];
+}
+
+export interface AdminIngredient {
+  name: string;
+  amount: string;
+  category?: string;
+}
+
+export interface AdminRecipeStep {
+  id: string;
+  title?: string;
+  instruction: string;
+  instructionFirstSteps?: string;
+  instructionChefsTable?: string;
+  materials?: string[];
+  duration?: number;
+}
+
+export type AdminRecipeStatus =
+  (typeof AdminRecipeStatus)[keyof typeof AdminRecipeStatus];
+
+export const AdminRecipeStatus = {
+  live: "live",
+  hidden: "hidden",
+  draft: "draft",
+} as const;
+
+export interface AdminRecipe {
+  id: string;
+  title: string;
+  description?: string;
+  countryId: string;
+  countryName?: string;
+  region?: string;
+  category: string;
+  difficulty: string;
+  prepTime?: string;
+  cookTime?: string;
+  servings: number;
+  culturalNote?: string;
+  image?: string;
+  status: AdminRecipeStatus;
+  featured?: boolean;
+  featuredOrder?: number;
+  cookCount?: number;
+  tips?: string[];
+  ingredients?: AdminIngredient[];
+  steps?: AdminRecipeStep[];
+  createdAt?: string;
+}
+
+export interface AdminRecipeUpdate {
+  title?: string;
+  description?: string;
+  countryId?: string;
+  region?: string;
+  category?: string;
+  difficulty?: string;
+  prepTime?: string;
+  cookTime?: string;
+  servings?: number;
+  culturalNote?: string;
+  image?: string;
+  status?: string;
+  featured?: boolean;
+  featuredOrder?: number;
+  tips?: string[];
+  ingredients?: AdminIngredient[];
+  steps?: AdminRecipeStep[];
+}
+
+export interface FeaturedRecipe {
+  id: string;
+  title: string;
+  order: number;
+}
+
+export interface PaginatedRecipes {
+  items: AdminRecipe[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface CookingHistoryEntry {
+  recipeId: string;
+  recipeTitle: string;
+  completedAt: string;
+  rating: number;
+  cookTimeMinutes: number;
+}
+
+export interface FeedbackEntry {
+  recipeId: string;
+  recipeTitle: string;
+  comment: string;
+  rating: number;
+  createdAt: string;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  cookingLevel: string;
+  subscriptionPlan: string;
+  recipesCooked: number;
+  cuisinesExplored: number;
+  measurementSystem?: string;
+  temperatureUnit?: string;
+  groceryPartner?: string;
+  joinedAt: string;
+  lastActiveAt: string;
+  history?: CookingHistoryEntry[];
+  feedback?: FeedbackEntry[];
+}
+
+export interface PaginatedUsers {
+  items: AdminUser[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AdminAccount {
+  email: string;
+  role: string;
+}
+
+export interface AdminSettings {
+  admins: AdminAccount[];
+  defaultMeasurement: string;
+  defaultCookingTier: string;
+  totalRecipes: number;
+  totalUsers: number;
+  totalCountries: number;
+}
+
+export type AdminLoginBody = {
+  email: string;
+  password: string;
+};
+
+export type AdminLogin200User = {
+  email: string;
+  role: string;
+};
+
+export type AdminLogin200 = {
+  token: string;
+  user: AdminLogin200User;
+};
+
+export type GetAdminRecipesParams = {
+  search?: string;
+  countryId?: string;
+  difficulty?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type DeleteAdminRecipe200 = {
+  success: boolean;
+};
+
+export type UpdateRecipeStatusBodyStatus =
+  (typeof UpdateRecipeStatusBodyStatus)[keyof typeof UpdateRecipeStatusBodyStatus];
+
+export const UpdateRecipeStatusBodyStatus = {
+  live: "live",
+  hidden: "hidden",
+  draft: "draft",
+} as const;
+
+export type UpdateRecipeStatusBody = {
+  status: UpdateRecipeStatusBodyStatus;
+};
+
+export type BulkUpdateRecipesBodyStatus =
+  (typeof BulkUpdateRecipesBodyStatus)[keyof typeof BulkUpdateRecipesBodyStatus];
+
+export const BulkUpdateRecipesBodyStatus = {
+  live: "live",
+  hidden: "hidden",
+  draft: "draft",
+} as const;
+
+export type BulkUpdateRecipesBody = {
+  ids: string[];
+  status: BulkUpdateRecipesBodyStatus;
+};
+
+export type BulkUpdateRecipes200 = {
+  success: boolean;
+  count: number;
+};
+
+export type BulkDeleteRecipesBody = {
+  ids: string[];
+};
+
+export type BulkDeleteRecipes200 = {
+  success: boolean;
+  count: number;
+};
+
+export type UpdateFeaturedRecipesBody = {
+  recipeIds: string[];
+};
+
+export type GetAdminUsersParams = {
+  search?: string;
+  level?: string;
+  plan?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type UpdateAdminSettingsBody = {
+  defaultMeasurement?: string;
+  defaultCookingTier?: string;
+};

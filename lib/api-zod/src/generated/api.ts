@@ -14,3 +14,625 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Admin login
+ */
+export const AdminLoginBody = zod.object({
+  email: zod.string(),
+  password: zod.string(),
+});
+
+export const AdminLoginResponse = zod.object({
+  token: zod.string(),
+  user: zod.object({
+    email: zod.string(),
+    role: zod.string(),
+  }),
+});
+
+/**
+ * @summary Dashboard statistics
+ */
+export const GetAdminStatsResponse = zod.object({
+  totalRecipes: zod.number(),
+  totalUsers: zod.number(),
+  totalCountries: zod.number(),
+  totalRegions: zod.number(),
+  recentRecipes: zod.array(
+    zod.object({
+      id: zod.string(),
+      title: zod.string(),
+      createdAt: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary List all countries
+ */
+export const GetCountriesResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  flag: zod.string(),
+  region: zod.string(),
+});
+export const GetCountriesResponse = zod.array(GetCountriesResponseItem);
+
+/**
+ * @summary List recipes with filters
+ */
+export const getAdminRecipesQueryPageDefault = 1;
+export const getAdminRecipesQueryLimitDefault = 20;
+
+export const GetAdminRecipesQueryParams = zod.object({
+  search: zod.coerce.string().optional(),
+  countryId: zod.coerce.string().optional(),
+  difficulty: zod.coerce.string().optional(),
+  status: zod.coerce.string().optional(),
+  page: zod.coerce.number().default(getAdminRecipesQueryPageDefault),
+  limit: zod.coerce.number().default(getAdminRecipesQueryLimitDefault),
+});
+
+export const GetAdminRecipesResponse = zod.object({
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      title: zod.string(),
+      description: zod.string().optional(),
+      countryId: zod.string(),
+      countryName: zod.string().optional(),
+      region: zod.string().optional(),
+      category: zod.string(),
+      difficulty: zod.string(),
+      prepTime: zod.string().optional(),
+      cookTime: zod.string().optional(),
+      servings: zod.number(),
+      culturalNote: zod.string().optional(),
+      image: zod.string().optional(),
+      status: zod.enum(["live", "hidden", "draft"]),
+      featured: zod.boolean().optional(),
+      featuredOrder: zod.number().optional(),
+      cookCount: zod.number().optional(),
+      tips: zod.array(zod.string()).optional(),
+      ingredients: zod
+        .array(
+          zod.object({
+            name: zod.string(),
+            amount: zod.string(),
+            category: zod.string().optional(),
+          }),
+        )
+        .optional(),
+      steps: zod
+        .array(
+          zod.object({
+            id: zod.string(),
+            title: zod.string().optional(),
+            instruction: zod.string(),
+            instructionFirstSteps: zod.string().optional(),
+            instructionChefsTable: zod.string().optional(),
+            materials: zod.array(zod.string()).optional(),
+            duration: zod.number().optional(),
+          }),
+        )
+        .optional(),
+      createdAt: zod.string().optional(),
+    }),
+  ),
+  total: zod.number(),
+  page: zod.number(),
+  limit: zod.number(),
+});
+
+/**
+ * @summary Get a single recipe
+ */
+export const GetAdminRecipeParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetAdminRecipeResponse = zod.object({
+  id: zod.string(),
+  title: zod.string(),
+  description: zod.string().optional(),
+  countryId: zod.string(),
+  countryName: zod.string().optional(),
+  region: zod.string().optional(),
+  category: zod.string(),
+  difficulty: zod.string(),
+  prepTime: zod.string().optional(),
+  cookTime: zod.string().optional(),
+  servings: zod.number(),
+  culturalNote: zod.string().optional(),
+  image: zod.string().optional(),
+  status: zod.enum(["live", "hidden", "draft"]),
+  featured: zod.boolean().optional(),
+  featuredOrder: zod.number().optional(),
+  cookCount: zod.number().optional(),
+  tips: zod.array(zod.string()).optional(),
+  ingredients: zod
+    .array(
+      zod.object({
+        name: zod.string(),
+        amount: zod.string(),
+        category: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  steps: zod
+    .array(
+      zod.object({
+        id: zod.string(),
+        title: zod.string().optional(),
+        instruction: zod.string(),
+        instructionFirstSteps: zod.string().optional(),
+        instructionChefsTable: zod.string().optional(),
+        materials: zod.array(zod.string()).optional(),
+        duration: zod.number().optional(),
+      }),
+    )
+    .optional(),
+  createdAt: zod.string().optional(),
+});
+
+/**
+ * @summary Update a recipe
+ */
+export const UpdateAdminRecipeParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateAdminRecipeBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().optional(),
+  countryId: zod.string().optional(),
+  region: zod.string().optional(),
+  category: zod.string().optional(),
+  difficulty: zod.string().optional(),
+  prepTime: zod.string().optional(),
+  cookTime: zod.string().optional(),
+  servings: zod.number().optional(),
+  culturalNote: zod.string().optional(),
+  image: zod.string().optional(),
+  status: zod.string().optional(),
+  featured: zod.boolean().optional(),
+  featuredOrder: zod.number().optional(),
+  tips: zod.array(zod.string()).optional(),
+  ingredients: zod
+    .array(
+      zod.object({
+        name: zod.string(),
+        amount: zod.string(),
+        category: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  steps: zod
+    .array(
+      zod.object({
+        id: zod.string(),
+        title: zod.string().optional(),
+        instruction: zod.string(),
+        instructionFirstSteps: zod.string().optional(),
+        instructionChefsTable: zod.string().optional(),
+        materials: zod.array(zod.string()).optional(),
+        duration: zod.number().optional(),
+      }),
+    )
+    .optional(),
+});
+
+export const UpdateAdminRecipeResponse = zod.object({
+  id: zod.string(),
+  title: zod.string(),
+  description: zod.string().optional(),
+  countryId: zod.string(),
+  countryName: zod.string().optional(),
+  region: zod.string().optional(),
+  category: zod.string(),
+  difficulty: zod.string(),
+  prepTime: zod.string().optional(),
+  cookTime: zod.string().optional(),
+  servings: zod.number(),
+  culturalNote: zod.string().optional(),
+  image: zod.string().optional(),
+  status: zod.enum(["live", "hidden", "draft"]),
+  featured: zod.boolean().optional(),
+  featuredOrder: zod.number().optional(),
+  cookCount: zod.number().optional(),
+  tips: zod.array(zod.string()).optional(),
+  ingredients: zod
+    .array(
+      zod.object({
+        name: zod.string(),
+        amount: zod.string(),
+        category: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  steps: zod
+    .array(
+      zod.object({
+        id: zod.string(),
+        title: zod.string().optional(),
+        instruction: zod.string(),
+        instructionFirstSteps: zod.string().optional(),
+        instructionChefsTable: zod.string().optional(),
+        materials: zod.array(zod.string()).optional(),
+        duration: zod.number().optional(),
+      }),
+    )
+    .optional(),
+  createdAt: zod.string().optional(),
+});
+
+/**
+ * @summary Delete a recipe
+ */
+export const DeleteAdminRecipeParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteAdminRecipeResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary Toggle featured status
+ */
+export const ToggleRecipeFeatureParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const ToggleRecipeFeatureResponse = zod.object({
+  id: zod.string(),
+  title: zod.string(),
+  description: zod.string().optional(),
+  countryId: zod.string(),
+  countryName: zod.string().optional(),
+  region: zod.string().optional(),
+  category: zod.string(),
+  difficulty: zod.string(),
+  prepTime: zod.string().optional(),
+  cookTime: zod.string().optional(),
+  servings: zod.number(),
+  culturalNote: zod.string().optional(),
+  image: zod.string().optional(),
+  status: zod.enum(["live", "hidden", "draft"]),
+  featured: zod.boolean().optional(),
+  featuredOrder: zod.number().optional(),
+  cookCount: zod.number().optional(),
+  tips: zod.array(zod.string()).optional(),
+  ingredients: zod
+    .array(
+      zod.object({
+        name: zod.string(),
+        amount: zod.string(),
+        category: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  steps: zod
+    .array(
+      zod.object({
+        id: zod.string(),
+        title: zod.string().optional(),
+        instruction: zod.string(),
+        instructionFirstSteps: zod.string().optional(),
+        instructionChefsTable: zod.string().optional(),
+        materials: zod.array(zod.string()).optional(),
+        duration: zod.number().optional(),
+      }),
+    )
+    .optional(),
+  createdAt: zod.string().optional(),
+});
+
+/**
+ * @summary Update recipe status
+ */
+export const UpdateRecipeStatusParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateRecipeStatusBody = zod.object({
+  status: zod.enum(["live", "hidden", "draft"]),
+});
+
+export const UpdateRecipeStatusResponse = zod.object({
+  id: zod.string(),
+  title: zod.string(),
+  description: zod.string().optional(),
+  countryId: zod.string(),
+  countryName: zod.string().optional(),
+  region: zod.string().optional(),
+  category: zod.string(),
+  difficulty: zod.string(),
+  prepTime: zod.string().optional(),
+  cookTime: zod.string().optional(),
+  servings: zod.number(),
+  culturalNote: zod.string().optional(),
+  image: zod.string().optional(),
+  status: zod.enum(["live", "hidden", "draft"]),
+  featured: zod.boolean().optional(),
+  featuredOrder: zod.number().optional(),
+  cookCount: zod.number().optional(),
+  tips: zod.array(zod.string()).optional(),
+  ingredients: zod
+    .array(
+      zod.object({
+        name: zod.string(),
+        amount: zod.string(),
+        category: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  steps: zod
+    .array(
+      zod.object({
+        id: zod.string(),
+        title: zod.string().optional(),
+        instruction: zod.string(),
+        instructionFirstSteps: zod.string().optional(),
+        instructionChefsTable: zod.string().optional(),
+        materials: zod.array(zod.string()).optional(),
+        duration: zod.number().optional(),
+      }),
+    )
+    .optional(),
+  createdAt: zod.string().optional(),
+});
+
+/**
+ * @summary Duplicate a recipe
+ */
+export const DuplicateRecipeParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DuplicateRecipeResponse = zod.object({
+  id: zod.string(),
+  title: zod.string(),
+  description: zod.string().optional(),
+  countryId: zod.string(),
+  countryName: zod.string().optional(),
+  region: zod.string().optional(),
+  category: zod.string(),
+  difficulty: zod.string(),
+  prepTime: zod.string().optional(),
+  cookTime: zod.string().optional(),
+  servings: zod.number(),
+  culturalNote: zod.string().optional(),
+  image: zod.string().optional(),
+  status: zod.enum(["live", "hidden", "draft"]),
+  featured: zod.boolean().optional(),
+  featuredOrder: zod.number().optional(),
+  cookCount: zod.number().optional(),
+  tips: zod.array(zod.string()).optional(),
+  ingredients: zod
+    .array(
+      zod.object({
+        name: zod.string(),
+        amount: zod.string(),
+        category: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  steps: zod
+    .array(
+      zod.object({
+        id: zod.string(),
+        title: zod.string().optional(),
+        instruction: zod.string(),
+        instructionFirstSteps: zod.string().optional(),
+        instructionChefsTable: zod.string().optional(),
+        materials: zod.array(zod.string()).optional(),
+        duration: zod.number().optional(),
+      }),
+    )
+    .optional(),
+  createdAt: zod.string().optional(),
+});
+
+/**
+ * @summary Bulk update recipe status
+ */
+export const BulkUpdateRecipesBody = zod.object({
+  ids: zod.array(zod.string()),
+  status: zod.enum(["live", "hidden", "draft"]),
+});
+
+export const BulkUpdateRecipesResponse = zod.object({
+  success: zod.boolean(),
+  count: zod.number(),
+});
+
+/**
+ * @summary Bulk delete recipes
+ */
+export const BulkDeleteRecipesBody = zod.object({
+  ids: zod.array(zod.string()),
+});
+
+export const BulkDeleteRecipesResponse = zod.object({
+  success: zod.boolean(),
+  count: zod.number(),
+});
+
+/**
+ * @summary Get featured recipes for a country
+ */
+export const GetFeaturedRecipesParams = zod.object({
+  countryId: zod.coerce.string(),
+});
+
+export const GetFeaturedRecipesResponseItem = zod.object({
+  id: zod.string(),
+  title: zod.string(),
+  order: zod.number(),
+});
+export const GetFeaturedRecipesResponse = zod.array(
+  GetFeaturedRecipesResponseItem,
+);
+
+/**
+ * @summary Update featured recipes order
+ */
+export const UpdateFeaturedRecipesParams = zod.object({
+  countryId: zod.coerce.string(),
+});
+
+export const UpdateFeaturedRecipesBody = zod.object({
+  recipeIds: zod.array(zod.string()),
+});
+
+export const UpdateFeaturedRecipesResponseItem = zod.object({
+  id: zod.string(),
+  title: zod.string(),
+  order: zod.number(),
+});
+export const UpdateFeaturedRecipesResponse = zod.array(
+  UpdateFeaturedRecipesResponseItem,
+);
+
+/**
+ * @summary List users with filters
+ */
+export const getAdminUsersQueryPageDefault = 1;
+export const getAdminUsersQueryLimitDefault = 20;
+
+export const GetAdminUsersQueryParams = zod.object({
+  search: zod.coerce.string().optional(),
+  level: zod.coerce.string().optional(),
+  plan: zod.coerce.string().optional(),
+  page: zod.coerce.number().default(getAdminUsersQueryPageDefault),
+  limit: zod.coerce.number().default(getAdminUsersQueryLimitDefault),
+});
+
+export const GetAdminUsersResponse = zod.object({
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      email: zod.string(),
+      name: zod.string(),
+      cookingLevel: zod.string(),
+      subscriptionPlan: zod.string(),
+      recipesCooked: zod.number(),
+      cuisinesExplored: zod.number(),
+      measurementSystem: zod.string().optional(),
+      temperatureUnit: zod.string().optional(),
+      groceryPartner: zod.string().optional(),
+      joinedAt: zod.string(),
+      lastActiveAt: zod.string(),
+      history: zod
+        .array(
+          zod.object({
+            recipeId: zod.string(),
+            recipeTitle: zod.string(),
+            completedAt: zod.string(),
+            rating: zod.number(),
+            cookTimeMinutes: zod.number(),
+          }),
+        )
+        .optional(),
+      feedback: zod
+        .array(
+          zod.object({
+            recipeId: zod.string(),
+            recipeTitle: zod.string(),
+            comment: zod.string(),
+            rating: zod.number(),
+            createdAt: zod.string(),
+          }),
+        )
+        .optional(),
+    }),
+  ),
+  total: zod.number(),
+  page: zod.number(),
+  limit: zod.number(),
+});
+
+/**
+ * @summary Get user detail
+ */
+export const GetAdminUserParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetAdminUserResponse = zod.object({
+  id: zod.string(),
+  email: zod.string(),
+  name: zod.string(),
+  cookingLevel: zod.string(),
+  subscriptionPlan: zod.string(),
+  recipesCooked: zod.number(),
+  cuisinesExplored: zod.number(),
+  measurementSystem: zod.string().optional(),
+  temperatureUnit: zod.string().optional(),
+  groceryPartner: zod.string().optional(),
+  joinedAt: zod.string(),
+  lastActiveAt: zod.string(),
+  history: zod
+    .array(
+      zod.object({
+        recipeId: zod.string(),
+        recipeTitle: zod.string(),
+        completedAt: zod.string(),
+        rating: zod.number(),
+        cookTimeMinutes: zod.number(),
+      }),
+    )
+    .optional(),
+  feedback: zod
+    .array(
+      zod.object({
+        recipeId: zod.string(),
+        recipeTitle: zod.string(),
+        comment: zod.string(),
+        rating: zod.number(),
+        createdAt: zod.string(),
+      }),
+    )
+    .optional(),
+});
+
+/**
+ * @summary Get admin settings
+ */
+export const GetAdminSettingsResponse = zod.object({
+  admins: zod.array(
+    zod.object({
+      email: zod.string(),
+      role: zod.string(),
+    }),
+  ),
+  defaultMeasurement: zod.string(),
+  defaultCookingTier: zod.string(),
+  totalRecipes: zod.number(),
+  totalUsers: zod.number(),
+  totalCountries: zod.number(),
+});
+
+/**
+ * @summary Update admin settings
+ */
+export const UpdateAdminSettingsBody = zod.object({
+  defaultMeasurement: zod.string().optional(),
+  defaultCookingTier: zod.string().optional(),
+});
+
+export const UpdateAdminSettingsResponse = zod.object({
+  admins: zod.array(
+    zod.object({
+      email: zod.string(),
+      role: zod.string(),
+    }),
+  ),
+  defaultMeasurement: zod.string(),
+  defaultCookingTier: zod.string(),
+  totalRecipes: zod.number(),
+  totalUsers: zod.number(),
+  totalCountries: zod.number(),
+});

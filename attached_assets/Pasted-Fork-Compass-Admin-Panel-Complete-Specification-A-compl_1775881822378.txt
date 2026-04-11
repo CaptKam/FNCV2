@@ -1,0 +1,748 @@
+Fork & Compass — Admin Panel Complete Specification
+A complete record of the existing admin panel — every page, every component, every field, every API call, and every interaction. Use this as the source of truth for building V2.
+
+Table of Contents
+Overview & Tech Stack
+Routing Structure
+Shared Shell & Navigation
+API Layer
+Login Page
+Dashboard
+Recipes — List Page
+Recipes — Edit Page
+Featured Content Page
+Users — List Page
+Users — Detail Page
+Settings Page
+UI Component Library
+Data Interfaces
+What V2 Needs to Add or Change
+1. Overview & Tech Stack
+The admin panel is a single-page React application, hosted at the path /admin.
+
+Concern	Technology
+Framework	React 18 + TypeScript
+Build tool	Vite
+Routing	Wouter
+Data fetching	TanStack Query (caching + revalidation)
+Styling	Tailwind CSS
+UI primitives	Custom component library (src/components/ui/) modelled on shadcn/ui
+Icons	Lucide React
+Forms	Local useState — no form library
+Package	@workspace/admin
+Base URL: All API calls use /api as the base, proxied to the API server at :8080.
+
+2. Routing Structure
+/admin/             → DashboardPage     (inside AppShell)
+/admin/login        → LoginPage         (standalone, no shell)
+/admin/recipes      → RecipesPage       (inside AppShell)
+/admin/recipes/:id  → RecipeEditPage    (inside AppShell)
+/admin/users        → UsersPage         (inside AppShell)
+/admin/users/:id    → UserDetailPage    (inside AppShell)
+/admin/featured     → FeaturedPage      (inside AppShell)
+/admin/settings     → SettingsPage      (inside AppShell)
+
+⚠️ Current gap: There is no authentication guard. Any user can navigate to /admin without logging in. LoginPage exists and submits to POST /api/admin/login but App.tsx does not wrap any routes in a ProtectedRoute component.
+
+3. Shared Shell & Navigation
+AppShell (src/components/AppShell.tsx)
+Every authenticated page renders inside this wrapper.
+
+Layout:
+
+┌────────────────────────────────────────────────────────────┐
+│  SIDEBAR (fixed, 256px wide)  │  MAIN CONTENT (scrollable) │
+│                               │                             │
+│  🍴 Fork & Compass            │  [Page content here]        │
+│     Admin Dashboard           │                             │
+│                               │                             │
+│  ─────────────────────        │                             │
+│  [📊] Dashboard               │                             │
+│  [📖] Recipes                 │                             │
+│  [👥] Users                   │                             │
+│  [⭐] Featured                │                             │
+│  [⚙️] Settings               │                             │
+│                               │                             │
+│  ─────────────────────        │                             │
+│  v1.0.0                       │                             │
+└────────────────────────────────────────────────────────────┘
+
+Sidebar details:
+
+Fixed position, does not scroll with content
+Logo: ChefHat icon + "Fork & Compass" title + "Admin Dashboard" subtitle
+Nav items: icon + label
+Active item: highlighted with bg-sidebar-primary/15 and text-orange-400
+Footer: version label
+Nav items:
+
+Label	Icon	Route
+Dashboard	LayoutDashboard	/admin (exact)
+Recipes	BookOpen	/admin/recipes
+Users	Users	/admin/users
+Featured	Star	/admin/featured
+Settings	Settings	/admin/settings
+4. API Layer
+File: src/lib/api.ts
+
+Central fetch wrapper. All pages use this rather than calling fetch directly.
+
+async function fetchApi<T>(path: string, options?: RequestInit): Promise<T>
+
+Base URL: /api
+Always sets Content-Type: application/json
+Throws on non-2xx status codes
+Key interfaces defined here:
+
+interface AdminRecipe {
+  id: string;
+  title: string;
+  description: string;
+  countryId: string;
+  countryName: string;
+  region: string;
+  category: string;
+  difficulty: string;
+  prepTime: string;
+  cookTime: string;
+  servings: number;
+  culturalNote: string;
+  image: string;
+  status: "live" | "hidden" | "draft";
+  featured: boolean;
+  featuredOrder: number;
+  cookCount: number;
+  tips: string[];
+  ingredients: Ingredient[];
+  steps: RecipeStep[];
+  createdAt: string;
+}
+interface RecipeStep {
+  id: string;
+  title: string;
+  instruction: string;
+  instructionFirstSteps: string;
+  instructionChefsTable: string;
+  materials: string[];
+}
+interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  cookingLevel: string;
+  subscriptionPlan: string;
+  recipesCooked: number;
+  cuisinesExplored: number;
+  joinedAt: string;
+  lastActiveAt: string;
+  history: CookingHistoryEntry[];
+  feedback: FeedbackEntry[];
+}
+interface DashboardStats {
+  totalRecipes: number;
+  totalUsers: number;
+  totalCountries: number;
+  totalRegions: number;
+  recentRecipes: { id: string; title: string; createdAt: string }[];
+}
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+5. Login Page
+File: src/pages/LoginPage.tsx
+Route: /admin/login
+Layout: Standalone — no sidebar, centered card
+
+┌─────────────────────────────────────────────────────────┐
+│                                                         │
+│              🍴 Fork & Compass                          │
+│              Admin Dashboard                            │
+│                                                         │
+│   ┌─────────────────────────────────────────────────┐  │
+│   │  Email                                          │  │
+│   │  [__________________________________]           │  │
+│   │                                                 │  │
+│   │  Password                                       │  │
+│   │  [__________________________________]           │  │
+│   │                                                 │  │
+│   │  [           Sign in             ]              │  │
+│   └─────────────────────────────────────────────────┘  │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+Fields:
+
+Field	Type	Validation
+Email	input type="email"	Required
+Password	input type="password"	Required
+Button: "Sign in" — submits form
+
+API call: POST /api/admin/login
+Request body: { email, password }
+On success: navigates to /admin
+On failure: shows error message inline
+
+6. Dashboard
+File: src/pages/DashboardPage.tsx
+Route: /admin
+API call: GET /api/admin/stats
+
+┌─────────────────────────────────────────────────────────┐
+│  Dashboard                              [Refresh icon]  │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  │
+│  │ Recipes  │  │  Users   │  │Countries │  │Regions │  │
+│  │    97    │  │   1,240  │  │    8     │  │   24   │  │
+│  └──────────┘  └──────────┘  └──────────┘  └────────┘  │
+│                                                         │
+│  ┌─ Recent Recipes ──────────────────────────────────┐  │
+│  │  Classic Garlic Bread        · 2 days ago         │  │
+│  │  Moroccan Lamb Tagine        · 3 days ago         │  │
+│  │  Spicy Tofu Stir-Fry         · 5 days ago         │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ Quick Actions ───────────────────────────────────┐  │
+│  │  [Manage Recipes]  [Manage Featured]  [View Users] │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+
+Stat cards: Total Recipes · Total Users · Total Countries · Total Regions
+
+Recent Recipes list: Title + relative creation date ("2 days ago")
+
+Quick Action buttons:
+
+Button	Navigates to
+Manage Recipes	/admin/recipes
+Manage Featured	/admin/featured
+View Users	/admin/users
+7. Recipes — List Page
+File: src/pages/RecipesPage.tsx
+Route: /admin/recipes
+
+┌─────────────────────────────────────────────────────────┐
+│  Recipes                    Total: 97                   │
+├─────────────────────────────────────────────────────────┤
+│  [🔍 Search recipes...]  [Country ▾]  [Difficulty ▾]  [Status ▾]  │
+│                                                         │
+│  ┌── [Bulk Actions appear when rows are selected] ────┐ │
+│  │  Hide Selected · Unhide Selected · Delete Selected │ │
+│  └───────────────────────────────────────────────────┘ │
+│                                                         │
+│  ☐  ⭐  Name             Country  Diff  Category  Status  Tiers  Cooked  Created  Actions │
+│  ─────────────────────────────────────────────────────────────────────────────────────── │
+│  ☐  ★   Classic Garlic   Italy    Easy  Side      Live   3/3    42     2d ago  [⋮]    │
+│  ☐  ☆   Moroccan Tagine  Morocco  Int   Main      Live   2/3    28     3d ago  [⋮]    │
+│  ☐  ☆   Spicy Tofu       Japan    Easy  Main      Draft  1/3     5     5d ago  [⋮]    │
+│  ...                                                    │
+│                                                         │
+│  [← Previous]  Page 1 of 5  [Next →]                   │
+└─────────────────────────────────────────────────────────┘
+
+Filter Bar
+Filter	Type	Options
+Search	Text input	Searches title
+Country	Dropdown	Populated via GET /api/countries
+Difficulty	Dropdown	Easy, Intermediate, Advanced
+Status	Dropdown	Live, Hidden, Draft
+All filters applied on the server via query params: GET /api/admin/recipes?search=&countryId=&difficulty=&status=&page=&limit=
+
+Table Columns
+Column	Description
+Checkbox	Multi-select for bulk actions
+⭐ Star	Featured status — filled star if recipe.featured = true
+Name	Recipe title (clickable → navigates to edit page)
+Country	Country name
+Region	Sub-region
+Difficulty	Easy / Intermediate / Advanced
+Category	Main Course, Side Dish, etc.
+Status	Badge — green "Live", grey "Hidden", amber "Draft"
+Tiers	TierBadge — "3/3", "2/3", "1/3" — counts how many of the three instruction variants are written across all steps
+Cooked	cookCount integer
+Created	Relative date
+Actions	Dropdown menu (see below)
+Tier Completion Logic
+// TierBadge counts tiers across all steps
+function getTierCount(steps: RecipeStep[]): { filled: number; total: 3 } {
+  const hasFirstSteps = steps.every(s => s.instructionFirstSteps?.trim());
+  const hasStandard = steps.every(s => s.instruction?.trim());
+  const hasChefsTable = steps.every(s => s.instructionChefsTable?.trim());
+  return {
+    filled: [hasFirstSteps, hasStandard, hasChefsTable].filter(Boolean).length,
+    total: 3
+  };
+}
+
+Color coding: 3/3 = green, 2/3 = amber, 1/3 = red, 0/3 = grey
+
+Row Actions (dropdown ⋮)
+Action	API call	Behaviour
+Edit	—	Navigates to /admin/recipes/:id
+Feature / Unfeature	POST /api/admin/recipes/:id/feature	Toggles featured boolean
+Hide / Unhide	PATCH /api/admin/recipes/:id/status	Sets status to "hidden" or "live"
+Duplicate	POST /api/admin/recipes/:id/duplicate	Creates copy with " (Copy)" appended to title
+Delete	DELETE /api/admin/recipes/:id	Confirm dialog → deletes
+Bulk Actions
+Appear in a bar above the table when 1+ rows are selected.
+
+Button	API call
+Hide Selected	PATCH /api/admin/recipes/bulk { ids, status: "hidden" }
+Unhide Selected	PATCH /api/admin/recipes/bulk { ids, status: "live" }
+Delete Selected	DELETE /api/admin/recipes/bulk { ids } — confirm dialog first
+8. Recipes — Edit Page
+File: src/pages/RecipeEditPage.tsx
+Route: /admin/recipes/:id
+
+┌─────────────────────────────────────────────────────────┐
+│  ← Back to Recipes                     [Save] [Delete] │
+│  Editing: Classic Garlic Bread                          │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌─ BASIC INFO ──────────────────────────────────────┐  │
+│  │  Title: [Classic Garlic Bread          ]          │  │
+│  │  Description: [                        ]          │  │
+│  │               [                        ]          │  │
+│  │  Country: [Italy ▾]  Region: [Rome              ] │  │
+│  │  Difficulty: [Easy ▾]  Category: [Side Dish     ] │  │
+│  │  Servings: [2]  Status: ● Live ○ Hidden ○ Draft   │  │
+│  │  Featured: ☑                                      │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ TIMING ──────────────────────────────────────────┐  │
+│  │  Prep Time: [20 min    ]  Cook Time: [0 min    ]  │  │
+│  │  Featured Order: [1]                              │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ INGREDIENTS ─────────────────────────────────────┐  │
+│  │  #1  Name: [french bread      ]  Amount: [1 loaf] │  │
+│  │  #2  Name: [unsalted butter   ]  Amount: [115 g ] │  │
+│  │  #3  Name: [garlic            ]  Amount: [4 cloves│  │
+│  │  ...                                               │  │
+│  │  [+ Add Ingredient]                                │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ INSTRUCTIONS ────────────────────────────────────┐  │
+│  │  Step 1                              [↑] [↓] [✕] │  │
+│  │  Title: [prep                        ]            │  │
+│  │  Materials: [garlic, butter, parsley ]            │  │
+│  │                                                   │  │
+│  │  🌱 Just Learning (Beginner):                     │  │
+│  │  [                                                │  │
+│  │   Preheat your oven. If you've never done this... │  │
+│  │  ]                                                │  │
+│  │                                                   │  │
+│  │  🍳 I've Got This (Standard):                     │  │
+│  │  [                                                │  │
+│  │   Preheat oven to 375°F. Mix softened butter...   │  │
+│  │  ]                                                │  │
+│  │                                                   │  │
+│  │  👨‍🍳 Culinary Pro (Advanced):                    │  │
+│  │  [                                                │  │
+│  │   Compound butter: 85% fat content optimal...     │  │
+│  │  ]                                                │  │
+│  │                                                   │  │
+│  │  Step 2                              [↑] [↓] [✕] │  │
+│  │  ...                                              │  │
+│  │  [+ Add Step]                                     │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ CULTURAL CONTEXT ────────────────────────────────┐  │
+│  │  [                                                │  │
+│  │   While bread has been served with garlic...      │  │
+│  │  ]                                                │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ METADATA ────────────────────────────────────────┐  │
+│  │  ID: classic-garlic-bread     (read-only)         │  │
+│  │  Created: 2024-01-15         (read-only)          │  │
+│  │  Cook Count: 42              (read-only)          │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+
+Form Sections
+Basic Info
+Field	Type	Notes
+Title	Text input	Maps to recipe.title
+Description	Textarea	Multi-line
+Country	Select dropdown	Populated from GET /api/countries
+Region	Text input	Sub-region name
+Difficulty	Select	Easy / Intermediate / Advanced
+Category	Text input	Free text
+Servings	Number input	
+Status	Radio group	Live / Hidden / Draft
+Featured	Checkbox	Toggles recipe.featured
+Timing
+Field	Type	Notes
+Prep Time	Text input	Free-text, e.g. "20 min"
+Cook Time	Text input	Free-text
+Featured Order	Number input	Lower number = earlier in carousel
+Ingredients
+Dynamic list. Each row:
+
+Field	Type
+Name	Text input
+Amount	Text input
+[Remove]	Icon button — removes that row
+[+ Add Ingredient] button appends a blank row.
+
+Instructions
+Dynamic list. Each step card:
+
+Field	Type	Notes
+Title	Text input	Short verb, e.g. "prep"
+Materials	Text input	Comma-separated ingredient names
+🌱 Just Learning	Textarea	instructionFirstSteps
+🍳 I've Got This	Textarea	instruction (standard)
+👨‍🍳 Culinary Pro	Textarea	instructionChefsTable
+Each step has [↑] [↓] reorder buttons and [✕] delete button.
+[+ Add Step] appends a blank step.
+
+Cultural Context
+Single textarea for recipe.culturalNote.
+
+Metadata (read-only)
+id, createdAt, cookCount
+
+Page Actions
+Button	API call	Behaviour
+Save	PATCH /api/admin/recipes/:id	Sends full form state; shows success toast
+Delete	DELETE /api/admin/recipes/:id	Confirm dialog → deletes → navigate back to list
+Back	—	Navigates to /admin/recipes
+Dirty state tracking: A dirty boolean is set true on any field change. Navigating away with unsaved changes shows a browser confirm() dialog.
+
+9. Featured Content Page
+File: src/pages/FeaturedPage.tsx
+Route: /admin/featured
+
+┌─────────────────────────────────────────────────────────┐
+│  Featured Content                                       │
+│  Manage the "Popular in [Country]" carousels            │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  🇮🇹 Italy                                       [▼]   │
+│  ─────────────────────────────────────────────────────  │
+│  Featured recipes (3/5 max):                            │
+│                                                         │
+│  1.  Classic Garlic Bread           [↑] [↓] [Remove]   │
+│  2.  Pizzoccheri alla Valtellinese  [↑] [↓] [Remove]   │
+│  3.  Classic Tiramisu               [↑] [↓] [Remove]   │
+│                                                         │
+│  Add recipe:                                            │
+│  [🔍 Search Italy recipes...                ]           │
+│  ┌────────────────────────────────────────┐             │
+│  │  Fresh Fettuccine with Salsa Cruda    [+ Add]       │
+│  │  Hearty Minestrone Soup               [+ Add]       │
+│  └────────────────────────────────────────┘             │
+│                                                         │
+│  🇯🇵 Japan                                       [▶]   │
+│  (collapsed)                                            │
+│                                                         │
+│  🇲🇦 Morocco                                     [▶]   │
+│  (collapsed)                                            │
+│  ...                                                    │
+└─────────────────────────────────────────────────────────┘
+
+Behaviour
+Each country is an expandable accordion row
+One country can be open at a time
+Featured list shows current order; numbers indicate carousel position
+Featured List Actions
+Action	API call
+[↑] Move Up	PUT /api/admin/featured/:countryId with reordered IDs
+[↓] Move Down	PUT /api/admin/featured/:countryId with reordered IDs
+[Remove]	PUT /api/admin/featured/:countryId with that recipe removed
+Adding Recipes
+Search input filters recipes belonging only to the expanded country
+Results show recipe title + [+ Add] button
+[+ Add] appends to the featured list if count < 5
+At 5 recipes, the Add button is disabled and a "Max 5" label is shown
+API calls on this page
+Call	Purpose
+GET /api/countries	Populate the country accordion list
+GET /api/admin/featured/:countryId	Load current featured order per country
+GET /api/admin/recipes?countryId=:id	Populate the recipe search results
+PUT /api/admin/featured/:countryId	Save new featured order (sends full ordered array of IDs)
+10. Users — List Page
+File: src/pages/UsersPage.tsx
+Route: /admin/users
+
+┌─────────────────────────────────────────────────────────┐
+│  Users                               [Export CSV]       │
+├─────────────────────────────────────────────────────────┤
+│  [🔍 Search name or email...]  [Level ▾]  [Plan ▾]     │
+│                                                         │
+│  Tier  Name            Email                Recipes  Cuisines  Plan   Joined      Last Active  │
+│  ────────────────────────────────────────────────────────────────────────────────────────────  │
+│  🍳    Sarah Johnson   sarah@example.com     47       6      Premium  Jan 2024    2 days ago   │
+│  🌱    Mike Chen       mike@example.com      12       2      Free     Mar 2024    1 week ago   │
+│  👨‍🍳  Marie Dubois    marie@example.com     89       8      Pro      Oct 2023    Today        │
+│  ...                                                    │
+│                                                         │
+│  [← Previous]  Page 1 of 12  [Next →]                  │
+└─────────────────────────────────────────────────────────┘
+
+Filters
+Filter	Type	Options
+Search	Text input	Matches name or email
+Level	Dropdown	1 (Beginner) / 2 / 3 / 4 / 5 (Expert)
+Plan	Dropdown	Free / Pro / Premium
+Filters sent as query params: GET /api/admin/users?search=&level=&plan=&page=&limit=
+
+Table Columns
+Column	Description
+Tier	Cooking tier emoji — 🌱 Beginner, 🍳 Home Cook, 👨‍🍳 Chef
+Name	Full name (clickable → user detail page)
+Email	Email address
+Recipes	Total recipes cooked (recipesCooked)
+Cuisines	Number of distinct cuisines explored
+Plan	Badge — Free (grey), Pro (blue), Premium (gold)
+Joined	Relative date
+Last Active	Relative date
+"Export CSV" button: Currently UI-only placeholder — no download implemented.
+
+Row click: Navigates to /admin/users/:id
+
+11. Users — Detail Page
+File: src/pages/UserDetailPage.tsx
+Route: /admin/users/:id
+API call: GET /api/admin/users/:id
+
+┌─────────────────────────────────────────────────────────┐
+│  ← Back to Users                                        │
+│  Sarah Johnson  ·  sarah@example.com                    │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌─ COOKING PROFILE ─────────────────────────────────┐  │
+│  │  Tier: 🍳 Home Cook                               │  │
+│  │  Cooking Level: Intermediate                      │  │
+│  │  Recipes Cooked: 47                               │  │
+│  │  Cuisines Explored: 6                             │  │
+│  │  Countries in Bucket List: 4                      │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ PREFERENCES ─────────────────────────────────────┐  │
+│  │  Measurement: Imperial (US)                       │  │
+│  │  Temperature: Fahrenheit                          │  │
+│  │  Grocery Partner: Instacart                       │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ SUBSCRIPTION ────────────────────────────────────┐  │
+│  │  Plan: Premium                                    │  │
+│  │  Status: Active                                   │  │
+│  │  Renewal: March 15, 2025                          │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ COOKING HISTORY ─────────────────────────────────┐  │
+│  │  Recipe              Date       Rating  Cook Time │  │
+│  │  Classic Garlic Bread  Jan 15   ★★★★★   22m       │  │
+│  │  Moroccan Tagine       Jan 10   ★★★★☆   1h 45m    │  │
+│  │  Spicy Tofu Stir-Fry   Jan 8    ★★★☆☆   18m       │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ FEEDBACK & NOTES ────────────────────────────────┐  │
+│  │  "The tagine was absolutely delicious..."  ★★★★★  │  │
+│  │  "Couscous needed more salt"               ★★★☆☆  │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+
+Sections
+Cooking Profile
+Tier emoji + label
+Cooking Level
+Recipes Cooked count
+Cuisines Explored count
+Countries in Bucket List count
+Preferences
+Measurement system (Imperial / Metric)
+Temperature unit (Fahrenheit / Celsius)
+Grocery Store Partner
+Subscription
+Plan name + status
+Renewal date
+Cooking History
+Table with columns: Recipe title · Date · Star rating (1–5) · Total cook time
+
+Feedback & Notes
+List of recipe-level comments left by this user, each showing the comment text + star rating.
+
+12. Settings Page
+File: src/pages/SettingsPage.tsx
+Route: /admin/settings
+
+┌─────────────────────────────────────────────────────────┐
+│  Settings                                               │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌─ ADMIN ACCOUNTS ──────────────────────────────────┐  │
+│  │  admin@forkandcompass.com       Owner             │  │
+│  │  content@forkandcompass.com     Editor            │  │
+│  │                                                   │  │
+│  │  [+ Invite admin]                                 │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ API KEYS ────────────────────────────────────────┐  │
+│  │  Recipe API Key:    [••••••••••••]  [Reveal] [Rotate] │
+│  │  Instacart API Key: [••••••••••••]  [Reveal] [Rotate] │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ APP CONFIGURATION ───────────────────────────────┐  │
+│  │  Default Measurement: [Imperial ▾]                │  │
+│  │  Default Cooking Tier: [Home Cook ▾]              │  │
+│  └───────────────────────────────────────────────────┘  │
+│                                                         │
+│  ┌─ DATABASE ────────────────────────────────────────┐  │
+│  │  Total Recipes: 97                                │  │
+│  │  Total Users: 1,240                               │  │
+│  │  Total Countries: 8                               │  │
+│  │                                                   │  │
+│  │  [Export all recipes as JSON]                     │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+
+Sections
+Admin Accounts
+List of admin emails with role labels
+[+ Invite admin] button — currently UI-only placeholder
+API Keys
+Masked key display (shown as ••••••••••••)
+[Reveal] button — toggles visibility
+[Rotate] button — currently UI-only placeholder
+App Configuration
+Default Measurement dropdown (Imperial / Metric)
+Default Cooking Tier dropdown (Beginner / Home Cook / Chef)
+Database
+Stats sourced from GET /api/admin/stats
+[Export all recipes as JSON] button — currently UI-only placeholder
+13. UI Component Library
+Location: src/components/ui/
+
+Custom primitive components used throughout all pages:
+
+Component	Variants / Notes
+Button	primary, secondary, destructive, ghost, outline + size: sm, md, lg
+Input	Standard text input with label support
+Textarea	Multi-line text area
+Select	Native <select> wrapper with Tailwind styling
+Badge	Status badges — green (Live), grey (Hidden), amber (Draft), blue (Pro), gold (Premium)
+Card	Container with Card, CardHeader, CardTitle, CardContent
+Table	Table, TableHeader, TableRow, TableHead, TableCell
+Dialog	Modal with Dialog, DialogTitle, DialogContent, DialogFooter
+Checkbox	Single checkbox
+RadioGroup	Radio button group (used for Status field)
+Toast	Success/error notification (top-right, auto-dismisses)
+Accordion	Expandable/collapsible section (used on Featured page)
+Spinner	Loading spinner
+14. Data Interfaces
+Full Recipe (from API)
+interface AdminRecipe {
+  id: string;                     // kebab-case, e.g. "classic-garlic-bread"
+  title: string;                  // Display name
+  description: string;
+  countryId: string;
+  countryName: string;
+  region: string;                 // Sub-region
+  category: string;               // "Main Course", "Side Dish", etc.
+  difficulty: "Easy" | "Intermediate" | "Advanced";
+  prepTime: string;               // "20 min"
+  cookTime: string;               // "0 min"
+  servings: number;
+  culturalNote: string;
+  image: string;                  // URL (relative or absolute)
+  status: "live" | "hidden" | "draft";
+  featured: boolean;
+  featuredOrder: number;          // 1-5, lower = earlier in carousel
+  cookCount: number;              // How many users have cooked this
+  tips: string[];
+  ingredients: Ingredient[];
+  steps: RecipeStep[];
+  createdAt: string;              // ISO timestamp
+}
+interface Ingredient {
+  id: string;
+  name: string;
+  amount: string;                 // Free-text, e.g. "115 g softened"
+}
+interface RecipeStep {
+  id: string;                     // "s1", "s2", etc.
+  title: string;                  // Short verb, e.g. "prep"
+  instruction: string;            // Standard / Home Cook tier
+  instructionFirstSteps: string;  // Beginner tier
+  instructionChefsTable: string;  // Advanced / Chef tier
+  materials: string[];            // Ingredient names used in this step
+}
+
+User (from API)
+interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  cookingLevel: "beginner" | "intermediate" | "advanced";
+  subscriptionPlan: "free" | "pro" | "premium";
+  recipesCooked: number;
+  cuisinesExplored: number;
+  measurementSystem: "imperial" | "metric";
+  temperatureUnit: "fahrenheit" | "celsius";
+  groceryPartner: "instacart" | "kroger" | "walmart";
+  joinedAt: string;
+  lastActiveAt: string;
+  history: CookingHistoryEntry[];
+  feedback: FeedbackEntry[];
+}
+interface CookingHistoryEntry {
+  recipeId: string;
+  recipeTitle: string;
+  completedAt: string;
+  rating: number;               // 1-5
+  cookTimeMinutes: number;
+}
+interface FeedbackEntry {
+  recipeId: string;
+  recipeTitle: string;
+  comment: string;
+  rating: number;
+  createdAt: string;
+}
+
+Dashboard Stats
+interface DashboardStats {
+  totalRecipes: number;
+  totalUsers: number;
+  totalCountries: number;
+  totalRegions: number;
+  recentRecipes: {
+    id: string;
+    title: string;
+    createdAt: string;
+  }[];
+}
+
+15. What V2 Needs to Add or Change
+Must Fix (Security)
+Issue	Fix
+No route guard on admin pages	Add ProtectedRoute wrapper in App.tsx; redirect to /admin/login if not authenticated
+No auth middleware on API	All admin API calls must send a session token; API server must validate it
+Must Add (Missing Features)
+Feature	Detail
+Drag-and-drop reordering	Featured page and step reordering use Up/Down buttons; replace with react-beautiful-dnd or @dnd-kit
+Image upload	Recipe editor accepts a URL string; add file picker + upload to POST /api/admin/recipes/upload
+CSV export	Users page "Export CSV" button is a placeholder; wire to a real download
+Invite admin	Settings page "Invite admin" has no backend action
+Rotate API keys	Settings page "Rotate key" has no backend action
+JSON export	Settings page "Export all recipes as JSON" has no backend action
+Bulk duplicate	No bulk duplicate action in recipe list
+Recipe image preview	Edit page has no preview of the current image
+Nice to Have in V2
+Feature	Detail
+Recipe creation	Currently there's only Edit — add a "New Recipe" button that creates a blank record and opens the editor
+Rich text editor	Replace plain <textarea> for instructions with a Markdown or WYSIWYG editor
+Revert/version history	Track changes to recipes and allow rollback
+Activity log	Audit trail of which admin changed what and when
+Real-time stat dashboard	Auto-refresh stats; show chart of recipes cooked over time
+Notification system	Alert admins when waitlist signups exceed threshold, or when a recipe gets flagged
+Cookbook / collection management	Group recipes into themed collections beyond just "Featured"
+Localization support	Admin UI currently English-only
