@@ -10,6 +10,8 @@ export interface Step {
   instructionFirstSteps?: string;
   instructionChefsTable?: string;
   duration?: number;
+  /** Optional doneness-cue tooltip rendered beside the step in Cook Mode. */
+  tip?: string;
 }
 
 export interface NutritionInfo {

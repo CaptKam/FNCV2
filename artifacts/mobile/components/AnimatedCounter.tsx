@@ -34,6 +34,12 @@ export function AnimatedCounter({ value, duration = 400, style, prefix = '', suf
   }, [value, duration, reduceMotion]);
 
   const animatedProps = useAnimatedProps(() => {
+    // `text` isn't in TextInput's animated props surface at the type
+    // level but reanimated's text animation feature writes into a
+    // native-side `text` field at runtime. This is the documented
+    // escape hatch from the reanimated docs — the `as any` is
+    // intentional and unavoidable without a type declaration patch.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return {
       text: `${prefix}${Math.round(animated.value)}${suffix}`,
     } as any;

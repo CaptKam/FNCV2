@@ -99,12 +99,11 @@ export function getInstructionForLevel(
   step: Step,
   level: 'beginner' | 'home_cook' | 'chef'
 ): string {
-  const s = step as Record<string, unknown>;
-  if (level === 'beginner' && typeof s.instructionFirstSteps === 'string') {
-    return s.instructionFirstSteps;
+  if (level === 'beginner' && step.instructionFirstSteps) {
+    return step.instructionFirstSteps;
   }
-  if (level === 'chef' && typeof s.instructionChefsTable === 'string') {
-    return s.instructionChefsTable;
+  if (level === 'chef' && step.instructionChefsTable) {
+    return step.instructionChefsTable;
   }
   return step.instruction;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleProp, ViewStyle } from 'react-native';
+import { StyleProp, ViewStyle, type DimensionValue } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -41,7 +41,7 @@ export function SkeletonShimmer({ width, height = 16, borderRadius = 8, style }:
     <Animated.View
       style={[
         {
-          width: width as any,
+          width: width as DimensionValue | undefined,
           height,
           borderRadius,
           backgroundColor: colors.surfaceContainerHigh,

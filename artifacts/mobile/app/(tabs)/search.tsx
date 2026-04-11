@@ -247,9 +247,12 @@ const modalStyles = StyleSheet.create({
     height: '100%',
   },
   heroGradient: {
+    // React Native doesn't support CSS `background: linear-gradient(...)`
+    // in StyleSheet. Use expo-linear-gradient if an actual gradient is
+    // needed; for now a single semi-transparent overlay is the closest
+    // approximation that typechecks.
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.4)',
-    background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent)',
   },
   heroContent: {
     position: 'absolute',

@@ -723,7 +723,10 @@ router.get(
   "/admin/featured/:countryId",
   requireAdminAuth,
   (req: Request, res: Response) => {
-    const { countryId } = req.params;
+    // Express 5 types route params as string | string[] in rare edge
+    // cases; we always set a single-segment route so String() is safe
+    // and collapses the union to string.
+    const countryId = String(req.params.countryId);
     const ids = featuredMap.get(countryId) ?? [];
     const result = ids
       .map((id, order) => {
@@ -739,7 +742,7 @@ router.put(
   "/admin/featured/:countryId",
   requireAdminAuth,
   (req: Request, res: Response) => {
-    const { countryId } = req.params;
+    const countryId = String(req.params.countryId);
     const { recipeIds } = req.body as { recipeIds: string[] };
     featuredMap.set(countryId, recipeIds.slice(0, 5));
     const result = recipeIds.slice(0, 5).map((id, order) => {

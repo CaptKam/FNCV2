@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useParams, Link } from "wouter";
-import { useGetAdminUser } from "@workspace/api-client-react";
+import {
+  useGetAdminUser,
+  getGetAdminUserQueryKey,
+} from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +14,12 @@ import { ChevronLeft, User, Mail, Calendar, Settings2, Globe2, ChefHat, Star } f
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
-  const { data: user, isLoading } = useGetAdminUser(id || "", { query: { enabled: !!id } });
+  const { data: user, isLoading } = useGetAdminUser(id || "", {
+    query: {
+      queryKey: getGetAdminUserQueryKey(id || ""),
+      enabled: !!id,
+    },
+  });
 
   if (isLoading || !user) {
     return (

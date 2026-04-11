@@ -23,10 +23,9 @@ import { RecipePickerSheet } from '@/components/RecipePickerSheet';
 import { SmartCookBar } from '@/components/SmartCookBar';
 import { useFeatureFlag } from '@/hooks/useRemoteConfig';
 
-import { useApp, ItineraryDay, PlannedMeal } from '@/context/AppContext';
+import { useApp, ItineraryDay, PlannedMeal, GroceryItem } from '@/context/AppContext';
 import { Recipe, recipes as allRecipes } from '@/data/recipes';
 import { formatCookTime } from '@/data/helpers';
-import { NutritionInfo } from '@/data/nutrition';
 import { todayLocal, dateToLocal, addDays, getMonday, formatDateShort as formatDateLabel, isPast } from '@/utils/dates';
 
 // ─── Helpers ───
@@ -272,7 +271,7 @@ export default function PlanScreen() {
   // ─── Toast + Undo state ───
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showUndo, setShowUndo] = useState(false);
-  const undoSnapshot = useRef<{ itinerary: any; grocery: any } | null>(null);
+  const undoSnapshot = useRef<{ itinerary: ItineraryDay[]; grocery: GroceryItem[] } | null>(null);
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((msg: string, withUndo = false) => {

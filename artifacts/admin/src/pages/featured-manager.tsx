@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { 
-  useGetCountries, 
-  useGetFeaturedRecipes, 
+import {
+  useGetCountries,
+  useGetFeaturedRecipes,
   useUpdateFeaturedRecipes,
-  useGetAdminRecipes 
+  useGetAdminRecipes,
+  getGetFeaturedRecipesQueryKey,
+  getGetAdminRecipesQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -57,8 +59,11 @@ export default function FeaturedManager() {
 
 function CountryFeaturedSection({ country }: { country: any }) {
   const [isOpen, setIsOpen] = useState(false);
-  const { data: featuredRecipes, isLoading } = useGetFeaturedRecipes(country.id, { 
-    query: { enabled: isOpen } 
+  const { data: featuredRecipes, isLoading } = useGetFeaturedRecipes(country.id, {
+    query: {
+      queryKey: getGetFeaturedRecipesQueryKey(country.id),
+      enabled: isOpen,
+    },
   });
   
   // Local state for optimistic UI updates before saving
@@ -72,10 +77,18 @@ function CountryFeaturedSection({ country }: { country: any }) {
   const queryClient = useQueryClient();
 
   // Search recipes to add
-  const { data: searchResults } = useGetAdminRecipes(
-    { countryId: country.id, search: searchQuery, limit: 5, status: "live" },
-    { query: { enabled: isSearching && searchQuery.length > 2 } }
-  );
+  const adminRecipesParams = {
+    countryId: country.id,
+    search: searchQuery,
+    limit: 5,
+    status: "live" as const,
+  };
+  const { data: searchResults } = useGetAdminRecipes(adminRecipesParams, {
+    query: {
+      queryKey: getGetAdminRecipesQueryKey(adminRecipesParams),
+      enabled: isSearching && searchQuery.length > 2,
+    },
+  });
 
   // Sync local state when fetched recipes change (and no local changes exist).
   // Previously used `useState(() => ...)` which only fires on mount, and a
