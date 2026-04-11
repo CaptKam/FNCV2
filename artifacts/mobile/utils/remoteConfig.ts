@@ -67,6 +67,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfig = {
     measurement_conversion: false,
     skill_adaptive_instructions: true,
     auto_generate_fab: true,
+    multiple_meals_daily_view: false,
     tonight_strip: true,
     dinner_party_system: true,
     online_grocery: false,

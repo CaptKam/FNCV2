@@ -163,6 +163,8 @@ export default function PlanScreen() {
   const showSmartCookBar = useFeatureFlag('smart_cook_bar');
   const showDinnerParty = useFeatureFlag('dinner_party_system');
   const showPullToRefresh = useFeatureFlag('pull_to_refresh');
+  // Multiple-meals toggle is still rough — gated off until redesigned.
+  const showMultipleMealsToggle = useFeatureFlag('multiple_meals_daily_view');
 
   const todayISO = todayLocal();
   const [weekStartDate, setWeekStartDate] = useState(() => dateToLocal(getMonday(new Date())));
@@ -622,8 +624,9 @@ export default function PlanScreen() {
       >
         <Animated.View style={contentSpacerStyle} />
 
-        {/* Multiple meals toggle */}
-        {isDailyView && (
+        {/* Multiple meals toggle — gated on multiple_meals_daily_view
+            until the multi-meals daily view is redesigned. */}
+        {isDailyView && showMultipleMealsToggle && (
           <View style={[styles.multipleMealsRow, { marginHorizontal: Spacing.page }]}>
             <Text style={[Typography.labelLarge, { color: colors.outline, letterSpacing: 1 }]}>
               MULTIPLE MEALS
@@ -658,7 +661,7 @@ export default function PlanScreen() {
 
         {/* ═══ DAILY VIEW ═══ */}
         {isDailyView ? (
-          multipleMeals ? (
+          (multipleMeals && showMultipleMealsToggle) ? (
             /* ── Daily: multiple meals timeline ── */
             <>
               <View style={styles.timeline}>
