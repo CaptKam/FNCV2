@@ -272,10 +272,10 @@ export default function GroceryScreen() {
 
   const handleClearAll = () => {
     Alert.alert(
-      'Clear Grocery List',
-      "Remove all grocery items? This can't be undone.",
+      'Start fresh?',
+      "This clears everything on your list. It can't be undone.",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Never mind', style: 'cancel' },
         { text: 'Start Fresh', style: 'destructive', onPress: () => {
           try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } catch {}
           app.clearAllGroceryItems();

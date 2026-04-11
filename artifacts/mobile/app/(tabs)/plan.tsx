@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
-import { View, Text, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated, Platform, AppState } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, Alert, Animated as RNAnimated, Platform, AppState, RefreshControl } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown, useReducedMotion, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -169,6 +169,12 @@ export default function PlanScreen() {
   const [multipleMeals, setMultipleMeals] = useState(false);
   const [showGroceryHandoff, setShowGroceryHandoff] = useState(false);
   const lastHandoffTime = useRef(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+    setTimeout(() => setIsRefreshing(false), 600);
+  }, []);
   const reduceMotion = useReducedMotion();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
 
@@ -601,6 +607,9 @@ export default function PlanScreen() {
         scrollEventThrottle={16}
         onScroll={scrollHandler}
         contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: HEADER_BOTTOM }}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
+        }
       >
         <Animated.View style={contentSpacerStyle} />
 
@@ -856,7 +865,7 @@ export default function PlanScreen() {
                           {day.dayLabel}, {formatDateLabel(day.date)}
                         </Text>
                         <Text style={[Typography.caption, { color: colors.outline, opacity: 0.4, marginTop: 2 }]}>
-                          No meals logged
+                          Nothing logged
                         </Text>
                       </View>
                       <View style={[styles.weekAddCircle, { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40` }]}>
@@ -979,7 +988,7 @@ export default function PlanScreen() {
                         {day.dayLabel}, {formatDateLabel(day.date)}
                       </Text>
                       <Text style={[Typography.caption, { color: colors.outline, opacity: isPastDay ? 0.4 : 0.6, marginTop: 2 }]}>
-                        {isPastDay ? 'No meals logged' : 'Plan your menu'}
+                        {isPastDay ? 'Nothing logged' : 'Nothing cooking yet'}
                       </Text>
                     </View>
                     <View style={[styles.weekAddCircle, { backgroundColor: colors.glassOverlay, borderColor: `${colors.outlineVariant}40` }]}>
@@ -1137,113 +1146,126 @@ export default function PlanScreen() {
           if (emptyDates.length === 0) return;
           setShowQuickGen(false);
 
-          const doGenerate = () => {
-            // Snapshot for undo
-            undoSnapshot.current = {
-              itinerary: JSON.parse(JSON.stringify(app.itinerary)),
-              grocery: JSON.parse(JSON.stringify(app.groceryItems)),
-            };
-            const names = app.autoGenerateWeek(emptyDates, app.coursePreference);
-            try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
-            const preview = names.length === 0
-              ? ''
-              : names.length <= 3
-                ? names.join(', ')
-                : `${names.slice(0, 3).join(', ')} + ${names.length - 3} more`;
-            showToast(
-              names.length > 0 ? `Planned ${names.length} meals: ${preview}` : `Planned ${emptyDates.length} meals`,
-              true
-            );
-            // Check grocery handoff conditions
-            setTimeout(() => {
-              const mealsPlanned = weekDays.filter(d => d.courses.main).length;
-              if (mealsPlanned >= 3 && app.getUncheckedCount() > 0 && Date.now() - lastHandoffTime.current > 600000) {
-                lastHandoffTime.current = Date.now();
-                try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-                setShowGroceryHandoff(true);
-                setTimeout(() => setShowGroceryHandoff(false), 8000);
-              }
-            }, 500);
-          };
-
+          // Mark the explanation as seen on first use
           if (!hasSeenAutoGen) {
-            Alert.alert(
-              'Auto-Plan Your Week',
-              `We'll fill your empty days with a variety of recipes from different countries. You can swap any meal afterward.`,
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Fill Empty Days',
-                  onPress: () => {
-                    AsyncStorage.setItem('@fork_compass_autogen_seen', 'true');
-                    setHasSeenAutoGen(true);
-                    doGenerate();
-                  },
-                },
-              ]
-            );
-          } else {
-            Alert.alert(
-              'Auto-Plan Meals',
-              `Fill ${emptyDates.length} empty day${emptyDates.length > 1 ? 's' : ''} with recipes?${app.dietaryFlags.length > 0 ? '\n\nYour dietary preferences will be respected.' : ''}`,
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Generate', onPress: doGenerate },
-              ]
-            );
+            AsyncStorage.setItem('@fork_compass_autogen_seen', 'true');
+            setHasSeenAutoGen(true);
           }
+
+          // Snapshot for undo
+          undoSnapshot.current = {
+            itinerary: JSON.parse(JSON.stringify(app.itinerary)),
+            grocery: JSON.parse(JSON.stringify(app.groceryItems)),
+          };
+          const names = app.autoGenerateWeek(emptyDates, app.coursePreference);
+          try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
+          const preview = names.length === 0
+            ? ''
+            : names.length <= 3
+              ? names.join(', ')
+              : `${names.slice(0, 3).join(', ')} + ${names.length - 3} more`;
+          showToast(
+            names.length > 0 ? `Planned ${names.length} meals: ${preview}` : `Planned ${emptyDates.length} meals`,
+            true
+          );
+          // Check grocery handoff conditions
+          setTimeout(() => {
+            const mealsPlanned = weekDays.filter(d => d.courses.main).length;
+            if (mealsPlanned >= 3 && app.getUncheckedCount() > 0 && Date.now() - lastHandoffTime.current > 600000) {
+              lastHandoffTime.current = Date.now();
+              try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+              setShowGroceryHandoff(true);
+              setTimeout(() => setShowGroceryHandoff(false), 8000);
+            }
+          }, 500);
         };
+
+        // Format active prefs for the sheet
+        const dietaryLabels: Record<string, string> = {
+          vegetarian: 'Vegetarian', vegan: 'Vegan', 'gluten-free': 'Gluten-Free',
+          'dairy-free': 'Dairy-Free', 'nut-free': 'Nut-Free', halal: 'Halal',
+        };
+        const levelLabel = app.cookingLevel === 'beginner' ? 'Beginner'
+          : app.cookingLevel === 'home_cook' ? 'Home Cook' : 'Chef';
+        const activeDietary = app.dietaryFlags.map(f => dietaryLabels[f] ?? f).join(' · ');
+        const prefsSummary = activeDietary
+          ? `${activeDietary} · ${levelLabel}`
+          : levelLabel;
 
         return (
           <>
             <View style={[styles.fabContainer, { bottom: cookBarVisible ? 160 : 100, right: Spacing.page }]}>
-              <Pressable
-                onPress={() => handleQuickGen(emptyDayCount)}
-                onLongPress={() => {
-                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
-                  setShowQuickGen(true);
-                }}
-                delayLongPress={400}
-                style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
+              <PressableScale
+                onPress={() => setShowQuickGen(true)}
+                haptic="medium"
+                style={[styles.fabExtended, { backgroundColor: colors.primary, shadowColor: colors.shadow }]}
                 accessibilityRole="button"
-                accessibilityLabel={`Auto-plan meals for empty days`}
+                accessibilityLabel="Auto-plan meals for empty days"
               >
                 <MaterialCommunityIcons name="auto-fix" size={20} color={colors.onPrimary} />
-                <Text style={[Typography.labelSmall, { color: colors.onPrimary, fontSize: 9, fontWeight: '700', marginTop: 1 }]}>Auto</Text>
-              </Pressable>
+                <Text style={[Typography.labelLarge, { color: colors.onPrimary, fontWeight: '600' }]}>Auto-Plan</Text>
+              </PressableScale>
             </View>
 
-            {/* Quick-gen popup on long press */}
+            {/* Auto-plan bottom sheet */}
             <Modal visible={showQuickGen} transparent animationType="fade" onRequestClose={() => setShowQuickGen(false)}>
               <Pressable style={styles.quickGenOverlay} onPress={() => setShowQuickGen(false)}>
-                <View style={[styles.quickGenSheet, {
-                  backgroundColor: colors.isDark ? 'rgba(30,28,25,0.95)' : 'rgba(255,255,255,0.92)',
-                  shadowColor: colors.shadow,
-                  bottom: cookBarVisible ? 220 : 160,
-                  right: Spacing.page,
+                <Pressable onPress={(e) => e.stopPropagation()} style={[styles.quickGenBottomSheet, {
+                  backgroundColor: colors.surfaceContainerLow,
+                  paddingBottom: insets.bottom + Spacing.lg,
                 }]}>
-                  <Text style={[Typography.labelLarge, { color: colors.outline, marginBottom: Spacing.sm }]}>
-                    AUTO-PLAN MEALS
-                  </Text>
-                  {[3, 5, 7].map((n) => {
-                    const available = Math.min(n, emptyDayCount);
-                    if (available === 0) return null;
-                    return (
-                      <Pressable
-                        key={n}
-                        onPress={() => handleQuickGen(available)}
-                        style={[styles.quickGenOption, { backgroundColor: colors.surfaceContainerLow }]}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Generate ${available} days`}
-                      >
-                        <Text style={[Typography.titleMedium, { color: colors.primary }]}>{available}</Text>
-                        <Text style={[Typography.bodySmall, { color: colors.onSurface }]}>
-                          {available === emptyDayCount ? 'All empty days' : `${available} days`}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                  <View style={styles.sheetHandle} />
+                  <Text style={[Typography.headline, { color: colors.onSurface, marginTop: Spacing.sm }]}>Auto-plan your week</Text>
+                  {!hasSeenAutoGen && (
+                    <Text style={[Typography.bodySmall, { color: colors.onSurfaceVariant, marginTop: Spacing.xs }]}>
+                      We'll fill empty days with recipes that match your preferences.
+                    </Text>
+                  )}
+                  <View style={styles.sheetOptionsRow}>
+                    {[3, 5].map((n) => {
+                      const available = Math.min(n, emptyDayCount);
+                      if (available === 0 || available === emptyDayCount) return null;
+                      return (
+                        <PressableScale
+                          key={n}
+                          onPress={() => handleQuickGen(available)}
+                          haptic="light"
+                          style={[styles.sheetDayOption, { borderColor: colors.primary }]}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Plan ${available} days`}
+                        >
+                          <Text style={[Typography.titleSmall, { color: colors.primary }]}>{available} days</Text>
+                        </PressableScale>
+                      );
+                    })}
+                    <PressableScale
+                      onPress={() => handleQuickGen(emptyDayCount)}
+                      haptic="medium"
+                      style={[styles.sheetFillAll, { backgroundColor: colors.primary }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Fill all ${emptyDayCount} empty days`}
+                    >
+                      <Text style={[Typography.titleSmall, { color: colors.onPrimary }]}>
+                        Fill all {emptyDayCount}
+                      </Text>
+                    </PressableScale>
+                  </View>
+                  <View style={styles.sheetPrefsRow}>
+                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant, flex: 1 }]}>
+                      Your settings: {prefsSummary}
+                    </Text>
+                    <Pressable
+                      onPress={() => { setShowQuickGen(false); router.push('/profile'); }}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel="Change preferences"
+                    >
+                      <Text style={[Typography.caption, { color: colors.primary, fontWeight: '600' }]}>
+                        Change
+                      </Text>
+                    </Pressable>
+                  </View>
+                </Pressable>
               </Pressable>
             </Modal>
           </>
@@ -1543,38 +1565,66 @@ const styles = StyleSheet.create({
   fabContainer: {
     position: 'absolute',
   },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: Radius.full,
+  fabExtended: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    height: 52,
+    borderRadius: Radius.full,
+    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
   },
   quickGenOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'flex-end',
   },
-  quickGenSheet: {
-    position: 'absolute',
-    borderRadius: Radius.lg,
-    padding: Spacing.md,
-    gap: Spacing.xs,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 12,
-    minWidth: 160,
+  quickGenBottomSheet: {
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
+    paddingTop: Spacing.sm,
+    paddingHorizontal: Spacing.page,
+    gap: Spacing.md,
   },
-  quickGenOption: {
+  sheetHandle: {
+    alignSelf: 'center',
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(128,128,128,0.3)',
+    marginBottom: Spacing.sm,
+  },
+  sheetOptionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
-    paddingVertical: Spacing.sm,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  sheetDayOption: {
     paddingHorizontal: Spacing.md,
-    borderRadius: Radius.md,
+    height: 44,
+    borderRadius: Radius.full,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetFillAll: {
+    flex: 1,
+    height: 44,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.md,
+  },
+  sheetPrefsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: Spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(128,128,128,0.2)',
   },
   onboardingHint: {
     flexDirection: 'row',

@@ -13,6 +13,7 @@ import { Radius } from '@/constants/radius';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { GlassView } from '@/components/GlassView';
 import { PressableScale } from '@/components/PressableScale';
+import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { recipes } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { convertAmount } from '@/data/helpers';
@@ -307,9 +308,17 @@ export default function CookModeScreen() {
         >
           <MaterialCommunityIcons name="close" size={OVERLAY_BUTTON.iconSize} color={OVERLAY_BUTTON.iconColor} />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: t.headerTitle }]}>
-          {isDinnerMode && dinnerEvent?.recipeName ? `${dinnerEvent.recipeName} · ` : ''}Step {currentStep + 1} of {totalSteps}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+          {isDinnerMode && dinnerEvent?.recipeName && (
+            <Text style={[styles.headerTitle, { color: t.headerTitle }]}>{dinnerEvent.recipeName} · </Text>
+          )}
+          <Text style={[styles.headerTitle, { color: t.headerTitle }]}>Step </Text>
+          <AnimatedCounter
+            value={currentStep + 1}
+            style={[styles.headerTitle, { color: t.headerTitle }]}
+          />
+          <Text style={[styles.headerTitle, { color: t.headerTitle }]}> of {totalSteps}</Text>
+        </View>
         <Pressable
           onPress={() => {
             if (hasTimer && !timerRunning && timerSeconds === 0 && step.duration) {
