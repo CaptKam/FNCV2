@@ -138,7 +138,8 @@ const SEED_FEATURE_FLAGS: InsertFeatureFlag[] = [
   {
     key: "online_grocery",
     label: "Online Grocery Ordering",
-    description: "Export grocery list to Instacart / Kroger / Amazon Fresh (not yet built).",
+    description:
+      "⚠ Needs Instacart API credentials. Shows the Online / In-Store tab picker on the Grocery screen with Instacart / Walmart / Amazon Fresh deep links. When off, the Grocery screen hides the picker and renders only the in-store check-off list. Leave off until the Instacart partner API is wired up.",
     category: "Grocery",
     enabled: false,
   },
