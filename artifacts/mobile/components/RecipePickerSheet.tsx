@@ -1,4 +1,15 @@
-import React, { useState, useMemo } from 'react';
+/**
+ * RecipePickerSheet
+ *
+ * Full-screen slide-up picker that lets the user search, filter, and select
+ * a recipe for a plan slot. Visually mirrors the Category page:
+ *   - Blurred branded header with close button + italic title + count pill
+ *   - Search bar with clear button
+ *   - Horizontal filter chips: time + difficulty + (optionally) My Diet
+ *   - Sort toggle: Default / Quickest / A–Z
+ *   - 2-column recipe card grid with hero images, bookmark-style add button
+ */
+import React, { useState, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,29 +18,34 @@ import {
   TextInput,
   StyleSheet,
   ScrollView,
+  Modal,
+  Platform,
+  useWindowDimensions,
 } from 'react-native';
-import { PressableScale } from '@/components/PressableScale';
 import { Image } from 'expo-image';
+import { BlurView } from 'expo-blur';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useThemeColors } from '@/hooks/useThemeColors';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
+import { PressableScale } from '@/components/PressableScale';
 import { recipes, Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 import { getDietaryConflicts, AllergenType } from '@/utils/allergens';
-import { BottomSheet } from '@/components/BottomSheet';
 
 type CourseType = 'appetizer' | 'main' | 'dessert';
 type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
-
 type TimeFilter = 'any' | 'under30' | 'under60';
-type DifficultyFilter = 'any' | 'easy';
+type DifficultyFilter = 'any' | 'Easy' | 'Medium' | 'Hard';
+type SortMode = 'default' | 'quickest' | 'az';
 
 const COURSE_TITLES: Record<CourseType, string> = {
-  appetizer: 'Pick an Appetizer',
+  appetizer: 'Pick a Starter',
   main: 'Pick a Main',
   dessert: 'Pick a Dessert',
 };
@@ -59,111 +75,119 @@ export function RecipePickerSheet({
 }: RecipePickerSheetProps) {
   const colors = useThemeColors();
   const app = useApp();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
 
   const [query, setQuery] = useState('');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('any');
   const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('any');
   const [myDietActive, setMyDietActive] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>('default');
+  const inputRef = useRef<TextInput | null>(null);
 
   const hasUserDiet = app.allergens.length > 0 || app.dietaryFlags.length > 0;
-
   const sheetTitle = title ?? (courseType ? COURSE_TITLES[courseType] : 'Pick a Recipe');
 
-  const filtered = useMemo(() => {
-    let pool = filterIds
-      ? recipes.filter((r) => filterIds.includes(r.id))
-      : recipes;
+  const CARD_WIDTH = (width - Spacing.page * 2 - 12) / 2;
+  const HEADER_H = insets.top + 56;
 
-    if (courseType) {
-      pool = pool.filter((r) => r.category === courseType);
-    }
+  const basePool = useMemo(() => {
+    let pool = filterIds ? recipes.filter((r) => filterIds.includes(r.id)) : recipes;
+    if (courseType) pool = pool.filter((r) => r.category === courseType);
+    return pool;
+  }, [filterIds, courseType]);
+
+  const filtered = useMemo(() => {
+    let pool = basePool;
 
     if (query.trim()) {
       const q = query.toLowerCase();
       pool = pool.filter(
         (r) =>
           r.title.toLowerCase().includes(q) ||
-          r.ingredients.some((i) => i.name.toLowerCase().includes(q))
+          r.ingredients.some((i) => i.name.toLowerCase().includes(q)),
       );
     }
 
-    if (timeFilter === 'under30') {
-      pool = pool.filter((r) => r.prepTime + r.cookTime < 30);
-    } else if (timeFilter === 'under60') {
-      pool = pool.filter((r) => r.prepTime + r.cookTime < 60);
-    }
+    if (timeFilter === 'under30') pool = pool.filter((r) => r.prepTime + r.cookTime < 30);
+    else if (timeFilter === 'under60') pool = pool.filter((r) => r.prepTime + r.cookTime < 60);
 
-    if (difficultyFilter === 'easy') {
-      pool = pool.filter((r) => r.difficulty === 'Easy');
-    }
+    if (difficultyFilter !== 'any') pool = pool.filter((r) => r.difficulty === difficultyFilter);
 
-    if (!myDietActive || !hasUserDiet) return pool;
-
-    const compatible: Recipe[] = [];
-    const conflicted: Recipe[] = [];
-
-    for (const r of pool) {
-      const allergenConflict = (r.allergens as AllergenType[]).some((a) =>
-        app.allergens.includes(a)
-      );
-      const dietaryConflict =
-        getDietaryConflicts(r.allergens as AllergenType[], app.dietaryFlags).length > 0;
-      if (allergenConflict || dietaryConflict) {
-        conflicted.push(r);
-      } else {
-        compatible.push(r);
+    if (myDietActive && hasUserDiet) {
+      const compatible: Recipe[] = [];
+      const conflicted: Recipe[] = [];
+      for (const r of pool) {
+        const allergenConflict = (r.allergens as AllergenType[]).some((a) => app.allergens.includes(a));
+        const dietaryConflict = getDietaryConflicts(r.allergens as AllergenType[], app.dietaryFlags).length > 0;
+        if (allergenConflict || dietaryConflict) conflicted.push(r);
+        else compatible.push(r);
       }
+      pool = [...compatible, ...conflicted];
     }
 
-    return [...compatible, ...conflicted];
-  }, [query, timeFilter, difficultyFilter, myDietActive, courseType, filterIds, app.allergens, app.dietaryFlags, hasUserDiet]);
+    if (sortMode === 'quickest') pool = [...pool].sort((a, b) => (a.prepTime + a.cookTime) - (b.prepTime + b.cookTime));
+    else if (sortMode === 'az') pool = [...pool].sort((a, b) => a.title.localeCompare(b.title));
+
+    return pool;
+  }, [basePool, query, timeFilter, difficultyFilter, myDietActive, sortMode, hasUserDiet, app.allergens, app.dietaryFlags]);
 
   const conflictSet = useMemo(() => {
     if (!myDietActive || !hasUserDiet) return new Set<string>();
     const set = new Set<string>();
     for (const r of filtered) {
-      const allergenConflict = (r.allergens as AllergenType[]).some((a) =>
-        app.allergens.includes(a)
-      );
-      const dietaryConflict =
-        getDietaryConflicts(r.allergens as AllergenType[], app.dietaryFlags).length > 0;
+      const allergenConflict = (r.allergens as AllergenType[]).some((a) => app.allergens.includes(a));
+      const dietaryConflict = getDietaryConflicts(r.allergens as AllergenType[], app.dietaryFlags).length > 0;
       if (allergenConflict || dietaryConflict) set.add(r.id);
     }
     return set;
   }, [filtered, myDietActive, hasUserDiet, app.allergens, app.dietaryFlags]);
 
-  const handleSelect = (recipe: Recipe) => {
-    onSelect(recipe);
+  const resetFilters = () => {
     setQuery('');
     setTimeFilter('any');
     setDifficultyFilter('any');
     setMyDietActive(false);
+    setSortMode('default');
+  };
+
+  const handleSelect = (recipe: Recipe) => {
+    onSelect(recipe);
+    resetFilters();
     onDismiss();
   };
 
   const handleDismiss = () => {
-    setQuery('');
-    setTimeFilter('any');
-    setDifficultyFilter('any');
-    setMyDietActive(false);
+    resetFilters();
     onDismiss();
   };
+
+  const nextSort = (): SortMode => {
+    if (sortMode === 'default') return 'quickest';
+    if (sortMode === 'quickest') return 'az';
+    return 'default';
+  };
+  const sortLabel = sortMode === 'default' ? 'Default' : sortMode === 'quickest' ? 'Quickest' : 'A–Z';
 
   const renderPill = (
     label: string,
     active: boolean,
     onPress: () => void,
-    icon?: MCIconName
+    icon?: MCIconName,
+    activeColor?: string,
   ) => (
     <Pressable
       key={label}
-      onPress={onPress}
+      onPress={() => {
+        try { Haptics.selectionAsync(); } catch {}
+        onPress();
+      }}
       style={[
         styles.filterPill,
         {
-          backgroundColor: active ? colors.primary : colors.surfaceContainerLow,
-          borderColor: active ? colors.primary : `${colors.outline}40`,
+          backgroundColor: active ? (activeColor ?? colors.primary) : colors.surfaceContainerHigh,
           borderWidth: 1,
+          borderColor: active ? (activeColor ?? colors.primary) : 'transparent',
         },
       ]}
       accessibilityRole="button"
@@ -173,17 +197,14 @@ export function RecipePickerSheet({
       {icon && (
         <MaterialCommunityIcons
           name={icon}
-          size={14}
+          size={13}
           color={active ? colors.onPrimary : colors.outline}
         />
       )}
       <Text
         style={[
           Typography.caption,
-          {
-            color: active ? colors.onPrimary : colors.onSurface,
-            fontWeight: '600',
-          },
+          { color: active ? colors.onPrimary : colors.onSurface, fontWeight: '600' },
         ]}
       >
         {label}
@@ -191,33 +212,53 @@ export function RecipePickerSheet({
     </Pressable>
   );
 
-  return (
-    <BottomSheet
-      visible={visible}
-      onDismiss={handleDismiss}
-      size="full"
-      title={sheetTitle}
-      showCloseButton
-      disablePanDismiss
-      dismissOnOverlay={false}
-    >
-      <View style={[styles.searchRow, { backgroundColor: colors.surfaceContainerHigh }]}>
-        <MaterialCommunityIcons name="magnify" size={20} color={colors.outline} />
+  const headerInner = (
+    <View style={[styles.headerInner, { paddingTop: insets.top + 8 }]}>
+      <Pressable
+        onPress={handleDismiss}
+        style={[styles.closeBtn, { backgroundColor: 'rgba(154,65,0,0.10)' }]}
+        accessibilityRole="button"
+        accessibilityLabel="Close"
+        hitSlop={8}
+      >
+        <MaterialCommunityIcons name="close" size={20} color="#9A4100" />
+      </Pressable>
+
+      <Text style={[styles.headerTitle, { color: colors.onSurface }]} numberOfLines={1}>
+        {sheetTitle}
+      </Text>
+
+      <View style={[styles.countPill, { backgroundColor: 'rgba(154,65,0,0.10)' }]}>
+        <Text style={[Typography.caption, { color: '#9A4100', fontWeight: '700' }]}>
+          {filtered.length}
+        </Text>
+      </View>
+    </View>
+  );
+
+  const ListHeader = (
+    <View style={{ paddingHorizontal: Spacing.page, paddingBottom: Spacing.md }}>
+      {/* Search bar */}
+      <View style={[styles.searchWrap, { backgroundColor: colors.surfaceContainerLow }]}>
+        <MaterialCommunityIcons name="magnify" size={19} color={colors.primary} />
         <TextInput
+          ref={inputRef}
           value={query}
           onChangeText={setQuery}
-          placeholder="Search recipes..."
+          placeholder="Search recipes…"
           placeholderTextColor={colors.outline}
-          style={[Typography.body, { color: colors.onSurface, flex: 1, fontSize: 15 }]}
+          style={[Typography.bodySmall, { color: colors.onSurface, flex: 1 }]}
+          returnKeyType="search"
           accessibilityLabel="Search recipes"
         />
         {query.length > 0 && (
           <Pressable onPress={() => setQuery('')} hitSlop={8}>
-            <MaterialCommunityIcons name="close-circle" size={18} color={colors.outline} />
+            <MaterialCommunityIcons name="close-circle" size={17} color={colors.outline} />
           </Pressable>
         )}
       </View>
 
+      {/* Filter chips */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -225,156 +266,249 @@ export function RecipePickerSheet({
       >
         {renderPill('Any Time', timeFilter === 'any', () => setTimeFilter('any'))}
         {renderPill('< 30 min', timeFilter === 'under30', () =>
-          setTimeFilter(timeFilter === 'under30' ? 'any' : 'under30'),
-          'clock-fast'
-        )}
+          setTimeFilter(timeFilter === 'under30' ? 'any' : 'under30'), 'clock-fast')}
         {renderPill('< 60 min', timeFilter === 'under60', () =>
-          setTimeFilter(timeFilter === 'under60' ? 'any' : 'under60'),
-          'clock-outline'
+          setTimeFilter(timeFilter === 'under60' ? 'any' : 'under60'), 'clock-outline')}
+
+        <View style={[styles.filterDivider, { backgroundColor: colors.outlineVariant }]} />
+
+        {renderPill('Any Level', difficultyFilter === 'any', () => setDifficultyFilter('any'), 'chef-hat')}
+        {(['Easy', 'Medium', 'Hard'] as DifficultyFilter[]).map((d) =>
+          renderPill(
+            d,
+            difficultyFilter === d,
+            () => setDifficultyFilter(difficultyFilter === d ? 'any' : d),
+            d === 'Easy' ? 'emoticon-happy-outline' : d === 'Medium' ? 'emoticon-neutral-outline' : 'emoticon-angry-outline',
+            DIFFICULTY_COLORS[d],
+          ),
         )}
-        <View style={styles.filterDivider} />
-        {renderPill('Any Difficulty', difficultyFilter === 'any', () => setDifficultyFilter('any'))}
-        {renderPill('Beginner', difficultyFilter === 'easy', () => setDifficultyFilter('easy'), 'chart-bar')}
-        {hasUserDiet && renderPill(
-          'My Diet',
-          myDietActive,
-          () => setMyDietActive((v) => !v),
-          'heart-outline'
+
+        {hasUserDiet && (
+          <>
+            <View style={[styles.filterDivider, { backgroundColor: colors.outlineVariant }]} />
+            {renderPill('My Diet', myDietActive, () => setMyDietActive((v) => !v), 'heart-outline')}
+          </>
         )}
       </ScrollView>
 
-      {filtered.length === 0 ? (
-        <View style={styles.emptyState}>
-          <MaterialCommunityIcons name="chef-hat" size={40} color={colors.outline} />
-          <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center', marginTop: Spacing.sm }]}>
-            No recipes match these filters
+      {/* Count + sort */}
+      <View style={styles.resultsRow}>
+        <Text style={[Typography.caption, { color: colors.outline }]}>
+          {filtered.length} {filtered.length === 1 ? 'recipe' : 'recipes'}
+        </Text>
+        <Pressable
+          onPress={() => {
+            try { Haptics.selectionAsync(); } catch {}
+            setSortMode(nextSort());
+          }}
+          style={[styles.sortBtn, { backgroundColor: colors.surfaceContainerHigh }]}
+          accessibilityRole="button"
+          accessibilityLabel={`Sort: ${sortLabel}`}
+        >
+          <MaterialCommunityIcons name="sort-variant" size={14} color={colors.primary} />
+          <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>
+            {sortLabel}
           </Text>
-        </View>
-      ) : (
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={handleDismiss}
+      statusBarTranslucent
+    >
+      <View style={[styles.container, { backgroundColor: colors.surface }]}>
+        {/* ── Branded blurred header ── */}
+        {Platform.OS === 'web' ? (
+          <View
+            style={[
+              styles.header,
+              {
+                height: HEADER_H,
+                backgroundColor: `${colors.surface}EC`,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: 'rgba(154,65,0,0.12)',
+              },
+            ]}
+          >
+            {headerInner}
+          </View>
+        ) : (
+          <BlurView
+            intensity={60}
+            tint={colors.isDark ? 'dark' : 'light'}
+            style={[styles.header, { height: HEADER_H }]}
+          >
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  backgroundColor: `${colors.surface}CC`,
+                  borderBottomWidth: StyleSheet.hairlineWidth,
+                  borderBottomColor: 'rgba(154,65,0,0.12)',
+                },
+              ]}
+            />
+            {headerInner}
+          </BlurView>
+        )}
+
+        {/* ── 2-column card grid ── */}
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
+          numColumns={2}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 24 }}
+          columnWrapperStyle={{ gap: 12, paddingHorizontal: Spacing.page }}
+          contentContainerStyle={{
+            paddingTop: HEADER_H + 8,
+            paddingBottom: insets.bottom + 24,
+          }}
+          ListHeaderComponent={ListHeader}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <MaterialCommunityIcons name="chef-hat" size={40} color={colors.outlineVariant} />
+              <Text style={[Typography.headline, { color: colors.onSurface, textAlign: 'center' }]}>
+                No matches
+              </Text>
+              <Text style={[Typography.bodySmall, { color: colors.outline, textAlign: 'center' }]}>
+                Try different keywords or adjust filters
+              </Text>
+            </View>
+          }
           renderItem={({ item }) => {
             const country = countries.find((c) => c.id === item.countryId);
             const isConflicted = conflictSet.has(item.id);
-            const diffColor = DIFFICULTY_COLORS[item.difficulty] ?? colors.outline;
             const totalTime = item.prepTime + item.cookTime;
+            const diffColor = DIFFICULTY_COLORS[item.difficulty] ?? colors.outline;
 
             return (
               <PressableScale
-                onPress={() => handleSelect(item)}
+                onPress={() => {
+                  try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                  handleSelect(item);
+                }}
                 style={[
-                  styles.row,
+                  styles.card,
                   {
-                    backgroundColor: colors.surfaceContainerHigh,
+                    width: CARD_WIDTH,
+                    backgroundColor: colors.surfaceContainerLow,
                     opacity: isConflicted ? 0.7 : 1,
                   },
                 ]}
+                scaleDown={0.97}
                 accessibilityRole="button"
                 accessibilityLabel={`${item.title}, ${formatCookTime(totalTime)}`}
-                scaleDown={0.98}
               >
-                <View style={styles.thumbContainer}>
+                {/* Hero image with overlays */}
+                <View style={styles.imageWrap}>
                   <Image
                     source={{ uri: item.image }}
-                    style={styles.thumb}
+                    style={styles.cardImage}
                     contentFit="cover"
-                    transition={200}
+                    transition={300}
+                    accessible={false}
                   />
+
+                  {/* Add button — top-right of image */}
+                  <View style={[styles.addBtn, { backgroundColor: colors.primary }]}>
+                    <MaterialCommunityIcons name="plus" size={16} color={colors.onPrimary} />
+                  </View>
+
+                  {/* Conflict badge — top-left of image */}
+                  {isConflicted && (
+                    <View style={[styles.conflictBadge, { backgroundColor: `${colors.error}DD` }]}>
+                      <MaterialCommunityIcons name="alert-circle-outline" size={11} color="#fff" />
+                      <Text style={styles.conflictText}>Allergen</Text>
+                    </View>
+                  )}
                 </View>
 
-                <View style={styles.rowText}>
+                {/* Card body */}
+                <View style={styles.cardContent}>
                   <Text
                     style={[Typography.titleSmall, { color: colors.onSurface }]}
-                    numberOfLines={1}
+                    numberOfLines={2}
                   >
                     {item.title}
                   </Text>
-
-                  {country && (
-                    <Text style={[Typography.caption, { color: colors.outline, marginTop: 2 }]}>
-                      {country.flag} {country.name}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                    <Text style={{ fontSize: 12 }}>{country?.flag}</Text>
+                    <Text style={[Typography.caption, { color: colors.outline }]}>
+                      {formatCookTime(totalTime)}
                     </Text>
-                  )}
-
-                  <View style={styles.badgeRow}>
-                    <View style={[styles.timeBadge, { backgroundColor: `${colors.primary}18` }]}>
-                      <MaterialCommunityIcons name="clock-outline" size={12} color={colors.primary} />
-                      <Text style={[Typography.caption, { color: colors.primary, fontSize: 11 }]}>
-                        {formatCookTime(totalTime)}
-                      </Text>
-                    </View>
-
-                    <View style={[styles.diffBadge, { backgroundColor: `${diffColor}18` }]}>
-                      <Text style={[Typography.caption, { color: diffColor, fontSize: 11, fontWeight: '700' }]}>
-                        {item.difficulty}
-                      </Text>
-                    </View>
-
-                    {isConflicted && (
-                      <View style={[styles.diffBadge, { backgroundColor: `${colors.error}18` }]}>
-                        <MaterialCommunityIcons name="alert-circle-outline" size={12} color={colors.error} />
-                        <Text style={[Typography.caption, { color: colors.error, fontSize: 10 }]}>
-                          Contains allergen
-                        </Text>
-                      </View>
-                    )}
+                    <View style={[styles.diffDot, { backgroundColor: diffColor }]} />
+                    <Text style={[Typography.caption, { color: diffColor, fontWeight: '700' }]}>
+                      {item.difficulty}
+                    </Text>
                   </View>
                 </View>
-
-                <MaterialCommunityIcons name="plus" size={20} color={colors.primary} />
               </PressableScale>
             );
           }}
         />
-      )}
-    </BottomSheet>
+      </View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  overlayDismiss: {
-    flex: 1,
-  },
-  sheet: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '88%',
-    paddingTop: Spacing.sm,
-    paddingHorizontal: Spacing.page,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: Spacing.md,
-  },
+  container: { flex: 1 },
+
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 70,
   },
-  searchRow: {
+  headerInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 10,
-    borderRadius: Radius.sm,
+    paddingHorizontal: Spacing.page,
+    paddingBottom: 10,
+    gap: 10,
+  },
+  closeBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  headerTitle: {
+    fontFamily: 'NotoSerif_700Bold',
+    fontSize: 20,
+    fontStyle: 'italic',
+    flex: 1,
+    textAlign: 'center',
+  },
+  countPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: Radius.full,
+    flexShrink: 0,
+  },
+
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    height: 46,
+    borderRadius: 23,
     marginBottom: Spacing.sm,
   },
+
   filterRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: 8,
     paddingBottom: Spacing.sm,
     paddingRight: Spacing.page,
   },
@@ -382,63 +516,85 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: Spacing.sm + 2,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: Radius.full,
   },
   filterDivider: {
     width: 1,
-    height: 20,
-    backgroundColor: 'rgba(0,0,0,0.12)',
-    marginHorizontal: 2,
+    height: 22,
+    borderRadius: 1,
+    alignSelf: 'center',
+    marginHorizontal: 4,
   },
-  row: {
+
+  resultsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.sm,
-    borderRadius: Radius.md,
-    marginBottom: Spacing.sm,
-    gap: Spacing.md,
+    justifyContent: 'space-between',
+    marginBottom: Spacing.md,
   },
-  thumbContainer: {
-    borderRadius: Radius.md,
-    overflow: 'hidden',
-  },
-  thumb: {
-    width: 80,
-    height: 80,
-    borderRadius: Radius.md,
-  },
-  rowText: {
-    flex: 1,
-    gap: 2,
-  },
-  badgeRow: {
+  sortBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    flexWrap: 'wrap',
-    marginTop: 4,
-  },
-  timeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: Radius.full,
   },
-  diffBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: Radius.full,
+
+  card: {
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+    marginBottom: 12,
   },
-  emptyState: {
+  imageWrap: {
+    position: 'relative',
+  },
+  cardImage: {
+    width: '100%',
+    height: 160,
+  },
+  cardContent: {
+    padding: Spacing.sm,
+  },
+  diffDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+  },
+  addBtn: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.xl,
+  },
+  conflictBadge: {
+    position: 'absolute',
+    top: Spacing.sm,
+    left: Spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Radius.full,
+  },
+  conflictText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+
+  emptyState: {
+    alignItems: 'center',
+    paddingTop: Spacing.xxl,
+    paddingBottom: Spacing.xxl,
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.page,
   },
 });
