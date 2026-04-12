@@ -32,6 +32,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { todayLocal, getDayLabel } from '@/utils/dates';
 import { useCuratedCollections } from '@/hooks/useCuratedCollections';
+import { SelectionPill } from '@/components/SelectionPill';
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
 
@@ -467,26 +468,15 @@ export default function SearchScreen() {
                 Dietary Preferences
               </Text>
               <View style={styles.dietaryWrap}>
-                {DIETARY_FILTERS.map((f) => {
-                  const isActive = activeDietaryFilters.includes(f.id);
-                  return (
-                    <Pressable
-                      key={f.id}
-                      onPress={() => toggleDietaryFilter(f.id)}
-                      style={[styles.dietaryPill, {
-                        borderColor: isActive ? colors.primary : colors.outlineVariant,
-                        backgroundColor: isActive ? colors.primary : 'transparent',
-                      }]}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: isActive }}
-                    >
-                      <Text style={[Typography.bodySmall, {
-                        color: isActive ? colors.onPrimary : colors.onSurfaceVariant,
-                        fontWeight: '500',
-                      }]}>{f.label}</Text>
-                    </Pressable>
-                  );
-                })}
+                {DIETARY_FILTERS.map((f) => (
+                  <SelectionPill
+                    key={f.id}
+                    label={f.label}
+                    variant="check"
+                    selected={activeDietaryFilters.includes(f.id)}
+                    onPress={() => toggleDietaryFilter(f.id)}
+                  />
+                ))}
               </View>
             </View>
           </View>
@@ -574,26 +564,15 @@ export default function SearchScreen() {
                 Dietary Preferences
               </Text>
               <View style={styles.dietaryWrap}>
-                {DIETARY_FILTERS.map((f) => {
-                  const isActive = activeDietaryFilters.includes(f.id);
-                  return (
-                    <Pressable
-                      key={f.id}
-                      onPress={() => toggleDietaryFilter(f.id)}
-                      style={[styles.dietaryPill, {
-                        borderColor: isActive ? colors.primary : colors.outlineVariant,
-                        backgroundColor: isActive ? colors.primary : 'transparent',
-                      }]}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: isActive }}
-                    >
-                      <Text style={[Typography.bodySmall, {
-                        color: isActive ? colors.onPrimary : colors.onSurfaceVariant,
-                        fontWeight: '500',
-                      }]}>{f.label}</Text>
-                    </Pressable>
-                  );
-                })}
+                {DIETARY_FILTERS.map((f) => (
+                  <SelectionPill
+                    key={f.id}
+                    label={f.label}
+                    variant="check"
+                    selected={activeDietaryFilters.includes(f.id)}
+                    onPress={() => toggleDietaryFilter(f.id)}
+                  />
+                ))}
               </View>
             </View>
 

@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,
-    paddingVertical: Spacing.md,
+    height: 52,
     borderRadius: Radius.full,
   },
   allergenSection: {

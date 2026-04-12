@@ -56,8 +56,8 @@ interface CheckRowProps {
 
   accessibilityLabel?: string;
 
-  /** Additional pressable style overrides */
-  style?: PressableProps['style'];
+  /** Additional style overrides */
+  style?: import('react-native').StyleProp<import('react-native').ViewStyle>;
 }
 
 export function CheckRow({
