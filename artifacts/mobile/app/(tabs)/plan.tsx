@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { View, Text, StyleSheet, Pressable, Animated as RNAnimated, Platform, AppState, RefreshControl } from 'react-native';
-import Animated, { FadeInDown, FadeOutDown, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
-import { useReducedMotion } from '@/utils/motion';
+import Animated, { FadeInDown, FadeOutDown, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, interpolate, Extrapolation } from 'react-native-reanimated';
+import { useReducedMotion, withManagedSpring } from '@/utils/motion';
 import { BlurView } from 'expo-blur';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -211,7 +211,7 @@ export default function PlanScreen() {
 
       if (currentY <= 0) {
         accumulatedDelta.value = 0;
-        navBarTranslateY.value = withSpring(0, springConfig);
+        navBarTranslateY.value = withManagedSpring(0, springConfig);
       } else {
         if ((diff > 0 && accumulatedDelta.value < 0) || (diff < 0 && accumulatedDelta.value > 0)) {
           accumulatedDelta.value = 0;
@@ -219,13 +219,9 @@ export default function PlanScreen() {
         accumulatedDelta.value += diff;
 
         if (accumulatedDelta.value > HIDE_TRIGGER) {
-          navBarTranslateY.value = reduceMotion
-            ? -navHeight.value
-            : withSpring(-navHeight.value, springConfig);
+          navBarTranslateY.value = withManagedSpring(-navHeight.value, springConfig);
         } else if (accumulatedDelta.value < -SHOW_TRIGGER) {
-          navBarTranslateY.value = reduceMotion
-            ? 0
-            : withSpring(0, springConfig);
+          navBarTranslateY.value = withManagedSpring(0, springConfig);
         }
       }
 
