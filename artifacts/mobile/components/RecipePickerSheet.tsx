@@ -21,6 +21,7 @@ import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 import { getDietaryConflicts, AllergenType } from '@/utils/allergens';
 import { BottomSheet } from '@/components/BottomSheet';
+import { SelectionPill } from '@/components/SelectionPill';
 
 type CourseType = 'appetizer' | 'main' | 'dessert';
 type MCIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -149,48 +150,6 @@ export function RecipePickerSheet({
     onDismiss();
   };
 
-  const renderPill = (
-    label: string,
-    active: boolean,
-    onPress: () => void,
-    icon?: MCIconName
-  ) => (
-    <Pressable
-      key={label}
-      onPress={onPress}
-      style={[
-        styles.filterPill,
-        {
-          backgroundColor: active ? colors.primary : colors.surfaceContainerLow,
-          borderColor: active ? colors.primary : `${colors.outline}40`,
-          borderWidth: 1,
-        },
-      ]}
-      accessibilityRole="button"
-      accessibilityState={{ selected: active }}
-      accessibilityLabel={label}
-    >
-      {icon && (
-        <MaterialCommunityIcons
-          name={icon}
-          size={14}
-          color={active ? colors.onPrimary : colors.outline}
-        />
-      )}
-      <Text
-        style={[
-          Typography.caption,
-          {
-            color: active ? colors.onPrimary : colors.onSurface,
-            fontWeight: '600',
-          },
-        ]}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  );
-
   return (
     <BottomSheet
       visible={visible}
@@ -221,23 +180,14 @@ export function RecipePickerSheet({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.filterRow}
       >
-        {renderPill('Any Time', timeFilter === 'any', () => setTimeFilter('any'))}
-        {renderPill('< 30 min', timeFilter === 'under30', () =>
-          setTimeFilter(timeFilter === 'under30' ? 'any' : 'under30'),
-          'clock-fast'
-        )}
-        {renderPill('< 60 min', timeFilter === 'under60', () =>
-          setTimeFilter(timeFilter === 'under60' ? 'any' : 'under60'),
-          'clock-outline'
-        )}
+        <SelectionPill label="Any Time" selected={timeFilter === 'any'} onPress={() => setTimeFilter('any')} />
+        <SelectionPill label="< 30 min" selected={timeFilter === 'under30'} onPress={() => setTimeFilter(timeFilter === 'under30' ? 'any' : 'under30')} icon="clock-fast" />
+        <SelectionPill label="< 60 min" selected={timeFilter === 'under60'} onPress={() => setTimeFilter(timeFilter === 'under60' ? 'any' : 'under60')} icon="clock-outline" />
         <View style={styles.filterDivider} />
-        {renderPill('Any Difficulty', difficultyFilter === 'any', () => setDifficultyFilter('any'))}
-        {renderPill('Beginner', difficultyFilter === 'easy', () => setDifficultyFilter('easy'), 'chart-bar')}
-        {hasUserDiet && renderPill(
-          'My Diet',
-          myDietActive,
-          () => setMyDietActive((v) => !v),
-          'heart-outline'
+        <SelectionPill label="Any Difficulty" selected={difficultyFilter === 'any'} onPress={() => setDifficultyFilter('any')} />
+        <SelectionPill label="Beginner" selected={difficultyFilter === 'easy'} onPress={() => setDifficultyFilter('easy')} icon="chart-bar" />
+        {hasUserDiet && (
+          <SelectionPill label="My Diet" selected={myDietActive} onPress={() => setMyDietActive((v) => !v)} icon="heart-outline" />
         )}
       </ScrollView>
 

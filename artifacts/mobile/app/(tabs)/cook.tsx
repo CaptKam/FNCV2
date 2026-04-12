@@ -655,9 +655,10 @@ const styles = StyleSheet.create({
   ctaBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: Spacing.sm,
-    paddingHorizontal: Spacing.xl + Spacing.xs,
-    paddingVertical: Spacing.md + 2,
+    height: 52,
+    paddingHorizontal: Spacing.xl,
     borderRadius: Radius.full,
   },
   reviewPartyBtn: {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Share } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Share } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,6 +15,7 @@ import { useApp } from '@/context/AppContext';
 import { BottomSheet } from '@/components/BottomSheet';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { SelectionPill, ActionButton } from '@/components/SelectionPill';
+import { StyledInput } from '@/components/StyledInput';
 import { DinnerParty, DinnerGuest, DietaryConflict } from '@/types/dinnerParty';
 import { countries } from '@/data/countries';
 import { recipes, type Recipe } from '@/data/recipes';
@@ -432,33 +433,27 @@ export default function DinnerSetupScreen() {
           contentContainerStyle={{ paddingBottom: Spacing.md }}
         >
           <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs }]}>NAME *</Text>
-          <TextInput
+          <StyledInput
             value={guestName}
             onChangeText={setGuestName}
             placeholder="Guest name"
-            placeholderTextColor={colors.outline}
-            style={[styles.input, { backgroundColor: colors.surfaceContainerHigh, color: colors.onSurface }]}
           />
 
           <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>PHONE (optional)</Text>
-          <TextInput
+          <StyledInput
             value={guestPhone}
             onChangeText={(text) => setGuestPhone(text.startsWith('+') ? text : formatPhoneNumber(text))}
             placeholder="(555) 555-0100"
-            placeholderTextColor={colors.outline}
             keyboardType="phone-pad"
-            style={[styles.input, { backgroundColor: colors.surfaceContainerHigh, color: colors.onSurface }]}
           />
 
           <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>EMAIL (optional)</Text>
-          <TextInput
+          <StyledInput
             value={guestEmail}
             onChangeText={setGuestEmail}
             placeholder="guest@email.com"
-            placeholderTextColor={colors.outline}
             keyboardType="email-address"
             autoCapitalize="none"
-            style={[styles.input, { backgroundColor: colors.surfaceContainerHigh, color: colors.onSurface }]}
           />
 
           <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.sm, marginTop: Spacing.md }]}>DIETARY PREFERENCES</Text>
@@ -479,12 +474,10 @@ export default function DinnerSetupScreen() {
           </View>
 
           <Text style={[Typography.labelSmall, { color: colors.outline, marginBottom: Spacing.xs, marginTop: Spacing.md }]}>ALLERGENS (optional)</Text>
-          <TextInput
+          <StyledInput
             value={guestAllergens}
             onChangeText={setGuestAllergens}
             placeholder="e.g. peanuts, shellfish"
-            placeholderTextColor={colors.outline}
-            style={[styles.input, { backgroundColor: colors.surfaceContainerHigh, color: colors.onSurface }]}
           />
 
           <View style={{ marginTop: Spacing.lg }}>

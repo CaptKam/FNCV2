@@ -21,6 +21,7 @@ import { PressableScale } from '@/components/PressableScale';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
 import { BottomSheet } from '@/components/BottomSheet';
+import { SelectionPill } from '@/components/SelectionPill';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { recipes, Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
@@ -441,31 +442,15 @@ export default function SearchScreen() {
             Dietary Filters
           </Text>
           <View style={styles.dietaryWrap}>
-            {DIETARY_FILTERS.map((f) => {
-              const isActive = activeDietaryFilters.includes(f.id);
-              return (
-                <Pressable
-                  key={f.id}
-                  onPress={() => toggleDietaryFilter(f.id)}
-                  style={[
-                    styles.dietaryPill,
-                    {
-                      borderColor: isActive ? colors.primary : colors.outlineVariant,
-                      backgroundColor: isActive ? colors.primary : 'transparent',
-                    },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isActive }}
-                >
-                  <Text style={[Typography.bodySmall, {
-                    color: isActive ? colors.onPrimary : colors.onSurfaceVariant,
-                    fontWeight: '500',
-                  }]}>
-                    {f.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            {DIETARY_FILTERS.map((f) => (
+              <SelectionPill
+                key={f.id}
+                label={f.label}
+                variant="check"
+                selected={activeDietaryFilters.includes(f.id)}
+                onPress={() => toggleDietaryFilter(f.id)}
+              />
+            ))}
           </View>
         </View>
 
