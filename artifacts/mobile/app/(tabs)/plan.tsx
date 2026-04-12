@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import * as Haptics from 'expo-haptics';
 import { View, Text, StyleSheet, Pressable, Animated as RNAnimated, Platform, AppState, RefreshControl } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, interpolate, Extrapolation } from 'react-native-reanimated';
-import { useReducedMotion, withManagedSpring } from '@/utils/motion';
+import { useReducedMotion, withManagedSpring, MOTION_DISABLED } from '@/utils/motion';
 import { BlurView } from 'expo-blur';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -206,6 +206,10 @@ export default function PlanScreen() {
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
+      // When motion is disabled the instant snap on every threshold crossing
+      // causes a hard visual jitter. Pin the bar at 0 and do nothing.
+      if (MOTION_DISABLED) return;
+
       const currentY = event.contentOffset.y;
       const diff = currentY - lastScrollY.value;
 
