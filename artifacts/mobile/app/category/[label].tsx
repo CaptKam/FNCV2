@@ -33,6 +33,7 @@ import { todayLocal, getDayLabel } from '@/utils/dates';
 import * as Haptics from 'expo-haptics';
 
 type TimeFilter = 'any' | 'under30' | 'under60';
+type DifficultyFilter = 'any' | 'Easy' | 'Medium' | 'Hard';
 type SortMode = 'default' | 'quickest' | 'az';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
@@ -149,6 +150,7 @@ export default function CategoryPage() {
 
   const [query, setQuery] = useState('');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('any');
+  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('any');
   const [sortMode, setSortMode] = useState<SortMode>('default');
   const [addSheetRecipe, setAddSheetRecipe] = useState<Recipe | null>(null);
   const inputRef = useRef<TextInput | null>(null);
@@ -181,6 +183,10 @@ export default function CategoryPage() {
       pool = pool.filter((r) => r.prepTime + r.cookTime < 60);
     }
 
+    if (difficultyFilter !== 'any') {
+      pool = pool.filter((r) => r.difficulty === difficultyFilter);
+    }
+
     if (sortMode === 'quickest') {
       pool = [...pool].sort((a, b) => (a.prepTime + a.cookTime) - (b.prepTime + b.cookTime));
     } else if (sortMode === 'az') {
@@ -188,7 +194,7 @@ export default function CategoryPage() {
     }
 
     return pool;
-  }, [baseRecipes, query, timeFilter, sortMode]);
+  }, [baseRecipes, query, timeFilter, difficultyFilter, sortMode]);
 
   const handleAddToPlan = (date: string) => {
     if (!addSheetRecipe) return;
@@ -347,17 +353,32 @@ export default function CategoryPage() {
               )}
             </View>
 
-            {/* Filter chips */}
+            {/* Filter chips — time + difficulty in one scrollable row */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.filterRow}
             >
+              {/* Time filters */}
               {renderPill('Any Time', timeFilter === 'any', () => setTimeFilter('any'))}
               {renderPill('< 30 min', timeFilter === 'under30', () =>
                 setTimeFilter(timeFilter === 'under30' ? 'any' : 'under30'), 'clock-fast')}
               {renderPill('< 60 min', timeFilter === 'under60', () =>
                 setTimeFilter(timeFilter === 'under60' ? 'any' : 'under60'), 'clock-outline')}
+
+              {/* Divider */}
+              <View style={[styles.filterDivider, { backgroundColor: colors.outlineVariant }]} />
+
+              {/* Difficulty filters */}
+              {renderPill('Any Level', difficultyFilter === 'any', () => setDifficultyFilter('any'), 'chef-hat')}
+              {(['Easy', 'Medium', 'Hard'] as DifficultyFilter[]).map((d) =>
+                renderPill(
+                  d,
+                  difficultyFilter === d,
+                  () => setDifficultyFilter(difficultyFilter === d ? 'any' : d),
+                  d === 'Easy' ? 'emoticon-happy-outline' : d === 'Medium' ? 'emoticon-neutral-outline' : 'emoticon-angry-outline',
+                ),
+              )}
             </ScrollView>
 
             {/* Results count + sort */}
@@ -479,6 +500,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: Radius.full,
+  },
+  filterDivider: {
+    width: 1,
+    height: 22,
+    borderRadius: 1,
+    alignSelf: 'center',
+    marginHorizontal: 4,
   },
 
   resultsRow: {
