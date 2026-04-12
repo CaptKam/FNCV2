@@ -325,6 +325,7 @@ export default function SearchScreen() {
   const { width } = useWindowDimensions();
   const CARD_WIDTH = (width - Spacing.page * 2 - 12) / 2;
   const CATEGORY_COL = (width - Spacing.page * 2 - 10 * 2) / 3;
+  const CIRCLE_SIZE = Math.round(CATEGORY_COL * 0.85);
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -511,7 +512,7 @@ export default function SearchScreen() {
                       accessibilityRole="button"
                       accessibilityLabel={`Explore ${cat.label} recipes`}
                     >
-                      <View style={[styles.categoryCircle, { backgroundColor: colors.surfaceContainerHigh }]}>
+                      <View style={[styles.categoryCircle, { backgroundColor: colors.surfaceContainerHigh, width: CIRCLE_SIZE, height: CIRCLE_SIZE }]}>
                         <Image
                           source={{ uri: cat.image }}
                           style={StyleSheet.absoluteFillObject}

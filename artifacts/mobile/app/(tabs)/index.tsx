@@ -65,6 +65,7 @@ export default function DiscoverScreen() {
   const reduceMotion = useReducedMotion();
 
   const CELL_WIDTH = (SCREEN_WIDTH - GRID_PAD * 2 - GRID_GAP) / 2;
+  const CAT_CIRCLE_SIZE = Math.round((SCREEN_WIDTH - Spacing.page * 2 - 10 * 2) / 3 * 0.85);
   const HERO_HEIGHT = SCREEN_WIDTH < 375 ? 200 : SCREEN_WIDTH > 414 ? 280 : 240;
   const CARD_IMG_HEIGHT = 160;
 
@@ -426,17 +427,22 @@ export default function DiscoverScreen() {
                   key={c.id}
                   haptic="light"
                   onPress={() => router.push(`/country/${c.id}`)}
-                  style={styles.circleWrap}
+                  style={[styles.circleWrap, { width: CAT_CIRCLE_SIZE }]}
                   accessibilityRole="button"
                   accessibilityLabel={`Explore ${c.name}`}
                 >
                   <View style={[
                     styles.circleRing,
-                    { borderColor: isActive ? colors.primary : 'transparent' },
+                    {
+                      borderColor: isActive ? colors.primary : 'transparent',
+                      width: CAT_CIRCLE_SIZE,
+                      height: CAT_CIRCLE_SIZE,
+                      borderRadius: CAT_CIRCLE_SIZE / 2,
+                    },
                   ]}>
                     <Image
                       source={{ uri: c.landmarkImage }}
-                      style={styles.circleImg}
+                      style={[styles.circleImg, { borderRadius: CAT_CIRCLE_SIZE / 2 - 3 }]}
                       contentFit="cover"
                       transition={200}
                       accessible={false}
