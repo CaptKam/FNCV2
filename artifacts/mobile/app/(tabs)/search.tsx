@@ -7,30 +7,32 @@ import {
   StyleSheet,
   TextInput,
   Pressable,
+  Platform,
   useWindowDimensions,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import { useApp } from '@/context/AppContext';
 import { Typography } from '@/constants/typography';
 import { Spacing } from '@/constants/spacing';
 import { Radius } from '@/constants/radius';
-import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
-import { BottomSheet } from '@/components/BottomSheet';
-import { SelectionPill } from '@/components/SelectionPill';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { recipes, Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
-import { useApp } from '@/context/AppContext';
+import { MEAL_CATEGORIES } from '@/data/categories';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { todayLocal, getDayLabel } from '@/utils/dates';
 import { useCuratedCollections } from '@/hooks/useCuratedCollections';
+import { SelectionPill } from '@/components/SelectionPill';
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
 
@@ -46,42 +48,15 @@ const DIETARY_FILTERS: { id: DietaryFilter; label: string }[] = [
 ];
 
 const INGREDIENT_CIRCLES = [
+  { label: 'Tomato',  query: 'tomato',  image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200&h=200&fit=crop' },
+  { label: 'Garlic',  query: 'garlic',  image: 'https://images.unsplash.com/photo-1501200291289-c5a76c232e5f?w=200&h=200&fit=crop' },
   { label: 'Chicken', query: 'chicken', image: 'https://images.unsplash.com/photo-1604503468506-a8da13d11bbc?w=200&h=200&fit=crop' },
+  { label: 'Lemon',   query: 'lemon',   image: 'https://images.unsplash.com/photo-1571735360272-e0427f4dc97f?w=200&h=200&fit=crop' },
   { label: 'Egg',     query: 'egg',     image: 'https://images.unsplash.com/photo-1607690424560-35d967d6ad7f?w=200&h=200&fit=crop' },
   { label: 'Pasta',   query: 'pasta',   image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=200&h=200&fit=crop' },
-  { label: 'Lemon',   query: 'lemon',   image: 'https://images.unsplash.com/photo-1571735360272-e0427f4dc97f?w=200&h=200&fit=crop' },
   { label: 'Rice',    query: 'rice',    image: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=200&h=200&fit=crop' },
-  { label: 'Tomato',  query: 'tomato',  image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=200&h=200&fit=crop' },
 ];
 
-interface MealCategory {
-  label: string;
-  image: string;
-  filter: (r: Recipe) => boolean;
-}
-
-const MEAL_CATEGORIES: MealCategory[] = [
-  {
-    label: 'Breakfast',
-    image: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&fit=crop',
-    filter: (r) => r.prepTime + r.cookTime <= 25 || r.category === 'appetizer',
-  },
-  {
-    label: 'Brunch',
-    image: 'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=600&fit=crop',
-    filter: (r) => r.category === 'appetizer' || (r.category === 'main' && r.prepTime + r.cookTime <= 40),
-  },
-  {
-    label: 'Lunch',
-    image: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&fit=crop',
-    filter: (r) => r.category === 'main' && r.prepTime + r.cookTime <= 55,
-  },
-  {
-    label: 'Dinner',
-    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&fit=crop',
-    filter: (r) => r.category === 'main',
-  },
-];
 
 // ─── Dietary filter logic ─────────────────────────────────────────────────────
 
@@ -102,7 +77,7 @@ function applyDietaryFilters(r: Recipe, filters: DietaryFilter[]): boolean {
   return true;
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Recipe Card ──────────────────────────────────────────────────────────────
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -159,126 +134,190 @@ const cardStyles = StyleSheet.create({
   content: { padding: Spacing.sm, gap: 4 },
 });
 
-// ─── Category Modal ───────────────────────────────────────────────────────────
+// ─── Search Header (replaces HeaderBar on this tab) ───────────────────────────
 
-interface CategoryModalProps {
-  category: MealCategory;
-  recipes: Recipe[];
-  onClose: () => void;
-  onRecipePress: (id: string) => void;
-  onAddToPlan: (recipe: Recipe) => void;
-  isBookmarked: (id: string) => boolean;
-  onBookmark: (id: string) => void;
+interface SearchHeaderProps {
+  query: string;
+  onChangeText: (t: string) => void;
+  onClear: () => void;
+  inputRef: React.RefObject<TextInput | null>;
   colors: ReturnType<typeof useThemeColors>;
-  insets: { bottom: number; top: number };
+  insets: { top: number };
+  displayName: string;
+  onProfilePress: () => void;
 }
 
-function CategoryModal({ category, recipes: categoryRecipes, onClose, onRecipePress, onAddToPlan, isBookmarked, onBookmark, colors }: CategoryModalProps) {
-  const { width } = useWindowDimensions();
-  const CARD_W = (width - Spacing.page * 2 - 12) / 2;
+function SearchHeader({ query, onChangeText, onClear, inputRef, colors, insets, displayName, onProfilePress }: SearchHeaderProps) {
+  const initial = displayName.trim().charAt(0).toUpperCase() || null;
+  const HEADER_H = insets.top + 68;
 
-  // Rendered inside a BottomSheet with fullBleed=true, so this
-  // component is responsible for the hero + scroll content only.
-  // The outer sheet handles drag handle, overlay, animation.
-  return (
-    <>
-      {/* Hero image — goes edge-to-edge thanks to fullBleed */}
-      <View style={modalStyles.heroWrap}>
-        <Image source={{ uri: category.image }} style={modalStyles.heroImage} contentFit="cover" transition={300} accessible={false} />
-        <View style={modalStyles.heroGradient} />
-        <View style={modalStyles.heroContent}>
-          <Text style={[Typography.display, { color: '#FFFFFF' }]}>{category.label}</Text>
-          <Text style={[Typography.bodySmall, { color: 'rgba(255,255,255,0.8)' }]}>{categoryRecipes.length} recipes</Text>
-        </View>
-        <Pressable onPress={onClose} style={modalStyles.closeBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
-          <MaterialCommunityIcons name="close" size={20} color="#FFFFFF" />
-        </Pressable>
+  const inner = (
+    <View style={[searchHeaderStyles.inner, { paddingTop: insets.top + 10 }]}>
+      {/* User initial / profile */}
+      <Pressable
+        onPress={onProfilePress}
+        style={[searchHeaderStyles.avatar, { backgroundColor: 'rgba(154,65,0,0.10)' }]}
+        accessibilityRole="button"
+        accessibilityLabel="Profile"
+      >
+        {initial ? (
+          <Text style={[searchHeaderStyles.initial, { color: '#9A4100' }]}>{initial}</Text>
+        ) : (
+          <MaterialCommunityIcons name="account-outline" size={20} color={colors.primary} />
+        )}
+      </Pressable>
+
+      {/* Search input */}
+      <View style={[searchHeaderStyles.inputWrap, { backgroundColor: colors.surfaceContainerLow }]}>
+        <MaterialCommunityIcons name="magnify" size={20} color={colors.primary} />
+        <TextInput
+          ref={inputRef}
+          value={query}
+          onChangeText={onChangeText}
+          placeholder="Search cuisines, ingredients..."
+          placeholderTextColor={colors.outline}
+          style={[Typography.bodySmall, { color: colors.onSurface, flex: 1 }]}
+          returnKeyType="search"
+          accessibilityLabel="Search recipes"
+        />
+        {query.length > 0 && (
+          <Pressable onPress={onClear} hitSlop={8}>
+            <MaterialCommunityIcons name="close-circle" size={17} color={colors.outline} />
+          </Pressable>
+        )}
       </View>
+    </View>
+  );
 
-      {/* Recipe grid */}
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={modalStyles.gridContainer}>
-        <View style={modalStyles.grid}>
-          {categoryRecipes.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              cardWidth={CARD_W}
-              onPress={() => onRecipePress(recipe.id)}
-              isBookmarked={isBookmarked(recipe.id)}
-              onBookmark={() => onBookmark(recipe.id)}
-              onAddToPlan={() => onAddToPlan(recipe)}
-              colors={colors}
-            />
-          ))}
-        </View>
-      </ScrollView>
-    </>
+  if (Platform.OS === 'web') {
+    return (
+      <View style={[
+        searchHeaderStyles.container,
+        { height: HEADER_H, backgroundColor: `${colors.surface}E8`, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(154,65,0,0.10)' },
+      ]}>
+        {inner}
+      </View>
+    );
+  }
+
+  return (
+    <BlurView
+      intensity={60}
+      tint={colors.isDark ? 'dark' : 'light'}
+      style={[searchHeaderStyles.container, { height: HEADER_H }]}
+    >
+      <View style={[StyleSheet.absoluteFill, {
+        backgroundColor: `${colors.surface}CC`,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: 'rgba(154,65,0,0.10)',
+      }]} />
+      {inner}
+    </BlurView>
   );
 }
 
-const modalStyles = StyleSheet.create({
-  backdrop: {
+const searchHeaderStyles = StyleSheet.create({
+  container: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 70 },
+  inner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.page,
+    paddingBottom: 10,
+    gap: 10,
+  },
+  avatar: {
+    width: 38, height: 38, borderRadius: Radius.full,
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  initial: { fontFamily: 'NotoSerif_700Bold', fontSize: 15 },
+  inputWrap: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    height: 46,
+    borderRadius: 23,
+  },
+});
+
+// ─── Bento Card ───────────────────────────────────────────────────────────────
+
+interface BentoCardProps {
+  recipe: Recipe;
+  size: 'large' | 'small';
+  onPress: () => void;
+}
+
+function BentoCard({ recipe, size, onPress }: BentoCardProps) {
+  const country = countries.find(c => c.id === recipe.countryId);
+  return (
+    <PressableScale
+      onPress={onPress}
+      style={[bentoStyles.card, size === 'large' ? bentoStyles.large : bentoStyles.small]}
+      scaleDown={0.98}
+      accessibilityRole="button"
+      accessibilityLabel={recipe.title}
+    >
+      <Image
+        source={{ uri: recipe.image }}
+        style={StyleSheet.absoluteFillObject}
+        contentFit="cover"
+        transition={300}
+        accessible={false}
+      />
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.72)']}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <View style={bentoStyles.cardContent}>
+        {size === 'large' && (
+          <Text style={bentoStyles.tagline}>Featured Recipe</Text>
+        )}
+        <Text style={[bentoStyles.title, size === 'small' && bentoStyles.titleSmall]} numberOfLines={2}>
+          {recipe.title}
+        </Text>
+        {size === 'large' && (
+          <View style={bentoStyles.meta}>
+            <MaterialCommunityIcons name="clock-outline" size={13} color="rgba(255,255,255,0.85)" />
+            <Text style={bentoStyles.metaText}>{formatCookTime(recipe.prepTime + recipe.cookTime)}</Text>
+            <Text style={bentoStyles.metaDot}>·</Text>
+            <Text style={bentoStyles.metaText}>{country?.flag} {recipe.difficulty}</Text>
+          </View>
+        )}
+      </View>
+    </PressableScale>
+  );
+}
+
+const bentoStyles = StyleSheet.create({
+  card: {
+    borderRadius: 24,
+    overflow: 'hidden',
+    position: 'relative',
     justifyContent: 'flex-end',
   },
-  sheet: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    maxHeight: '88%',
-    overflow: 'hidden',
+  large: { height: 260 },
+  small: { height: 120, flex: 1 },
+  cardContent: { padding: 16, gap: 4 },
+  tagline: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.75)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 2,
   },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 4,
+  title: {
+    fontFamily: 'NotoSerif_700Bold',
+    fontSize: 20,
+    color: '#FFFFFF',
+    lineHeight: 26,
   },
-  heroWrap: {
-    height: 200,
-    position: 'relative',
-    marginBottom: Spacing.md,
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-  },
-  heroGradient: {
-    // React Native doesn't support CSS `background: linear-gradient(...)`
-    // in StyleSheet. Use expo-linear-gradient if an actual gradient is
-    // needed; for now a single semi-transparent overlay is the closest
-    // approximation that typechecks.
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  heroContent: {
-    position: 'absolute',
-    bottom: Spacing.lg,
-    left: Spacing.page,
-    gap: 2,
-  },
-  closeBtn: {
-    position: 'absolute',
-    top: Spacing.md,
-    right: Spacing.md,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gridContainer: {
-    paddingHorizontal: Spacing.page,
-    paddingBottom: Spacing.xl,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
+  titleSmall: { fontSize: 14, lineHeight: 18 },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  metaText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: 'rgba(255,255,255,0.85)' },
+  metaDot: { color: 'rgba(255,255,255,0.5)', fontSize: 12 },
 });
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
@@ -286,27 +325,33 @@ const modalStyles = StyleSheet.create({
 export default function SearchScreen() {
   const { width } = useWindowDimensions();
   const CARD_WIDTH = (width - Spacing.page * 2 - 12) / 2;
+  const CATEGORY_COL = (width - Spacing.page * 2 - 10 * 2) / 3;
+  const CIRCLE_SIZE = Math.round(CATEGORY_COL * 0.85);
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { displayName } = useApp();
   const app = useApp();
   const { isBookmarked, toggleBookmark } = useBookmarks();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInput | null>(null);
 
   const [query, setQuery] = useState('');
   const [activeDietaryFilters, setActiveDietaryFilters] = useState<DietaryFilter[]>([]);
-  const [categoryModal, setCategoryModal] = useState<MealCategory | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [addSheetRecipe, setAddSheetRecipe] = useState<Recipe | null>(null);
 
-  // Curated collections render as horizontal carousels above the
-  // search results — but only when the query is empty. Once the
-  // user starts typing or picks a filter, we hide the carousels
-  // so the full Results grid can breathe.
   const curatedCollections = useCuratedCollections();
-  const showCollections =
-    !query.trim() && activeDietaryFilters.length === 0 && curatedCollections.length > 0;
+
+  // Bento featured picks — pick a moroccan/italian/indian main as hero + 2 secondary
+  const featuredRecipe = useMemo(() =>
+    recipes.find(r => r.category === 'main' && r.countryId === 'morocco') ?? recipes[0],
+    []
+  );
+  const secondaryRecipes = useMemo(() =>
+    recipes.filter(r => r.id !== featuredRecipe.id && r.category === 'main').slice(2, 4),
+    [featuredRecipe]
+  );
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -346,11 +391,9 @@ export default function SearchScreen() {
   const filteredRecipes = useMemo(() => {
     if (!isSearchActive) return [];
     let results = recipes;
-
     if (activeDietaryFilters.length > 0) {
       results = results.filter((r) => applyDietaryFilters(r, activeDietaryFilters));
     }
-
     if (query.trim()) {
       const q = query.toLowerCase();
       results = results.filter(
@@ -359,103 +402,32 @@ export default function SearchScreen() {
           r.ingredients.some((i) => i.name.toLowerCase().includes(q))
       );
     }
-
     return results;
   }, [query, activeDietaryFilters, isSearchActive]);
 
-  const categoryRecipes = useMemo(() => {
-    if (!categoryModal) return [];
-    return recipes.filter(categoryModal.filter);
-  }, [categoryModal]);
+  const HEADER_PUSH = insets.top + 78;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <HeaderBar />
+      {/* ── Custom search header (no brand wordmark on search tab) ── */}
+      <SearchHeader
+        query={query}
+        onChangeText={setQuery}
+        onClear={() => setQuery('')}
+        inputRef={inputRef}
+        colors={colors}
+        insets={insets}
+        displayName={displayName}
+        onProfilePress={() => router.push('/profile')}
+      />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: insets.top + 76 }}
+        contentContainerStyle={{ paddingBottom: Spacing.tabClearance, paddingTop: HEADER_PUSH }}
       >
-        {/* ── Search bar ── */}
-        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
-          <View style={[styles.searchBar, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-            <MaterialCommunityIcons name="magnify" size={22} color={colors.onSurfaceVariant} />
-            <TextInput
-              ref={inputRef}
-              value={query}
-              onChangeText={setQuery}
-              placeholder="Search cuisines, ingredients..."
-              placeholderTextColor={colors.outline}
-              style={[Typography.body, { color: colors.onSurface, flex: 1 }]}
-              returnKeyType="search"
-              accessibilityLabel="Search recipes"
-            />
-            {query.length > 0 ? (
-              <Pressable onPress={() => setQuery('')} hitSlop={8}>
-                <MaterialCommunityIcons name="close-circle" size={18} color={colors.outline} />
-              </Pressable>
-            ) : (
-              <MaterialCommunityIcons name="tune-variant" size={20} color={colors.primary} />
-            )}
-          </View>
-        </View>
-
-        {/* ── Search by Ingredient ── */}
-        <View style={{ marginBottom: Spacing.xl }}>
-          <Text style={[Typography.headline, { color: colors.onSurface, paddingHorizontal: Spacing.page, marginBottom: Spacing.md }]}>
-            Search by Ingredient
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: Spacing.page, gap: 20, paddingVertical: Spacing.xs }}
-          >
-            {INGREDIENT_CIRCLES.map((ing) => (
-              <PressableScale
-                key={ing.label}
-                haptic="light"
-                onPress={() => handleIngredientPress(ing.query)}
-                style={styles.ingredientCircleWrap}
-                accessibilityRole="button"
-                accessibilityLabel={`Search by ${ing.label}`}
-              >
-                <View style={[styles.ingredientCircle, { backgroundColor: colors.surfaceContainerHigh }]}>
-                  <Image
-                    source={{ uri: ing.image }}
-                    style={styles.ingredientImg}
-                    contentFit="cover"
-                    transition={200}
-                    accessible={false}
-                  />
-                </View>
-                <Text style={[Typography.caption, { color: colors.onSurface, fontWeight: '500', textAlign: 'center' }]}>
-                  {ing.label}
-                </Text>
-              </PressableScale>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* ── Dietary Filters ── */}
-        <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
-          <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5, marginBottom: Spacing.md }]}>
-            Dietary Filters
-          </Text>
-          <View style={styles.dietaryWrap}>
-            {DIETARY_FILTERS.map((f) => (
-              <SelectionPill
-                key={f.id}
-                label={f.label}
-                variant="check"
-                selected={activeDietaryFilters.includes(f.id)}
-                onPress={() => toggleDietaryFilter(f.id)}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* ── Explore by Meal  OR  Search Results ── */}
         {isSearchActive ? (
+          /* ─── Active search: results only ─── */
           <View style={{ paddingHorizontal: Spacing.page }}>
             <View style={styles.sectionHeader}>
               <Text style={[Typography.headline, { color: colors.onSurface }]}>Results</Text>
@@ -489,47 +461,156 @@ export default function SearchScreen() {
                 ))}
               </View>
             )}
+
+            {/* Dietary filters always accessible during search */}
+            <View style={{ marginTop: Spacing.xl }}>
+              <Text style={[Typography.labelSmall, { color: colors.primary, fontWeight: '700', letterSpacing: 0.5, marginBottom: Spacing.md }]}>
+                Dietary Preferences
+              </Text>
+              <View style={styles.dietaryWrap}>
+                {DIETARY_FILTERS.map((f) => (
+                  <SelectionPill
+                    key={f.id}
+                    label={f.label}
+                    variant="check"
+                    selected={activeDietaryFilters.includes(f.id)}
+                    onPress={() => toggleDietaryFilter(f.id)}
+                  />
+                ))}
+              </View>
+            </View>
           </View>
         ) : (
-          <View style={{ paddingHorizontal: Spacing.page }}>
-            <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
-              Explore by Meal
-            </Text>
-            <View style={styles.mealGrid}>
-              {MEAL_CATEGORIES.map((cat) => (
-                <PressableScale
-                  key={cat.label}
-                  haptic="light"
-                  onPress={() => {
-                    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
-                    setCategoryModal(cat);
-                  }}
-                  style={styles.mealCard}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Explore ${cat.label} recipes`}
-                >
-                  <Image
-                    source={{ uri: cat.image }}
-                    style={StyleSheet.absoluteFillObject}
-                    contentFit="cover"
-                    transition={300}
-                    accessible={false}
-                  />
-                  <View style={styles.mealCardGradient} />
-                  <Text style={[Typography.titleSmall, styles.mealCardLabel]}>{cat.label}</Text>
-                </PressableScale>
-              ))}
+          <>
+            {/* ─── Explore by Category ─── */}
+            <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
+              <View style={styles.sectionHeader}>
+                <Text style={[Typography.headline, { color: colors.onSurface }]}>Explore by Category</Text>
+                <Text style={[Typography.caption, { color: colors.primary, fontWeight: '700' }]}>View all</Text>
+              </View>
+              <View style={styles.categoryGrid}>
+                {MEAL_CATEGORIES.map((cat) => {
+                  return (
+                    <PressableScale
+                      key={cat.label}
+                      haptic="light"
+                      onPress={() => {
+                        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                        router.push(`/category/${encodeURIComponent(cat.label)}`);
+                      }}
+                      style={[styles.categoryItem, { width: CATEGORY_COL }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Explore ${cat.label} recipes`}
+                    >
+                      <View style={[styles.categoryCircle, { backgroundColor: colors.surfaceContainerHigh, width: CIRCLE_SIZE, height: CIRCLE_SIZE }]}>
+                        <Image
+                          source={{ uri: cat.image }}
+                          style={StyleSheet.absoluteFillObject}
+                          contentFit="cover"
+                          transition={300}
+                          accessible={false}
+                        />
+                        {/* Subtle dark vignette */}
+                        <View style={styles.categoryCircleOverlay} />
+                      </View>
+                      <Text style={[styles.categoryLabel, { color: colors.onSurface }]} numberOfLines={1}>
+                        {cat.label}
+                      </Text>
+                    </PressableScale>
+                  );
+                })}
+              </View>
             </View>
 
-            {/* ── Curated Collections (admin-editorial carousels) ── */}
+            {/* ─── Trending Ingredients ─── */}
+            <View style={{ marginBottom: Spacing.xl }}>
+              <Text style={[Typography.headline, { color: colors.onSurface, paddingHorizontal: Spacing.page, marginBottom: Spacing.md }]}>
+                Trending Ingredients
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: Spacing.page, gap: 20, paddingVertical: 4 }}
+              >
+                {INGREDIENT_CIRCLES.map((ing) => (
+                  <PressableScale
+                    key={ing.label}
+                    haptic="light"
+                    onPress={() => handleIngredientPress(ing.query)}
+                    style={styles.ingredientWrap}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Search by ${ing.label}`}
+                  >
+                    <View style={[styles.ingredientRing, { borderColor: colors.outlineVariant }]}>
+                      <Image
+                        source={{ uri: ing.image }}
+                        style={styles.ingredientImg}
+                        contentFit="cover"
+                        transition={200}
+                        accessible={false}
+                      />
+                    </View>
+                    <Text style={[Typography.caption, { color: colors.onSurfaceVariant, fontWeight: '500', textAlign: 'center' }]}>
+                      {ing.label}
+                    </Text>
+                  </PressableScale>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* ─── Dietary Preferences ─── */}
+            <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
+              <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
+                Dietary Preferences
+              </Text>
+              <View style={styles.dietaryWrap}>
+                {DIETARY_FILTERS.map((f) => (
+                  <SelectionPill
+                    key={f.id}
+                    label={f.label}
+                    variant="check"
+                    selected={activeDietaryFilters.includes(f.id)}
+                    onPress={() => toggleDietaryFilter(f.id)}
+                  />
+                ))}
+              </View>
+            </View>
+
+            {/* ─── Recommended for You (bento) ─── */}
+            <View style={{ paddingHorizontal: Spacing.page, marginBottom: Spacing.xl }}>
+              <Text style={[Typography.headline, { color: colors.onSurface, marginBottom: Spacing.md }]}>
+                Recommended for You
+              </Text>
+              {/* Large featured card */}
+              <BentoCard
+                recipe={featuredRecipe}
+                size="large"
+                onPress={() => router.push(`/recipe/${featuredRecipe.id}`)}
+              />
+              {/* Two smaller cards side by side */}
+              {secondaryRecipes.length >= 2 && (
+                <View style={styles.bentoRow}>
+                  {secondaryRecipes.map(r => (
+                    <BentoCard
+                      key={r.id}
+                      recipe={r}
+                      size="small"
+                      onPress={() => router.push(`/recipe/${r.id}`)}
+                    />
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {/* ─── Curated Collections ─── */}
             {curatedCollections.map((collection) => {
               const collectionRecipes = collection.recipeIds
                 .map((id) => recipes.find((r) => r.id === id))
                 .filter((r): r is Recipe => r !== undefined);
               if (collectionRecipes.length === 0) return null;
               return (
-                <View key={collection.slug} style={{ marginTop: Spacing.xl }}>
-                  <View style={styles.sectionHeader}>
+                <View key={collection.slug} style={{ marginBottom: Spacing.xl }}>
+                  <View style={[styles.sectionHeader, { paddingHorizontal: Spacing.page }]}>
                     <View style={{ flex: 1 }}>
                       <Text style={[Typography.headline, { color: colors.onSurface }]} numberOfLines={1}>
                         {collection.title}
@@ -547,7 +628,7 @@ export default function SearchScreen() {
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ gap: 12, paddingTop: Spacing.sm }}
+                    contentContainerStyle={{ paddingHorizontal: Spacing.page, gap: 12, paddingTop: Spacing.sm }}
                   >
                     {collectionRecipes.map((recipe) => {
                       const country = countries.find((c) => c.id === recipe.countryId);
@@ -573,32 +654,11 @@ export default function SearchScreen() {
                 </View>
               );
             })}
-          </View>
+          </>
         )}
       </ScrollView>
 
-      {/* ── Category — Standard C (full, fullBleed for hero image) ── */}
-      <BottomSheet
-        visible={!!categoryModal}
-        onDismiss={() => setCategoryModal(null)}
-        size="full"
-        fullBleed
-      >
-        {categoryModal && (
-          <CategoryModal
-            category={categoryModal}
-            recipes={categoryRecipes}
-            onClose={() => setCategoryModal(null)}
-            onRecipePress={(id) => { setCategoryModal(null); router.push(`/recipe/${id}`); }}
-            onAddToPlan={(recipe) => { setAddSheetRecipe(recipe); }}
-            isBookmarked={isBookmarked}
-            onBookmark={toggleBookmark}
-            colors={colors}
-            insets={insets}
-          />
-        )}
-      </BottomSheet>
-
+      {/* ── Toast ── */}
       {toastMessage && (
         <View style={[styles.toast, { backgroundColor: colors.inverseSurface }]}>
           <MaterialCommunityIcons name="check-circle" size={16} color={colors.inversePrimary} />
@@ -621,16 +681,6 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    height: 54,
-    borderRadius: Radius.xl,
-    borderWidth: 1,
-  },
-
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -638,88 +688,71 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
 
-  ingredientCircleWrap: {
-    alignItems: 'center',
-    gap: 6,
-    width: 72,
-  },
-  ingredientCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    overflow: 'hidden',
-  },
-  ingredientImg: {
-    width: '100%',
-    height: '100%',
-  },
-
-  dietaryWrap: {
+  // Category grid
+  categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.sm,
+    gap: 10,
   },
+  categoryItem: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  categoryCircle: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 999,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  categoryCircleOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.18)',
+  },
+  categoryLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    marginTop: 2,
+  },
+
+  // Ingredients
+  ingredientWrap: { alignItems: 'center', gap: 6, width: 76 },
+  ingredientRing: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    overflow: 'hidden',
+    borderWidth: 1,
+  },
+  ingredientImg: { width: '100%', height: '100%' },
+
+  // Dietary pills
+  dietaryWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   dietaryPill: {
     paddingHorizontal: Spacing.lg,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: Radius.full,
     borderWidth: 1,
   },
 
-  mealGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  collectionCard: {
-    width: 180,
-    borderRadius: Radius.xl,
-    overflow: 'hidden',
-  },
-  collectionCardImage: {
-    width: '100%',
-    height: 120,
-  },
-  mealCard: {
-    width: '47.5%',
-    height: 160,
-    borderRadius: 24,
-    overflow: 'hidden',
-    position: 'relative',
-    justifyContent: 'flex-end',
-  },
-  mealCardGradient: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-  },
-  mealCardLabel: {
-    color: '#FFFFFF',
-    margin: Spacing.md,
-    fontWeight: '700',
-    fontSize: 17,
-  },
+  // Bento
+  bentoRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
 
-  recipeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
+  // Recipe grid
+  recipeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
 
-  emptyState: {
-    alignItems: 'center',
-    paddingTop: Spacing.xxl,
-    paddingBottom: Spacing.xxl,
-    gap: Spacing.md,
-  },
+  // Collection carousel
+  collectionCard: { width: 180, borderRadius: Radius.xl, overflow: 'hidden' },
+  collectionCardImage: { width: '100%', height: 120 },
+
+  // Empty state
+  emptyState: { alignItems: 'center', paddingTop: Spacing.xxl, paddingBottom: Spacing.xxl, gap: Spacing.md },
   emptyIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: Radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.sm,
+    width: 72, height: 72, borderRadius: Radius.full,
+    alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.sm,
   },
 
+  // Toast
   toast: {
     position: 'absolute',
     bottom: 100,

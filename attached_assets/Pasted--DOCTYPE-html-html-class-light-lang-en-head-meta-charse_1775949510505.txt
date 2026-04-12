@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Serif:ital,wght@0,600;0,700;1,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fef9f3",
+                        "on-surface": "#1d1b18",
+                        "on-background": "#1d1b18",
+                        "outline": "#897267",
+                        "on-primary-container": "#ffc9af",
+                        "primary": "#753000",
+                        "on-primary-fixed": "#341100",
+                        "primary-container": "#9a4100",
+                        "tertiary": "#004485",
+                        "surface-container": "#f2ede7",
+                        "surface-variant": "#e6e2dc",
+                        "surface-dim": "#ded9d4",
+                        "inverse-primary": "#ffb691",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#004689",
+                        "on-primary-fixed-variant": "#783100",
+                        "background": "#fef9f3",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#ffdbcb",
+                        "secondary-fixed": "#feddb7",
+                        "on-surface-variant": "#564339",
+                        "on-secondary-fixed-variant": "#594327",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f5f0ea",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#a7c8ff",
+                        "on-secondary-container": "#775e40",
+                        "tertiary-container": "#005caf",
+                        "surface": "#fef9f3",
+                        "primary-fixed-dim": "#ffb691",
+                        "inverse-surface": "#32302c",
+                        "tertiary-fixed": "#d5e3ff",
+                        "secondary-container": "#fbdab4",
+                        "outline-variant": "#ddc1b4",
+                        "surface-container-high": "#ece7e2",
+                        "surface-container-low": "#f8f3ed",
+                        "surface-tint": "#9d4303",
+                        "error": "#ba1a1a",
+                        "secondary": "#725a3c",
+                        "on-tertiary-fixed": "#001b3c",
+                        "secondary-fixed-dim": "#e1c19d",
+                        "on-secondary-fixed": "#291802",
+                        "surface-container-highest": "#e6e2dc",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#c0d6ff",
+                        "on-secondary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .liquid-glass {
+            background: rgba(254, 249, 243, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(221, 193, 180, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fef9f3;
+            color: #1d1b18;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface min-h-screen pb-24">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 w-full z-50 bg-[#FEF9F3]/70 backdrop-blur-md border-b border-[#DEC1B3]/15 shadow-sm">
+<div class="flex justify-between items-center px-5 h-20 w-full max-w-screen-xl mx-auto">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-2xl group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary">search</span>
+<input class="w-full h-12 pl-12 pr-4 rounded-2xl bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-on-surface-variant/60 font-body" placeholder="Search recipes, reviews..." type="text"/>
+</div>
+</div>
+<div class="ml-4 w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30 shrink-0">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a professional female chef smiling warmly in a sunlit kitchen environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0e21a8JM_h3XDAlewhNWlZxcq8tDw9-xki0nzEmJHAD3iQox5rwwLs-ajP6agrgOXA6gthFFiovmBlf5Lx_TG7K6PKVIxFEAhE6rDSI1jOOFXEJeLTn8-iKNRO6hTfSPxfpE8ONyHbu-PDvjNY-pJjCubEwZWJaa9aAq6DrU9XR5OaIL_WkdcBSdPUI8_dgkq1YUoYFF0C8ezj1Qj1FSWD6GbUCdoaJl4nkMxnv61YJyAQ83WdpD2roY6insCe0wCz9e3sGBwOQdY"/>
+</div>
+</div>
+</header>
+<main class="pt-24 px-5 max-w-screen-xl mx-auto space-y-10">
+<!-- Explore by Category Section -->
+<section>
+<div class="flex items-end justify-between mb-6">
+<h2 class="font-headline font-bold text-2xl tracking-tight text-on-surface">Explore by Category</h2>
+<span class="text-primary font-label font-semibold text-sm">View all</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+<!-- Category Item -->
+<div class="flex flex-col items-center gap-3 group">
+<div class="relative w-full aspect-square rounded-full overflow-hidden shadow-lg transition-transform group-active:scale-95 duration-150">
+<img class="w-full h-full object-cover" data-alt="Appetizing top-down view of a classic pasta carbonara with creamy sauce and golden egg yolk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEQsdYsztbc6UqcE-x-rzlK47bCIzf7H_cmpwhvLemaIDxkeBUCJBOfZSe0u-WyGmiUrzvU5351xEIVLRgxhGBtxT7Pp1wxQq7JSWJV1gdSubwd-dTK-vJp-760vT9aAoVn8KN5zQQvB3816TRR4VVADoPEhgefyIuUHPVuqQot-9gbGaKXtH7bfBs_Jl8iCTO-ogKeB_5gQYFboDxTTfnGjOFAaKBnw5pDk1LySXNMWjRLCT7qul7UXEI6kG_3__UFesX9ejgg2Pt"/>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
+</div>
+<span class="font-label font-medium text-on-surface">Pasta</span>
+</div>
+<!-- Category Item -->
+<div class="flex flex-col items-center gap-3 group">
+<div class="relative w-full aspect-square rounded-full overflow-hidden shadow-lg transition-transform group-active:scale-95 duration-150">
+<img class="w-full h-full object-cover" data-alt="Pan-roasted chicken breast with crispy golden skin served with rosemary and lemon wedges" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVInGK3m4CwUI86Zc5_WGMRzHmgqqFHCq6F2vaPxfla5hSoFPxm1DD3AemxPgo_SNyhBrez6LoNft5SYqgawGRoOGcqbzy1XAXoHSGs9SPqXZdPBXfPQb3wXXisbe3jY1cankrdto-8VIOjtTbXYOq9UvShhatM6iNU9AZdoz-CMGAlFA0mjicSVpr80HcozA2acC0JKQOtcWWnmNTliFVcPYZAwlMOCShsYKQA5q-u-Ec5YpC8MJ5ZSj78MxKe07LXqf4xmSILyUC"/>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
+</div>
+<span class="font-label font-medium text-on-surface">Chicken</span>
+</div>
+<!-- Category Item -->
+<div class="flex flex-col items-center gap-3 group">
+<div class="relative w-full aspect-square rounded-full overflow-hidden shadow-lg transition-transform group-active:scale-95 duration-150">
+<img class="w-full h-full object-cover" data-alt="Elegant seafood platter featuring grilled salmon and fresh greens on a ceramic plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz_vJEnuSSl8Qt9TZdu8WQXq3RNt-9QmxkEOpdYMb27AfzcKRHRlkGFIDZjTRoAG_zw_GcLqTNihLK_8FwcSrLgYh7uuxx0MUc9Iel2jqSXuUV25F35z1M-pntwHrPrZ7XnjsNwPsuOloSt0X7J1cwHXSos3w036Rev52IEHuoDbc9jvryE3xiNJxpXWujubWJdGRI6x-0elMyEpHxFIYzOUeNqkxbGRN8xanDbbnW6uFWjHRb9t2cd_fq_9bUrnHx48CyvyvdD-4t"/>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
+</div>
+<span class="font-label font-medium text-on-surface">Seafood</span>
+</div>
+<!-- Category Item -->
+<div class="flex flex-col items-center gap-3 group">
+<div class="relative w-full aspect-square rounded-full overflow-hidden shadow-lg transition-transform group-active:scale-95 duration-150">
+<img class="w-full h-full object-cover" data-alt="Vibrant healthy salad bowl with roasted vegetables, chickpeas, and fresh greens" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7QgNgwDrXD3-8fEKxBn-gUXWVkTkhY3IZGTKyVvyrIeoQtK8JY1L9MUg4yCxeEq5eEQWkOGA-ETFlTwNtcaVyJT6Lm0dReVIz1g8G-1GlrWMJ0fNf7u2KaI86KK6elaPZOD2PBY9RhaQC7DEHq6o2XCpnNVQZLDVpJvgiJSP1vwQlkqUubDuWcoNz6NRySJjNYvDYQjyL_OEP73j9uS8ePMcnGwQWXHSWUw76eapsKPMYoXfKWZyMVkjWwFOEzxTJXk8M_IANnm7S"/>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
+</div>
+<span class="font-label font-medium text-on-surface">Vegetarian</span>
+</div>
+<!-- Category Item -->
+<div class="flex flex-col items-center gap-3 group">
+<div class="relative w-full aspect-square rounded-full overflow-hidden shadow-lg transition-transform group-active:scale-95 duration-150">
+<img class="w-full h-full object-cover" data-alt="Quick weeknight meal with stir-fried vegetables and tofu in a warm kitchen setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAFGNi_LGWc7dKxhWH4kaPuV0eTGLdAbxfB7yGVOaoDZWFDexkmvrVSCX0d6zQhu6U43K4GtXlDGA1VOlaj99u2SGg2rL5LvtWZyV598bitPwNTu9ja_1WeWopvpxSEgVlXqDZ9AY-bF7gMHrRs5_w9b11GUXC973o54D3MTDHfQsAPa3gyAsdRJnrmmfGmepI_-d8kPxAG5wpOEygZU5TDrPLZopETQ6At7cjIT4iDwuD6lQPVm90l_dDRUdLO6ktEkxorbrRtrgV"/>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
+</div>
+<span class="font-label font-medium text-on-surface">Weeknight</span>
+</div>
+</div>
+</section>
+<!-- Trending Ingredients Section -->
+<section>
+<h2 class="font-headline font-bold text-2xl tracking-tight text-on-surface mb-6">Trending Ingredients</h2>
+<div class="flex gap-8 overflow-x-auto pb-4 no-scrollbar">
+<div class="flex flex-col items-center shrink-0">
+<div class="w-20 h-20 rounded-full bg-surface-container-high p-1 mb-2">
+<img class="w-full h-full object-cover rounded-full" data-alt="Macro photography of ripe red vine tomatoes with glistening water droplets" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYt-mcdeJ-g72d_IqvcbdJvOKoleW-StCCgFKl1C6o5fvz1UULRYbmJSV5YuFTrr6X5NgnNzZDKIGyK08SrL44qknmt4i2JcnU2NGmpORtPHFB08MXdG8tEv6UvuQZGNHEYB9WkRA8UH5rWh3u9DG5-VYuf-1A9jVn4JaAuMNbMl3F16xZxsPUxAhN4NPrUgcJ43Bv1pVdZc0cr-w001MfXUwI3pmYfVNmwQ_h26P3CSQCCgPQBbSnxlezfZ3Q0VRwLsyspAPejIW-"/>
+</div>
+<span class="font-label font-medium text-sm text-on-surface-variant">Tomato</span>
+</div>
+<div class="flex flex-col items-center shrink-0">
+<div class="w-20 h-20 rounded-full bg-surface-container-high p-1 mb-2">
+<img class="w-full h-full object-cover rounded-full" data-alt="Fresh vibrant green basil leaves bunch against a dark rustic wooden background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzHIpB3G4J2GqUj9vRhpAvmSW3-Mu08Yew5kwCfb2diycxN1Em6M6_A6Self2ZSbDVhl-E4hSKw_ed5yvhUlpm60avH_IUuKNJl_5gdcVPxLiQVABVm3yvT76oJajsYh4QwyEKdC31zLGuvTLnegezbv2amFxmoPBO62orKeJ6k1iT6kM066JjpNEb6kA2FKapwzy5puNyx2VDha8lKJLp_VNL5hVRKF_0WWj1YE_7leWIAxJa6JmL1MCL_ldXRytXM3QKpVA3t5zO"/>
+</div>
+<span class="font-label font-medium text-sm text-on-surface-variant">Basil</span>
+</div>
+<div class="flex flex-col items-center shrink-0">
+<div class="w-20 h-20 rounded-full bg-surface-container-high p-1 mb-2">
+<img class="w-full h-full object-cover rounded-full" data-alt="Bright red chili peppers scattered on a gray stone surface with dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOnf7K3-Jfq8xdpU30f53TLerFK33yg6PX-IE1r9jsATnL2b5GReEZkbs_UY7NFNP8RK14qD16k-5hNb_hQVI13AKc0C2hsW-2RkJoLaiIxlKJ2Ae-G2Xj6MiCtMQttrtsiYa7qkxctAvK7GmX2Q3yYnlMx3LjECoZR7-HBRz6Hpc1ui7EoOXsjpHfgEwvDvuyxLvRqd3SecjodfCyOCR5p-4jLT7hcvPtEEQPqMes15ebT7sBGlqJK4IZ1Cguuk6QUI_23Jj-pDF5"/>
+</div>
+<span class="font-label font-medium text-sm text-on-surface-variant">Chili</span>
+</div>
+<div class="flex flex-col items-center shrink-0">
+<div class="w-20 h-20 rounded-full bg-surface-container-high p-1 mb-2">
+<img class="w-full h-full object-cover rounded-full" data-alt="Whole bulbs of fresh garlic with papery white skin on a dark slate background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgZpEUTc52phibJLKRkV5L0oK-gtbSaxtjuWmsDWpn3M9R6moQUh2Bt2kRQ4neyLBL-956CCARZIHcmpn7ZHN_gXlNwJImzF70c8nE1ovgLzm2D8cka3sXNCDERpJbOe9-Rwb4jCgWx5ZCwgmPV0RObIoxfGFXDuzfGW2O3FoGMswM-S21wwQYVETtRv_MdjGvuXyCAbbg2qtY074eaf_FWO340tQWN4rfDVyvgUUeIAwwQZgN0kbo5V-tmM5o3WZtuWjX0WFVzWsQ"/>
+</div>
+<span class="font-label font-medium text-sm text-on-surface-variant">Garlic</span>
+</div>
+</div>
+</section>
+<!-- Dietary Preferences Section -->
+<section>
+<h2 class="font-headline font-bold text-2xl tracking-tight text-on-surface mb-6">Dietary Preferences</h2>
+<div class="flex flex-wrap gap-3">
+<button class="px-6 py-3 rounded-full bg-primary text-on-primary font-label font-semibold text-sm shadow-md transition-transform active:scale-95">
+                    Vegan
+                </button>
+<button class="px-6 py-3 rounded-full bg-surface-container-high text-on-surface font-label font-medium text-sm border border-outline-variant/20 hover:bg-surface-variant/40 transition-colors active:scale-95">
+                    Keto
+                </button>
+<button class="px-6 py-3 rounded-full bg-surface-container-high text-on-surface font-label font-medium text-sm border border-outline-variant/20 hover:bg-surface-variant/40 transition-colors active:scale-95">
+                    Gluten-Free
+                </button>
+<button class="px-6 py-3 rounded-full bg-surface-container-high text-on-surface font-label font-medium text-sm border border-outline-variant/20 hover:bg-surface-variant/40 transition-colors active:scale-95">
+                    Low Carb
+                </button>
+</div>
+</section>
+<!-- Recent Search Results / Suggested Bento -->
+<section class="pb-10">
+<h2 class="font-headline font-bold text-2xl tracking-tight text-on-surface mb-6">Recommended for You</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 h-auto md:h-[450px]">
+<div class="md:col-span-2 relative rounded-3xl overflow-hidden group shadow-xl">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Cinematic shot of a hearty Mediterranean grain bowl with roasted salmon, avocado, and fresh lemon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAukHqQVwbTYxIOKXs9I4eMciMJX1UdXmwS9Zvphx8nLbDRODsyxo0LkijXEFMoefHmbvHkgKbPA7t-Pv45jAzYmmoqu5hSowsOAwDQKXwrc_JJrxOShI286I5cIBeUkZ_fZkhXztRHy-kQVnOq1aUEyztVdy41HBDcPHIy62YqYJWp_x191GFs8_hKLGu5mUl3cNZeT2TI13TY4GEPHms6D2yfdmIiR3OEFZVTRBWxZY_wC7ILbWtlGxb9tGACr3d_ocFNA1aDvj3T"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
+<span class="text-on-primary/80 font-label text-sm uppercase tracking-widest mb-2">Featured Recipe</span>
+<h3 class="font-headline text-3xl text-white mb-4">The Ultimate Summer Harvest Bowl</h3>
+<div class="flex items-center gap-4 text-white/90 text-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">schedule</span> 25 min</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">restaurant</span> Intermediate</span>
+</div>
+</div>
+</div>
+<div class="grid grid-rows-2 gap-4">
+<div class="relative rounded-3xl overflow-hidden group shadow-lg">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Close up of a vibrant fruit salad with mint leaves and lime zest in a ceramic bowl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrXJMSijbHqE-4AfMzMFpW5yjqzYBN25tyS5hJs9CD9ZnSJ_vP6mlO9b-xXXNxW6larBzLuC7GxDVQu46FOEgp256Pns2XcgBPm2wCBNGtARtmA1tEAuMg53EDNs7YcWiLTY_Ti1mAuBDIIxK4nANqm7efkTvKV_CoDLAkFGKFjgFlnDCgXeXXeEqjMdodPWRlj0v3m0r1orpQXvFMmCvkokSIfK_ws8CLR5Sq3M6Dl2iQxeERFWkjwdGa1YJgp1y7XZDqynFfO0DY"/>
+<div class="absolute inset-0 bg-black/30 p-6 flex flex-col justify-end">
+<h4 class="font-headline text-white text-lg">Fresh Mint Berry Mix</h4>
+</div>
+</div>
+<div class="relative rounded-3xl overflow-hidden group shadow-lg">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Table spread with various mezze dishes including hummus, pita, and olives in warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbm1cwGnTrIAlqx0JfqqP1YFEpgicFaCRNV9AMbJgSbTGjVzzBgr-Nj-aFIHnD88Q-GFPRsSQGoZeE5NEwFqujm6Tk56gP2MTp8fJTg4lz-Q6pcqTMSVkk9uRSdnwkxeYGjGkwWraiaHAVPDQlV0GFb001lFUuw133kVG_kWe1WsZNZK0x-D71_hqZEEMI9WEbcv1WaHkXWOsAPtQXB1tz_oZNVUrugAtMT7x87NM94KgXuMqrlcC5eRXzhYesMiresBndsbggZQoA"/>
+<div class="absolute inset-0 bg-black/30 p-6 flex flex-col justify-end">
+<h4 class="font-headline text-white text-lg">Middle Eastern Spreads</h4>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar Shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-[#FEF9F3]/90 dark:bg-[#0D0D0D]/90 backdrop-blur-lg flex justify-around items-center px-4 pt-2 pb-6 rounded-t-2xl shadow-[0_-12px_40px_rgba(29,27,24,0.06)]">
+<a class="flex flex-col items-center justify-center text-[#574238] dark:text-[#D7C2B5] hover:bg-[#ECE7E2]/50 rounded-xl px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-body font-medium text-[13pt]">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#9A4100] dark:text-[#FFB690] font-semibold bg-[#ECE7E2]/50 rounded-xl px-4 py-2 transition-all scale-95" href="#">
+<span class="material-symbols-outlined active-icon">search</span>
+<span class="font-body font-medium text-[13pt]">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#574238] dark:text-[#D7C2B5] hover:bg-[#ECE7E2]/50 rounded-xl px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-body font-medium text-[13pt]">Saved</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#574238] dark:text-[#D7C2B5] hover:bg-[#ECE7E2]/50 rounded-xl px-4 py-2 transition-all" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-body font-medium text-[13pt]">Journal</span>
+</a>
+</nav>
+</body></html>

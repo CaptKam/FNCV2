@@ -71,7 +71,7 @@ export const countries: Country[] = [
     name: 'Morocco',
     flag: '🇲🇦',
     tagline: 'Spices that tell stories',
-    heroImage: 'https://images.unsplash.com/photo-1541518763-a2d3e3f2f1f0?w=800&h=600&fit=crop',
+    heroImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&h=600&fit=crop',
     landmarkImage: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?w=300&h=300&fit=crop',
     cuisineLabel: 'Moroccan Cuisine',
     region: 'North Africa',

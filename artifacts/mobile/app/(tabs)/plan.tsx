@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { View, Text, StyleSheet, Pressable, Animated as RNAnimated, Platform, AppState, RefreshControl } from 'react-native';
-import Animated, { FadeInDown, FadeOutDown, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, withSpring, interpolate, Extrapolation } from 'react-native-reanimated';
-import { useReducedMotion } from '@/utils/motion';
+import Animated, { FadeInDown, FadeOutDown, useSharedValue, useAnimatedStyle, useAnimatedScrollHandler, useAnimatedRef, interpolate, Extrapolation } from 'react-native-reanimated';
+import { useReducedMotion, withManagedSpring, MOTION_DISABLED } from '@/utils/motion';
 import { BlurView } from 'expo-blur';
 import { Swipeable } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -206,12 +206,16 @@ export default function PlanScreen() {
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
+      // When motion is disabled the instant snap on every threshold crossing
+      // causes a hard visual jitter. Pin the bar at 0 and do nothing.
+      if (MOTION_DISABLED) return;
+
       const currentY = event.contentOffset.y;
       const diff = currentY - lastScrollY.value;
 
       if (currentY <= 0) {
         accumulatedDelta.value = 0;
-        navBarTranslateY.value = withSpring(0, springConfig);
+        navBarTranslateY.value = withManagedSpring(0, springConfig);
       } else {
         if ((diff > 0 && accumulatedDelta.value < 0) || (diff < 0 && accumulatedDelta.value > 0)) {
           accumulatedDelta.value = 0;
@@ -219,13 +223,9 @@ export default function PlanScreen() {
         accumulatedDelta.value += diff;
 
         if (accumulatedDelta.value > HIDE_TRIGGER) {
-          navBarTranslateY.value = reduceMotion
-            ? -navHeight.value
-            : withSpring(-navHeight.value, springConfig);
+          navBarTranslateY.value = withManagedSpring(-navHeight.value, springConfig);
         } else if (accumulatedDelta.value < -SHOW_TRIGGER) {
-          navBarTranslateY.value = reduceMotion
-            ? 0
-            : withSpring(0, springConfig);
+          navBarTranslateY.value = withManagedSpring(0, springConfig);
         }
       }
 

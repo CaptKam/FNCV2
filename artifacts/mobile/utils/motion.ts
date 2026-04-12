@@ -21,6 +21,11 @@
  *   // regardless of OS setting, so every `reduceMotion ? undefined : ...`
  *   // branch in the app skips its animation.
  *
+ *   // For scroll-handler worklets, use withManagedSpring instead of withSpring:
+ *   //   import { withManagedSpring } from '@/utils/motion';
+ *   //   navBarTranslateY.value = withManagedSpring(0, springConfig);
+ *   // This respects MOTION_DISABLED without needing a manual reduceMotion check.
+ *
  * To re-enable animations later:
  *   Flip `MOTION_DISABLED` to false. That's it — nothing else
  *   needs to change.
@@ -30,13 +35,17 @@
  *   - useAnimatedStyle / withSpring / withTiming / withSequence values
  *     (components check reduceMotion before driving shared values)
  *   - BottomSheet spring-in (see components/BottomSheet.tsx)
+ *   - Scroll-driven nav bar hide/show on plan.tsx (withManagedSpring)
  *
  * NOT in scope (left alone because they're cheap and not buggy):
  *   - expo-image `transition={200}` cross-fades
  *   - React Native Animated.View scroll-driven transforms
  *     (these are native-driver and perform fine)
  */
-import { useReducedMotion as useReducedMotionReanimated } from 'react-native-reanimated';
+import {
+  useReducedMotion as useReducedMotionReanimated,
+  withSpring,
+} from 'react-native-reanimated';
 
 /**
  * Master kill switch. When true, every consumer of the
@@ -54,4 +63,25 @@ export const MOTION_DISABLED = true;
 export function useReducedMotion(): boolean {
   const osReducedMotion = useReducedMotionReanimated();
   return MOTION_DISABLED || osReducedMotion;
+}
+
+/**
+ * Worklet-safe spring helper. Respects MOTION_DISABLED so that
+ * callers inside useAnimatedScrollHandler (or any other worklet)
+ * don't need to manually check reduceMotion — they call this
+ * instead of withSpring and the kill-switch is applied here.
+ *
+ * Usage inside worklets:
+ *   navBarTranslateY.value = withManagedSpring(0, springConfig);
+ *
+ * When MOTION_DISABLED is true the value is set instantly (no spring).
+ * When MOTION_DISABLED is false it delegates to Reanimated's withSpring.
+ */
+export function withManagedSpring(
+  toValue: number,
+  config?: Parameters<typeof withSpring>[1],
+): number {
+  'worklet';
+  if (MOTION_DISABLED) return toValue;
+  return withSpring(toValue, config);
 }

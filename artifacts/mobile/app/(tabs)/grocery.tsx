@@ -17,7 +17,7 @@ import { Shadows } from '@/constants/shadows';
 import { GlassView } from '@/components/GlassView';
 import { HeaderBar } from '@/components/HeaderBar';
 import { PressableScale } from '@/components/PressableScale';
-import { Checkbox } from '@/components/Checkbox';
+import { CheckRow } from '@/components/CheckRow';
 import { useApp, GroceryItem, ItineraryDay } from '@/context/AppContext';
 import { useFeatureFlag } from '@/hooks/useRemoteConfig';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -664,68 +664,22 @@ export default function GroceryScreen() {
                   overshootLeft={false}
                   overshootRight={false}
                 >
-                <PressableScale
-                  haptic="light"
-                  onPress={() => {
-                    app.toggleGroceryItem(item.id);
-                  }}
-                  style={[
-                    styles.itemRow,
-                    {
-                      backgroundColor: colors.surfaceContainerLow,
-                      marginHorizontal: Spacing.page,
-                    },
-                  ]}
-                  accessibilityRole="checkbox"
+                <CheckRow
+                  checked={item.checked}
+                  onToggle={() => app.toggleGroceryItem(item.id)}
+                  label={item.name}
+                  sublabel={[
+                    scaledAmount,
+                    isManual ? 'Added manually' : null,
+                    item.recipeNames.length > 1 ? `In ${item.recipeNames.length} recipes` : null,
+                  ].filter(Boolean).join(' · ') || undefined}
                   accessibilityLabel={`${item.name}${scaledAmount ? ', ' + scaledAmount : ''}`}
-                  accessibilityState={{ checked: item.checked }}
-                  accessibilityActions={[
-                    { name: 'delete', label: 'Delete item' },
-                    { name: 'toggleCheck', label: 'Mark as purchased' },
-                  ]}
-                  onAccessibilityAction={(event: { nativeEvent: { actionName: string } }) => {
-                    if (event.nativeEvent.actionName === 'delete') app.removeGroceryItem(item.id);
-                    if (event.nativeEvent.actionName === 'toggleCheck') app.toggleGroceryItem(item.id);
-                  }}
-                >
-                  <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
-                    <MaterialCommunityIcons name={group.icon} size={16} color={group.color} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        Typography.body,
-                        {
-                          color: item.checked ? colors.outline : colors.onSurface,
-                          textDecorationLine: item.checked ? 'line-through' : 'none',
-                        },
-                      ]}
-                    >
-                      {item.name}
-                    </Text>
-                    <View style={styles.itemMetaRow}>
-                      {scaledAmount ? (
-                        <Text style={[Typography.bodySmall, { color: colors.outline }]}>
-                          {scaledAmount}
-                        </Text>
-                      ) : null}
-                      {isManual && (
-                        <View style={[styles.recipeCountBadge, { backgroundColor: `${colors.outline}18` }]}>
-                          <Text style={[Typography.labelSmall, { color: colors.outline }]}>
-                            Added manually
-                          </Text>
-                        </View>
-                      )}
-                      {item.recipeNames.length > 1 && (
-                        <View style={[styles.recipeCountBadge, { backgroundColor: colors.primaryMuted }]}>
-                          <Text style={[Typography.labelSmall, { color: colors.primary }]}>
-                            Used in {item.recipeNames.length} Recipes
-                          </Text>
-                        </View>
-                      )}
+                  leading={
+                    <View style={[styles.ingredientThumb, { backgroundColor: `${group.color}25` }]}>
+                      <MaterialCommunityIcons name={group.icon} size={16} color={group.color} />
                     </View>
-                  </View>
-                  {isManual && (
+                  }
+                  trailing={isManual ? (
                     <Pressable
                       onPress={() => app.removeGroceryItem(item.id)}
                       hitSlop={8}
@@ -734,9 +688,15 @@ export default function GroceryScreen() {
                     >
                       <MaterialCommunityIcons name="close" size={20} color={colors.outline} />
                     </Pressable>
-                  )}
-                  <Checkbox checked={item.checked} onToggle={() => app.toggleGroceryItem(item.id)} />
-                </PressableScale>
+                  ) : undefined}
+                  style={[
+                    styles.itemRow,
+                    {
+                      backgroundColor: colors.surfaceContainerLow,
+                      marginHorizontal: Spacing.page,
+                    },
+                  ]}
+                />
                 </Swipeable>
                 </Animated.View>
               );
