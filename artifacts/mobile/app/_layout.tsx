@@ -84,6 +84,15 @@ function RootLayoutNav() {
       <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' as const, animationDuration: 350 }} />
       <Stack.Screen name="profile" options={{ headerShown: false, presentation: 'modal', ...FADE_SLIDE }} />
       <Stack.Screen name="bookmarks" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="category/[label]"
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+          animation: 'slide_from_bottom' as const,
+          animationDuration: 280,
+        }}
+      />
       <Stack.Screen name="country/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="recipe/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="technique/[id]" options={{ headerShown: false }} />

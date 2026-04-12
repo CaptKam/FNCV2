@@ -23,11 +23,11 @@ import { Radius } from '@/constants/radius';
 import { PressableScale } from '@/components/PressableScale';
 import { AnimatedHeart } from '@/components/AnimatedHeart';
 import { AddToPlanSheet, AddToPlanButton } from '@/components/AddToPlanSheet';
-import { BottomSheet } from '@/components/BottomSheet';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { recipes, Recipe } from '@/data/recipes';
 import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
+import { MEAL_CATEGORIES } from '@/data/categories';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { todayLocal, getDayLabel } from '@/utils/dates';
@@ -56,71 +56,6 @@ const INGREDIENT_CIRCLES = [
   { label: 'Rice',    query: 'rice',    image: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=200&h=200&fit=crop' },
 ];
 
-interface MealCategory {
-  label: string;
-  image: string;
-  filter: (r: Recipe) => boolean;
-}
-
-const MEAL_CATEGORIES: MealCategory[] = [
-  {
-    label: 'Starters',
-    image: 'https://images.unsplash.com/photo-1541014741259-de529411b96a?w=600&h=600&fit=crop',
-    filter: (r) => r.category === 'appetizer',
-  },
-  {
-    label: 'Mains',
-    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=600&fit=crop',
-    filter: (r) => r.category === 'main',
-  },
-  {
-    label: 'Desserts',
-    image: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=600&h=600&fit=crop',
-    filter: (r) => r.category === 'dessert',
-  },
-  {
-    label: 'Quick',
-    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=600&fit=crop',
-    filter: (r) => r.prepTime + r.cookTime <= 30,
-  },
-  {
-    label: 'Slow Cook',
-    image: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&h=600&fit=crop',
-    filter: (r) => r.prepTime + r.cookTime >= 90,
-  },
-  {
-    label: 'Vegetarian',
-    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=600&fit=crop',
-    filter: (r) => !r.ingredients.some(i =>
-      ['chicken','beef','pork','lamb','fish','shrimp','prawn','anchovy','bacon','turkey'].some(m =>
-        i.name.toLowerCase().includes(m)
-      )
-    ),
-  },
-  {
-    label: 'Seafood',
-    image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&h=600&fit=crop',
-    filter: (r) => r.ingredients.some(i =>
-      ['fish','shrimp','salmon','prawn','tuna','cod','anchovy','squid','clam','mussel','seafood'].some(s =>
-        i.name.toLowerCase().includes(s)
-      )
-    ),
-  },
-  {
-    label: 'Street Food',
-    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=600&fit=crop',
-    filter: (r) => r.category === 'appetizer' && r.prepTime + r.cookTime <= 45,
-  },
-  {
-    label: 'Soups',
-    image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&h=600&fit=crop',
-    filter: (r) =>
-      r.title.toLowerCase().includes('soup') ||
-      r.title.toLowerCase().includes('broth') ||
-      r.title.toLowerCase().includes('stew') ||
-      r.title.toLowerCase().includes('braise'),
-  },
-];
 
 // ─── Dietary filter logic ─────────────────────────────────────────────────────
 
@@ -196,70 +131,6 @@ const cardStyles = StyleSheet.create({
   overlayStack: { position: 'absolute', top: Spacing.sm, right: Spacing.sm, gap: 6, alignItems: 'center' },
   overlayBtn: { width: OVERLAY_BUTTON.size, height: OVERLAY_BUTTON.size, borderRadius: Radius.full, alignItems: 'center', justifyContent: 'center' },
   content: { padding: Spacing.sm, gap: 4 },
-});
-
-// ─── Category Modal ───────────────────────────────────────────────────────────
-
-interface CategoryModalProps {
-  category: MealCategory;
-  recipes: Recipe[];
-  onClose: () => void;
-  onRecipePress: (id: string) => void;
-  onAddToPlan: (recipe: Recipe) => void;
-  isBookmarked: (id: string) => boolean;
-  onBookmark: (id: string) => void;
-  colors: ReturnType<typeof useThemeColors>;
-  insets: { bottom: number; top: number };
-}
-
-function CategoryModal({ category, recipes: categoryRecipes, onClose, onRecipePress, onAddToPlan, isBookmarked, onBookmark, colors }: CategoryModalProps) {
-  const { width } = useWindowDimensions();
-  const CARD_W = (width - Spacing.page * 2 - 12) / 2;
-  return (
-    <>
-      <View style={modalStyles.heroWrap}>
-        <Image source={{ uri: category.image }} style={modalStyles.heroImage} contentFit="cover" transition={300} accessible={false} />
-        <View style={modalStyles.heroGradient} />
-        <View style={modalStyles.heroContent}>
-          <Text style={[Typography.display, { color: '#FFFFFF' }]}>{category.label}</Text>
-          <Text style={[Typography.bodySmall, { color: 'rgba(255,255,255,0.8)' }]}>{categoryRecipes.length} recipes</Text>
-        </View>
-        <Pressable onPress={onClose} style={modalStyles.closeBtn} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
-          <MaterialCommunityIcons name="close" size={20} color="#FFFFFF" />
-        </Pressable>
-      </View>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={modalStyles.gridContainer}>
-        <View style={modalStyles.grid}>
-          {categoryRecipes.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              cardWidth={CARD_W}
-              onPress={() => onRecipePress(recipe.id)}
-              isBookmarked={isBookmarked(recipe.id)}
-              onBookmark={() => onBookmark(recipe.id)}
-              onAddToPlan={() => onAddToPlan(recipe)}
-              colors={colors}
-            />
-          ))}
-        </View>
-      </ScrollView>
-    </>
-  );
-}
-
-const modalStyles = StyleSheet.create({
-  heroWrap: { height: 200, position: 'relative', marginBottom: Spacing.md },
-  heroImage: { width: '100%', height: '100%' },
-  heroGradient: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' },
-  heroContent: { position: 'absolute', bottom: Spacing.lg, left: Spacing.page, gap: 2 },
-  closeBtn: {
-    position: 'absolute', top: Spacing.md, right: Spacing.md,
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center',
-  },
-  gridContainer: { paddingHorizontal: Spacing.page, paddingBottom: Spacing.xl },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
 });
 
 // ─── Search Header (replaces HeaderBar on this tab) ───────────────────────────
@@ -464,7 +335,6 @@ export default function SearchScreen() {
 
   const [query, setQuery] = useState('');
   const [activeDietaryFilters, setActiveDietaryFilters] = useState<DietaryFilter[]>([]);
-  const [categoryModal, setCategoryModal] = useState<MealCategory | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [addSheetRecipe, setAddSheetRecipe] = useState<Recipe | null>(null);
@@ -532,11 +402,6 @@ export default function SearchScreen() {
     }
     return results;
   }, [query, activeDietaryFilters, isSearchActive]);
-
-  const categoryRecipes = useMemo(() => {
-    if (!categoryModal) return [];
-    return recipes.filter(categoryModal.filter);
-  }, [categoryModal]);
 
   const HEADER_PUSH = insets.top + 78;
 
@@ -638,7 +503,10 @@ export default function SearchScreen() {
                     <PressableScale
                       key={cat.label}
                       haptic="light"
-                      onPress={() => setCategoryModal(cat)}
+                      onPress={() => {
+                        try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch {}
+                        router.push(`/category/${encodeURIComponent(cat.label)}`);
+                      }}
                       style={[styles.categoryItem, { width: CATEGORY_COL }]}
                       accessibilityRole="button"
                       accessibilityLabel={`Explore ${cat.label} recipes`}
@@ -809,28 +677,6 @@ export default function SearchScreen() {
           </>
         )}
       </ScrollView>
-
-      {/* ── Category modal ── */}
-      <BottomSheet
-        visible={!!categoryModal}
-        onDismiss={() => setCategoryModal(null)}
-        size="full"
-        fullBleed
-      >
-        {categoryModal && (
-          <CategoryModal
-            category={categoryModal}
-            recipes={categoryRecipes}
-            onClose={() => setCategoryModal(null)}
-            onRecipePress={(id) => { setCategoryModal(null); router.push(`/recipe/${id}`); }}
-            onAddToPlan={(recipe) => setAddSheetRecipe(recipe)}
-            isBookmarked={isBookmarked}
-            onBookmark={toggleBookmark}
-            colors={colors}
-            insets={insets}
-          />
-        )}
-      </BottomSheet>
 
       {/* ── Toast ── */}
       {toastMessage && (

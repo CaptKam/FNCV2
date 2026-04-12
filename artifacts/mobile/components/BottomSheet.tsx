@@ -2,28 +2,6 @@
  * Shared bottom sheet — the single source of truth for every
  * overlay in Fork & Compass.
  *
- * Why a shared component:
- *   Before this existed, every screen hand-rolled its own sheet
- *   using React Native's <Modal>. The result was 12 sheets that all
- *   had slightly different heights, corner radii, drag handles,
- *   dim overlays, and dismiss behaviors. Fix one → only one sheet
- *   changes. With this component, changes propagate everywhere.
- *
- * Standards enforced:
- *   - size='small'  → 35% of screen height (quick 1-5 option pickers)
- *   - size='medium' → 55% of screen height (6-15 options, forms)
- *   - size='full'   → 85% of screen height (complex forms, grids)
- *   - Corner radius: 24px on top corners only
- *   - Drag handle: 36px wide, 4px tall, outlineVariant color, 12px
- *     top margin (always present regardless of size)
- *   - Background dim: rgba(0,0,0,0.5)
- *   - Swipe down to dismiss (PanResponder threshold: 80px or
- *     velocity > 0.5)
- *   - Tap dim to dismiss (unless dismissOnOverlay=false)
- *   - Spring animation in (damping: 20, stiffness: 300)
- *   - Safe-area padding at the bottom so content above the home
- *     indicator isn't clipped
- *
  * Props:
  *   visible: boolean
  *   onDismiss: () => void
@@ -31,12 +9,9 @@
  *   title?: string                       optional header
  *   showCloseButton?: boolean            top-right X for full sheets
  *   dismissOnOverlay?: boolean           defaults to true
+ *   disablePanDismiss?: boolean          when true: no drag handle, no swipe-to-dismiss
+ *   fullBleed?: boolean                  zero horizontal padding in content area
  *   children: React.ReactNode
- *
- * Usage:
- *   <BottomSheet visible={open} onDismiss={() => setOpen(false)} size="small" title="Pick a day">
- *     <SelectionPill ... />
- *   </BottomSheet>
  */
 import React, { useEffect, useRef } from 'react';
 import {
@@ -69,10 +44,14 @@ interface BottomSheetProps {
   showCloseButton?: boolean;
   dismissOnOverlay?: boolean;
   /**
+   * When true, swipe-to-dismiss gesture is disabled and the drag handle is hidden.
+   * The sheet can only be closed via showCloseButton or dismissOnOverlay.
+   * Use this for content-heavy full sheets that should feel like pages.
+   */
+  disablePanDismiss?: boolean;
+  /**
    * When true, content area gets zero horizontal padding so hero
-   * images or full-width banners can go edge-to-edge. Use for
-   * full-sheet category takeovers. Drag handle and header row are
-   * still padded normally.
+   * images or full-width banners can go edge-to-edge.
    */
   fullBleed?: boolean;
   children: React.ReactNode;
@@ -95,6 +74,7 @@ export function BottomSheet({
   title,
   showCloseButton = false,
   dismissOnOverlay = true,
+  disablePanDismiss = false,
   fullBleed = false,
   children,
 }: BottomSheetProps) {
@@ -105,14 +85,6 @@ export function BottomSheet({
 
   const sheetHeight = screenHeight * SIZE_FRACTIONS[size];
 
-  // Translation for drag-to-dismiss. Starts off-screen (= full
-  // sheetHeight) and springs to 0 when the sheet opens. We drag the
-  // sheet downward as a delta on top of this.
-  //
-  // When reduceMotion is true (motion kill-switch flipped on), we
-  // skip the spring entirely and snap to 0 on open / sheetHeight on
-  // close. Drag-to-dismiss gestures still work because PanResponder
-  // sets translateY directly, independent of this effect.
   const translateY = useRef(new Animated.Value(reduceMotion ? 0 : sheetHeight)).current;
 
   useEffect(() => {
@@ -129,10 +101,8 @@ export function BottomSheet({
         }).start();
       }
     } else {
-      // Pre-position so the NEXT open animates from the bottom again.
       translateY.setValue(reduceMotion ? 0 : sheetHeight);
     }
-    // translateY is a ref; sheetHeight changes with size/screen.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, sheetHeight, reduceMotion]);
 
@@ -143,8 +113,6 @@ export function BottomSheet({
         _e: GestureResponderEvent,
         g: PanResponderGestureState,
       ) => {
-        // Only capture vertical downward drags. Horizontal gestures
-        // and upward swipes pass through to children.
         return g.dy > 5 && Math.abs(g.dy) > Math.abs(g.dx);
       },
       onPanResponderMove: (_e, g) => {
@@ -154,8 +122,6 @@ export function BottomSheet({
       },
       onPanResponderRelease: (_e, g) => {
         if (g.dy > DISMISS_THRESHOLD_PX || g.vy > DISMISS_VELOCITY) {
-          // Dismiss. With motion disabled we skip the slide-out
-          // animation and just call onDismiss immediately.
           if (reduceMotion) {
             onDismiss();
           } else {
@@ -166,7 +132,6 @@ export function BottomSheet({
             }).start(() => onDismiss());
           }
         } else {
-          // Snap back to open position.
           if (reduceMotion) {
             translateY.setValue(0);
           } else {
@@ -190,15 +155,12 @@ export function BottomSheet({
       onRequestClose={onDismiss}
       statusBarTranslucent
     >
-      {/* Dim overlay — tap to dismiss if enabled */}
       <Pressable
         style={[styles.overlay, { backgroundColor: DIM_OVERLAY_COLOR }]}
         onPress={dismissOnOverlay ? onDismiss : undefined}
         accessibilityRole={dismissOnOverlay ? 'button' : undefined}
         accessibilityLabel={dismissOnOverlay ? 'Dismiss' : undefined}
       >
-        {/* Sheet container — stopPropagation so tapping the content
-            doesn't bubble to the overlay and accidentally dismiss. */}
         <Animated.View
           style={[
             styles.sheet,
@@ -209,27 +171,27 @@ export function BottomSheet({
               transform: [{ translateY }],
             },
           ]}
-          {...panResponder.panHandlers}
+          {...(disablePanDismiss ? {} : panResponder.panHandlers)}
         >
           <Pressable
-            // Inner pressable swallows the tap so it doesn't reach
-            // the overlay. onPress is a no-op on purpose.
             onPress={() => {}}
             style={styles.sheetInner}
           >
-            {/* Drag handle — always present */}
-            <View style={styles.dragHandleWrap}>
-              <View
-                style={[
-                  styles.dragHandle,
-                  { backgroundColor: colors.outlineVariant },
-                ]}
-              />
-            </View>
+            {/* Drag handle — hidden when disablePanDismiss */}
+            {!disablePanDismiss && (
+              <View style={styles.dragHandleWrap}>
+                <View
+                  style={[
+                    styles.dragHandle,
+                    { backgroundColor: colors.outlineVariant },
+                  ]}
+                />
+              </View>
+            )}
 
             {/* Optional header row (title + close button) */}
             {(title || showCloseButton) && (
-              <View style={styles.header}>
+              <View style={[styles.header, disablePanDismiss && styles.headerNoDrag]}>
                 {title ? (
                   <Text
                     style={[
@@ -281,7 +243,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    borderTopLeftRadius: Radius.lg, // 24
+    borderTopLeftRadius: Radius.lg,
     borderTopRightRadius: Radius.lg,
     overflow: 'hidden',
   },
@@ -305,6 +267,9 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
     paddingBottom: Spacing.sm,
     gap: Spacing.sm,
+  },
+  headerNoDrag: {
+    paddingTop: Spacing.lg,
   },
   closeButton: {
     width: 36,

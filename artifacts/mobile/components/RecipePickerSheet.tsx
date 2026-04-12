@@ -198,6 +198,8 @@ export function RecipePickerSheet({
       size="full"
       title={sheetTitle}
       showCloseButton
+      disablePanDismiss
+      dismissOnOverlay={false}
     >
       <View style={[styles.searchRow, { backgroundColor: colors.surfaceContainerHigh }]}>
         <MaterialCommunityIcons name="magnify" size={20} color={colors.outline} />
