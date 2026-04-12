@@ -22,7 +22,7 @@ import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { HeaderBar } from '@/components/HeaderBar';
-import { Checkbox } from '@/components/Checkbox';
+import { CheckRow } from '@/components/CheckRow';
 import { PressableScale } from '@/components/PressableScale';
 import { OVERLAY_BUTTON } from '@/constants/icons';
 import { dateToLocal, addDays, getMonday, getDayLabelFull as getDayLabel, formatDateShort } from '@/utils/dates';
@@ -327,65 +327,54 @@ export default function RecipeDetailScreen() {
                   const isSubExpanded = expandedSubs.has(ingKey);
                   return (
                     <View key={idx}>
-                      <Pressable
-                        onPress={() => toggleIngredient(ingKey)}
-                        style={styles.ingredientRow}
-                        accessibilityRole="checkbox"
-                        accessibilityState={{ checked: isChecked }}
+                      <CheckRow
+                        checked={isChecked}
+                        onToggle={() => toggleIngredient(ingKey)}
+                        label={ing.name}
+                        checkboxSize="sm"
                         accessibilityLabel={`${ing.name}, ${convertAmount(ing.amount, app.useMetric)}`}
-                      >
-                        <View style={{ marginRight: Spacing.sm }}>
-                          <Checkbox checked={isChecked} onToggle={() => toggleIngredient(ingKey)} size="sm" />
-                        </View>
-                        <Text
-                          style={[
-                            Typography.body,
-                            {
-                              color: isChecked ? colors.outline : colors.onSurface,
-                              flex: 1,
-                              textDecorationLine: isChecked ? 'line-through' : 'none',
-                              opacity: isChecked ? 0.5 : 1,
-                            },
-                          ]}
-                        >
-                          {ing.name}
-                        </Text>
-                        <Text
-                          style={[
-                            Typography.bodySmall,
-                            {
-                              color: colors.outline,
-                              opacity: isChecked ? 0.5 : 1,
-                              textDecorationLine: isChecked ? 'line-through' : 'none',
-                            },
-                          ]}
-                        >
-                          {convertAmount(ing.amount, app.useMetric)}
-                        </Text>
-                        {subs && subs.length > 0 && (
-                          <Pressable
-                            onPress={(e) => {
-                              e.stopPropagation();
-                              toggleSub(ingKey);
-                            }}
-                            hitSlop={8}
-                            style={styles.subButton}
-                            accessibilityRole="button"
-                            accessibilityLabel={`Substitutions for ${ing.name}`}
-                          >
-                            <View style={[styles.subButtonPill, { backgroundColor: isSubExpanded ? colors.primary : OVERLAY_BUTTON.background }]}>
-                              <MaterialCommunityIcons
-                                name="swap-horizontal"
-                                size={16}
-                                color={OVERLAY_BUTTON.iconColor}
-                              />
-                              <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>
-                                Swap
-                              </Text>
-                            </View>
-                          </Pressable>
-                        )}
-                      </Pressable>
+                        trailing={
+                          <>
+                            <Text
+                              style={[
+                                Typography.bodySmall,
+                                {
+                                  color: colors.outline,
+                                  opacity: isChecked ? 0.55 : 1,
+                                  textDecorationLine: isChecked ? 'line-through' : 'none',
+                                },
+                              ]}
+                            >
+                              {convertAmount(ing.amount, app.useMetric)}
+                            </Text>
+                            {subs && subs.length > 0 && (
+                              <Pressable
+                                onPress={() => toggleSub(ingKey)}
+                                hitSlop={8}
+                                style={styles.subButton}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Substitutions for ${ing.name}`}
+                              >
+                                <View
+                                  style={[
+                                    styles.subButtonPill,
+                                    { backgroundColor: isSubExpanded ? colors.primary : OVERLAY_BUTTON.background },
+                                  ]}
+                                >
+                                  <MaterialCommunityIcons
+                                    name="swap-horizontal"
+                                    size={16}
+                                    color={OVERLAY_BUTTON.iconColor}
+                                  />
+                                  <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '700', letterSpacing: 0.3 }}>
+                                    Swap
+                                  </Text>
+                                </View>
+                              </Pressable>
+                            )}
+                          </>
+                        }
+                      />
                       {subs && subs.length > 0 && isSubExpanded && (
                         <View style={[styles.substitutionHint, { backgroundColor: colors.surfaceContainerLow }]}>
                           <MaterialCommunityIcons name="swap-horizontal" size={16} color={colors.primary} />
@@ -611,11 +600,6 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  ingredientRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: Spacing.sm,
   },
   subButton: {
     marginLeft: Spacing.sm,

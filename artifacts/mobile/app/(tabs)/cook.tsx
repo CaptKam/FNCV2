@@ -19,7 +19,7 @@ import { countries } from '@/data/countries';
 import { formatCookTime } from '@/data/helpers';
 import { useApp } from '@/context/AppContext';
 import { AnimatedListItem } from '@/components/AnimatedListItem';
-import { Checkbox } from '@/components/Checkbox';
+import { CheckRow } from '@/components/CheckRow';
 import { todayLocal, addDays, getDayLabelFull } from '@/utils/dates';
 import { RecipePickerSheet } from '@/components/RecipePickerSheet';
 import { Recipe } from '@/data/recipes';
@@ -288,32 +288,15 @@ export default function CookScreen() {
             </View>
             {KITCHEN_CHECKS.map((item, idx) => (
               <AnimatedListItem key={item.label} index={idx}>
-                <Pressable
-                  onPress={() => {
+                <CheckRow
+                  checked={checks[idx]}
+                  onToggle={() => {
                     const next = [...checks];
                     next[idx] = !next[idx];
                     setChecks(next);
                   }}
-                  style={styles.checkItem}
-                  accessibilityLabel={item.label}
-                >
-                  <Checkbox
-                    checked={checks[idx]}
-                    onToggle={() => {
-                      const next = [...checks];
-                      next[idx] = !next[idx];
-                      setChecks(next);
-                    }}
-                  />
-                  <Text
-                    style={[
-                      Typography.bodySmall,
-                      { color: checks[idx] ? colors.onSurface : colors.onSurfaceVariant },
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
-                </Pressable>
+                  label={item.label}
+                />
               </AnimatedListItem>
             ))}
           </View>
@@ -640,11 +623,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-  },
-  checkItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
   },
   ctaSection: {
     alignItems: 'center',
