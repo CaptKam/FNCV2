@@ -29,18 +29,12 @@ import { formatCookTime } from '@/data/helpers';
 import { MEAL_CATEGORIES } from '@/data/categories';
 import { useBookmarks } from '@/context/BookmarksContext';
 import { useApp } from '@/context/AppContext';
-import { todayLocal, getDayLabel } from '@/utils/dates';
 import * as Haptics from 'expo-haptics';
 
 type TimeFilter = 'any' | 'under30' | 'under60';
 type DifficultyFilter = 'any' | 'Easy' | 'Medium' | 'Hard';
 type SortMode = 'default' | 'quickest' | 'az';
 
-const DIFFICULTY_COLORS: Record<string, string> = {
-  Easy: '#3DAF6F',
-  Medium: '#E08C00',
-  Hard: '#C0392B',
-};
 
 function RecipeCard({
   recipe,
